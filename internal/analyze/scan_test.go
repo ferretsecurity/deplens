@@ -14,14 +14,14 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		name string
 		want ManifestType
 	}{
-		{name: "requirements.txt", want: RequirementsTXT},
-		{name: "my-requirements.txt", want: RequirementsTXT},
-		{name: "requirements-dev.txt", want: RequirementsTXT},
-		{name: "my_requirements.prod.txt", want: RequirementsTXT},
-		{name: "uv.lock", want: UVLock},
-		{name: "package.json", want: PackageJSON},
-		{name: "yarn.lock", want: YarnLock},
-		{name: "pom.xml", want: PomXML},
+		{name: "requirements.txt", want: ManifestType("python-requirements")},
+		{name: "my-requirements.txt", want: ManifestType("python-requirements")},
+		{name: "requirements-dev.txt", want: ManifestType("python-requirements")},
+		{name: "my_requirements.prod.txt", want: ManifestType("python-requirements")},
+		{name: "uv.lock", want: ManifestType("python-uv")},
+		{name: "package.json", want: ManifestType("js")},
+		{name: "yarn.lock", want: ManifestType("js-yarn")},
+		{name: "pom.xml", want: ManifestType("java")},
 	}
 
 	for _, tc := range testCases {
@@ -103,7 +103,7 @@ resource "aws_glue_job" "python_shell_example" {
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
-	if result.Manifests[0].Type != TerraformGluePy || result.Manifests[0].Path != "glue/job.tf" {
+	if result.Manifests[0].Type != ManifestType("terraform.aws_glue_job.python") || result.Manifests[0].Path != "glue/job.tf" {
 		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
 	}
 }
@@ -228,42 +228,49 @@ func TestScanRejectsFilePath(t *testing.T) {
 }
 
 func TestLoadRulesRejectsMissingFields(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: \"\"\n    patterns:\n      - type: package.json\n        regex: '^package\\.json$'\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: \"\"\n    filename-regex: '^package\\.json$'\n"))
 	if err == nil {
 		t.Fatalf("expected error for missing rule name")
 	}
 }
 
+func TestLoadRulesRejectsMissingFilenameRegex(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n"))
+	if err == nil {
+		t.Fatalf("expected error for missing filename regex")
+	}
+}
+
 func TestLoadRulesRejectsInvalidRegex(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    patterns:\n      - type: package.json\n        regex: '('\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    filename-regex: '('\n"))
 	if err == nil {
 		t.Fatalf("expected invalid regex error")
 	}
 }
 
-func TestLoadRulesRejectsUnsupportedParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform\n    patterns:\n      - type: terraform.aws_glue_job.python\n        regex: '.*\\.tf$'\n        parser: unknown_parser\n"))
-	if err == nil {
-		t.Fatalf("expected unsupported parser error")
-	}
-}
-
 func TestLoadRulesRejectsTerraformParserWithoutResourceType(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform\n    patterns:\n      - type: terraform.aws_glue_job.python\n        regex: '.*\\.tf$'\n        parser: terraform_resource\n        conditions:\n          - path: default_arguments.--job-language\n            equals: python\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform.aws_glue_job.python\n    filename-regex: '.*\\.tf$'\n    terraform:\n      conditions:\n        - path: default_arguments.--job-language\n          equals: python\n"))
 	if err == nil {
 		t.Fatalf("expected missing resource type error")
 	}
 }
 
 func TestLoadRulesRejectsTerraformParserWithoutConditions(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform\n    patterns:\n      - type: terraform.aws_glue_job.python\n        regex: '.*\\.tf$'\n        parser: terraform_resource\n        resource_type: aws_glue_job\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform.aws_glue_job.python\n    filename-regex: '.*\\.tf$'\n    terraform:\n      resource_type: aws_glue_job\n"))
 	if err == nil {
 		t.Fatalf("expected missing conditions error")
 	}
 }
 
+func TestLoadRulesRejectsTerraformConditionWithoutMatcher(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform.aws_glue_job.python\n    filename-regex: '.*\\.tf$'\n    terraform:\n      resource_type: aws_glue_job\n      conditions:\n        - path: default_arguments.--job-language\n"))
+	if err == nil {
+		t.Fatalf("expected invalid terraform condition error")
+	}
+}
+
 func TestLoadRulesSupportsCustomFirstMatchOrdering(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: broad\n    patterns:\n      - type: generic\n        regex: '.*\\.json$'\n  - name: specific\n    patterns:\n      - type: package.json\n        regex: '^package\\.json$'\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: broad\n    filename-regex: '.*\\.json$'\n  - name: specific\n    filename-regex: '^package\\.json$'\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -272,14 +279,21 @@ func TestLoadRulesSupportsCustomFirstMatchOrdering(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("generic") {
+	if got != ManifestType("broad") {
 		t.Fatalf("expected first pattern to win, got %q", got)
 	}
 }
 
 func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
-	want := []ManifestType{RequirementsTXT, UVLock, PackageJSON, YarnLock, PomXML, TerraformGluePy}
+	want := []ManifestType{
+		ManifestType("python-requirements"),
+		ManifestType("python-uv"),
+		ManifestType("js"),
+		ManifestType("js-yarn"),
+		ManifestType("java"),
+		ManifestType("terraform.aws_glue_job.python"),
+	}
 	got := ruleset.SupportedManifestTypes()
 	if !slices.Equal(got, want) {
 		t.Fatalf("unexpected supported type order: got %v want %v", got, want)
