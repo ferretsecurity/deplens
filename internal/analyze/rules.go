@@ -20,6 +20,7 @@ const (
 	PackageJSON     ManifestType = "package.json"
 	YarnLock        ManifestType = "yarn.lock"
 	PomXML          ManifestType = "pom.xml"
+	TerraformGluePy ManifestType = "terraform.aws_glue_job.python"
 )
 
 type Rule struct {
@@ -30,6 +31,7 @@ type Rule struct {
 type manifestPattern struct {
 	Type   ManifestType
 	Regexp *regexp.Regexp
+	Parser manifestParser
 }
 
 type Ruleset struct {
@@ -47,8 +49,15 @@ type ruleConfig struct {
 }
 
 type patternConfig struct {
-	Type  string `yaml:"type"`
-	Regex string `yaml:"regex"`
+	Type         string                     `yaml:"type"`
+	Regex        string                     `yaml:"regex"`
+	Parser       string                     `yaml:"parser"`
+	ResourceType string                     `yaml:"resource_type"`
+	Conditions   []terraformConditionConfig `yaml:"conditions"`
+}
+
+type manifestParser interface {
+	Match(path string, content []byte) (bool, error)
 }
 
 func LoadDefaultRules() (Ruleset, error) {
@@ -100,9 +109,15 @@ func loadRules(source string, data []byte) (Ruleset, error) {
 				return Ruleset{}, fmt.Errorf("%s: %s.regex: compile %q: %w", source, patternPath, rawPattern.Regex, err)
 			}
 
+			parser, err := compileManifestParser(rawPattern)
+			if err != nil {
+				return Ruleset{}, fmt.Errorf("%s: %s: %w", source, patternPath, err)
+			}
+
 			rule.Patterns = append(rule.Patterns, manifestPattern{
 				Type:   ManifestType(rawPattern.Type),
 				Regexp: compiled,
+				Parser: parser,
 			})
 		}
 		rules = append(rules, rule)
@@ -121,12 +136,47 @@ func (r Ruleset) SupportedManifestTypes() []ManifestType {
 func (r Ruleset) DetectManifest(name string) (ManifestType, bool) {
 	for _, rule := range r.rules {
 		for _, pattern := range rule.Patterns {
+			if pattern.Parser != nil {
+				continue
+			}
 			if pattern.Regexp.MatchString(name) {
 				return pattern.Type, true
 			}
 		}
 	}
 	return "", false
+}
+
+func (r Ruleset) DetectManifestFile(path string, name string) (ManifestType, bool, error) {
+	var content []byte
+	contentLoaded := false
+
+	for _, rule := range r.rules {
+		for _, pattern := range rule.Patterns {
+			if !pattern.Regexp.MatchString(name) {
+				continue
+			}
+			if pattern.Parser == nil {
+				return pattern.Type, true, nil
+			}
+			if !contentLoaded {
+				data, err := os.ReadFile(path)
+				if err != nil {
+					return "", false, fmt.Errorf("read candidate file %q: %w", path, err)
+				}
+				content = data
+				contentLoaded = true
+			}
+			ok, err := pattern.Parser.Match(path, content)
+			if err != nil {
+				return "", false, err
+			}
+			if ok {
+				return pattern.Type, true, nil
+			}
+		}
+	}
+	return "", false, nil
 }
 
 func supportedTypesFromRules(rules []Rule) []ManifestType {
