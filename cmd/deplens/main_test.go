@@ -75,6 +75,29 @@ func TestRunJSONOutput(t *testing.T) {
 	}
 }
 
+func TestRunDetectsTerraformGluePythonSource(t *testing.T) {
+	tmpDir := t.TempDir()
+	writeFile(t, filepath.Join(tmpDir, "job.tf"), `
+resource "aws_glue_job" "python_shell_example" {
+  default_arguments = {
+    "--job-language" = "python"
+    "--additional-python-modules" = "scikit-learn==1.4.1.post1,pandas==2.2.1"
+  }
+}
+`)
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{tmpDir}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "terraform.aws_glue_job.python") || !strings.Contains(stdout.String(), "job.tf") {
+		t.Fatalf("expected output to include terraform glue source, got %q", stdout.String())
+	}
+}
+
 func TestRunInvalidPathReturnsNonZero(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer

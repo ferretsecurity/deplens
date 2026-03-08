@@ -42,6 +42,7 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 		"myrequirements.txt",
 		"requirementsdev.txt",
 		"requirements.txt.backup",
+		"main.tf",
 		"package-lock.json",
 		"pom.xml.backup",
 		"yarn.lock.old",
@@ -60,17 +61,116 @@ func TestScanFindsNestedManifestsSortedByRelativePath(t *testing.T) {
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "b", "requirements-dev.txt"), "")
 	mustWriteFile(t, filepath.Join(root, "a", "package.json"), "")
+	mustWriteFile(t, filepath.Join(root, "c", "job.tf"), `
+resource "aws_glue_job" "python_shell_example" {
+  default_arguments = {
+    "--job-language" = "python"
+    "--additional-python-modules" = "scikit-learn==1.4.1.post1,pandas==2.2.1"
+  }
+}
+`)
 
 	result, err := Scan(root, nil, ruleset)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 2 {
-		t.Fatalf("expected 2 manifests, got %d", len(result.Manifests))
+	if len(result.Manifests) != 3 {
+		t.Fatalf("expected 3 manifests, got %d", len(result.Manifests))
 	}
-	if result.Manifests[0].Path != "a/package.json" || result.Manifests[1].Path != "b/requirements-dev.txt" {
+	if result.Manifests[0].Path != "a/package.json" || result.Manifests[1].Path != "b/requirements-dev.txt" || result.Manifests[2].Path != "c/job.tf" {
 		t.Fatalf("unexpected manifest order: %+v", result.Manifests)
+	}
+}
+
+func TestScanMatchesTerraformGluePythonDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "glue", "job.tf"), `
+resource "aws_glue_job" "python_shell_example" {
+  default_arguments = {
+    "--job-language" = "python"
+    "--additional-python-modules" = "scikit-learn==1.4.1.post1,pandas==2.2.1"
+  }
+}
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != TerraformGluePy || result.Manifests[0].Path != "glue/job.tf" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+}
+
+func TestScanDoesNotMatchTerraformWithoutAdditionalModules(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "job.tf"), `
+resource "aws_glue_job" "python_shell_example" {
+  default_arguments = {
+    "--job-language" = "python"
+  }
+}
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanDoesNotMatchTerraformWithoutPythonLanguage(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "job.tf"), `
+resource "aws_glue_job" "scala_job" {
+  default_arguments = {
+    "--job-language" = "scala"
+    "--additional-python-modules" = "pandas==2.2.1"
+  }
+}
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanDoesNotMatchNonGlueTerraformResource(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "main.tf"), `
+resource "aws_s3_bucket" "example" {
+  bucket = "example"
+}
+
+locals {
+  default_arguments = {
+    "--job-language" = "python"
+    "--additional-python-modules" = "pandas==2.2.1"
+  }
+}
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
 	}
 }
 
@@ -141,6 +241,27 @@ func TestLoadRulesRejectsInvalidRegex(t *testing.T) {
 	}
 }
 
+func TestLoadRulesRejectsUnsupportedParser(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform\n    patterns:\n      - type: terraform.aws_glue_job.python\n        regex: '.*\\.tf$'\n        parser: unknown_parser\n"))
+	if err == nil {
+		t.Fatalf("expected unsupported parser error")
+	}
+}
+
+func TestLoadRulesRejectsTerraformParserWithoutResourceType(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform\n    patterns:\n      - type: terraform.aws_glue_job.python\n        regex: '.*\\.tf$'\n        parser: terraform_resource\n        conditions:\n          - path: default_arguments.--job-language\n            equals: python\n"))
+	if err == nil {
+		t.Fatalf("expected missing resource type error")
+	}
+}
+
+func TestLoadRulesRejectsTerraformParserWithoutConditions(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform\n    patterns:\n      - type: terraform.aws_glue_job.python\n        regex: '.*\\.tf$'\n        parser: terraform_resource\n        resource_type: aws_glue_job\n"))
+	if err == nil {
+		t.Fatalf("expected missing conditions error")
+	}
+}
+
 func TestLoadRulesSupportsCustomFirstMatchOrdering(t *testing.T) {
 	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: broad\n    patterns:\n      - type: generic\n        regex: '.*\\.json$'\n  - name: specific\n    patterns:\n      - type: package.json\n        regex: '^package\\.json$'\n"))
 	if err != nil {
@@ -158,7 +279,7 @@ func TestLoadRulesSupportsCustomFirstMatchOrdering(t *testing.T) {
 
 func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
-	want := []ManifestType{RequirementsTXT, UVLock, PackageJSON, YarnLock, PomXML}
+	want := []ManifestType{RequirementsTXT, UVLock, PackageJSON, YarnLock, PomXML, TerraformGluePy}
 	got := ruleset.SupportedManifestTypes()
 	if !slices.Equal(got, want) {
 		t.Fatalf("unexpected supported type order: got %v want %v", got, want)
