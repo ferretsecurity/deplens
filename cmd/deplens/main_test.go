@@ -70,7 +70,7 @@ func TestRunJSONOutput(t *testing.T) {
 	if err := json.Unmarshal(stdout.Bytes(), &payload); err != nil {
 		t.Fatalf("expected valid JSON output: %v", err)
 	}
-	if len(payload.Manifests) != 1 || payload.Manifests[0].Type != "pom.xml" {
+	if len(payload.Manifests) != 1 || payload.Manifests[0].Type != "java" {
 		t.Fatalf("unexpected manifests payload: %+v", payload.Manifests)
 	}
 }
@@ -131,7 +131,7 @@ func TestRunWithCustomRulesFile(t *testing.T) {
 	projectDir := filepath.Join(tmpDir, "project")
 	writeFile(t, filepath.Join(projectDir, "deps.gradle"), "")
 	rulesPath := filepath.Join(tmpDir, "rules.yaml")
-	writeFile(t, rulesPath, "rules:\n  - name: gradle\n    patterns:\n      - type: deps.gradle\n        regex: '^deps\\.gradle$'\n")
+	writeFile(t, rulesPath, "rules:\n  - name: gradle\n    filename-regex: '^deps\\.gradle$'\n")
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -140,8 +140,8 @@ func TestRunWithCustomRulesFile(t *testing.T) {
 	if exitCode != 0 {
 		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "deps.gradle") {
-		t.Fatalf("expected output to include deps.gradle, got %q", stdout.String())
+	if !strings.Contains(stdout.String(), "gradle") {
+		t.Fatalf("expected output to include gradle, got %q", stdout.String())
 	}
 }
 
