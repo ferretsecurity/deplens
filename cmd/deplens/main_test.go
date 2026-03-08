@@ -103,3 +103,36 @@ func TestRunEmptyDirectoryReturnsSuccess(t *testing.T) {
 	}
 }
 
+func TestRunWithCustomRulesFile(t *testing.T) {
+	tmpDir := t.TempDir()
+	projectDir := filepath.Join(tmpDir, "project")
+	writeFile(t, filepath.Join(projectDir, "deps.gradle"), "")
+	rulesPath := filepath.Join(tmpDir, "rules.yaml")
+	writeFile(t, rulesPath, "rules:\n  - name: gradle\n    patterns:\n      - type: deps.gradle\n        regex: '^deps\\.gradle$'\n")
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{"--rules", rulesPath, projectDir}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "deps.gradle") {
+		t.Fatalf("expected output to include deps.gradle, got %q", stdout.String())
+	}
+}
+
+func TestRunMissingRulesFileReturnsNonZero(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{"--rules", filepath.Join(tmpDir, "missing.yaml"), tmpDir}, &stdout, &stderr)
+	if exitCode == 0 {
+		t.Fatalf("expected non-zero exit code")
+	}
+	if !strings.Contains(stderr.String(), "read rules file") {
+		t.Fatalf("expected rules file error, got %q", stderr.String())
+	}
+}

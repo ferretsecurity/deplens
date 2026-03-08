@@ -1,0 +1,17 @@
+rules:
+  - name: python
+    patterns:
+      - type: requirements.txt
+        regex: '(^|.*[^A-Za-z])requirements([^A-Za-z].*)?\.txt$'
+      - type: uv.lock
+        regex: '^uv\.lock$'
+  - name: js/ts
+    patterns:
+      - type: package.json
+        regex: '^package\.json$'
+      - type: yarn.lock
+        regex: '^yarn\.lock$'
+  - name: java
+    patterns:
+      - type: pom.xml
+        regex: '^pom\.xml$'
