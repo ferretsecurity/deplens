@@ -14,28 +14,14 @@ var defaultRulesYAML []byte
 
 type ManifestType string
 
-const (
-	RequirementsTXT ManifestType = "requirements.txt"
-	UVLock          ManifestType = "uv.lock"
-	PackageJSON     ManifestType = "package.json"
-	YarnLock        ManifestType = "yarn.lock"
-	PomXML          ManifestType = "pom.xml"
-	TerraformGluePy ManifestType = "terraform.aws_glue_job.python"
-)
-
-type Rule struct {
-	Name     string
-	Patterns []manifestPattern
-}
-
-type manifestPattern struct {
+type manifestRule struct {
 	Type   ManifestType
 	Regexp *regexp.Regexp
 	Parser manifestParser
 }
 
 type Ruleset struct {
-	rules          []Rule
+	rules          []manifestRule
 	supportedTypes []ManifestType
 }
 
@@ -44,16 +30,9 @@ type rulesFile struct {
 }
 
 type ruleConfig struct {
-	Name     string          `yaml:"name"`
-	Patterns []patternConfig `yaml:"patterns"`
-}
-
-type patternConfig struct {
-	Type         string                     `yaml:"type"`
-	Regex        string                     `yaml:"regex"`
-	Parser       string                     `yaml:"parser"`
-	ResourceType string                     `yaml:"resource_type"`
-	Conditions   []terraformConditionConfig `yaml:"conditions"`
+	Name          string                  `yaml:"name"`
+	FilenameRegex string                  `yaml:"filename-regex"`
+	Terraform     *terraformMatcherConfig `yaml:"terraform"`
 }
 
 type manifestParser interface {
@@ -81,46 +60,31 @@ func loadRules(source string, data []byte) (Ruleset, error) {
 		return Ruleset{}, fmt.Errorf("%s: rules: must contain at least one rule", source)
 	}
 
-	rules := make([]Rule, 0, len(raw.Rules))
+	rules := make([]manifestRule, 0, len(raw.Rules))
 	for ruleIdx, rawRule := range raw.Rules {
 		fieldPath := fmt.Sprintf("rules[%d]", ruleIdx)
 		if rawRule.Name == "" {
 			return Ruleset{}, fmt.Errorf("%s: %s.name: required", source, fieldPath)
 		}
-		if len(rawRule.Patterns) == 0 {
-			return Ruleset{}, fmt.Errorf("%s: %s.patterns: must contain at least one pattern", source, fieldPath)
+		if rawRule.FilenameRegex == "" {
+			return Ruleset{}, fmt.Errorf("%s: %s.filename-regex: required", source, fieldPath)
 		}
 
-		rule := Rule{
-			Name:     rawRule.Name,
-			Patterns: make([]manifestPattern, 0, len(rawRule.Patterns)),
+		compiled, err := regexp.Compile(rawRule.FilenameRegex)
+		if err != nil {
+			return Ruleset{}, fmt.Errorf("%s: %s.filename-regex: compile %q: %w", source, fieldPath, rawRule.FilenameRegex, err)
 		}
-		for patternIdx, rawPattern := range rawRule.Patterns {
-			patternPath := fmt.Sprintf("%s.patterns[%d]", fieldPath, patternIdx)
-			if rawPattern.Type == "" {
-				return Ruleset{}, fmt.Errorf("%s: %s.type: required", source, patternPath)
-			}
-			if rawPattern.Regex == "" {
-				return Ruleset{}, fmt.Errorf("%s: %s.regex: required", source, patternPath)
-			}
 
-			compiled, err := regexp.Compile(rawPattern.Regex)
-			if err != nil {
-				return Ruleset{}, fmt.Errorf("%s: %s.regex: compile %q: %w", source, patternPath, rawPattern.Regex, err)
-			}
-
-			parser, err := compileManifestParser(rawPattern)
-			if err != nil {
-				return Ruleset{}, fmt.Errorf("%s: %s: %w", source, patternPath, err)
-			}
-
-			rule.Patterns = append(rule.Patterns, manifestPattern{
-				Type:   ManifestType(rawPattern.Type),
-				Regexp: compiled,
-				Parser: parser,
-			})
+		parser, err := compileManifestParser(rawRule)
+		if err != nil {
+			return Ruleset{}, fmt.Errorf("%s: %s: %w", source, fieldPath, err)
 		}
-		rules = append(rules, rule)
+
+		rules = append(rules, manifestRule{
+			Type:   ManifestType(rawRule.Name),
+			Regexp: compiled,
+			Parser: parser,
+		})
 	}
 
 	return Ruleset{
@@ -135,13 +99,11 @@ func (r Ruleset) SupportedManifestTypes() []ManifestType {
 
 func (r Ruleset) DetectManifest(name string) (ManifestType, bool) {
 	for _, rule := range r.rules {
-		for _, pattern := range rule.Patterns {
-			if pattern.Parser != nil {
-				continue
-			}
-			if pattern.Regexp.MatchString(name) {
-				return pattern.Type, true
-			}
+		if rule.Parser != nil {
+			continue
+		}
+		if rule.Regexp.MatchString(name) {
+			return rule.Type, true
 		}
 	}
 	return "", false
@@ -152,44 +114,40 @@ func (r Ruleset) DetectManifestFile(path string, name string) (ManifestType, boo
 	contentLoaded := false
 
 	for _, rule := range r.rules {
-		for _, pattern := range rule.Patterns {
-			if !pattern.Regexp.MatchString(name) {
-				continue
-			}
-			if pattern.Parser == nil {
-				return pattern.Type, true, nil
-			}
-			if !contentLoaded {
-				data, err := os.ReadFile(path)
-				if err != nil {
-					return "", false, fmt.Errorf("read candidate file %q: %w", path, err)
-				}
-				content = data
-				contentLoaded = true
-			}
-			ok, err := pattern.Parser.Match(path, content)
+		if !rule.Regexp.MatchString(name) {
+			continue
+		}
+		if rule.Parser == nil {
+			return rule.Type, true, nil
+		}
+		if !contentLoaded {
+			data, err := os.ReadFile(path)
 			if err != nil {
-				return "", false, err
+				return "", false, fmt.Errorf("read candidate file %q: %w", path, err)
 			}
-			if ok {
-				return pattern.Type, true, nil
-			}
+			content = data
+			contentLoaded = true
+		}
+		ok, err := rule.Parser.Match(path, content)
+		if err != nil {
+			return "", false, err
+		}
+		if ok {
+			return rule.Type, true, nil
 		}
 	}
 	return "", false, nil
 }
 
-func supportedTypesFromRules(rules []Rule) []ManifestType {
+func supportedTypesFromRules(rules []manifestRule) []ManifestType {
 	types := make([]ManifestType, 0)
 	seen := make(map[ManifestType]struct{})
 	for _, rule := range rules {
-		for _, pattern := range rule.Patterns {
-			if _, ok := seen[pattern.Type]; ok {
-				continue
-			}
-			seen[pattern.Type] = struct{}{}
-			types = append(types, pattern.Type)
+		if _, ok := seen[rule.Type]; ok {
+			continue
 		}
+		seen[rule.Type] = struct{}{}
+		types = append(types, rule.Type)
 	}
 	return types
 }

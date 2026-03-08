@@ -28,37 +28,34 @@ type terraformCondition struct {
 	present bool
 }
 
-func compileManifestParser(raw patternConfig) (manifestParser, error) {
-	if raw.Parser == "" {
-		if raw.ResourceType != "" || len(raw.Conditions) > 0 {
-			return nil, fmt.Errorf("parser-specific fields require parser")
-		}
+type terraformMatcherConfig struct {
+	ResourceType string                     `yaml:"resource_type"`
+	Conditions   []terraformConditionConfig `yaml:"conditions"`
+}
+
+func compileManifestParser(raw ruleConfig) (manifestParser, error) {
+	if raw.Terraform == nil {
 		return nil, nil
 	}
 
-	switch raw.Parser {
-	case terraformResourceParser:
-		return newTerraformResourceParser(raw)
-	default:
-		return nil, fmt.Errorf("parser: unsupported %q", raw.Parser)
-	}
+	return newTerraformResourceParser(*raw.Terraform)
 }
 
-func newTerraformResourceParser(raw patternConfig) (manifestParser, error) {
+func newTerraformResourceParser(raw terraformMatcherConfig) (manifestParser, error) {
 	if raw.ResourceType == "" {
-		return nil, fmt.Errorf("resource_type: required for parser %q", raw.Parser)
+		return nil, fmt.Errorf("terraform.resource_type: required")
 	}
 	if len(raw.Conditions) == 0 {
-		return nil, fmt.Errorf("conditions: must contain at least one entry for parser %q", raw.Parser)
+		return nil, fmt.Errorf("terraform.conditions: must contain at least one entry")
 	}
 
 	conditions := make([]terraformCondition, 0, len(raw.Conditions))
 	for idx, cond := range raw.Conditions {
 		if cond.Path == "" {
-			return nil, fmt.Errorf("conditions[%d].path: required", idx)
+			return nil, fmt.Errorf("terraform.conditions[%d].path: required", idx)
 		}
 		if cond.Equals == nil && !cond.Present {
-			return nil, fmt.Errorf("conditions[%d]: one of equals or present=true is required", idx)
+			return nil, fmt.Errorf("terraform.conditions[%d]: one of equals or present=true is required", idx)
 		}
 
 		conditions = append(conditions, terraformCondition{

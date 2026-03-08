@@ -12,12 +12,12 @@ func TestHumanIncludesDetectedPaths(t *testing.T) {
 	result := analyze.ScanResult{
 		Root: "/tmp/project",
 		Manifests: []analyze.ManifestMatch{
-			{Type: analyze.PackageJSON, Path: "web/package.json"},
-			{Type: analyze.RequirementsTXT, Path: "api/requirements.txt"},
+			{Type: analyze.ManifestType("js"), Path: "web/package.json"},
+			{Type: analyze.ManifestType("python-requirements"), Path: "api/requirements.txt"},
 		},
 	}
 
-	output := Human(result, []analyze.ManifestType{analyze.RequirementsTXT, analyze.PackageJSON})
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("python-requirements"), analyze.ManifestType("js")})
 	if !strings.Contains(output, "web/package.json") {
 		t.Fatalf("expected human output to include package.json path, got %q", output)
 	}
@@ -37,14 +37,14 @@ func TestHumanUsesProvidedManifestTypeOrder(t *testing.T) {
 	result := analyze.ScanResult{
 		Root: "/tmp/project",
 		Manifests: []analyze.ManifestMatch{
-			{Type: analyze.PackageJSON, Path: "web/package.json"},
-			{Type: analyze.RequirementsTXT, Path: "api/requirements.txt"},
+			{Type: analyze.ManifestType("js"), Path: "web/package.json"},
+			{Type: analyze.ManifestType("python-requirements"), Path: "api/requirements.txt"},
 		},
 	}
 
-	output := Human(result, []analyze.ManifestType{analyze.PackageJSON, analyze.RequirementsTXT})
-	if strings.Index(output, "package.json") > strings.Index(output, "requirements.txt") {
-		t.Fatalf("expected package.json section before requirements.txt, got %q", output)
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("js"), analyze.ManifestType("python-requirements")})
+	if strings.Index(output, "js") > strings.Index(output, "python-requirements") {
+		t.Fatalf("expected js section before python-requirements, got %q", output)
 	}
 }
 
@@ -52,7 +52,7 @@ func TestJSONMatchesExpectedSchema(t *testing.T) {
 	result := analyze.ScanResult{
 		Root: "/tmp/project",
 		Manifests: []analyze.ManifestMatch{
-			{Type: analyze.YarnLock, Path: "frontend/yarn.lock"},
+			{Type: analyze.ManifestType("js-yarn"), Path: "frontend/yarn.lock"},
 		},
 	}
 
