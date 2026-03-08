@@ -55,7 +55,10 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 			return nil
 		}
 
-		manifestType, ok := ruleset.DetectManifest(d.Name())
+		manifestType, ok, err := ruleset.DetectManifestFile(path, d.Name())
+		if err != nil {
+			return err
+		}
 		if !ok {
 			return nil
 		}
