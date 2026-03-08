@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 )
 
@@ -18,13 +19,42 @@ const (
 	PomXML          ManifestType = "pom.xml"
 )
 
-var supportedManifestTypes = []ManifestType{
-	RequirementsTXT,
-	UVLock,
-	PackageJSON,
-	YarnLock,
-	PomXML,
+type Rule struct {
+	Name     string
+	Patterns []manifestPattern
 }
+
+type manifestPattern struct {
+	Type   ManifestType
+	Regexp *regexp.Regexp
+}
+
+var requirementsPattern = regexp.MustCompile(`(^|.*[^A-Za-z])requirements([^A-Za-z].*)?\.txt$`)
+
+var rules = []Rule{
+	{
+		Name: "python",
+		Patterns: []manifestPattern{
+			{Type: RequirementsTXT, Regexp: requirementsPattern},
+			{Type: UVLock, Regexp: regexp.MustCompile(`^uv\.lock$`)},
+		},
+	},
+	{
+		Name: "js/ts",
+		Patterns: []manifestPattern{
+			{Type: PackageJSON, Regexp: regexp.MustCompile(`^package\.json$`)},
+			{Type: YarnLock, Regexp: regexp.MustCompile(`^yarn\.lock$`)},
+		},
+	},
+	{
+		Name: "java",
+		Patterns: []manifestPattern{
+			{Type: PomXML, Regexp: regexp.MustCompile(`^pom\.xml$`)},
+		},
+	},
+}
+
+var supportedManifestTypes = supportedTypesFromRules(rules)
 
 type ManifestMatch struct {
 	Type ManifestType `json:"type"`
@@ -111,20 +141,14 @@ func Scan(root string, ignoreDirs []string) (ScanResult, error) {
 }
 
 func detectManifest(name string) (ManifestType, bool) {
-	switch name {
-	case string(RequirementsTXT):
-		return RequirementsTXT, true
-	case string(UVLock):
-		return UVLock, true
-	case string(PackageJSON):
-		return PackageJSON, true
-	case string(YarnLock):
-		return YarnLock, true
-	case string(PomXML):
-		return PomXML, true
-	default:
-		return "", false
+	for _, rule := range rules {
+		for _, pattern := range rule.Patterns {
+			if pattern.Regexp.MatchString(name) {
+				return pattern.Type, true
+			}
+		}
 	}
+	return "", false
 }
 
 func compareManifestType(a, b ManifestType) int {
@@ -135,4 +159,19 @@ func compareManifestType(a, b ManifestType) int {
 		return -1
 	}
 	return 1
+}
+
+func supportedTypesFromRules(rules []Rule) []ManifestType {
+	types := make([]ManifestType, 0)
+	seen := make(map[ManifestType]struct{})
+	for _, rule := range rules {
+		for _, pattern := range rule.Patterns {
+			if _, ok := seen[pattern.Type]; ok {
+				continue
+			}
+			seen[pattern.Type] = struct{}{}
+			types = append(types, pattern.Type)
+		}
+	}
+	return types
 }

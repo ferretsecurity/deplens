@@ -12,6 +12,9 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		want ManifestType
 	}{
 		{name: "requirements.txt", want: RequirementsTXT},
+		{name: "my-requirements.txt", want: RequirementsTXT},
+		{name: "requirements-dev.txt", want: RequirementsTXT},
+		{name: "my_requirements.prod.txt", want: RequirementsTXT},
 		{name: "uv.lock", want: UVLock},
 		{name: "package.json", want: PackageJSON},
 		{name: "yarn.lock", want: YarnLock},
@@ -31,7 +34,9 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 
 func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 	testCases := []string{
-		"requirements-dev.txt",
+		"myrequirements.txt",
+		"requirementsdev.txt",
+		"requirements.txt.backup",
 		"package-lock.json",
 		"pom.xml.backup",
 		"yarn.lock.old",
@@ -47,7 +52,7 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 
 func TestScanFindsNestedManifestsSortedByRelativePath(t *testing.T) {
 	root := t.TempDir()
-	mustWriteFile(t, filepath.Join(root, "b", "requirements.txt"), "")
+	mustWriteFile(t, filepath.Join(root, "b", "requirements-dev.txt"), "")
 	mustWriteFile(t, filepath.Join(root, "a", "package.json"), "")
 
 	result, err := Scan(root, nil)
@@ -58,7 +63,7 @@ func TestScanFindsNestedManifestsSortedByRelativePath(t *testing.T) {
 	if len(result.Manifests) != 2 {
 		t.Fatalf("expected 2 manifests, got %d", len(result.Manifests))
 	}
-	if result.Manifests[0].Path != "a/package.json" || result.Manifests[1].Path != "b/requirements.txt" {
+	if result.Manifests[0].Path != "a/package.json" || result.Manifests[1].Path != "b/requirements-dev.txt" {
 		t.Fatalf("unexpected manifest order: %+v", result.Manifests)
 	}
 }
