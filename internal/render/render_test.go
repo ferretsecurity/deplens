@@ -17,7 +17,7 @@ func TestHumanIncludesDetectedPaths(t *testing.T) {
 		},
 	}
 
-	output := Human(result)
+	output := Human(result, []analyze.ManifestType{analyze.RequirementsTXT, analyze.PackageJSON})
 	if !strings.Contains(output, "web/package.json") {
 		t.Fatalf("expected human output to include package.json path, got %q", output)
 	}
@@ -27,9 +27,24 @@ func TestHumanIncludesDetectedPaths(t *testing.T) {
 }
 
 func TestHumanEmptyState(t *testing.T) {
-	output := Human(analyze.ScanResult{Root: "/tmp/project"})
+	output := Human(analyze.ScanResult{Root: "/tmp/project"}, nil)
 	if !strings.Contains(output, "No manifests found.") {
 		t.Fatalf("expected empty state output, got %q", output)
+	}
+}
+
+func TestHumanUsesProvidedManifestTypeOrder(t *testing.T) {
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{Type: analyze.PackageJSON, Path: "web/package.json"},
+			{Type: analyze.RequirementsTXT, Path: "api/requirements.txt"},
+		},
+	}
+
+	output := Human(result, []analyze.ManifestType{analyze.PackageJSON, analyze.RequirementsTXT})
+	if strings.Index(output, "package.json") > strings.Index(output, "requirements.txt") {
+		t.Fatalf("expected package.json section before requirements.txt, got %q", output)
 	}
 }
 

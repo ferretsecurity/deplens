@@ -3,10 +3,13 @@ package analyze
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 )
 
 func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
 	testCases := []struct {
 		name string
 		want ManifestType
@@ -22,7 +25,7 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		got, ok := detectManifest(tc.name)
+		got, ok := ruleset.DetectManifest(tc.name)
 		if !ok {
 			t.Fatalf("expected %s to be detected", tc.name)
 		}
@@ -33,6 +36,8 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 }
 
 func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
 	testCases := []string{
 		"myrequirements.txt",
 		"requirementsdev.txt",
@@ -44,18 +49,19 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		if _, ok := detectManifest(tc); ok {
+		if _, ok := ruleset.DetectManifest(tc); ok {
 			t.Fatalf("expected %s to be ignored", tc)
 		}
 	}
 }
 
 func TestScanFindsNestedManifestsSortedByRelativePath(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "b", "requirements-dev.txt"), "")
 	mustWriteFile(t, filepath.Join(root, "a", "package.json"), "")
 
-	result, err := Scan(root, nil)
+	result, err := Scan(root, nil, ruleset)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -69,11 +75,12 @@ func TestScanFindsNestedManifestsSortedByRelativePath(t *testing.T) {
 }
 
 func TestScanSkipsIgnoredDirectories(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "node_modules", "package.json"), "")
 	mustWriteFile(t, filepath.Join(root, "src", "package.json"), "")
 
-	result, err := Scan(root, []string{"node_modules"})
+	result, err := Scan(root, []string{"node_modules"}, ruleset)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -87,10 +94,11 @@ func TestScanSkipsIgnoredDirectories(t *testing.T) {
 }
 
 func TestScanOverrideIgnoreListChangesTraversalBehavior(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "vendor", "pom.xml"), "")
 
-	result, err := Scan(root, nil)
+	result, err := Scan(root, nil, ruleset)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -98,7 +106,7 @@ func TestScanOverrideIgnoreListChangesTraversalBehavior(t *testing.T) {
 		t.Fatalf("expected vendor manifest to be found without ignore list, got %d", len(result.Manifests))
 	}
 
-	result, err = Scan(root, []string{"vendor"})
+	result, err = Scan(root, []string{"vendor"}, ruleset)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -108,14 +116,62 @@ func TestScanOverrideIgnoreListChangesTraversalBehavior(t *testing.T) {
 }
 
 func TestScanRejectsFilePath(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
 	filePath := filepath.Join(root, "package.json")
 	mustWriteFile(t, filePath, "{}")
 
-	_, err := Scan(filePath, nil)
+	_, err := Scan(filePath, nil, ruleset)
 	if err == nil {
 		t.Fatalf("expected error for file path")
 	}
+}
+
+func TestLoadRulesRejectsMissingFields(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: \"\"\n    patterns:\n      - type: package.json\n        regex: '^package\\.json$'\n"))
+	if err == nil {
+		t.Fatalf("expected error for missing rule name")
+	}
+}
+
+func TestLoadRulesRejectsInvalidRegex(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    patterns:\n      - type: package.json\n        regex: '('\n"))
+	if err == nil {
+		t.Fatalf("expected invalid regex error")
+	}
+}
+
+func TestLoadRulesSupportsCustomFirstMatchOrdering(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: broad\n    patterns:\n      - type: generic\n        regex: '.*\\.json$'\n  - name: specific\n    patterns:\n      - type: package.json\n        regex: '^package\\.json$'\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	got, ok := ruleset.DetectManifest("package.json")
+	if !ok {
+		t.Fatalf("expected match")
+	}
+	if got != ManifestType("generic") {
+		t.Fatalf("expected first pattern to win, got %q", got)
+	}
+}
+
+func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	want := []ManifestType{RequirementsTXT, UVLock, PackageJSON, YarnLock, PomXML}
+	got := ruleset.SupportedManifestTypes()
+	if !slices.Equal(got, want) {
+		t.Fatalf("unexpected supported type order: got %v want %v", got, want)
+	}
+}
+
+func mustLoadDefaultRules(t *testing.T) Ruleset {
+	t.Helper()
+	ruleset, err := LoadDefaultRules()
+	if err != nil {
+		t.Fatalf("load default rules failed: %v", err)
+	}
+	return ruleset
 }
 
 func mustWriteFile(t *testing.T, path string, content string) {

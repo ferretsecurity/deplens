@@ -9,7 +9,7 @@ import (
 	"github.com/japroc/deplens/internal/analyze"
 )
 
-func Human(result analyze.ScanResult) string {
+func Human(result analyze.ScanResult, supportedTypes []analyze.ManifestType) string {
 	if len(result.Manifests) == 0 {
 		return fmt.Sprintf("Root: %s\nNo manifests found.\n", result.Root)
 	}
@@ -21,7 +21,7 @@ func Human(result analyze.ScanResult) string {
 
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("Root: %s\n", result.Root))
-	for _, manifestType := range analyze.SupportedManifestTypes() {
+	for _, manifestType := range supportedTypes {
 		paths := grouped[manifestType]
 		if len(paths) == 0 {
 			continue

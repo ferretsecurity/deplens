@@ -37,7 +37,13 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	result, err := analyze.Scan(cfg.path, cfg.ignoreDirs)
+	ruleset, err := loadRuleset(cfg.rulesPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "error: %v\n", err)
+		return 1
+	}
+
+	result, err := analyze.Scan(cfg.path, cfg.ignoreDirs, ruleset)
 	if err != nil {
 		fmt.Fprintf(stderr, "error: %v\n", err)
 		return 1
@@ -47,7 +53,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if cfg.json {
 		output, err = render.JSON(result)
 	} else {
-		output = []byte(render.Human(result))
+		output = []byte(render.Human(result, ruleset.SupportedManifestTypes()))
 	}
 	if err != nil {
 		fmt.Fprintf(stderr, "error: %v\n", err)
@@ -69,6 +75,7 @@ type config struct {
 	path       string
 	json       bool
 	ignoreDirs []string
+	rulesPath  string
 }
 
 func parseArgs(args []string) (config, error) {
@@ -83,6 +90,7 @@ func parseArgs(args []string) (config, error) {
 
 	var ignore string
 	fs.StringVar(&ignore, "ignore", "", "comma-separated directory names to skip")
+	fs.StringVar(&cfg.rulesPath, "rules", "", "path to a YAML file with manifest detection rules")
 
 	if err := fs.Parse(args); err != nil {
 		return config{}, err
@@ -113,4 +121,11 @@ func parseIgnoreList(value string) []string {
 		ignoreDirs = append(ignoreDirs, part)
 	}
 	return ignoreDirs
+}
+
+func loadRuleset(path string) (analyze.Ruleset, error) {
+	if path == "" {
+		return analyze.LoadDefaultRules()
+	}
+	return analyze.LoadRulesFile(path)
 }
