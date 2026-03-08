@@ -15,3 +15,14 @@ rules:
     patterns:
       - type: pom.xml
         regex: '^pom\.xml$'
+  - name: terraform
+    patterns:
+      - type: terraform.aws_glue_job.python
+        regex: '.*\.tf$'
+        parser: terraform_resource
+        resource_type: aws_glue_job
+        conditions:
+          - path: default_arguments.--job-language
+            equals: python
+          - path: default_arguments.--additional-python-modules
+            present: true
