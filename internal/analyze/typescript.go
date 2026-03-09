@@ -156,7 +156,7 @@ func (m typescriptCDKConstructMatcher) Match(path string, content []byte) ([]str
 			return true
 		}
 
-		deps, ok := m.matchNewExpression(node, content, imports)
+		deps, ok := m.matchNewExpression(root, node, content, imports)
 		if !ok {
 			return true
 		}
@@ -169,7 +169,7 @@ func (m typescriptCDKConstructMatcher) Match(path string, content []byte) ([]str
 	return dependencies, matched, nil
 }
 
-func (m typescriptCDKConstructMatcher) matchNewExpression(node *sitter.Node, content []byte, imports typeScriptImportTable) ([]string, bool) {
+func (m typescriptCDKConstructMatcher) matchNewExpression(root *sitter.Node, node *sitter.Node, content []byte, imports typeScriptImportTable) ([]string, bool) {
 	constructor := node.ChildByFieldName("constructor")
 	if !m.matchesConstructor(constructor, content, imports) {
 		return nil, false
@@ -185,12 +185,11 @@ func (m typescriptCDKConstructMatcher) matchNewExpression(node *sitter.Node, con
 		return nil, false
 	}
 
-	target := args[m.propsArgumentIndex]
-	if target.Kind() != "object" {
+	objectNode, ok := resolveTypeScriptObjectNode(root, args[m.propsArgumentIndex], content)
+	if !ok {
 		return nil, false
 	}
 
-	objectNode := target
 	for _, segment := range m.within {
 		next, ok := objectPropertyValue(objectNode, content, segment)
 		if !ok || next.Kind() != "object" {
@@ -208,7 +207,7 @@ func (m typescriptCDKConstructMatcher) matchNewExpression(node *sitter.Node, con
 			continue
 		}
 
-		value, ok := stringLiteralValue(valueNode, content)
+		value, ok := resolveTypeScriptStringValue(root, valueNode, content)
 		if !ok || value != *cond.equals {
 			return nil, false
 		}
@@ -223,7 +222,7 @@ func (m typescriptCDKConstructMatcher) matchNewExpression(node *sitter.Node, con
 		return nil, false
 	}
 
-	value, ok := stringLiteralValue(valueNode, content)
+	value, ok := resolveTypeScriptStringValue(root, valueNode, content)
 	if !ok {
 		return nil, false
 	}
@@ -234,6 +233,102 @@ func (m typescriptCDKConstructMatcher) matchNewExpression(node *sitter.Node, con
 	}
 
 	return dependencies, true
+}
+
+func resolveTypeScriptObjectNode(root *sitter.Node, node *sitter.Node, content []byte) (*sitter.Node, bool) {
+	if node == nil {
+		return nil, false
+	}
+	if node.Kind() == "object" {
+		return node, true
+	}
+	if node.Kind() != "identifier" {
+		return nil, false
+	}
+
+	name := identifierText(node, content)
+	if name == "" {
+		return nil, false
+	}
+
+	var resolved *sitter.Node
+	walkNamedNodes(root, func(candidate *sitter.Node) bool {
+		if candidate.Kind() != "variable_declarator" || candidate.EndByte() >= node.StartByte() {
+			return true
+		}
+
+		nameNode := candidate.ChildByFieldName("name")
+		if identifierText(nameNode, content) != name {
+			return true
+		}
+
+		valueNode := candidate.ChildByFieldName("value")
+		if valueNode == nil || valueNode.Kind() != "object" {
+			return true
+		}
+
+		if resolved == nil || resolved.EndByte() < candidate.EndByte() {
+			resolved = valueNode
+		}
+		return true
+	})
+
+	if resolved == nil {
+		return nil, false
+	}
+	return resolved, true
+}
+
+func resolveTypeScriptStringValue(root *sitter.Node, node *sitter.Node, content []byte) (string, bool) {
+	resolvedNode, ok := resolveTypeScriptValueNode(root, node, content, "string")
+	if !ok {
+		return "", false
+	}
+	return stringLiteralValue(resolvedNode, content)
+}
+
+func resolveTypeScriptValueNode(root *sitter.Node, node *sitter.Node, content []byte, expectedKind string) (*sitter.Node, bool) {
+	if node == nil {
+		return nil, false
+	}
+	if node.Kind() == expectedKind {
+		return node, true
+	}
+	if node.Kind() != "identifier" {
+		return nil, false
+	}
+
+	name := identifierText(node, content)
+	if name == "" {
+		return nil, false
+	}
+
+	var resolved *sitter.Node
+	walkNamedNodes(root, func(candidate *sitter.Node) bool {
+		if candidate.Kind() != "variable_declarator" || candidate.EndByte() >= node.StartByte() {
+			return true
+		}
+
+		nameNode := candidate.ChildByFieldName("name")
+		if identifierText(nameNode, content) != name {
+			return true
+		}
+
+		valueNode := candidate.ChildByFieldName("value")
+		if valueNode == nil || valueNode.Kind() != expectedKind {
+			return true
+		}
+
+		if resolved == nil || resolved.EndByte() < candidate.EndByte() {
+			resolved = valueNode
+		}
+		return true
+	})
+
+	if resolved == nil {
+		return nil, false
+	}
+	return resolved, true
 }
 
 func (m typescriptCDKConstructMatcher) matchesConstructor(node *sitter.Node, content []byte, imports typeScriptImportTable) bool {

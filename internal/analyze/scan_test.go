@@ -604,7 +604,7 @@ new CfnJob(this, "Job", {
 	}
 }
 
-func TestScanDoesNotMatchTypeScriptWithVariableProps(t *testing.T) {
+func TestScanMatchesTypeScriptWithVariableProps(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "job.ts"), `
@@ -624,12 +624,15 @@ new CfnJob(this, "Job", props);
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pandas==2.2.1"}) {
+		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
 
-func TestScanDoesNotMatchTypeScriptWithNonLiteralAdditionalModules(t *testing.T) {
+func TestScanMatchesTypeScriptWithVariableAdditionalModules(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "job.ts"), `
@@ -649,8 +652,11 @@ new CfnJob(this, "Job", {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pandas==2.2.1"}) {
+		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
 
@@ -678,7 +684,6 @@ func TestScanDoesNotMatchTypeScriptNegativeFixturesFromTestdata(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	fixtures := []string{
 		filepath.Join("..", "..", "testdata", "typescript", "glue-cfnjob-no-modules"),
-		filepath.Join("..", "..", "testdata", "typescript", "glue-cfnjob-variable-props"),
 	}
 
 	for _, root := range fixtures {
@@ -689,6 +694,44 @@ func TestScanDoesNotMatchTypeScriptNegativeFixturesFromTestdata(t *testing.T) {
 		if len(result.Manifests) != 0 {
 			t.Fatalf("expected no manifests for %s, got %+v", root, result.Manifests)
 		}
+	}
+}
+
+func TestScanMatchesTypeScriptVariablePropsFixtureFromTestdata(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := filepath.Join("..", "..", "testdata", "typescript", "glue-cfnjob-variable-props")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("typescript.cdk.aws_glue_job.python") || result.Manifests[0].Path != "job.ts" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pandas==2.2.1"}) {
+		t.Fatalf("unexpected dependencies: %+v", got)
+	}
+}
+
+func TestScanMatchesTypeScriptComputedModulesFixtureFromTestdata(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := filepath.Join("..", "..", "testdata", "typescript", "glue-cfnjob-computed-modules")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("typescript.cdk.aws_glue_job.python") || result.Manifests[0].Path != "job.ts" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pandas==2.2.1"}) {
+		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
 
