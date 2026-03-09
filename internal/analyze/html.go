@@ -7,12 +7,12 @@ import (
 )
 
 var (
-	scriptBlockRegexp       = regexp.MustCompile(`(?is)<script\b([^>]*)>(.*?)</script>`)
-	srcAttrRegexp           = regexp.MustCompile(`(?is)\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)')`)
-	typeAttrRegexp          = regexp.MustCompile(`(?is)\btype\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))`)
-	moduleImportRegexp      = regexp.MustCompile(`(?is)\bimport\s+(?:[^"'()]+?\s+from\s+)?(?:"(https?://[^"]+)"|'(https?://[^']+)')`)
-	importMapImportsRegexp  = regexp.MustCompile(`(?is)"imports"\s*:\s*\{(.*?)\}`)
-	importMapHTTPURLRegexp  = regexp.MustCompile(`(?is)"[^"]+"\s*:\s*"(https?://[^"]+)"`)
+	scriptBlockRegexp      = regexp.MustCompile(`(?is)<script\b([^>]*)>(.*?)</script>`)
+	srcAttrRegexp          = regexp.MustCompile(`(?is)\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)')`)
+	typeAttrRegexp         = regexp.MustCompile(`(?is)\btype\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))`)
+	moduleImportRegexp     = regexp.MustCompile(`(?is)\bimport\s+(?:[^"'()]+?\s+from\s+)?(?:"(https?://[^"]+)"|'(https?://[^']+)')`)
+	importMapImportsRegexp = regexp.MustCompile(`(?is)"imports"\s*:\s*\{(.*?)\}`)
+	importMapHTTPURLRegexp = regexp.MustCompile(`(?is)"[^"]+"\s*:\s*"(https?://[^"]+)"`)
 )
 
 type htmlMatcherConfig struct {
@@ -39,7 +39,7 @@ func (p htmlExternalScriptsParser) Match(path string, content []byte) ([]string,
 		tagAttrs := string(match[1])
 		body := string(match[2])
 
-		src := firstNonEmptyMatch(srcAttrRegexp.FindStringSubmatch(tagAttrs)[1:]...)
+		src := firstNonEmptyMatch(optionalSubmatches(srcAttrRegexp, tagAttrs)...)
 		if src != "" {
 			value := strings.TrimSpace(src)
 			if strings.HasPrefix(value, "http://") || strings.HasPrefix(value, "https://") {
@@ -48,7 +48,7 @@ func (p htmlExternalScriptsParser) Match(path string, content []byte) ([]string,
 			continue
 		}
 
-		if strings.EqualFold(firstNonEmptyMatch(typeAttrRegexp.FindStringSubmatch(tagAttrs)[1:]...), "importmap") {
+		if strings.EqualFold(firstNonEmptyMatch(optionalSubmatches(typeAttrRegexp, tagAttrs)...), "importmap") {
 			importMapMatches := importMapImportsRegexp.FindAllStringSubmatch(body, -1)
 			for _, importMapMatch := range importMapMatches {
 				urlMatches := importMapHTTPURLRegexp.FindAllStringSubmatch(importMapMatch[1], -1)
@@ -82,4 +82,12 @@ func firstNonEmptyMatch(values ...string) string {
 		}
 	}
 	return ""
+}
+
+func optionalSubmatches(pattern *regexp.Regexp, value string) []string {
+	match := pattern.FindStringSubmatch(value)
+	if len(match) <= 1 {
+		return nil
+	}
+	return match[1:]
 }
