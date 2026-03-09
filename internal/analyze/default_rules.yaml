@@ -37,3 +37,20 @@ rules:
           equals: python
         - path: default_arguments.--additional-python-modules
           present: true
+  - name: typescript.cdk.aws_glue_job.python
+    filename-regex: '.*\.ts$'
+    typescript:
+      cdk_construct:
+        module: aws-cdk-lib/aws-glue
+        construct: CfnJob
+        props_argument_index: 2
+        within:
+          - defaultArguments
+        conditions:
+          - key: --additional-python-modules
+            present: true
+          - key: --job-language
+            equals: python
+        extract:
+          key: --additional-python-modules
+          split: comma

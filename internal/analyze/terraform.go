@@ -41,6 +41,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.Terraform != nil {
 		parserCount++
 	}
+	if raw.TypeScript != nil {
+		parserCount++
+	}
 	if raw.YAML != nil {
 		parserCount++
 	}
@@ -55,6 +58,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.Terraform != nil {
 		return newTerraformResourceParser(*raw.Terraform)
+	}
+	if raw.TypeScript != nil {
+		return newTypeScriptMatcher(*raw.TypeScript)
 	}
 	if raw.YAML != nil {
 		return newYAMLQueryParser(*raw.YAML)
