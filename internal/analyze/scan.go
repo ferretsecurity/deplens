@@ -9,8 +9,9 @@ import (
 )
 
 type ManifestMatch struct {
-	Type ManifestType `json:"type"`
-	Path string       `json:"path"`
+	Type         ManifestType `json:"type"`
+	Path         string       `json:"path"`
+	Dependencies []string     `json:"dependencies,omitempty"`
 }
 
 type ScanResult struct {
@@ -55,7 +56,7 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 			return nil
 		}
 
-		manifestType, ok, err := ruleset.DetectManifestFile(path, d.Name())
+		manifestType, dependencies, ok, err := ruleset.DetectManifestFile(path, d.Name())
 		if err != nil {
 			return err
 		}
@@ -69,8 +70,9 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 		}
 
 		result.Manifests = append(result.Manifests, ManifestMatch{
-			Type: manifestType,
-			Path: filepath.ToSlash(relPath),
+			Type:         manifestType,
+			Path:         filepath.ToSlash(relPath),
+			Dependencies: dependencies,
 		})
 		return nil
 	})

@@ -73,3 +73,54 @@ func TestJSONMatchesExpectedSchema(t *testing.T) {
 		t.Fatalf("unexpected manifests payload: %#v", payload["manifests"])
 	}
 }
+
+func TestHumanIncludesDependenciesWhenPresent(t *testing.T) {
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type:         analyze.ManifestType("yaml-pip"),
+				Path:         "workflow.yaml",
+				Dependencies: []string{"requests", "pendulum"},
+			},
+		},
+	}
+
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("yaml-pip")})
+	if !strings.Contains(output, "workflow.yaml") {
+		t.Fatalf("expected human output to include yaml manifest path, got %q", output)
+	}
+	if !strings.Contains(output, "requests") || !strings.Contains(output, "pendulum") {
+		t.Fatalf("expected human output to include dependencies, got %q", output)
+	}
+}
+
+func TestJSONIncludesDependenciesWhenPresent(t *testing.T) {
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type:         analyze.ManifestType("yaml-pip"),
+				Path:         "workflow.yaml",
+				Dependencies: []string{"requests", "pendulum"},
+			},
+		},
+	}
+
+	output, err := JSON(result)
+	if err != nil {
+		t.Fatalf("json render failed: %v", err)
+	}
+
+	var payload struct {
+		Manifests []struct {
+			Dependencies []string `json:"dependencies"`
+		} `json:"manifests"`
+	}
+	if err := json.Unmarshal(output, &payload); err != nil {
+		t.Fatalf("expected valid JSON, got error: %v", err)
+	}
+	if len(payload.Manifests) != 1 || len(payload.Manifests[0].Dependencies) != 2 {
+		t.Fatalf("unexpected dependencies payload: %+v", payload.Manifests)
+	}
+}
