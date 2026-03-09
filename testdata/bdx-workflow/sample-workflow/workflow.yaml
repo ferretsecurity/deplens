@@ -1,0 +1,12 @@
+steps:
+  - name: collect
+    template: pyspark
+    config:
+      packages:
+        pip:
+          - bkng-bdx[spark]
+          - pendulum
+          - socketdev==3.0.29
+        args:
+          - "--date_arg"
+          - "{{ date }}"
