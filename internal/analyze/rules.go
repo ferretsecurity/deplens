@@ -34,6 +34,7 @@ type ruleConfig struct {
 	FilenameRegex string                  `yaml:"filename-regex"`
 	Terraform     *terraformMatcherConfig `yaml:"terraform"`
 	YAML          *yamlMatcherConfig      `yaml:"yaml"`
+	HTML          *htmlMatcherConfig      `yaml:"html"`
 }
 
 type manifestParser interface {

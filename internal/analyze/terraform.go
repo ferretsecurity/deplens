@@ -41,6 +41,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.YAML != nil {
 		parserCount++
 	}
+	if raw.HTML != nil {
+		parserCount++
+	}
 	if parserCount > 1 {
 		return nil, fmt.Errorf("exactly one parser type may be configured")
 	}
@@ -49,6 +52,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.YAML != nil {
 		return newYAMLQueryParser(*raw.YAML)
+	}
+	if raw.HTML != nil {
+		return newHTMLMatcher(*raw.HTML)
 	}
 	return nil, nil
 }

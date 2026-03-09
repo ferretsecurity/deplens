@@ -9,6 +9,10 @@ rules:
     filename-regex: '^yarn\.lock$'
   - name: java
     filename-regex: '^pom\.xml$'
+  - name: html-external-scripts
+    filename-regex: '.*\.(html|htm|xhtml|tmpl|gohtml|mustache|hbs|njk)$'
+    html:
+      external_scripts: true
   - name: terraform.aws_glue_job.python
     filename-regex: '.*\.tf$'
     terraform:
