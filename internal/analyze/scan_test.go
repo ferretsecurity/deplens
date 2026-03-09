@@ -122,6 +122,52 @@ func TestScanMatchesHTMLExternalScripts(t *testing.T) {
 	}
 }
 
+func TestScanMatchesHTMLModuleImportFromTestdata(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "html", "module-import"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("html-external-scripts") || manifest.Path != "index.html" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+
+	want := []string{"https://cdn.jsdelivr.net/npm/swiper@12.1.2/+esm"}
+	if !slices.Equal(manifest.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	}
+}
+
+func TestScanMatchesHTMLNamespaceModuleImportFromTestdata(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "html", "module-namespace-import"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("html-external-scripts") || manifest.Path != "index.html" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+
+	want := []string{"https://cdn.jsdelivr.net/npm/d3@7/+esm"}
+	if !slices.Equal(manifest.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	}
+}
+
 func TestScanDoesNotMatchHTMLWithoutExternalScripts(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
