@@ -168,6 +168,114 @@ func TestScanMatchesHTMLNamespaceModuleImportFromTestdata(t *testing.T) {
 	}
 }
 
+func TestScanMatchesHTMLImportMapFromTestdata(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "html", "importmap"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("html-external-scripts") || manifest.Path != "index.html" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+
+	want := []string{
+		"https://cdn.jsdelivr.net/npm/super-media-element@1.3/+esm",
+		"https://cdn.jsdelivr.net/npm/media-tracks@0.2/+esm",
+		"https://cdn.jsdelivr.net/npm/hls.js@1.6.0-beta.1/dist/hls.mjs",
+	}
+	if !slices.Equal(manifest.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	}
+}
+
+func TestScanMatchesHTMLImportMapRemoteImports(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "templates", "index.html"), `
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="importmap">
+      {
+        "imports": {
+          "super-media-element": "https://cdn.jsdelivr.net/npm/super-media-element@1.3/+esm",
+          "media-tracks": "https://cdn.jsdelivr.net/npm/media-tracks@0.2/+esm",
+          "@superstreamer/player": "/packages/player/dist/index.js",
+          "hls.js": "https://cdn.jsdelivr.net/npm/hls.js@1.6.0-beta.1/dist/hls.mjs",
+          "stylelint-config-recess-order": "https://registry.npmmirror.com/stylelint-config-recess-order/5.0.0/files/groups.js"
+        }
+      }
+    </script>
+  </head>
+</html>
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	manifest := result.Manifests[0]
+	want := []string{
+		"https://cdn.jsdelivr.net/npm/super-media-element@1.3/+esm",
+		"https://cdn.jsdelivr.net/npm/media-tracks@0.2/+esm",
+		"https://cdn.jsdelivr.net/npm/hls.js@1.6.0-beta.1/dist/hls.mjs",
+		"https://registry.npmmirror.com/stylelint-config-recess-order/5.0.0/files/groups.js",
+	}
+	if !slices.Equal(manifest.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	}
+}
+
+func TestScanMatchesHTMLImportMapESMShImports(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "index.html"), `
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react": "https://esm.sh/react@^19.1.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.0.0",
+    "recharts": "https://esm.sh/recharts@^2.15.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/"
+  }
+}
+</script>
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	want := []string{
+		"https://esm.sh/react@^19.1.0/",
+		"https://esm.sh/react@^19.1.0",
+		"https://esm.sh/@google/genai@^1.0.0",
+		"https://esm.sh/recharts@^2.15.3",
+		"https://esm.sh/react-dom@^19.1.0/",
+	}
+	if !slices.Equal(result.Manifests[0].Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
+	}
+}
+
 func TestScanDoesNotMatchHTMLWithoutExternalScripts(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
