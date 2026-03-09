@@ -33,10 +33,11 @@ type ruleConfig struct {
 	Name          string                  `yaml:"name"`
 	FilenameRegex string                  `yaml:"filename-regex"`
 	Terraform     *terraformMatcherConfig `yaml:"terraform"`
+	YAML          *yamlMatcherConfig      `yaml:"yaml"`
 }
 
 type manifestParser interface {
-	Match(path string, content []byte) (bool, error)
+	Match(path string, content []byte) ([]string, bool, error)
 }
 
 func LoadDefaultRules() (Ruleset, error) {
@@ -109,7 +110,7 @@ func (r Ruleset) DetectManifest(name string) (ManifestType, bool) {
 	return "", false
 }
 
-func (r Ruleset) DetectManifestFile(path string, name string) (ManifestType, bool, error) {
+func (r Ruleset) DetectManifestFile(path string, name string) (ManifestType, []string, bool, error) {
 	var content []byte
 	contentLoaded := false
 
@@ -118,25 +119,25 @@ func (r Ruleset) DetectManifestFile(path string, name string) (ManifestType, boo
 			continue
 		}
 		if rule.Parser == nil {
-			return rule.Type, true, nil
+			return rule.Type, nil, true, nil
 		}
 		if !contentLoaded {
 			data, err := os.ReadFile(path)
 			if err != nil {
-				return "", false, fmt.Errorf("read candidate file %q: %w", path, err)
+				return "", nil, false, fmt.Errorf("read candidate file %q: %w", path, err)
 			}
 			content = data
 			contentLoaded = true
 		}
-		ok, err := rule.Parser.Match(path, content)
+		dependencies, ok, err := rule.Parser.Match(path, content)
 		if err != nil {
-			return "", false, err
+			return "", nil, false, err
 		}
 		if ok {
-			return rule.Type, true, nil
+			return rule.Type, dependencies, true, nil
 		}
 	}
-	return "", false, nil
+	return "", nil, false, nil
 }
 
 func supportedTypesFromRules(rules []manifestRule) []ManifestType {
