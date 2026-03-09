@@ -47,6 +47,8 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 		"pom.xml.backup",
 		"yarn.lock.old",
 		"uv.lock.json",
+		"index.html.bak",
+		"component.jsx",
 	}
 
 	for _, tc := range testCases {
@@ -61,6 +63,7 @@ func TestScanFindsNestedManifestsSortedByRelativePath(t *testing.T) {
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "b", "requirements-dev.txt"), "")
 	mustWriteFile(t, filepath.Join(root, "a", "package.json"), "")
+	mustWriteFile(t, filepath.Join(root, "a", "index.html"), `<script src="https://cdn.example.com/app.js"></script>`)
 	mustWriteFile(t, filepath.Join(root, "c", "job.tf"), `
 resource "aws_glue_job" "python_shell_example" {
   default_arguments = {
@@ -75,11 +78,65 @@ resource "aws_glue_job" "python_shell_example" {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 3 {
-		t.Fatalf("expected 3 manifests, got %d", len(result.Manifests))
+	if len(result.Manifests) != 4 {
+		t.Fatalf("expected 4 manifests, got %d", len(result.Manifests))
 	}
-	if result.Manifests[0].Path != "a/package.json" || result.Manifests[1].Path != "b/requirements-dev.txt" || result.Manifests[2].Path != "c/job.tf" {
+	if result.Manifests[0].Path != "a/index.html" || result.Manifests[1].Path != "a/package.json" || result.Manifests[2].Path != "b/requirements-dev.txt" || result.Manifests[3].Path != "c/job.tf" {
 		t.Fatalf("unexpected manifest order: %+v", result.Manifests)
+	}
+}
+
+func TestScanMatchesHTMLExternalScripts(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "templates", "index.html"), `
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
+    <script src="/assets/app.js"></script>
+    <script>console.log("inline")</script>
+    <script SRC="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+  </head>
+</html>
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("html-external-scripts") || manifest.Path != "templates/index.html" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	want := []string{
+		"https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js",
+		"https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js",
+	}
+	if !slices.Equal(manifest.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	}
+}
+
+func TestScanDoesNotMatchHTMLWithoutExternalScripts(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "page.html"), `
+<script src="/assets/app.js"></script>
+<script src="//cdn.example.com/app.js"></script>
+<script>console.log("inline")</script>
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
 	}
 }
 
@@ -258,6 +315,23 @@ func TestLoadRulesRejectsTerraformParserWithoutResourceType(t *testing.T) {
 	}
 }
 
+func TestLoadRulesAcceptsHTMLParser(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: html-external-scripts\n    filename-regex: '.*\\.html$'\n    html:\n      external_scripts: true\n"))
+	if err != nil {
+		t.Fatalf("expected html rule to load: %v", err)
+	}
+	if got := ruleset.SupportedManifestTypes(); !slices.Equal(got, []ManifestType{ManifestType("html-external-scripts")}) {
+		t.Fatalf("unexpected supported types: %+v", got)
+	}
+}
+
+func TestLoadRulesRejectsHTMLParserWithoutExternalScripts(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: html-external-scripts\n    filename-regex: '.*\\.html$'\n    html: {}\n"))
+	if err == nil {
+		t.Fatalf("expected missing html parser configuration error")
+	}
+}
+
 func TestLoadRulesRejectsTerraformParserWithoutConditions(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform.aws_glue_job.python\n    filename-regex: '.*\\.tf$'\n    terraform:\n      resource_type: aws_glue_job\n"))
 	if err == nil {
@@ -323,6 +397,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("js"),
 		ManifestType("js-yarn"),
 		ManifestType("java"),
+		ManifestType("html-external-scripts"),
 		ManifestType("terraform.aws_glue_job.python"),
 	}
 	got := ruleset.SupportedManifestTypes()
