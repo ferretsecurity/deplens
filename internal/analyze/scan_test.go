@@ -479,6 +479,219 @@ locals {
 	}
 }
 
+func TestScanMatchesTypeScriptGluePythonDependenciesWithNamespaceImport(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "glue", "job.ts"), `
+import * as glue from "aws-cdk-lib/aws-glue";
+
+new glue.CfnJob(this, "Job", {
+  defaultArguments: {
+    "--job-language": "python",
+    "--additional-python-modules": "pandas==2.2.1, scikit-learn==1.4.1.post1,",
+  },
+});
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("typescript.cdk.aws_glue_job.python") || result.Manifests[0].Path != "glue/job.ts" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	wantDependencies := []string{"pandas==2.2.1", "scikit-learn==1.4.1.post1"}
+	if !slices.Equal(result.Manifests[0].Dependencies, wantDependencies) {
+		t.Fatalf("unexpected dependencies: got %v want %v", result.Manifests[0].Dependencies, wantDependencies)
+	}
+}
+
+func TestScanMatchesTypeScriptGluePythonDependenciesWithNamedImport(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "job.ts"), `
+import { CfnJob as GlueJob } from "aws-cdk-lib/aws-glue";
+
+new GlueJob(this, "Job", {
+  defaultArguments: {
+    "--job-language": "python",
+    "--additional-python-modules": "pandas==2.2.1",
+  },
+});
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pandas==2.2.1"}) {
+		t.Fatalf("unexpected dependencies: %+v", got)
+	}
+}
+
+func TestScanDoesNotMatchTypeScriptWithoutAdditionalModules(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "job.ts"), `
+import * as glue from "aws-cdk-lib/aws-glue";
+
+new glue.CfnJob(this, "Job", {
+  defaultArguments: {
+    "--job-language": "python",
+  },
+});
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanDoesNotMatchTypeScriptWithoutPythonLanguage(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "job.ts"), `
+import { CfnJob } from "aws-cdk-lib/aws-glue";
+
+new CfnJob(this, "Job", {
+  defaultArguments: {
+    "--job-language": "scala",
+    "--additional-python-modules": "pandas==2.2.1",
+  },
+});
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanDoesNotMatchTypeScriptWithUnrelatedImport(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "job.ts"), `
+import { CfnJob } from "not/aws-glue";
+
+new CfnJob(this, "Job", {
+  defaultArguments: {
+    "--job-language": "python",
+    "--additional-python-modules": "pandas==2.2.1",
+  },
+});
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanDoesNotMatchTypeScriptWithVariableProps(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "job.ts"), `
+import { CfnJob } from "aws-cdk-lib/aws-glue";
+
+const props = {
+  defaultArguments: {
+    "--job-language": "python",
+    "--additional-python-modules": "pandas==2.2.1",
+  },
+};
+
+new CfnJob(this, "Job", props);
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanDoesNotMatchTypeScriptWithNonLiteralAdditionalModules(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "job.ts"), `
+import { CfnJob } from "aws-cdk-lib/aws-glue";
+
+const modules = "pandas==2.2.1";
+
+new CfnJob(this, "Job", {
+  defaultArguments: {
+    "--job-language": "python",
+    "--additional-python-modules": modules,
+  },
+});
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanMatchesTypeScriptFixtureFromTestdata(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := filepath.Join("..", "..", "testdata", "typescript", "glue-cfnjob-inline")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("typescript.cdk.aws_glue_job.python") || result.Manifests[0].Path != "job.ts" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	wantDependencies := []string{"pandas==2.2.1", "scikit-learn==1.4.1.post1"}
+	if !slices.Equal(result.Manifests[0].Dependencies, wantDependencies) {
+		t.Fatalf("unexpected dependencies: got %v want %v", result.Manifests[0].Dependencies, wantDependencies)
+	}
+}
+
+func TestScanDoesNotMatchTypeScriptNegativeFixturesFromTestdata(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	fixtures := []string{
+		filepath.Join("..", "..", "testdata", "typescript", "glue-cfnjob-no-modules"),
+		filepath.Join("..", "..", "testdata", "typescript", "glue-cfnjob-variable-props"),
+	}
+
+	for _, root := range fixtures {
+		result, err := Scan(root, nil, ruleset)
+		if err != nil {
+			t.Fatalf("scan failed for %s: %v", root, err)
+		}
+		if len(result.Manifests) != 0 {
+			t.Fatalf("expected no manifests for %s, got %+v", root, result.Manifests)
+		}
+	}
+}
+
 func TestScanSkipsIgnoredDirectories(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
@@ -581,6 +794,13 @@ func TestLoadRulesRejectsTerraformParserWithoutResourceType(t *testing.T) {
 	}
 }
 
+func TestLoadRulesAcceptsTypeScriptParser(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        module: aws-cdk-lib/aws-glue\n        construct: CfnJob\n        props_argument_index: 2\n        within:\n          - defaultArguments\n        conditions:\n          - key: --additional-python-modules\n            present: true\n        extract:\n          key: --additional-python-modules\n          split: comma\n"))
+	if err != nil {
+		t.Fatalf("expected typescript parser to load: %v", err)
+	}
+}
+
 func TestLoadRulesAcceptsHTMLParser(t *testing.T) {
 	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: html-external-scripts\n    filename-regex: '.*\\.html$'\n    html:\n      external_scripts: true\n"))
 	if err != nil {
@@ -598,6 +818,20 @@ func TestLoadRulesRejectsHTMLParserWithoutExternalScripts(t *testing.T) {
 	}
 }
 
+func TestLoadRulesRejectsTypeScriptParserWithoutModule(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        construct: CfnJob\n        props_argument_index: 2\n        conditions:\n          - key: --additional-python-modules\n            present: true\n"))
+	if err == nil {
+		t.Fatalf("expected missing module error")
+	}
+}
+
+func TestLoadRulesRejectsTypeScriptParserWithoutConstruct(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        module: aws-cdk-lib/aws-glue\n        props_argument_index: 2\n        conditions:\n          - key: --additional-python-modules\n            present: true\n"))
+	if err == nil {
+		t.Fatalf("expected missing construct error")
+	}
+}
+
 func TestLoadRulesRejectsTerraformParserWithoutConditions(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform.aws_glue_job.python\n    filename-regex: '.*\\.tf$'\n    terraform:\n      resource_type: aws_glue_job\n"))
 	if err == nil {
@@ -609,6 +843,34 @@ func TestLoadRulesRejectsTerraformConditionWithoutMatcher(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform.aws_glue_job.python\n    filename-regex: '.*\\.tf$'\n    terraform:\n      resource_type: aws_glue_job\n      conditions:\n        - path: default_arguments.--job-language\n"))
 	if err == nil {
 		t.Fatalf("expected invalid terraform condition error")
+	}
+}
+
+func TestLoadRulesRejectsTypeScriptParserWithoutPropsArgumentIndex(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        module: aws-cdk-lib/aws-glue\n        construct: CfnJob\n        conditions:\n          - key: --additional-python-modules\n            present: true\n"))
+	if err == nil {
+		t.Fatalf("expected missing props argument index error")
+	}
+}
+
+func TestLoadRulesRejectsTypeScriptParserWithoutConditions(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        module: aws-cdk-lib/aws-glue\n        construct: CfnJob\n        props_argument_index: 2\n"))
+	if err == nil {
+		t.Fatalf("expected missing typescript conditions error")
+	}
+}
+
+func TestLoadRulesRejectsTypeScriptConditionWithoutMatcher(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        module: aws-cdk-lib/aws-glue\n        construct: CfnJob\n        props_argument_index: 2\n        conditions:\n          - key: --additional-python-modules\n"))
+	if err == nil {
+		t.Fatalf("expected invalid typescript condition error")
+	}
+}
+
+func TestLoadRulesRejectsTypeScriptParserWithUnsupportedExtractSplit(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        module: aws-cdk-lib/aws-glue\n        construct: CfnJob\n        props_argument_index: 2\n        conditions:\n          - key: --additional-python-modules\n            present: true\n        extract:\n          key: --additional-python-modules\n          split: space\n"))
+	if err == nil {
+		t.Fatalf("expected invalid extract split error")
 	}
 }
 
@@ -677,6 +939,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("js-banner-version-tagged"),
 		ManifestType("html-external-scripts"),
 		ManifestType("terraform.aws_glue_job.python"),
+		ManifestType("typescript.cdk.aws_glue_job.python"),
 	}
 	got := ruleset.SupportedManifestTypes()
 	if !slices.Equal(got, want) {
