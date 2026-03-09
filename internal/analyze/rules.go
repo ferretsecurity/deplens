@@ -32,6 +32,7 @@ type rulesFile struct {
 type ruleConfig struct {
 	Name          string                  `yaml:"name"`
 	FilenameRegex string                  `yaml:"filename-regex"`
+	BannerRegex   string                  `yaml:"banner-regex"`
 	Terraform     *terraformMatcherConfig `yaml:"terraform"`
 	YAML          *yamlMatcherConfig      `yaml:"yaml"`
 	HTML          *htmlMatcherConfig      `yaml:"html"`

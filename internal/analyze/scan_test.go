@@ -294,6 +294,97 @@ func TestScanDoesNotMatchHTMLWithoutExternalScripts(t *testing.T) {
 	}
 }
 
+func TestScanMatchesJavaScriptBannerDetectors(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	testCases := []struct {
+		path     string
+		wantType ManifestType
+		wantDeps []string
+	}{
+		{
+			path:     "jquery.min.js",
+			wantType: ManifestType("js-banner-block-start"),
+			wantDeps: []string{"jQuery@3.7.1"},
+		},
+		{
+			path:     "purify.min.js",
+			wantType: ManifestType("js-banner-plain-block-start"),
+			wantDeps: []string{"DOMPurify@3.0.8"},
+		},
+		{
+			path:     "bootstrap.min.js",
+			wantType: ManifestType("js-banner-multiline-preserved"),
+			wantDeps: []string{"Bootstrap@5.3.3"},
+		},
+		{
+			path:     "mustache.min.js",
+			wantType: ManifestType("js-banner-line-comment"),
+			wantDeps: []string{"Mustache.js@4.2.0"},
+		},
+		{
+			path:     "htmx.min.js",
+			wantType: ManifestType("js-banner-version-tagged"),
+			wantDeps: []string{"htmx.org@2.0.4"},
+		},
+	}
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "js", "banners"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != len(testCases) {
+		t.Fatalf("expected %d manifests, got %d", len(testCases), len(result.Manifests))
+	}
+
+	gotByPath := make(map[string]ManifestMatch, len(result.Manifests))
+	for _, manifest := range result.Manifests {
+		gotByPath[manifest.Path] = manifest
+	}
+
+	for _, tc := range testCases {
+		manifest, ok := gotByPath[tc.path]
+		if !ok {
+			t.Fatalf("expected manifest for %q, got %+v", tc.path, result.Manifests)
+		}
+		if manifest.Type != tc.wantType {
+			t.Fatalf("unexpected manifest type for %q: got %q want %q", tc.path, manifest.Type, tc.wantType)
+		}
+		if !slices.Equal(manifest.Dependencies, tc.wantDeps) {
+			t.Fatalf("unexpected dependencies for %q: got %+v want %+v", tc.path, manifest.Dependencies, tc.wantDeps)
+		}
+	}
+}
+
+func TestScanDoesNotMatchJavaScriptWithoutBanner(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "app.js"), "console.log('no banner')\n")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanDoesNotMatchCSSBannerWithDefaultRules(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "style.css"), "/*! Bootstrap v5.3.3 */\n")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
 func TestScanMatchesTerraformGluePythonDependencies(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
@@ -462,6 +553,27 @@ func TestLoadRulesRejectsInvalidRegex(t *testing.T) {
 	}
 }
 
+func TestLoadRulesAcceptsBannerRegexParser(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js-banner\n    filename-regex: '.*\\.js$'\n    banner-regex: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n"))
+	if err != nil {
+		t.Fatalf("expected banner regex rule to load: %v", err)
+	}
+}
+
+func TestLoadRulesRejectsInvalidBannerRegex(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js-banner\n    filename-regex: '.*\\.js$'\n    banner-regex: '('\n"))
+	if err == nil {
+		t.Fatalf("expected invalid banner regex error")
+	}
+}
+
+func TestLoadRulesRejectsBannerRegexWithoutRequiredCaptureGroups(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js-banner\n    filename-regex: '.*\\.js$'\n    banner-regex: '^/\\*!\\s*[A-Za-z0-9._/-]+\\s+v?\\d+\\.\\d+\\.\\d+'\n"))
+	if err == nil {
+		t.Fatalf("expected missing capture group error")
+	}
+}
+
 func TestLoadRulesRejectsTerraformParserWithoutResourceType(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform.aws_glue_job.python\n    filename-regex: '.*\\.tf$'\n    terraform:\n      conditions:\n        - path: default_arguments.--job-language\n          equals: python\n"))
 	if err == nil {
@@ -528,6 +640,13 @@ func TestLoadRulesRejectsMultipleParserTypes(t *testing.T) {
 	}
 }
 
+func TestLoadRulesRejectsBannerRegexWithOtherParserType(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: mixed\n    filename-regex: '.*\\.js$'\n    banner-regex: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n    html:\n      external_scripts: true\n"))
+	if err == nil {
+		t.Fatalf("expected multiple parser type error")
+	}
+}
+
 func TestLoadRulesSupportsCustomFirstMatchOrdering(t *testing.T) {
 	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: broad\n    filename-regex: '.*\\.json$'\n  - name: specific\n    filename-regex: '^package\\.json$'\n"))
 	if err != nil {
@@ -551,6 +670,11 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("js"),
 		ManifestType("js-yarn"),
 		ManifestType("java"),
+		ManifestType("js-banner-block-start"),
+		ManifestType("js-banner-plain-block-start"),
+		ManifestType("js-banner-multiline-preserved"),
+		ManifestType("js-banner-line-comment"),
+		ManifestType("js-banner-version-tagged"),
 		ManifestType("html-external-scripts"),
 		ManifestType("terraform.aws_glue_job.python"),
 	}
@@ -670,6 +794,45 @@ workflow:
 	}
 	if len(result.Manifests) != 0 {
 		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanBannerRegexRequiresNonEmptyCaptureGroups(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: js-banner\n    filename-regex: '^app\\.js$'\n    banner-regex: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)?\\s+v?(\\d+\\.\\d+\\.\\d+)?'\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "app.js"), "/*! Demo */\nconsole.log('x')\n")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanBannerRegexUsesFirstMatchingRule(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: first\n    filename-regex: '^app\\.js$'\n    banner-regex: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n  - name: second\n    filename-regex: '^app\\.js$'\n    banner-regex: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "app.js"), "/*! jQuery v3.7.1 */\n")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("first") {
+		t.Fatalf("expected first matching rule to win, got %+v", result.Manifests[0])
 	}
 }
 
