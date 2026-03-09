@@ -98,6 +98,24 @@ resource "aws_glue_job" "python_shell_example" {
 	}
 }
 
+func TestRunDetectsHTMLExternalScripts(t *testing.T) {
+	tmpDir := t.TempDir()
+	writeFile(t, filepath.Join(tmpDir, "index.html"), `
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
+`)
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{tmpDir}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "html-external-scripts") || !strings.Contains(stdout.String(), "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js") {
+		t.Fatalf("expected output to include html external script dependency, got %q", stdout.String())
+	}
+}
+
 func TestRunInvalidPathReturnsNonZero(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer

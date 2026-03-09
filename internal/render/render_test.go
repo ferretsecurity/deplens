@@ -124,3 +124,23 @@ func TestJSONIncludesDependenciesWhenPresent(t *testing.T) {
 		t.Fatalf("unexpected dependencies payload: %+v", payload.Manifests)
 	}
 }
+
+func TestHumanIncludesExternalScriptURLs(t *testing.T) {
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type: analyze.ManifestType("html-external-scripts"),
+				Path: "templates/index.html",
+				Dependencies: []string{
+					"https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js",
+				},
+			},
+		},
+	}
+
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("html-external-scripts")})
+	if !strings.Contains(output, "templates/index.html") || !strings.Contains(output, "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js") {
+		t.Fatalf("expected human output to include external script URL, got %q", output)
+	}
+}
