@@ -9,6 +9,21 @@ rules:
     filename-regex: '^yarn\.lock$'
   - name: java
     filename-regex: '^pom\.xml$'
+  - name: js-banner-block-start
+    filename-regex: '.*\.js$'
+    banner-regex: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
+  - name: js-banner-plain-block-start
+    filename-regex: '.*\.js$'
+    banner-regex: '(?i)^\s*/\*\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
+  - name: js-banner-multiline-preserved
+    filename-regex: '.*\.js$'
+    banner-regex: '(?is)^\s*/\*![\s*]*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*)).*?\*/'
+  - name: js-banner-line-comment
+    filename-regex: '.*\.js$'
+    banner-regex: '(?im)^\s*//[!/]\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))\b'
+  - name: js-banner-version-tagged
+    filename-regex: '.*\.js$'
+    banner-regex: '(?is)^\s*/\*![^*]*package:\s*([A-Za-z0-9@._/-]+)[^*]*version:\s*v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^*]*\*/'
   - name: html-external-scripts
     filename-regex: '.*\.(html|htm|xhtml|tmpl|gohtml|mustache|hbs|njk)$'
     html:

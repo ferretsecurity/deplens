@@ -35,6 +35,9 @@ type terraformMatcherConfig struct {
 
 func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	parserCount := 0
+	if raw.BannerRegex != "" {
+		parserCount++
+	}
 	if raw.Terraform != nil {
 		parserCount++
 	}
@@ -46,6 +49,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if parserCount > 1 {
 		return nil, fmt.Errorf("exactly one parser type may be configured")
+	}
+	if raw.BannerRegex != "" {
+		return newBannerRegexParser(raw.BannerRegex)
 	}
 	if raw.Terraform != nil {
 		return newTerraformResourceParser(*raw.Terraform)
