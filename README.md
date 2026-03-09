@@ -12,7 +12,8 @@ Built-in detectors:
 | --- | --- | --- |
 | filename regex match | Built-in filename rules: `*requirements*.txt`, `uv.lock`, `package.json`, `yarn.lock`, `pom.xml` | No |
 | yaml | Path expression such as `workflow.steps[].config.packages.pip[]` to extract data from yaml files | Yes |
-| html external scripts | HTML-like files (`.html`, `.htm`, `.xhtml`, `.tmpl`, `.gohtml`, `.mustache`, `.hbs`, `.njk`) containing external `<script src="https://...">` tags or `import "https://..."` module imports | Yes |
+| html external scripts | HTML-like files (`.html`, `.htm`, `.xhtml`, `.tmpl`, `.gohtml`, `.mustache`, `.hbs`, `.njk`) containing external `<script src="https://...">` tags | Yes |
+| html module scripts | HTML-like files (`.html`, `.htm`, `.xhtml`, `.tmpl`, `.gohtml`, `.mustache`, `.hbs`, `.njk`) containing `<script type="module">` blocks with `import "https://..."` module imports | Yes |
 | terraform | Terraform `.tf` files with parsing content. For example containing a `aws_glue_job` resource with `default_arguments.--job-language = "python"` and `default_arguments.--additional-python-modules` present | No |
 
 ## Example
