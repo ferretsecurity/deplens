@@ -224,12 +224,12 @@ func (m typescriptCDKConstructMatcher) matchNewExpression(root *sitter.Node, nod
 
 	value, ok := resolveTypeScriptStringValue(root, valueNode, content)
 	if !ok {
-		return nil, false
+		return nil, true
 	}
 
 	dependencies := splitExtractedValue(value, m.extract.split)
 	if len(dependencies) == 0 {
-		return nil, false
+		return nil, true
 	}
 
 	return dependencies, true
