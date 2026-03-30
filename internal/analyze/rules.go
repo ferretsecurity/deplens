@@ -35,6 +35,7 @@ type ruleConfig struct {
 	BannerRegex   string                   `yaml:"banner-regex"`
 	Terraform     *terraformMatcherConfig  `yaml:"terraform"`
 	TypeScript    *typescriptMatcherConfig `yaml:"typescript"`
+	Python        *pythonMatcherConfig     `yaml:"python"`
 	YAML          *yamlMatcherConfig       `yaml:"yaml"`
 	HTML          *htmlMatcherConfig       `yaml:"html"`
 }

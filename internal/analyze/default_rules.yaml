@@ -54,3 +54,18 @@ rules:
         extract:
           key: --additional-python-modules
           split: comma
+  - name: python.cdk.aws_glue_job.python
+    filename-regex: '.*\.py$'
+    python:
+      cdk_construct:
+        module: aws_cdk.aws_glue
+        construct: CfnJob
+        keyword_argument: default_arguments
+        conditions:
+          - key: --additional-python-modules
+            present: true
+          - key: --job-language
+            equals: python
+        extract:
+          key: --additional-python-modules
+          split: comma
