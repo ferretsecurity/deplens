@@ -48,6 +48,19 @@ func TestRunExplicitPathWorks(t *testing.T) {
 	}
 }
 
+func TestRunExplicitPathDetectsRequirementsIn(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{filepath.Join("..", "..", "testdata", "sample-monorepo")}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "requirements.qt6_3.in") {
+		t.Fatalf("expected output to include requirements.qt6_3.in, got %q", stdout.String())
+	}
+}
+
 func TestRunJSONOutput(t *testing.T) {
 	tmpDir := t.TempDir()
 	writeFile(t, filepath.Join(tmpDir, "pom.xml"), "<project/>")
