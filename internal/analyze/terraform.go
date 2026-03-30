@@ -44,6 +44,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.TypeScript != nil {
 		parserCount++
 	}
+	if raw.Python != nil {
+		parserCount++
+	}
 	if raw.YAML != nil {
 		parserCount++
 	}
@@ -61,6 +64,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.TypeScript != nil {
 		return newTypeScriptMatcher(*raw.TypeScript)
+	}
+	if raw.Python != nil {
+		return newPythonMatcher(*raw.Python)
 	}
 	if raw.YAML != nil {
 		return newYAMLQueryParser(*raw.YAML)
