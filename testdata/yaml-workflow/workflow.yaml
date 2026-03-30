@@ -1,0 +1,6 @@
+steps:
+  - name: collect
+    config:
+      packages:
+        pip:
+          - requests
