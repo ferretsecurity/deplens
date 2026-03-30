@@ -15,8 +15,12 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		want ManifestType
 	}{
 		{name: "requirements.txt", want: ManifestType("python-requirements")},
+		{name: "requirements.in", want: ManifestType("python-requirements")},
 		{name: "my-requirements.txt", want: ManifestType("python-requirements")},
+		{name: "my-requirements.in", want: ManifestType("python-requirements")},
 		{name: "requirements-dev.txt", want: ManifestType("python-requirements")},
+		{name: "requirements.dev.in", want: ManifestType("python-requirements")},
+		{name: "requirements.qt6_3.in", want: ManifestType("python-requirements")},
 		{name: "my_requirements.prod.txt", want: ManifestType("python-requirements")},
 		{name: "uv.lock", want: ManifestType("python-uv")},
 		{name: "package.json", want: ManifestType("js")},
@@ -40,8 +44,11 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 
 	testCases := []string{
 		"myrequirements.txt",
+		"myrequirements.in",
 		"requirementsdev.txt",
+		"requirementsin",
 		"requirements.txt.backup",
+		"requirements.in.backup",
 		"main.tf",
 		"package-lock.json",
 		"pom.xml.backup",
@@ -61,7 +68,7 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 func TestScanFindsNestedManifestsSortedByRelativePath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
-	mustWriteFile(t, filepath.Join(root, "b", "requirements-dev.txt"), "")
+	mustWriteFile(t, filepath.Join(root, "b", "requirements.dev.in"), "")
 	mustWriteFile(t, filepath.Join(root, "a", "package.json"), "")
 	mustWriteFile(t, filepath.Join(root, "a", "index.html"), `<script src="https://cdn.example.com/app.js"></script>`)
 	mustWriteFile(t, filepath.Join(root, "c", "job.tf"), `
@@ -81,9 +88,26 @@ resource "aws_glue_job" "python_shell_example" {
 	if len(result.Manifests) != 4 {
 		t.Fatalf("expected 4 manifests, got %d", len(result.Manifests))
 	}
-	if result.Manifests[0].Path != "a/index.html" || result.Manifests[1].Path != "a/package.json" || result.Manifests[2].Path != "b/requirements-dev.txt" || result.Manifests[3].Path != "c/job.tf" {
+	if result.Manifests[0].Path != "a/index.html" || result.Manifests[1].Path != "a/package.json" || result.Manifests[2].Path != "b/requirements.dev.in" || result.Manifests[3].Path != "c/job.tf" {
 		t.Fatalf("unexpected manifest order: %+v", result.Manifests)
 	}
+}
+
+func TestScanFindsRequirementsInFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "sample-monorepo"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	for _, manifest := range result.Manifests {
+		if manifest.Type == ManifestType("python-requirements") && manifest.Path == "requirements.qt6_3.in" {
+			return
+		}
+	}
+
+	t.Fatalf("expected requirements.qt6_3.in fixture to be detected, got %+v", result.Manifests)
 }
 
 func TestScanMatchesHTMLExternalScripts(t *testing.T) {
