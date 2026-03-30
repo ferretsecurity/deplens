@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/japroc/deplens/internal/analyze"
+	"github.com/ferretsecurity/deplens/internal/analyze"
 )
 
 func Human(result analyze.ScanResult, supportedTypes []analyze.ManifestType) string {

@@ -1,4 +1,4 @@
-module github.com/japroc/deplens
+module github.com/ferretsecurity/deplens
 
 go 1.25.0
 

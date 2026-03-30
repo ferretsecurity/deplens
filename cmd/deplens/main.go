@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/japroc/deplens/internal/analyze"
-	"github.com/japroc/deplens/internal/render"
+	"github.com/ferretsecurity/deplens/internal/analyze"
+	"github.com/ferretsecurity/deplens/internal/render"
 )
 
 var defaultIgnoreDirs = []string{
