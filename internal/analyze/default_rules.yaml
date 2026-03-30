@@ -1,6 +1,6 @@
 rules:
   - name: python-requirements
-    filename-regex: '(^|.*[^A-Za-z])requirements([^A-Za-z].*)?\.txt$'
+    filename-regex: '(^|.*[^A-Za-z])requirements([^A-Za-z].*)?\.(txt|in)$'
   - name: python-uv
     filename-regex: '^uv\.lock$'
   - name: js
