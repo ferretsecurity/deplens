@@ -2,7 +2,7 @@
 
 `deplens` is a small CLI for scanning a directory tree and reporting dependency-related manifests it finds. It is aimed at mixed-language repositories and can detect both standard manifest files and rule-based sources such as Terraform resources or HTML pages that load external scripts.
 
-By default, the tool walks the target directory recursively, skips common generated/vendor directories, and prints a grouped summary. It can also emit JSON for machine-readable consumption and load additional detectors from a custom YAML rules file.
+By default, the tool walks the target directory recursively, skips common generated/vendor directories, and prints a grouped summary. The default detector rules are embedded into the binary at build time. The tool can also emit JSON for machine-readable consumption and load additional detectors from a custom YAML rules file passed with `--rules`.
 
 ## Supported Detectors
 
