@@ -24,6 +24,7 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "requirements.qt6_3.in", want: ManifestType("python-requirements")},
 		{name: "my_requirements.prod.txt", want: ManifestType("python-requirements")},
 		{name: "uv.lock", want: ManifestType("python-uv")},
+		{name: "pyproject.toml", want: ManifestType("python-pyproject")},
 		{name: "package.json", want: ManifestType("js")},
 		{name: "yarn.lock", want: ManifestType("js-yarn")},
 		{name: "pom.xml", want: ManifestType("java")},
@@ -109,6 +110,40 @@ func TestScanFindsRequirementsInFixture(t *testing.T) {
 	}
 
 	t.Fatalf("expected requirements.qt6_3.in fixture to be detected, got %+v", result.Manifests)
+}
+
+func TestScanMatchesPyprojectDependenciesFromFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "toml", "pyproject"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "pyproject.toml" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+
+	want := []string{
+		"requests>=2.31",
+		"fastapi[all]>=0.110; python_version >= '3.10'",
+		"pytest>=8",
+		"ruff==0.4.8",
+		"mypy>=1.10",
+		"django = \"^5.0\"",
+		"httpx = { extras = [\"http2\"], version = \"^0.27\" }",
+		"private-lib = { branch = \"main\", git = \"https://github.com/acme/private-lib.git\" }",
+		"factory-boy = { markers = \"python_version >= '3.11'\", version = \"^3.3\" }",
+		"pytest-cov = \"^5.0\"",
+	}
+	if !slices.Equal(manifest.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
+	}
 }
 
 func TestScanMatchesHTMLExternalScripts(t *testing.T) {
@@ -1184,6 +1219,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 	want := []ManifestType{
 		ManifestType("python-requirements"),
 		ManifestType("python-uv"),
+		ManifestType("python-pyproject"),
 		ManifestType("js"),
 		ManifestType("js-yarn"),
 		ManifestType("java"),

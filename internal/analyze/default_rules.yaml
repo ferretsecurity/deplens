@@ -3,6 +3,15 @@ rules:
     filename-regex: '(^|.*[^A-Za-z])requirements([^A-Za-z].*)?\.(txt|in)$'
   - name: python-uv
     filename-regex: '^uv\.lock$'
+  - name: python-pyproject
+    filename-regex: '^pyproject\.toml$'
+    toml:
+      queries:
+        - project.dependencies[]
+        - project.optional-dependencies.*[]
+        - dependency-groups.*[]
+        - tool.poetry.dependencies
+        - tool.poetry.group.*.dependencies
   - name: js
     filename-regex: '^package\.json$'
   - name: js-yarn
