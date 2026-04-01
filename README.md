@@ -36,6 +36,7 @@ Root: /path/to/project
 
 python-requirements
 - requirements.txt
+- requirements.qt6_3.in
 
 python-uv
 - backend/uv.lock
