@@ -40,9 +40,6 @@ python-requirements
 python-uv
 - backend/uv.lock
 
-python-pyproject
-- pyproject.toml
-
 js
 - frontend/package.json
 
@@ -51,4 +48,11 @@ js-yarn
 
 java
 - java-service/pom.xml
+```
+
+When `pyproject.toml` is present, it is reported as `python-pyproject`, for example:
+
+```text
+python-pyproject
+- pyproject.toml
 ```
