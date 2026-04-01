@@ -173,7 +173,6 @@ func isPoetryDependencyQuery(segments []tomlSegment) bool {
 		segments[0].key == "tool" &&
 		segments[1].key == "poetry" &&
 		segments[2].key == "group" &&
-		segments[3].wild &&
 		segments[4].key == "dependencies" {
 		return true
 	}
