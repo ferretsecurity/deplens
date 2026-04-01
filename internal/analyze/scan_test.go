@@ -66,6 +66,14 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 	}
 }
 
+func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	if _, ok := ruleset.DetectManifest("pyproject.toml"); ok {
+		t.Fatalf("expected pyproject.toml to be ignored by DetectManifest")
+	}
+}
+
 func TestScanFindsNestedManifestsSortedByRelativePath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
