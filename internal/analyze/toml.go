@@ -53,7 +53,7 @@ func (p tomlQueryParser) Match(path string, content []byte) ([]string, bool, err
 	dependencies := make([]string, 0)
 	for _, query := range p.queries {
 		nodes := evalTOMLQuery([]any{root}, query)
-		dependencies = append(dependencies, extractTOMLDependencies(nodes, query.skipPython)...)
+		dependencies = append(dependencies, extractTOMLDependencies(nodes, query)...)
 	}
 	if len(dependencies) == 0 {
 		return nil, false, nil
@@ -180,8 +180,9 @@ func isPoetryDependencyQuery(segments []tomlSegment) bool {
 	return false
 }
 
-func extractTOMLDependencies(nodes []any, skipPython bool) []string {
+func extractTOMLDependencies(nodes []any, query tomlQuery) []string {
 	dependencies := make([]string, 0, len(nodes))
+	allowDependencyTables := allowsTOMLDependencyTables(query.segments)
 	for _, node := range nodes {
 		switch value := node.(type) {
 		case string:
@@ -189,9 +190,12 @@ func extractTOMLDependencies(nodes []any, skipPython bool) []string {
 				dependencies = append(dependencies, value)
 			}
 		case map[string]any:
+			if !allowDependencyTables {
+				continue
+			}
 			keys := make([]string, 0, len(value))
 			for key := range value {
-				if skipPython && key == "python" {
+				if query.skipPython && key == "python" {
 					continue
 				}
 				keys = append(keys, key)
@@ -207,6 +211,14 @@ func extractTOMLDependencies(nodes []any, skipPython bool) []string {
 		}
 	}
 	return dependencies
+}
+
+func allowsTOMLDependencyTables(segments []tomlSegment) bool {
+	if len(segments) == 0 {
+		return false
+	}
+
+	return !segments[len(segments)-1].expand
 }
 
 func serializeTOMLValue(value any) (string, bool) {

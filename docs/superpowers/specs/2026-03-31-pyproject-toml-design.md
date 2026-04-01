@@ -114,8 +114,8 @@ name = <serialized TOML value>
 Examples:
 
 - `django = "^5.0"`
-- `httpx = { version = "^0.27", extras = ["http2"] }`
-- `private-lib = { git = "https://github.com/acme/private-lib.git", branch = "main" }`
+- `httpx = { extras = ["http2"], version = "^0.27" }`
+- `private-lib = { branch = "main", git = "https://github.com/acme/private-lib.git" }`
 
 This avoids lossy reconstruction while keeping output close to source.
 
@@ -166,10 +166,10 @@ The extracted dependencies would be:
   "ruff==0.4.8",
   "mypy>=1.10",
   "django = \"^5.0\"",
-  "httpx = { version = \"^0.27\", extras = [\"http2\"] }",
-  "private-lib = { git = \"https://github.com/acme/private-lib.git\", branch = \"main\" }",
-  "pytest-cov = \"^5.0\"",
-  "factory-boy = { version = \"^3.3\", markers = \"python_version >= '3.11'\" }"
+  "httpx = { extras = [\"http2\"], version = \"^0.27\" }",
+  "private-lib = { branch = \"main\", git = \"https://github.com/acme/private-lib.git\" }",
+  "factory-boy = { markers = \"python_version >= '3.11'\", version = \"^3.3\" }",
+  "pytest-cov = \"^5.0\""
 ]
 ```
 
@@ -192,7 +192,7 @@ Scan-time behavior:
 
 - TOML parse failures should return errors in the style `parse toml file "<path>": ...`.
 - Missing query paths should not be errors; they should behave as non-matches.
-- Non-string array elements and unsupported values inside resolved nodes should be ignored.
+- Non-string array elements, inline tables inside expanded arrays, and unsupported values inside resolved nodes should be ignored.
 - If a rule yields no usable dependency strings after evaluation, it should return no match.
 
 ## Testing
