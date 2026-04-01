@@ -1385,6 +1385,36 @@ dependencies = [123, true]
 	}
 }
 
+func TestScanPreservesPythonKeyOutsidePoetryDependencies(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: custom-toml\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - tool.custom.dependencies\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "pyproject.toml"), `
+[tool.custom.dependencies]
+python = "^3.12"
+django = "^5.0"
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	want := []string{
+		"django = \"^5.0\"",
+		"python = \"^3.12\"",
+	}
+	if !slices.Equal(result.Manifests[0].Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
+	}
+}
+
 func TestScanReturnsTOMLParseErrors(t *testing.T) {
 	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project.dependencies[]\n"))
 	if err != nil {

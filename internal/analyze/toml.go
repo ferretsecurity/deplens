@@ -19,7 +19,8 @@ type tomlSegment struct {
 }
 
 type tomlQuery struct {
-	segments []tomlSegment
+	segments   []tomlSegment
+	skipPython bool
 }
 
 type tomlQueryParser struct {
@@ -52,7 +53,7 @@ func (p tomlQueryParser) Match(path string, content []byte) ([]string, bool, err
 	dependencies := make([]string, 0)
 	for _, query := range p.queries {
 		nodes := evalTOMLQuery([]any{root}, query)
-		dependencies = append(dependencies, extractTOMLDependencies(nodes)...)
+		dependencies = append(dependencies, extractTOMLDependencies(nodes, query.skipPython)...)
 	}
 	if len(dependencies) == 0 {
 		return nil, false, nil
@@ -93,7 +94,10 @@ func compileTOMLQuery(raw string) (tomlQuery, error) {
 		segments = append(segments, segment)
 	}
 
-	return tomlQuery{segments: segments}, nil
+	return tomlQuery{
+		segments:   segments,
+		skipPython: isPoetryDependencyQuery(segments),
+	}, nil
 }
 
 func evalTOMLQuery(current []any, query tomlQuery) []any {
@@ -157,7 +161,27 @@ func appendTOMLArrayValues(dst []any, value any) []any {
 	}
 }
 
-func extractTOMLDependencies(nodes []any) []string {
+func isPoetryDependencyQuery(segments []tomlSegment) bool {
+	if len(segments) == 3 &&
+		segments[0].key == "tool" &&
+		segments[1].key == "poetry" &&
+		segments[2].key == "dependencies" {
+		return true
+	}
+
+	if len(segments) == 5 &&
+		segments[0].key == "tool" &&
+		segments[1].key == "poetry" &&
+		segments[2].key == "group" &&
+		segments[3].wild &&
+		segments[4].key == "dependencies" {
+		return true
+	}
+
+	return false
+}
+
+func extractTOMLDependencies(nodes []any, skipPython bool) []string {
 	dependencies := make([]string, 0, len(nodes))
 	for _, node := range nodes {
 		switch value := node.(type) {
@@ -168,7 +192,7 @@ func extractTOMLDependencies(nodes []any) []string {
 		case map[string]any:
 			keys := make([]string, 0, len(value))
 			for key := range value {
-				if key == "python" {
+				if skipPython && key == "python" {
 					continue
 				}
 				keys = append(keys, key)
