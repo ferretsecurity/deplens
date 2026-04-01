@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -1312,6 +1313,96 @@ workflow:
 	}
 	if len(result.Manifests) != 0 {
 		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanMatchesTOMLDependenciesFromCustomRule(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project.dependencies[]\n        - project.optional-dependencies.*[]\n        - dependency-groups.*[]\n        - tool.poetry.dependencies\n        - tool.poetry.group.*.dependencies\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "pyproject.toml"), `
+[project]
+dependencies = ["requests>=2.31"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[dependency-groups]
+lint = ["mypy>=1.10"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.0"
+httpx = { version = "^0.27", extras = ["http2"] }
+
+[tool.poetry.group.test.dependencies]
+pytest-cov = "^5.0"
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	want := []string{
+		"requests>=2.31",
+		"pytest>=8",
+		"mypy>=1.10",
+		"django = \"^5.0\"",
+		"httpx = { extras = [\"http2\"], version = \"^0.27\" }",
+		"pytest-cov = \"^5.0\"",
+	}
+	if !slices.Equal(result.Manifests[0].Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
+	}
+}
+
+func TestScanDoesNotMatchTOMLWhenQueryResolvesToNoUsableValues(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "pyproject.toml"), `
+[project]
+dependencies = [123, true]
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanReturnsTOMLParseErrors(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "pyproject.toml"), `
+[project
+dependencies = ["requests>=2.31"]
+`)
+
+	_, err = Scan(root, nil, ruleset)
+	if err == nil {
+		t.Fatalf("expected scan to fail")
+	}
+	if !strings.Contains(err.Error(), "parse toml file") {
+		t.Fatalf("expected toml parse error, got %v", err)
 	}
 }
 
