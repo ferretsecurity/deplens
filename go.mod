@@ -5,6 +5,7 @@ go 1.25.0
 require gopkg.in/yaml.v3 v3.0.1
 
 require (
+	github.com/BurntSushi/toml v1.5.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/tree-sitter/go-tree-sitter v0.25.0
 	github.com/tree-sitter/tree-sitter-typescript v0.23.2

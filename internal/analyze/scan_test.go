@@ -1121,6 +1121,34 @@ func TestLoadRulesRejectsMalformedYAMLQuery(t *testing.T) {
 	}
 }
 
+func TestLoadRulesAcceptsTOMLParser(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project.dependencies[]\n        - project.optional-dependencies.*[]\n"))
+	if err != nil {
+		t.Fatalf("expected toml parser to load: %v", err)
+	}
+}
+
+func TestLoadRulesRejectsTOMLParserWithoutQueries(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml: {}\n"))
+	if err == nil {
+		t.Fatalf("expected missing toml queries error")
+	}
+}
+
+func TestLoadRulesRejectsMalformedTOMLQuery(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project..dependencies[]\n"))
+	if err == nil {
+		t.Fatalf("expected malformed toml query error")
+	}
+}
+
+func TestLoadRulesRejectsTOMLParserWithOtherParserType(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: mixed\n    filename-regex: '^pyproject\\.toml$'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+	if err == nil {
+		t.Fatalf("expected multiple parser type error")
+	}
+}
+
 func TestLoadRulesRejectsMultipleParserTypes(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: mixed\n    filename-regex: '.*'\n    terraform:\n      resource_type: aws_glue_job\n      conditions:\n        - path: default_arguments.--job-language\n          equals: python\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
 	if err == nil {
