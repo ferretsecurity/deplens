@@ -50,6 +50,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.YAML != nil {
 		parserCount++
 	}
+	if raw.TOML != nil {
+		parserCount++
+	}
 	if raw.HTML != nil {
 		parserCount++
 	}
@@ -70,6 +73,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.YAML != nil {
 		return newYAMLQueryParser(*raw.YAML)
+	}
+	if raw.TOML != nil {
+		return newTOMLQueryParser(*raw.TOML)
 	}
 	if raw.HTML != nil {
 		return newHTMLMatcher(*raw.HTML)

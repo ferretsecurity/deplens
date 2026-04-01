@@ -37,6 +37,7 @@ type ruleConfig struct {
 	TypeScript    *typescriptMatcherConfig `yaml:"typescript"`
 	Python        *pythonMatcherConfig     `yaml:"python"`
 	YAML          *yamlMatcherConfig       `yaml:"yaml"`
+	TOML          *tomlMatcherConfig       `yaml:"toml"`
 	HTML          *htmlMatcherConfig       `yaml:"html"`
 }
 

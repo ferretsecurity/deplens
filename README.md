@@ -11,6 +11,7 @@ Built-in detectors:
 | Detector | Matches | Extracts dependencies |
 | --- | --- | --- |
 | filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `package.json`, `yarn.lock`, `pom.xml` | No |
+| toml | TOML files matched by a rule such as built-in `python-pyproject` for `pyproject.toml`; extracts from `project.dependencies[]`, `project.optional-dependencies.*[]`, `dependency-groups.*[]`, `tool.poetry.dependencies`, and `tool.poetry.group.*.dependencies` | Yes |
 | banner regex | JavaScript files whose first 4096 bytes match a configured `banner-regex` with capture groups 1 and 2 for package name and version | Yes |
 | yaml | Path expression such as `workflow.steps[].config.packages.pip[]` to extract data from yaml files | Yes |
 | html external scripts | HTML-like files (`.html`, `.htm`, `.xhtml`, `.tmpl`, `.gohtml`, `.mustache`, `.hbs`, `.njk`) containing external `<script src="https://...">` tags | Yes |
@@ -34,6 +35,7 @@ Example output:
 Root: /path/to/project
 
 python-requirements
+- requirements.qt6_3.in
 - requirements.txt
 
 python-uv
@@ -47,4 +49,11 @@ js-yarn
 
 java
 - java-service/pom.xml
+```
+
+When `pyproject.toml` is present, it is reported as `python-pyproject`, for example:
+
+```text
+python-pyproject
+- pyproject.toml
 ```

@@ -1,0 +1,26 @@
+[project]
+dependencies = [
+  "requests>=2.31",
+  "fastapi[all]>=0.110; python_version >= '3.10'",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "ruff==0.4.8",
+]
+
+[dependency-groups]
+lint = [
+  "mypy>=1.10",
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.0"
+httpx = { version = "^0.27", extras = ["http2"] }
+private-lib = { git = "https://github.com/acme/private-lib.git", branch = "main" }
+
+[tool.poetry.group.test.dependencies]
+pytest-cov = "^5.0"
+factory-boy = { version = "^3.3", markers = "python_version >= '3.11'" }
