@@ -69,8 +69,17 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	if _, ok := ruleset.DetectManifest("pyproject.toml"); ok {
-		t.Fatalf("expected pyproject.toml to be ignored by DetectManifest")
+	testCases := []string{
+		"pyproject.toml",
+		"index.html",
+		"job.tf",
+		"app.js",
+	}
+
+	for _, tc := range testCases {
+		if _, ok := ruleset.DetectManifest(tc); ok {
+			t.Fatalf("expected %s to be ignored by DetectManifest", tc)
+		}
 	}
 }
 
