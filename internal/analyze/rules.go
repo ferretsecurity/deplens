@@ -106,9 +106,7 @@ func (r Ruleset) SupportedManifestTypes() []ManifestType {
 func (r Ruleset) DetectManifest(name string) (ManifestType, bool) {
 	for _, rule := range r.rules {
 		if rule.Parser != nil {
-			if _, ok := rule.Parser.(tomlQueryParser); !ok {
-				continue
-			}
+			continue
 		}
 		if rule.Regexp.MatchString(name) {
 			return rule.Type, true

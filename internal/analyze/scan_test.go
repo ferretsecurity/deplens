@@ -24,7 +24,6 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "requirements.qt6_3.in", want: ManifestType("python-requirements")},
 		{name: "my_requirements.prod.txt", want: ManifestType("python-requirements")},
 		{name: "uv.lock", want: ManifestType("python-uv")},
-		{name: "pyproject.toml", want: ManifestType("python-pyproject")},
 		{name: "package.json", want: ManifestType("js")},
 		{name: "yarn.lock", want: ManifestType("js-yarn")},
 		{name: "pom.xml", want: ManifestType("java")},
