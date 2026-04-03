@@ -6,6 +6,8 @@ By default, the tool walks the target directory recursively, skips common genera
 
 ## Supported Detectors
 
+Rules may use `filename-regex`, `path-glob`, or both. When both selectors are present on the same rule, they are combined with AND semantics, so the file must match both conditions before the detector runs.
+
 Built-in detectors:
 
 | Detector | Matches | Extracts dependencies |
@@ -22,6 +24,8 @@ Built-in detectors:
 | python cdk construct | Python `.py` files with statically-resolved CDK `CfnJob(...)` calls. For example containing `glue.CfnJob(..., default_arguments={"--job-language": "python", "--additional-python-modules": "pandas==2.2.1"})` imported from `aws_cdk.aws_glue` | Yes |
 
 Default JavaScript banner rules use `filename-regex: '.*\.js$'` and return `name@version` from `banner-regex` capture groups 1 and 2. The built-in banner rule set includes `js-banner-block-start`, `js-banner-plain-block-start`, `js-banner-multiline-preserved`, `js-banner-line-comment`, and `js-banner-version-tagged`.
+
+The default Python requirements rules include both a filename selector for `*requirements*.txt` and `*requirements*.in`, plus a path selector for `**/requirements/*.txt`.
 
 ## Example
 

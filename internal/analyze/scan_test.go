@@ -83,6 +83,95 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 	}
 }
 
+func TestDetectManifestIgnoresPathGlobBackedManifests(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    path-glob: 'apps/**/package.json'\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	if _, ok := ruleset.DetectManifest("package.json"); ok {
+		t.Fatalf("expected DetectManifest to ignore path-glob-backed rules")
+	}
+}
+
+func TestDetectManifestFileAtRelativePathMatchesPathGlob(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: '**/requirements/*.txt'\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	got, deps, ok, err := ruleset.DetectManifestFileAtRelativePath("apps/api/requirements/base.txt", "base.txt", "apps/api/requirements/base.txt")
+	if err != nil {
+		t.Fatalf("DetectManifestFileAtRelativePath failed: %v", err)
+	}
+	if !ok {
+		t.Fatalf("expected path-glob rule to match relative path input")
+	}
+	if got != ManifestType("python-requirements") {
+		t.Fatalf("unexpected manifest type: got %q", got)
+	}
+	if deps != nil {
+		t.Fatalf("expected no dependencies, got %+v", deps)
+	}
+}
+
+func TestDetectManifestFileAtRelativePathMatchesPathGlobWithAbsolutePath(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: '**/requirements/*.txt'\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	absPath := filepath.Join(root, "apps", "api", "requirements", "base.txt")
+
+	got, deps, ok, err := ruleset.DetectManifestFileAtRelativePath(absPath, "base.txt", "apps/api/requirements/base.txt")
+	if err != nil {
+		t.Fatalf("DetectManifestFileAtRelativePath failed: %v", err)
+	}
+	if !ok {
+		t.Fatalf("expected path-glob rule to match absolute path with explicit relative path")
+	}
+	if got != ManifestType("python-requirements") {
+		t.Fatalf("unexpected manifest type: got %q", got)
+	}
+	if deps != nil {
+		t.Fatalf("expected no dependencies, got %+v", deps)
+	}
+}
+
+func TestDetectManifestFileDoesNotMatchPathGlobWithoutRelativePath(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: 'apps/**/requirements/*.txt'\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	got, deps, ok, err := ruleset.DetectManifestFile("apps/api/requirements/base.txt", "base.txt")
+	if err != nil {
+		t.Fatalf("DetectManifestFile failed: %v", err)
+	}
+	if ok {
+		t.Fatalf("expected no path-glob match without explicit relative path, got type=%q deps=%+v", got, deps)
+	}
+}
+
+func TestDetectManifestFileMatchesFilenameRuleWithEmptyPath(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	got, deps, ok, err := ruleset.DetectManifestFile("", "package.json")
+	if err != nil {
+		t.Fatalf("DetectManifestFile failed: %v", err)
+	}
+	if !ok {
+		t.Fatalf("expected filename-only rule to match with empty path")
+	}
+	if got != ManifestType("js") {
+		t.Fatalf("unexpected manifest type: got %q", got)
+	}
+	if deps != nil {
+		t.Fatalf("expected no dependencies, got %+v", deps)
+	}
+}
+
 func TestScanFindsNestedManifestsSortedByRelativePath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
@@ -126,6 +215,43 @@ func TestScanFindsRequirementsInFixture(t *testing.T) {
 	}
 
 	t.Fatalf("expected requirements.qt6_3.in fixture to be detected, got %+v", result.Manifests)
+}
+
+func TestScanDefaultRulesMatchRequirementsDirectoriesAnywhere(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "requirements", "base.txt"), "")
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "requirements", "base.txt"), "")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 2 {
+		t.Fatalf("expected 2 manifests, got %+v", result.Manifests)
+	}
+	if result.Manifests[0].Type != ManifestType("python-requirements-dir") || result.Manifests[1].Type != ManifestType("python-requirements-dir") {
+		t.Fatalf("unexpected manifest types: %+v", result.Manifests)
+	}
+	if result.Manifests[0].Path != "apps/api/requirements/base.txt" || result.Manifests[1].Path != "requirements/base.txt" {
+		t.Fatalf("unexpected manifests: %+v", result.Manifests)
+	}
+}
+
+func TestScanDefaultRulesDoNotMatchNestedRequirementGrandchildren(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "requirements", "nested", "base.txt"), "")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
 }
 
 func TestScanMatchesPyprojectDependenciesFromFixture(t *testing.T) {
@@ -1002,17 +1128,167 @@ func TestLoadRulesRejectsMissingFields(t *testing.T) {
 	}
 }
 
-func TestLoadRulesRejectsMissingFilenameRegex(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n"))
-	if err == nil {
-		t.Fatalf("expected error for missing filename regex")
-	}
-}
-
 func TestLoadRulesRejectsInvalidRegex(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    filename-regex: '('\n"))
 	if err == nil {
 		t.Fatalf("expected invalid regex error")
+	}
+}
+
+func TestLoadRulesRejectsMissingSelectors(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n"))
+	if err == nil {
+		t.Fatalf("expected error for missing selectors")
+	}
+}
+
+func TestLoadRulesAcceptsPathGlobSelector(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    path-glob: 'apps/**/package.json'\n"))
+	if err != nil {
+		t.Fatalf("expected path glob rule to load: %v", err)
+	}
+}
+
+func TestLoadRulesRejectsInvalidPathGlob(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    path-glob: 'apps/[.json'\n"))
+	if err == nil {
+		t.Fatalf("expected invalid path glob error")
+	}
+}
+
+func TestLoadRulesRejectsPathGlobWithEmptySegment(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    path-glob: 'apps//package.json'\n"))
+	if err == nil {
+		t.Fatalf("expected invalid path glob with empty segment")
+	}
+}
+
+func TestLoadRulesRejectsPathGlobWithInvalidRecursiveWildcardPlacement(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    path-glob: 'apps/**b/package.json'\n"))
+	if err == nil {
+		t.Fatalf("expected invalid recursive wildcard placement")
+	}
+}
+
+func TestLoadRulesAcceptsCombinedSelectors(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    filename-regex: '^package\\.json$'\n    path-glob: 'apps/**/package.json'\n"))
+	if err != nil {
+		t.Fatalf("expected combined selector rule to load: %v", err)
+	}
+}
+
+func TestScanMatchesPathGlobRequirementsAnywhere(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: '**/requirements/*.txt'\n"))
+	if err != nil {
+		t.Fatalf("expected path glob rule to load: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "requirements", "base.txt"), "")
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "requirements", "base.txt"), "")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 2 {
+		t.Fatalf("expected 2 manifests, got %+v", result.Manifests)
+	}
+	if result.Manifests[0].Path != "apps/api/requirements/base.txt" || result.Manifests[1].Path != "requirements/base.txt" {
+		t.Fatalf("unexpected manifests: %+v", result.Manifests)
+	}
+}
+
+func TestScanMatchesQuestionMarkGlobSemantics(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: 'apps/**/req?.txt'\n"))
+	if err != nil {
+		t.Fatalf("expected path glob rule to load: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "req1.txt"), "")
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "req12.txt"), "")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+	if result.Manifests[0].Path != "apps/api/req1.txt" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+}
+
+func TestNormalizeRelativePathConvertsBackslashes(t *testing.T) {
+	got := normalizeRelativePath(`apps\api\requirements\base.txt`)
+	want := "apps/api/requirements/base.txt"
+	if got != want {
+		t.Fatalf("unexpected normalized path: got %q want %q", got, want)
+	}
+}
+
+func TestScanMatchesPathGlobWithSlashNormalizedRelativePath(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: 'apps/**/requirements/*.txt'\n"))
+	if err != nil {
+		t.Fatalf("expected path glob rule to load: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "requirements", "base.txt"), "")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+	if result.Manifests[0].Path != "apps/api/requirements/base.txt" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+}
+
+func TestScanPathGlobDoesNotMatchNestedGrandchildren(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: '**/requirements/*.txt'\n"))
+	if err != nil {
+		t.Fatalf("expected path glob rule to load: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "requirements", "nested", "base.txt"), "")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests for nested grandchild path, got %+v", result.Manifests)
+	}
+}
+
+func TestScanCombinedSelectorsRequireBothMatches(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    filename-regex: '^requirements\\.txt$'\n    path-glob: '**/requirements/*.txt'\n"))
+	if err != nil {
+		t.Fatalf("expected combined selector rule to load: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "requirements.txt"), "")
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "requirements", "notes.txt"), "")
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "notes.txt"), "")
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "requirements", "requirements.txt"), "")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+	if result.Manifests[0].Path != "apps/api/requirements/requirements.txt" {
+		t.Fatalf("unexpected manifest path: %+v", result.Manifests[0])
 	}
 }
 
@@ -1234,6 +1510,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	want := []ManifestType{
 		ManifestType("python-requirements"),
+		ManifestType("python-requirements-dir"),
 		ManifestType("python-uv"),
 		ManifestType("python-pyproject"),
 		ManifestType("js"),
@@ -1285,6 +1562,117 @@ workflow:
 	}
 }
 
+func TestScanMatchesYAMLDependenciesFromPathGlobRule(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    path-glob: '**/pipelines/workflow.yaml'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "pipelines", "workflow.yaml"), `
+workflow:
+  steps:
+    - name: step1
+      config:
+        packages:
+          pip:
+            - requests
+            - pendulum
+`)
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "workflow.yaml"), `
+workflow:
+  steps:
+    - name: step1
+      config:
+        packages:
+          pip:
+            - should-not-match
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("yaml-pip") || manifest.Path != "apps/api/pipelines/workflow.yaml" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	if !slices.Equal(manifest.Dependencies, []string{"requests", "pendulum"}) {
+		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
+	}
+}
+
+func TestScanMatchesTOMLDependenciesFromPathGlobRule(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    path-glob: '**/pyproject.toml'\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "services", "api", "pyproject.toml"), `
+[project]
+dependencies = ["requests>=2.31"]
+`)
+	mustWriteFile(t, filepath.Join(root, "services", "api", "other.toml"), `
+[project]
+dependencies = ["should-not-match"]
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "services/api/pyproject.toml" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	if !slices.Equal(manifest.Dependencies, []string{"requests>=2.31"}) {
+		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
+	}
+}
+
+func TestScanMatchesTOMLDependenciesFromCombinedSelectors(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    path-glob: '**/pipelines/pyproject.toml'\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "pipelines", "pyproject.toml"), `
+[project]
+dependencies = ["requests>=2.31"]
+`)
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "pyproject.toml"), `
+[project]
+dependencies = ["wrong-path"]
+`)
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "pipelines", "not-pyproject.toml"), `
+[project]
+dependencies = ["wrong-name"]
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "apps/api/pipelines/pyproject.toml" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	if !slices.Equal(manifest.Dependencies, []string{"requests>=2.31"}) {
+		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
+	}
+}
+
 func TestScanMatchesYAMLDependenciesAcrossNestedLists(t *testing.T) {
 	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '^workflow\\.yaml$'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
 	if err != nil {
@@ -1316,6 +1704,58 @@ workflow:
 	}
 	if !slices.Equal(result.Manifests[0].Dependencies, []string{"requests", "pendulum"}) {
 		t.Fatalf("unexpected dependencies: %+v", result.Manifests[0].Dependencies)
+	}
+}
+
+func TestScanMatchesYAMLDependenciesFromCombinedSelectors(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '^workflow\\.yaml$'\n    path-glob: '**/pipelines/workflow.yaml'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "pipelines", "workflow.yaml"), `
+workflow:
+  steps:
+    - name: step1
+      config:
+        packages:
+          pip:
+            - requests
+            - pendulum
+`)
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "workflow.yaml"), `
+workflow:
+  steps:
+    - name: step1
+      config:
+        packages:
+          pip:
+            - wrong-path
+`)
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "pipelines", "other.yaml"), `
+workflow:
+  steps:
+    - name: step1
+      config:
+        packages:
+          pip:
+            - wrong-name
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("yaml-pip") || manifest.Path != "apps/api/pipelines/workflow.yaml" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	if !slices.Equal(manifest.Dependencies, []string{"requests", "pendulum"}) {
+		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
 	}
 }
 

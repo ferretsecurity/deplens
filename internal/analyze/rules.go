@@ -4,7 +4,9 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
+	"path"
 	"regexp"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -15,9 +17,10 @@ var defaultRulesYAML []byte
 type ManifestType string
 
 type manifestRule struct {
-	Type   ManifestType
-	Regexp *regexp.Regexp
-	Parser manifestParser
+	Type           ManifestType
+	FilenameRegexp *regexp.Regexp
+	PathGlob       string
+	Parser         manifestParser
 }
 
 type Ruleset struct {
@@ -32,6 +35,7 @@ type rulesFile struct {
 type ruleConfig struct {
 	Name          string                   `yaml:"name"`
 	FilenameRegex string                   `yaml:"filename-regex"`
+	PathGlob      string                   `yaml:"path-glob"`
 	BannerRegex   string                   `yaml:"banner-regex"`
 	Terraform     *terraformMatcherConfig  `yaml:"terraform"`
 	TypeScript    *typescriptMatcherConfig `yaml:"typescript"`
@@ -72,13 +76,22 @@ func loadRules(source string, data []byte) (Ruleset, error) {
 		if rawRule.Name == "" {
 			return Ruleset{}, fmt.Errorf("%s: %s.name: required", source, fieldPath)
 		}
-		if rawRule.FilenameRegex == "" {
-			return Ruleset{}, fmt.Errorf("%s: %s.filename-regex: required", source, fieldPath)
+		if rawRule.FilenameRegex == "" && rawRule.PathGlob == "" {
+			return Ruleset{}, fmt.Errorf("%s: %s: at least one selector is required", source, fieldPath)
 		}
 
-		compiled, err := regexp.Compile(rawRule.FilenameRegex)
-		if err != nil {
-			return Ruleset{}, fmt.Errorf("%s: %s.filename-regex: compile %q: %w", source, fieldPath, rawRule.FilenameRegex, err)
+		var compiled *regexp.Regexp
+		var err error
+		if rawRule.FilenameRegex != "" {
+			compiled, err = regexp.Compile(rawRule.FilenameRegex)
+			if err != nil {
+				return Ruleset{}, fmt.Errorf("%s: %s.filename-regex: compile %q: %w", source, fieldPath, rawRule.FilenameRegex, err)
+			}
+		}
+		if rawRule.PathGlob != "" {
+			if err := validatePathGlob(rawRule.PathGlob); err != nil {
+				return Ruleset{}, fmt.Errorf("%s: %s.path-glob: compile %q: %w", source, fieldPath, rawRule.PathGlob, err)
+			}
 		}
 
 		parser, err := compileManifestParser(rawRule)
@@ -87,9 +100,10 @@ func loadRules(source string, data []byte) (Ruleset, error) {
 		}
 
 		rules = append(rules, manifestRule{
-			Type:   ManifestType(rawRule.Name),
-			Regexp: compiled,
-			Parser: parser,
+			Type:           ManifestType(rawRule.Name),
+			FilenameRegexp: compiled,
+			PathGlob:       rawRule.PathGlob,
+			Parser:         parser,
 		})
 	}
 
@@ -105,10 +119,10 @@ func (r Ruleset) SupportedManifestTypes() []ManifestType {
 
 func (r Ruleset) DetectManifest(name string) (ManifestType, bool) {
 	for _, rule := range r.rules {
-		if rule.Parser != nil {
+		if rule.Parser != nil || rule.PathGlob != "" {
 			continue
 		}
-		if rule.Regexp.MatchString(name) {
+		if rule.matches(name, "") {
 			return rule.Type, true
 		}
 	}
@@ -116,11 +130,19 @@ func (r Ruleset) DetectManifest(name string) (ManifestType, bool) {
 }
 
 func (r Ruleset) DetectManifestFile(path string, name string) (ManifestType, []string, bool, error) {
+	return r.detectManifestFile(path, name, "")
+}
+
+func (r Ruleset) DetectManifestFileAtRelativePath(path string, name string, relPath string) (ManifestType, []string, bool, error) {
+	return r.detectManifestFile(path, name, normalizeRelativePath(relPath))
+}
+
+func (r Ruleset) detectManifestFile(path string, name string, relPath string) (ManifestType, []string, bool, error) {
 	var content []byte
 	contentLoaded := false
 
 	for _, rule := range r.rules {
-		if !rule.Regexp.MatchString(name) {
+		if !rule.matches(name, relPath) {
 			continue
 		}
 		if rule.Parser == nil {
@@ -143,6 +165,69 @@ func (r Ruleset) DetectManifestFile(path string, name string) (ManifestType, []s
 		}
 	}
 	return "", nil, false, nil
+}
+
+func (r manifestRule) matches(name string, relPath string) bool {
+	if r.FilenameRegexp != nil && !r.FilenameRegexp.MatchString(name) {
+		return false
+	}
+	if r.PathGlob != "" && !pathGlobMatches(r.PathGlob, relPath) {
+		return false
+	}
+	return true
+}
+
+func pathGlobMatches(pattern string, relPath string) bool {
+	patternSegments := strings.Split(pattern, "/")
+	pathSegments := strings.Split(relPath, "/")
+	return matchPathGlobSegments(patternSegments, pathSegments)
+}
+
+func matchPathGlobSegments(patternSegments []string, pathSegments []string) bool {
+	if len(patternSegments) == 0 {
+		return len(pathSegments) == 0
+	}
+
+	if patternSegments[0] == "**" {
+		if matchPathGlobSegments(patternSegments[1:], pathSegments) {
+			return true
+		}
+		for i := 0; i < len(pathSegments); i++ {
+			if matchPathGlobSegments(patternSegments[1:], pathSegments[i+1:]) {
+				return true
+			}
+		}
+		return false
+	}
+
+	if len(pathSegments) == 0 {
+		return false
+	}
+
+	ok, err := path.Match(patternSegments[0], pathSegments[0])
+	if err != nil || !ok {
+		return false
+	}
+
+	return matchPathGlobSegments(patternSegments[1:], pathSegments[1:])
+}
+
+func validatePathGlob(pattern string) error {
+	for _, segment := range strings.Split(pattern, "/") {
+		if segment == "" {
+			return fmt.Errorf("empty path segment")
+		}
+		if segment == "**" {
+			continue
+		}
+		if strings.Contains(segment, "**") {
+			return fmt.Errorf("invalid recursive wildcard segment %q", segment)
+		}
+		if _, err := path.Match(segment, ""); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func supportedTypesFromRules(rules []manifestRule) []ManifestType {

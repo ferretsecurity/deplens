@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 )
 
 type ManifestMatch struct {
@@ -56,7 +57,13 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 			return nil
 		}
 
-		manifestType, dependencies, ok, err := ruleset.DetectManifestFile(path, d.Name())
+		relPath, err := filepath.Rel(absRoot, path)
+		if err != nil {
+			return fmt.Errorf("relative path for %s: %w", path, err)
+		}
+		relPath = normalizeRelativePath(relPath)
+
+		manifestType, dependencies, ok, err := ruleset.DetectManifestFileAtRelativePath(path, d.Name(), relPath)
 		if err != nil {
 			return err
 		}
@@ -64,14 +71,9 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 			return nil
 		}
 
-		relPath, err := filepath.Rel(absRoot, path)
-		if err != nil {
-			return fmt.Errorf("relative path for %s: %w", path, err)
-		}
-
 		result.Manifests = append(result.Manifests, ManifestMatch{
 			Type:         manifestType,
-			Path:         filepath.ToSlash(relPath),
+			Path:         relPath,
 			Dependencies: dependencies,
 		})
 		return nil
@@ -101,4 +103,8 @@ func compareManifestType(a, b ManifestType) int {
 		return -1
 	}
 	return 1
+}
+
+func normalizeRelativePath(relPath string) string {
+	return strings.ReplaceAll(filepath.ToSlash(relPath), "\\", "/")
 }
