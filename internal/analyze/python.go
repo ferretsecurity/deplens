@@ -11,6 +11,7 @@ const pythonSplitComma = "comma"
 
 type pythonMatcherConfig struct {
 	CDKConstruct *pythonCDKConstructConfig `yaml:"cdk_construct"`
+	Call         *pythonCallConfig         `yaml:"call"`
 }
 
 type pythonCDKConstructConfig struct {
@@ -31,6 +32,23 @@ type pythonObjectConditionConfig struct {
 type pythonExtractConfig struct {
 	Key   string `yaml:"key"`
 	Split string `yaml:"split"`
+}
+
+type pythonCallConfig struct {
+	Module     string                      `yaml:"module"`
+	Function   string                      `yaml:"function"`
+	Conditions *pythonCallConditionsConfig `yaml:"conditions"`
+}
+
+type pythonCallConditionsConfig struct {
+	AllOf []pythonCallArgumentConditionConfig `yaml:"all_of"`
+	AnyOf []pythonCallArgumentConditionConfig `yaml:"any_of"`
+}
+
+type pythonCallArgumentConditionConfig struct {
+	Keyword string  `yaml:"keyword"`
+	Equals  *string `yaml:"equals"`
+	Present bool    `yaml:"present"`
 }
 
 type pythonObjectCondition struct {
@@ -58,11 +76,34 @@ type pythonCDKConstructMatcher struct {
 	extract         *pythonExtract
 }
 
+type pythonCallMatcher struct {
+	module     string
+	function   string
+	conditions pythonCallConditions
+}
+
+type pythonCallConditions struct {
+	allOf []pythonCallArgumentCondition
+	anyOf []pythonCallArgumentCondition
+}
+
+type pythonCallArgumentCondition struct {
+	keyword string
+	equals  *string
+	present bool
+}
+
 var pythonIdentifierRegexp = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
 func newPythonMatcher(raw pythonMatcherConfig) (manifestParser, error) {
+	if raw.CDKConstruct != nil && raw.Call != nil {
+		return nil, fmt.Errorf("exactly one of python.cdk_construct or python.call may be configured")
+	}
 	if raw.CDKConstruct == nil {
-		return nil, fmt.Errorf("python.cdk_construct: required")
+		if raw.Call == nil {
+			return nil, fmt.Errorf("python.cdk_construct or python.call: required")
+		}
+		return newPythonCallMatcher(*raw.Call)
 	}
 
 	cfg := raw.CDKConstruct
@@ -124,6 +165,62 @@ func newPythonMatcher(raw pythonMatcherConfig) (manifestParser, error) {
 		conditions:      conditions,
 		extract:         extract,
 	}, nil
+}
+
+func newPythonCallMatcher(raw pythonCallConfig) (manifestParser, error) {
+	if raw.Module == "" {
+		return nil, fmt.Errorf("python.call.module: required")
+	}
+	if raw.Function == "" {
+		return nil, fmt.Errorf("python.call.function: required")
+	}
+	if raw.Conditions == nil {
+		return nil, fmt.Errorf("python.call.conditions: required")
+	}
+
+	conditions, err := newPythonCallConditions(*raw.Conditions)
+	if err != nil {
+		return nil, err
+	}
+
+	return pythonCallMatcher{
+		module:     raw.Module,
+		function:   raw.Function,
+		conditions: conditions,
+	}, nil
+}
+
+func newPythonCallConditions(raw pythonCallConditionsConfig) (pythonCallConditions, error) {
+	allOf, err := newPythonCallArgumentConditions(raw.AllOf, "python.call.conditions.all_of")
+	if err != nil {
+		return pythonCallConditions{}, err
+	}
+	anyOf, err := newPythonCallArgumentConditions(raw.AnyOf, "python.call.conditions.any_of")
+	if err != nil {
+		return pythonCallConditions{}, err
+	}
+	if len(allOf) == 0 && len(anyOf) == 0 {
+		return pythonCallConditions{}, fmt.Errorf("python.call.conditions: must contain at least one all_of or any_of entry")
+	}
+	return pythonCallConditions{allOf: allOf, anyOf: anyOf}, nil
+}
+
+func newPythonCallArgumentConditions(raw []pythonCallArgumentConditionConfig, fieldPath string) ([]pythonCallArgumentCondition, error) {
+	conditions := make([]pythonCallArgumentCondition, 0, len(raw))
+	for idx, cond := range raw {
+		if cond.Keyword == "" {
+			return nil, fmt.Errorf("%s[%d].keyword: required", fieldPath, idx)
+		}
+		if cond.Equals == nil && !cond.Present {
+			return nil, fmt.Errorf("%s[%d]: one of equals or present=true is required", fieldPath, idx)
+		}
+		conditions = append(conditions, pythonCallArgumentCondition{
+			keyword: cond.Keyword,
+			equals:  cond.Equals,
+			present: cond.Present,
+		})
+	}
+	return conditions, nil
 }
 
 func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]string, bool, error) {
@@ -196,6 +293,27 @@ func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]string,
 	return nil, false, nil
 }
 
+func (m pythonCallMatcher) Match(path string, content []byte) ([]string, bool, error) {
+	source := string(content)
+	imports := collectPythonImports(source, m.module, m.function)
+	if len(imports.namespaces) == 0 && len(imports.named) == 0 {
+		return nil, false, nil
+	}
+
+	callStarts := pythonConstructorCallStarts(source, imports, m.function)
+	for _, start := range callStarts {
+		args, _, ok := pythonCallArguments(source, start)
+		if !ok {
+			continue
+		}
+		if m.conditions.match(source, args, start) {
+			return nil, true, nil
+		}
+	}
+
+	return nil, false, nil
+}
+
 func (m pythonCDKConstructMatcher) matchesConditions(source string, objectExpr string, before int) bool {
 	for _, cond := range m.conditions {
 		valueExpr, ok := pythonDictValue(source, objectExpr, cond.key, before)
@@ -211,6 +329,40 @@ func (m pythonCDKConstructMatcher) matchesConditions(source string, objectExpr s
 		}
 	}
 	return true
+}
+
+func (c pythonCallConditions) match(source string, args string, before int) bool {
+	if len(c.allOf) > 0 {
+		for _, condition := range c.allOf {
+			if !condition.match(source, args, before) {
+				return false
+			}
+		}
+	}
+	if len(c.anyOf) > 0 {
+		for _, condition := range c.anyOf {
+			if condition.match(source, args, before) {
+				return true
+			}
+		}
+		return false
+	}
+	return true
+}
+
+func (c pythonCallArgumentCondition) match(source string, args string, before int) bool {
+	value, ok := pythonKeywordArgumentValue(args, c.keyword)
+	if !ok {
+		return false
+	}
+	if c.present {
+		return true
+	}
+	resolved, ok := resolvePythonStringValue(source, value, before)
+	if !ok {
+		return false
+	}
+	return resolved == *c.equals
 }
 
 func collectPythonImports(source string, module string, construct string) pythonImportTable {
