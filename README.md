@@ -14,7 +14,7 @@ Built-in detectors:
 | --- | --- | --- |
 | filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `package.json`, `yarn.lock`, `pom.xml` | No |
 | toml | TOML files matched by a rule such as built-in `python-pyproject` for `pyproject.toml`; extracts from `project.dependencies[]`, `project.optional-dependencies.*[]`, `dependency-groups.*[]`, `tool.poetry.dependencies`, and `tool.poetry.group.*.dependencies` | Yes |
-| python call | Python files matched by a rule such as built-in `python-setup-py` for `setup.py`; detects imported function calls with specific keyword arguments, for example `setuptools.setup(..., install_requires=..., extras_require=...)` | No |
+| python call | Python files matched by a rule such as built-in `python-setup-py` for `setup.py`; detects imported function calls with specific keyword arguments, for example `setuptools.setup(..., install_requires=..., extras_require=...)`, and can extract from simple literal arrays in `install_requires=[...]` plus `extras_require={"group": [...]}` | Yes |
 | banner regex | JavaScript files whose first 4096 bytes match a configured `banner-regex` with capture groups 1 and 2 for package name and version | Yes |
 | yaml | Path expression such as `workflow.steps[].config.packages.pip[]` to extract data from yaml files | Yes |
 | html external scripts | HTML-like files (`.html`, `.htm`, `.xhtml`, `.tmpl`, `.gohtml`, `.mustache`, `.hbs`, `.njk`) containing external `<script src="https://...">` tags | Yes |
@@ -63,7 +63,7 @@ python-pyproject
 - pyproject.toml
 ```
 
-When `setup.py` contains a `setuptools.setup(...)` call with `install_requires` or `extras_require`, it is reported as `python-setup-py`, for example:
+When `setup.py` contains a `setuptools.setup(...)` call with `install_requires` or `extras_require`, it is reported as `python-setup-py`. For simple literal forms such as `install_requires=[...]` and `extras_require={"dev": [...]}`, dependencies are extracted as well, for example:
 
 ```text
 python-setup-py

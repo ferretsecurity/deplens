@@ -38,6 +38,7 @@ type pythonCallConfig struct {
 	Module     string                      `yaml:"module"`
 	Function   string                      `yaml:"function"`
 	Conditions *pythonCallConditionsConfig `yaml:"conditions"`
+	Extract    []pythonCallExtractConfig   `yaml:"extract"`
 }
 
 type pythonCallConditionsConfig struct {
@@ -49,6 +50,11 @@ type pythonCallArgumentConditionConfig struct {
 	Keyword string  `yaml:"keyword"`
 	Equals  *string `yaml:"equals"`
 	Present bool    `yaml:"present"`
+}
+
+type pythonCallExtractConfig struct {
+	Keyword string `yaml:"keyword"`
+	Literal string `yaml:"literal"`
 }
 
 type pythonObjectCondition struct {
@@ -80,6 +86,7 @@ type pythonCallMatcher struct {
 	module     string
 	function   string
 	conditions pythonCallConditions
+	extract    []pythonCallExtract
 }
 
 type pythonCallConditions struct {
@@ -92,6 +99,16 @@ type pythonCallArgumentCondition struct {
 	equals  *string
 	present bool
 }
+
+type pythonCallExtract struct {
+	keyword string
+	literal string
+}
+
+const (
+	pythonLiteralStringList     = "string_list"
+	pythonLiteralDictStringList = "dict_string_lists"
+)
 
 var pythonIdentifierRegexp = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
@@ -183,10 +200,16 @@ func newPythonCallMatcher(raw pythonCallConfig) (manifestParser, error) {
 		return nil, err
 	}
 
+	extract, err := newPythonCallExtracts(raw.Extract)
+	if err != nil {
+		return nil, err
+	}
+
 	return pythonCallMatcher{
 		module:     raw.Module,
 		function:   raw.Function,
 		conditions: conditions,
+		extract:    extract,
 	}, nil
 }
 
@@ -221,6 +244,25 @@ func newPythonCallArgumentConditions(raw []pythonCallArgumentConditionConfig, fi
 		})
 	}
 	return conditions, nil
+}
+
+func newPythonCallExtracts(raw []pythonCallExtractConfig) ([]pythonCallExtract, error) {
+	extracts := make([]pythonCallExtract, 0, len(raw))
+	for idx, extract := range raw {
+		if extract.Keyword == "" {
+			return nil, fmt.Errorf("python.call.extract[%d].keyword: required", idx)
+		}
+		switch extract.Literal {
+		case pythonLiteralStringList, pythonLiteralDictStringList:
+		default:
+			return nil, fmt.Errorf("python.call.extract[%d].literal: unsupported value %q", idx, extract.Literal)
+		}
+		extracts = append(extracts, pythonCallExtract{
+			keyword: extract.Keyword,
+			literal: extract.Literal,
+		})
+	}
+	return extracts, nil
 }
 
 func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]string, bool, error) {
@@ -307,11 +349,43 @@ func (m pythonCallMatcher) Match(path string, content []byte) ([]string, bool, e
 			continue
 		}
 		if m.conditions.match(source, args, start) {
-			return nil, true, nil
+			return m.extractDependencies(args), true, nil
 		}
 	}
 
 	return nil, false, nil
+}
+
+func (m pythonCallMatcher) extractDependencies(args string) []string {
+	if len(m.extract) == 0 {
+		return nil
+	}
+
+	dependencies := make([]string, 0)
+	seen := make(map[string]struct{})
+	for _, extract := range m.extract {
+		value, ok := pythonKeywordArgumentValue(args, extract.keyword)
+		if !ok {
+			continue
+		}
+
+		var extracted []string
+		switch extract.literal {
+		case pythonLiteralStringList:
+			extracted = pythonStringListLiteral(value)
+		case pythonLiteralDictStringList:
+			extracted = pythonDictStringListsLiteral(value)
+		}
+
+		for _, dep := range extracted {
+			if _, ok := seen[dep]; ok {
+				continue
+			}
+			seen[dep] = struct{}{}
+			dependencies = append(dependencies, dep)
+		}
+	}
+	return dependencies
 }
 
 func (m pythonCDKConstructMatcher) matchesConditions(source string, objectExpr string, before int) bool {
@@ -567,6 +641,58 @@ func resolvePythonStringValue(source string, expr string, before int) (string, b
 		return "", false
 	}
 	return resolvePythonStringValue(source, assigned, before)
+}
+
+func pythonStringListLiteral(expr string) []string {
+	value := strings.TrimSpace(expr)
+	if value == "" || value[0] != '[' {
+		return nil
+	}
+	end, ok := pythonMatchingDelimiter(value, 0, '[', ']')
+	if !ok || end != len(value)-1 {
+		return nil
+	}
+
+	items := splitTopLevel(value[1:end], ',')
+	result := make([]string, 0, len(items))
+	for _, item := range items {
+		resolved, ok := unquotePythonString(item)
+		if !ok {
+			return nil
+		}
+		result = append(result, resolved)
+	}
+	return result
+}
+
+func pythonDictStringListsLiteral(expr string) []string {
+	value := strings.TrimSpace(expr)
+	if value == "" || value[0] != '{' {
+		return nil
+	}
+	end, ok := pythonMatchingDelimiter(value, 0, '{', '}')
+	if !ok || end != len(value)-1 {
+		return nil
+	}
+
+	parts := splitTopLevel(value[1:end], ',')
+	result := make([]string, 0)
+	for _, part := range parts {
+		idx := topLevelColonIndex(part)
+		if idx < 0 {
+			return nil
+		}
+		key := strings.TrimSpace(part[:idx])
+		if _, ok := unquotePythonString(key); !ok {
+			return nil
+		}
+		items := pythonStringListLiteral(part[idx+1:])
+		if items == nil {
+			return nil
+		}
+		result = append(result, items...)
+	}
+	return result
 }
 
 func findPythonAssignment(source string, name string, before int) (string, bool) {

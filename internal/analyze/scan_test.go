@@ -291,7 +291,7 @@ func TestScanMatchesPyprojectDependenciesFromFixture(t *testing.T) {
 func TestScanMatchesSetupPyWithInstallRequiresFromFixture(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "setup-py"), nil, ruleset)
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "setup-py-install-requires"), nil, ruleset)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -304,8 +304,53 @@ func TestScanMatchesSetupPyWithInstallRequiresFromFixture(t *testing.T) {
 	if manifest.Type != ManifestType("python-setup-py") || manifest.Path != "setup.py" {
 		t.Fatalf("unexpected manifest: %+v", manifest)
 	}
-	if len(manifest.Dependencies) != 0 {
-		t.Fatalf("expected no extracted dependencies, got %+v", manifest.Dependencies)
+	if got := manifest.Dependencies; !slices.Equal(got, []string{"requests>=2.31", "pytest>=8", "ruff>=0.4"}) {
+		t.Fatalf("unexpected dependencies: got %+v", got)
+	}
+}
+
+func TestScanMatchesSetupPyWithExtrasRequireOnly(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "setup-py-extras-require"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pytest>=8", "ruff>=0.4", "mkdocs>=1.6"}) {
+		t.Fatalf("unexpected dependencies: got %+v", got)
+	}
+}
+
+func TestScanMatchesSetupPyWithInstallRequiresAndExtrasRequire(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "setup-py-both"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"requests>=2.31", "pytest>=8"}) {
+		t.Fatalf("unexpected dependencies: got %+v", got)
+	}
+}
+
+func TestScanMatchesSetupPyWithoutExtractingNonLiteralDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "setup-py-nonliteral"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if got := result.Manifests[0].Dependencies; len(got) != 0 {
+		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
 }
 
@@ -1356,9 +1401,16 @@ func TestLoadRulesAcceptsPythonParser(t *testing.T) {
 }
 
 func TestLoadRulesAcceptsGenericPythonCallParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-py\n    filename-regex: '^setup\\.py$'\n    python:\n      call:\n        module: setuptools\n        function: setup\n        conditions:\n          any_of:\n            - keyword: install_requires\n              present: true\n            - keyword: extras_require\n              present: true\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-py\n    filename-regex: '^setup\\.py$'\n    python:\n      call:\n        module: setuptools\n        function: setup\n        conditions:\n          any_of:\n            - keyword: install_requires\n              present: true\n            - keyword: extras_require\n              present: true\n        extract:\n          - keyword: install_requires\n            literal: string_list\n          - keyword: extras_require\n            literal: dict_string_lists\n"))
 	if err != nil {
 		t.Fatalf("expected generic python call parser to load: %v", err)
+	}
+}
+
+func TestLoadRulesRejectsPythonCallParserWithUnsupportedLiteralExtractor(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-py\n    filename-regex: '^setup\\.py$'\n    python:\n      call:\n        module: setuptools\n        function: setup\n        conditions:\n          any_of:\n            - keyword: install_requires\n              present: true\n        extract:\n          - keyword: install_requires\n            literal: string_tuple\n"))
+	if err == nil {
+		t.Fatalf("expected unsupported literal extractor error")
 	}
 }
 

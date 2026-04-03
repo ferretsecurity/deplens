@@ -26,6 +26,11 @@ rules:
               present: true
             - keyword: extras_require
               present: true
+        extract:
+          - keyword: install_requires
+            literal: string_list
+          - keyword: extras_require
+            literal: dict_string_lists
   - name: js
     filename-regex: '^package\.json$'
   - name: js-yarn
