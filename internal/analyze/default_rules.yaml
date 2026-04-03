@@ -14,6 +14,18 @@ rules:
         - dependency-groups.*[]
         - tool.poetry.dependencies
         - tool.poetry.group.*.dependencies
+  - name: python-setup-py
+    filename-regex: '^setup\.py$'
+    python:
+      call:
+        module: setuptools
+        function: setup
+        conditions:
+          any_of:
+            - keyword: install_requires
+              present: true
+            - keyword: extras_require
+              present: true
   - name: js
     filename-regex: '^package\.json$'
   - name: js-yarn

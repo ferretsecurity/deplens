@@ -288,6 +288,27 @@ func TestScanMatchesPyprojectDependenciesFromFixture(t *testing.T) {
 	}
 }
 
+func TestScanMatchesSetupPyWithInstallRequiresFromFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "setup-py"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("python-setup-py") || manifest.Path != "setup.py" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	if len(manifest.Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %+v", manifest.Dependencies)
+	}
+}
+
 func TestScanMatchesHTMLExternalScripts(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
@@ -1334,6 +1355,13 @@ func TestLoadRulesAcceptsPythonParser(t *testing.T) {
 	}
 }
 
+func TestLoadRulesAcceptsGenericPythonCallParser(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-py\n    filename-regex: '^setup\\.py$'\n    python:\n      call:\n        module: setuptools\n        function: setup\n        conditions:\n          any_of:\n            - keyword: install_requires\n              present: true\n            - keyword: extras_require\n              present: true\n"))
+	if err != nil {
+		t.Fatalf("expected generic python call parser to load: %v", err)
+	}
+}
+
 func TestLoadRulesAcceptsHTMLParser(t *testing.T) {
 	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: html-external-scripts\n    filename-regex: '.*\\.html$'\n    html:\n      external_scripts: true\n"))
 	if err != nil {
@@ -1362,6 +1390,31 @@ func TestLoadRulesRejectsPythonParserWithoutKeywordArgument(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python.cdk.aws_glue_job.python\n    filename-regex: '.*\\.py$'\n    python:\n      cdk_construct:\n        module: aws_cdk.aws_glue\n        construct: CfnJob\n        conditions:\n          - key: --additional-python-modules\n            present: true\n"))
 	if err == nil {
 		t.Fatalf("expected missing keyword argument error")
+	}
+}
+
+func TestScanDoesNotMatchSetupPyWithoutTargetKeywords(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-py\n    filename-regex: '^setup\\.py$'\n    python:\n      call:\n        module: setuptools\n        function: setup\n        conditions:\n          any_of:\n            - keyword: install_requires\n              present: true\n            - keyword: extras_require\n              present: true\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "setup.py"), `
+from setuptools import setup
+
+setup(
+    name="sample",
+    version="0.1.0",
+)
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
 	}
 }
 
@@ -1513,6 +1566,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("python-requirements-dir"),
 		ManifestType("python-uv"),
 		ManifestType("python-pyproject"),
+		ManifestType("python-setup-py"),
 		ManifestType("js"),
 		ManifestType("js-yarn"),
 		ManifestType("java"),
