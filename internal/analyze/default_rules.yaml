@@ -11,6 +11,7 @@ rules:
     filename-regex: '^pyproject\.toml$'
     toml:
       queries:
+        - build-system.requires[]
         - project.dependencies[]
         - project.optional-dependencies.*[]
         - dependency-groups.*[]
