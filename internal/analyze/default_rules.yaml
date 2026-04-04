@@ -5,6 +5,8 @@ rules:
     path-glob: '**/requirements/*.txt'
   - name: python-uv
     filename-regex: '^uv\.lock$'
+  - name: python-poetry-lock
+    filename-regex: '^poetry\.lock$'
   - name: python-pyproject
     filename-regex: '^pyproject\.toml$'
     toml:
