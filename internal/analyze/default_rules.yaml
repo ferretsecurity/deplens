@@ -7,10 +7,13 @@ rules:
     filename-regex: '^uv\.lock$'
   - name: python-poetry-lock
     filename-regex: '^poetry\.lock$'
+  - name: python-pipfile-lock
+    filename-regex: '^Pipfile\.lock$'
   - name: python-pyproject
     filename-regex: '^pyproject\.toml$'
     toml:
       queries:
+        - build-system.requires[]
         - project.dependencies[]
         - project.optional-dependencies.*[]
         - dependency-groups.*[]

@@ -25,6 +25,7 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "my_requirements.prod.txt", want: ManifestType("python-requirements")},
 		{name: "uv.lock", want: ManifestType("python-uv")},
 		{name: "poetry.lock", want: ManifestType("python-poetry-lock")},
+		{name: "Pipfile.lock", want: ManifestType("python-pipfile-lock")},
 		{name: "package.json", want: ManifestType("js")},
 		{name: "yarn.lock", want: ManifestType("js-yarn")},
 		{name: "pom.xml", want: ManifestType("java")},
@@ -57,6 +58,8 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 		"yarn.lock.old",
 		"uv.lock.json",
 		"poetry.lock.toml",
+		"Pipfile",
+		"Pipfile.lock.bak",
 		"index.html.bak",
 		"component.jsx",
 	}
@@ -237,6 +240,23 @@ func TestScanFindsPoetryLockInFixture(t *testing.T) {
 	t.Fatalf("expected backend/poetry.lock fixture to be detected, got %+v", result.Manifests)
 }
 
+func TestScanFindsPipfileLockInFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "sample-monorepo"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	for _, manifest := range result.Manifests {
+		if manifest.Type == ManifestType("python-pipfile-lock") && manifest.Path == "backend/Pipfile.lock" {
+			return
+		}
+	}
+
+	t.Fatalf("expected backend/Pipfile.lock fixture to be detected, got %+v", result.Manifests)
+}
+
 func TestScanDefaultRulesMatchRequirementsDirectoriesAnywhere(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
@@ -292,6 +312,8 @@ func TestScanMatchesPyprojectDependenciesFromFixture(t *testing.T) {
 	}
 
 	want := []string{
+		"scikit-build-core>=0.10",
+		"pybind11>=2.12.0",
 		"requests>=2.31",
 		"fastapi[all]>=0.110; python_version >= '3.10'",
 		"pytest>=8",
@@ -1864,6 +1886,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("python-requirements-dir"),
 		ManifestType("python-uv"),
 		ManifestType("python-poetry-lock"),
+		ManifestType("python-pipfile-lock"),
 		ManifestType("python-pyproject"),
 		ManifestType("python-pipfile"),
 		ManifestType("python-setup-py"),
@@ -2164,13 +2187,16 @@ workflow:
 }
 
 func TestScanMatchesTOMLDependenciesFromCustomRule(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project.dependencies[]\n        - project.optional-dependencies.*[]\n        - dependency-groups.*[]\n        - tool.poetry.dependencies\n        - tool.poetry.group.*.dependencies\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - build-system.requires[]\n        - project.dependencies[]\n        - project.optional-dependencies.*[]\n        - dependency-groups.*[]\n        - tool.poetry.dependencies\n        - tool.poetry.group.*.dependencies\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
 
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "pyproject.toml"), `
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.12.0"]
+
 [project]
 dependencies = ["requests>=2.31"]
 
@@ -2199,6 +2225,8 @@ pytest-cov = "^5.0"
 	}
 
 	want := []string{
+		"scikit-build-core>=0.10",
+		"pybind11>=2.12.0",
 		"requests>=2.31",
 		"pytest>=8",
 		"mypy>=1.10",
