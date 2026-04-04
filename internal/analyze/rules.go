@@ -38,6 +38,7 @@ type ruleConfig struct {
 	PathGlob      string                   `yaml:"path-glob"`
 	BannerRegex   string                   `yaml:"banner-regex"`
 	Terraform     *terraformMatcherConfig  `yaml:"terraform"`
+	INI           *iniMatcherConfig        `yaml:"ini"`
 	TypeScript    *typescriptMatcherConfig `yaml:"typescript"`
 	Python        *pythonMatcherConfig     `yaml:"python"`
 	YAML          *yamlMatcherConfig       `yaml:"yaml"`

@@ -41,6 +41,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.Terraform != nil {
 		parserCount++
 	}
+	if raw.INI != nil {
+		parserCount++
+	}
 	if raw.TypeScript != nil {
 		parserCount++
 	}
@@ -64,6 +67,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.Terraform != nil {
 		return newTerraformResourceParser(*raw.Terraform)
+	}
+	if raw.INI != nil {
+		return newINIQueryParser(*raw.INI)
 	}
 	if raw.TypeScript != nil {
 		return newTypeScriptMatcher(*raw.TypeScript)

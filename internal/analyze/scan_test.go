@@ -1582,6 +1582,41 @@ func TestLoadRulesRejectsTOMLParserWithOtherParserType(t *testing.T) {
 	}
 }
 
+func TestLoadRulesAcceptsINIParser(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-cfg\n    filename-regex: '^setup\\.cfg$'\n    ini:\n      queries:\n        - section: options\n          key: install_requires\n        - section: options.extras_require\n          key: '*'\n"))
+	if err != nil {
+		t.Fatalf("expected ini parser to load: %v", err)
+	}
+}
+
+func TestLoadRulesRejectsINIParserWithoutQueries(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-cfg\n    filename-regex: '^setup\\.cfg$'\n    ini: {}\n"))
+	if err == nil {
+		t.Fatalf("expected missing ini queries error")
+	}
+}
+
+func TestLoadRulesRejectsINIQueryWithoutSection(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-cfg\n    filename-regex: '^setup\\.cfg$'\n    ini:\n      queries:\n        - key: install_requires\n"))
+	if err == nil {
+		t.Fatalf("expected missing ini section error")
+	}
+}
+
+func TestLoadRulesRejectsINIQueryWithoutKey(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-cfg\n    filename-regex: '^setup\\.cfg$'\n    ini:\n      queries:\n        - section: options\n"))
+	if err == nil {
+		t.Fatalf("expected missing ini key error")
+	}
+}
+
+func TestLoadRulesRejectsINIParserWithOtherParserType(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: mixed\n    filename-regex: '^setup\\.cfg$'\n    ini:\n      queries:\n        - section: options\n          key: install_requires\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+	if err == nil {
+		t.Fatalf("expected multiple parser type error")
+	}
+}
+
 func TestLoadRulesRejectsMultipleParserTypes(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: mixed\n    filename-regex: '.*'\n    terraform:\n      resource_type: aws_glue_job\n      conditions:\n        - path: default_arguments.--job-language\n          equals: python\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
 	if err == nil {
