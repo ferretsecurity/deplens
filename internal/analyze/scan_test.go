@@ -26,6 +26,7 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "uv.lock", want: ManifestType("python-uv")},
 		{name: "poetry.lock", want: ManifestType("python-poetry-lock")},
 		{name: "Pipfile.lock", want: ManifestType("python-pipfile-lock")},
+		{name: "pdm.lock", want: ManifestType("python-pdm-lock")},
 		{name: "package.json", want: ManifestType("js")},
 		{name: "yarn.lock", want: ManifestType("js-yarn")},
 		{name: "pom.xml", want: ManifestType("java")},
@@ -254,6 +255,23 @@ func TestScanFindsPipfileLockInFixture(t *testing.T) {
 	}
 
 	t.Fatalf("expected backend/Pipfile.lock fixture to be detected, got %+v", result.Manifests)
+}
+
+func TestScanFindsPdmLockInFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "sample-monorepo"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	for _, manifest := range result.Manifests {
+		if manifest.Type == ManifestType("python-pdm-lock") && manifest.Path == "backend/pdm.lock" {
+			return
+		}
+	}
+
+	t.Fatalf("expected backend/pdm.lock fixture to be detected, got %+v", result.Manifests)
 }
 
 func TestScanDefaultRulesMatchRequirementsDirectoriesAnywhere(t *testing.T) {
@@ -1748,6 +1766,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("python-uv"),
 		ManifestType("python-poetry-lock"),
 		ManifestType("python-pipfile-lock"),
+		ManifestType("python-pdm-lock"),
 		ManifestType("python-pyproject"),
 		ManifestType("python-setup-py"),
 		ManifestType("python-setup-cfg"),

@@ -12,7 +12,7 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies |
 | --- | --- | --- |
-| filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `poetry.lock`, `Pipfile.lock`, `package.json`, `yarn.lock`, `pom.xml` | No |
+| filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `package.json`, `yarn.lock`, `pom.xml` | No |
 | path glob match | Built-in path-glob rules such as `python-requirements-dir` for `**/requirements/*.txt` | No |
 | toml | TOML files matched by a rule such as built-in `python-pyproject` for `pyproject.toml`; extracts from `build-system.requires[]`, `project.dependencies[]`, `project.optional-dependencies.*[]`, `dependency-groups.*[]`, `tool.poetry.dependencies`, and `tool.poetry.group.*.dependencies` | Yes |
 | python call | Python files matched by a rule such as built-in `python-setup-py` for `setup.py`; detects imported function calls with specific keyword arguments, for example `setuptools.setup(..., install_requires=..., extras_require=...)`, and can extract from simple literal arrays in `install_requires=[...]` plus `extras_require={"group": [...]}` | Yes |
@@ -51,6 +51,9 @@ python-poetry-lock
 
 python-pipfile-lock
 - backend/Pipfile.lock
+
+python-pdm-lock
+- backend/pdm.lock
 
 js
 - frontend/package.json
