@@ -21,7 +21,14 @@ rules:
         - tool.poetry.group.*.dependencies
   - name: python-pipfile
     filename-regex: '^Pipfile$'
-    pipfile: {}
+    toml:
+      table-queries:
+        - '*'
+      exclude-keys:
+        - source
+        - requires
+        - scripts
+        - pipenv
   - name: python-setup-py
     filename-regex: '^setup\.py$'
     python:

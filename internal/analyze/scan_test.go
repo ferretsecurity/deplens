@@ -1773,6 +1773,13 @@ func TestLoadRulesAcceptsYAMLParser(t *testing.T) {
 	}
 }
 
+func TestLoadRulesSupportsTOMLTableQueriesAndExcludeKeys(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pipfile\n    filename-regex: '^Pipfile$'\n    toml:\n      table-queries:\n        - '*'\n      exclude-keys:\n        - source\n        - requires\n"))
+	if err != nil {
+		t.Fatalf("expected generic toml table config to load: %v", err)
+	}
+}
+
 func TestLoadRulesRejectsYAMLParserWithoutQuery(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '.*\\.ya?ml$'\n    yaml: {}\n"))
 	if err == nil {
@@ -2233,6 +2240,46 @@ pytest-cov = "^5.0"
 		"django = \"^5.0\"",
 		"httpx = { extras = [\"http2\"], version = \"^0.27\" }",
 		"pytest-cov = \"^5.0\"",
+	}
+	if !slices.Equal(result.Manifests[0].Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
+	}
+}
+
+func TestScanMatchesTOMLDependencyTablesFromCustomRule(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pipfile\n    filename-regex: '^Pipfile$'\n    toml:\n      table-queries:\n        - '*'\n      exclude-keys:\n        - source\n        - requires\n        - scripts\n        - pipenv\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "Pipfile"), `
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[requires]
+python_version = "3.12"
+
+[packages]
+requests = "*"
+
+[tests]
+pytest-cov = ">=5"
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	want := []string{
+		"requests = \"*\"",
+		"pytest-cov = \">=5\"",
 	}
 	if !slices.Equal(result.Manifests[0].Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)

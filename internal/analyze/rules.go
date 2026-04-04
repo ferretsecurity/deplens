@@ -43,7 +43,6 @@ type ruleConfig struct {
 	Python        *pythonMatcherConfig     `yaml:"python"`
 	YAML          *yamlMatcherConfig       `yaml:"yaml"`
 	TOML          *tomlMatcherConfig       `yaml:"toml"`
-	Pipfile       *pipfileMatcherConfig    `yaml:"pipfile"`
 	HTML          *htmlMatcherConfig       `yaml:"html"`
 }
 
