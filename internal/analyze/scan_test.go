@@ -291,6 +291,8 @@ func TestScanMatchesPyprojectDependenciesFromFixture(t *testing.T) {
 	}
 
 	want := []string{
+		"scikit-build-core>=0.10",
+		"pybind11>=2.12.0",
 		"requests>=2.31",
 		"fastapi[all]>=0.110; python_version >= '3.10'",
 		"pytest>=8",
@@ -2024,13 +2026,16 @@ workflow:
 }
 
 func TestScanMatchesTOMLDependenciesFromCustomRule(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project.dependencies[]\n        - project.optional-dependencies.*[]\n        - dependency-groups.*[]\n        - tool.poetry.dependencies\n        - tool.poetry.group.*.dependencies\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - build-system.requires[]\n        - project.dependencies[]\n        - project.optional-dependencies.*[]\n        - dependency-groups.*[]\n        - tool.poetry.dependencies\n        - tool.poetry.group.*.dependencies\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
 
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "pyproject.toml"), `
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.12.0"]
+
 [project]
 dependencies = ["requests>=2.31"]
 
@@ -2059,6 +2064,8 @@ pytest-cov = "^5.0"
 	}
 
 	want := []string{
+		"scikit-build-core>=0.10",
+		"pybind11>=2.12.0",
 		"requests>=2.31",
 		"pytest>=8",
 		"mypy>=1.10",
