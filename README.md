@@ -16,6 +16,7 @@ Built-in detectors:
 | path glob match | Built-in path-glob rules such as `python-requirements-dir` for `**/requirements/*.txt` | No |
 | toml | TOML files matched by a rule such as built-in `python-pyproject` for `pyproject.toml`; extracts from `project.dependencies[]`, `project.optional-dependencies.*[]`, `dependency-groups.*[]`, `tool.poetry.dependencies`, and `tool.poetry.group.*.dependencies` | Yes |
 | python call | Python files matched by a rule such as built-in `python-setup-py` for `setup.py`; detects imported function calls with specific keyword arguments, for example `setuptools.setup(..., install_requires=..., extras_require=...)`, and can extract from simple literal arrays in `install_requires=[...]` plus `extras_require={"group": [...]}` | Yes |
+| ini | INI files matched by a rule such as built-in `python-setup-cfg` for `setup.cfg`; extracts from `[options]` keys `setup_requires` and `install_requires`, plus all keys under `[options.extras_require]`, when values are written as static multiline lists | Yes |
 | banner regex | JavaScript files whose first 4096 bytes match a configured `banner-regex` with capture groups 1 and 2 for package name and version | Yes |
 | yaml | Path expression such as `workflow.steps[].config.packages.pip[]` to extract data from yaml files | Yes |
 | html external scripts | HTML-like files (`.html`, `.htm`, `.xhtml`, `.tmpl`, `.gohtml`, `.mustache`, `.hbs`, `.njk`) matched by the built-in `html-external-scripts` rule; extracts remote URLs from external `<script src="https://...">` tags, `<script type="module">` imports, and `<script type="importmap">` `imports` entries | Yes |
@@ -67,6 +68,15 @@ When `setup.py` contains a `setuptools.setup(...)` call with `install_requires` 
 ```text
 python-setup-py
 - setup.py
+  - requests>=2.31
+  - pytest>=8
+```
+
+When `setup.cfg` contains declarative setuptools dependency keys such as `[options] install_requires`, `[options] setup_requires`, or entries under `[options.extras_require]`, it is reported as `python-setup-cfg`. For static multiline values, dependencies are extracted as well, for example:
+
+```text
+python-setup-cfg
+- setup.cfg
   - requests>=2.31
   - pytest>=8
 ```

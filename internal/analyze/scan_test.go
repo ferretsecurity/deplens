@@ -354,6 +354,59 @@ func TestScanMatchesSetupPyWithoutExtractingNonLiteralDependencies(t *testing.T)
 	}
 }
 
+func assertSetupCfgFixtureDependencies(t *testing.T, fixture string, want []string) {
+	t.Helper()
+
+	ruleset := mustLoadDefaultRules(t)
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", fixture), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("python-setup-cfg") || manifest.Path != "setup.cfg" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	if got := manifest.Dependencies; !slices.Equal(got, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", got, want)
+	}
+}
+
+func TestScanMatchesSetupCfgWithInstallRequiresFromFixture(t *testing.T) {
+	assertSetupCfgFixtureDependencies(t, "setup-cfg-install-requires", []string{"requests>=2.31", "urllib3<3"})
+}
+
+func TestScanMatchesSetupCfgWithSetupRequiresFromFixture(t *testing.T) {
+	assertSetupCfgFixtureDependencies(t, "setup-cfg-setup-requires", []string{"setuptools_scm>=8", "wheel"})
+}
+
+func TestScanMatchesSetupCfgWithExtrasRequireFromFixture(t *testing.T) {
+	assertSetupCfgFixtureDependencies(t, "setup-cfg-extras-require", []string{"pytest>=8", "ruff>=0.4", "mkdocs>=1.6"})
+}
+
+func TestScanMatchesSetupCfgWithoutExtractingUnsupportedValues(t *testing.T) {
+	for _, fixture := range []string{
+		"setup-cfg-inline-comma-unsupported",
+		"setup-cfg-file-unsupported",
+		"setup-cfg-interpolation-unsupported",
+	} {
+		t.Run(fixture, func(t *testing.T) {
+			assertSetupCfgFixtureDependencies(t, fixture, nil)
+		})
+	}
+}
+
+func TestScanMatchesSetupCfgWithCommentsAndBlanks(t *testing.T) {
+	assertSetupCfgFixtureDependencies(t, "setup-cfg-comments-and-blanks", []string{"requests>=2.31", "urllib3<3"})
+}
+
+func TestScanMatchesSetupCfgWithMixedSupportedAndUnsupportedValues(t *testing.T) {
+	assertSetupCfgFixtureDependencies(t, "setup-cfg-mixed", []string{"requests>=2.31", "pytest>=8", "mkdocs>=1.6"})
+}
+
 func TestScanMatchesHTMLExternalScripts(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
@@ -1582,6 +1635,41 @@ func TestLoadRulesRejectsTOMLParserWithOtherParserType(t *testing.T) {
 	}
 }
 
+func TestLoadRulesAcceptsINIParser(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-cfg\n    filename-regex: '^setup\\.cfg$'\n    ini:\n      queries:\n        - section: options\n          key: install_requires\n        - section: options.extras_require\n          key: '*'\n"))
+	if err != nil {
+		t.Fatalf("expected ini parser to load: %v", err)
+	}
+}
+
+func TestLoadRulesRejectsINIParserWithoutQueries(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-cfg\n    filename-regex: '^setup\\.cfg$'\n    ini: {}\n"))
+	if err == nil {
+		t.Fatalf("expected missing ini queries error")
+	}
+}
+
+func TestLoadRulesRejectsINIQueryWithoutSection(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-cfg\n    filename-regex: '^setup\\.cfg$'\n    ini:\n      queries:\n        - key: install_requires\n"))
+	if err == nil {
+		t.Fatalf("expected missing ini section error")
+	}
+}
+
+func TestLoadRulesRejectsINIQueryWithoutKey(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-cfg\n    filename-regex: '^setup\\.cfg$'\n    ini:\n      queries:\n        - section: options\n"))
+	if err == nil {
+		t.Fatalf("expected missing ini key error")
+	}
+}
+
+func TestLoadRulesRejectsINIParserWithOtherParserType(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: mixed\n    filename-regex: '^setup\\.cfg$'\n    ini:\n      queries:\n        - section: options\n          key: install_requires\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+	if err == nil {
+		t.Fatalf("expected multiple parser type error")
+	}
+}
+
 func TestLoadRulesRejectsMultipleParserTypes(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: mixed\n    filename-regex: '.*'\n    terraform:\n      resource_type: aws_glue_job\n      conditions:\n        - path: default_arguments.--job-language\n          equals: python\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
 	if err == nil {
@@ -1619,6 +1707,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("python-uv"),
 		ManifestType("python-pyproject"),
 		ManifestType("python-setup-py"),
+		ManifestType("python-setup-cfg"),
 		ManifestType("js"),
 		ManifestType("js-yarn"),
 		ManifestType("java"),
