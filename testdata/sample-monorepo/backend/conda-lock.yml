@@ -1,0 +1,4 @@
+# conda-lock fixture used for detector coverage.
+metadata:
+  content_hash:
+    linux-64: deadbeef

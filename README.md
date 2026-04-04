@@ -12,7 +12,7 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies |
 | --- | --- | --- |
-| filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `package.json`, `yarn.lock`, `pom.xml` | No |
+| filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `package.json`, `yarn.lock`, `pom.xml` | No |
 | path glob match | Built-in path-glob rules such as `python-requirements-dir` for `**/requirements/*.txt` | No |
 | toml | TOML files matched by a rule such as built-in `python-pyproject` for `pyproject.toml`; extracts from `build-system.requires[]`, `project.dependencies[]`, `project.optional-dependencies.*[]`, `dependency-groups.*[]`, `tool.poetry.dependencies`, and `tool.poetry.group.*.dependencies` | Yes |
 | pipfile | `Pipfile` matched by the built-in `python-pipfile` rule; reports only when the file contains at least one dependency-bearing package section such as `[packages]`, `[dev-packages]`, or a custom package category like `[docs]` | Yes |
@@ -57,6 +57,9 @@ python-pipfile-lock
 
 python-pdm-lock
 - backend/pdm.lock
+
+python-conda-lock
+- backend/conda-lock.yml
 
 js
 - frontend/package.json

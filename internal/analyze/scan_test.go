@@ -27,6 +27,7 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "poetry.lock", want: ManifestType("python-poetry-lock")},
 		{name: "Pipfile.lock", want: ManifestType("python-pipfile-lock")},
 		{name: "pdm.lock", want: ManifestType("python-pdm-lock")},
+		{name: "conda-lock.yml", want: ManifestType("python-conda-lock")},
 		{name: "package.json", want: ManifestType("js")},
 		{name: "yarn.lock", want: ManifestType("js-yarn")},
 		{name: "pom.xml", want: ManifestType("java")},
@@ -61,6 +62,8 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 		"poetry.lock.toml",
 		"Pipfile",
 		"Pipfile.lock.bak",
+		"conda-lock.yaml",
+		"conda-lock.yml.bak",
 		"index.html.bak",
 		"component.jsx",
 	}
@@ -273,6 +276,23 @@ func TestScanFindsPdmLockInFixture(t *testing.T) {
 	}
 
 	t.Fatalf("expected backend/pdm.lock fixture to be detected, got %+v", result.Manifests)
+}
+
+func TestScanFindsCondaLockInFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "sample-monorepo"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	for _, manifest := range result.Manifests {
+		if manifest.Type == ManifestType("python-conda-lock") && manifest.Path == "backend/conda-lock.yml" {
+			return
+		}
+	}
+
+	t.Fatalf("expected backend/conda-lock.yml fixture to be detected, got %+v", result.Manifests)
 }
 
 func TestScanDefaultRulesMatchRequirementsDirectoriesAnywhere(t *testing.T) {
@@ -1913,6 +1933,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("python-poetry-lock"),
 		ManifestType("python-pipfile-lock"),
 		ManifestType("python-pdm-lock"),
+		ManifestType("python-conda-lock"),
 		ManifestType("python-pyproject"),
 		ManifestType("python-pipfile"),
 		ManifestType("python-setup-py"),

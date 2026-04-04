@@ -11,6 +11,8 @@ rules:
     filename-regex: '^Pipfile\.lock$'
   - name: python-pdm-lock
     filename-regex: '^pdm\.lock$'
+  - name: python-conda-lock
+    filename-regex: '^conda-lock\.yml$'
   - name: python-pyproject
     filename-regex: '^pyproject\.toml$'
     toml:
