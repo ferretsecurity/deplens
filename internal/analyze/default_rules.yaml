@@ -9,6 +9,8 @@ rules:
     filename-regex: '^poetry\.lock$'
   - name: python-pipfile-lock
     filename-regex: '^Pipfile\.lock$'
+  - name: python-pdm-lock
+    filename-regex: '^pdm\.lock$'
   - name: python-pyproject
     filename-regex: '^pyproject\.toml$'
     toml:
