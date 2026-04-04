@@ -31,6 +31,16 @@ rules:
             literal: string_list
           - keyword: extras_require
             literal: dict_string_lists
+  - name: python-setup-cfg
+    filename-regex: '^setup\.cfg$'
+    ini:
+      queries:
+        - section: options
+          key: setup_requires
+        - section: options
+          key: install_requires
+        - section: options.extras_require
+          key: '*'
   - name: js
     filename-regex: '^package\.json$'
   - name: js-yarn

@@ -354,6 +354,59 @@ func TestScanMatchesSetupPyWithoutExtractingNonLiteralDependencies(t *testing.T)
 	}
 }
 
+func assertSetupCfgFixtureDependencies(t *testing.T, fixture string, want []string) {
+	t.Helper()
+
+	ruleset := mustLoadDefaultRules(t)
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", fixture), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("python-setup-cfg") || manifest.Path != "setup.cfg" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	if got := manifest.Dependencies; !slices.Equal(got, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", got, want)
+	}
+}
+
+func TestScanMatchesSetupCfgWithInstallRequiresFromFixture(t *testing.T) {
+	assertSetupCfgFixtureDependencies(t, "setup-cfg-install-requires", []string{"requests>=2.31", "urllib3<3"})
+}
+
+func TestScanMatchesSetupCfgWithSetupRequiresFromFixture(t *testing.T) {
+	assertSetupCfgFixtureDependencies(t, "setup-cfg-setup-requires", []string{"setuptools_scm>=8", "wheel"})
+}
+
+func TestScanMatchesSetupCfgWithExtrasRequireFromFixture(t *testing.T) {
+	assertSetupCfgFixtureDependencies(t, "setup-cfg-extras-require", []string{"pytest>=8", "ruff>=0.4", "mkdocs>=1.6"})
+}
+
+func TestScanMatchesSetupCfgWithoutExtractingUnsupportedValues(t *testing.T) {
+	for _, fixture := range []string{
+		"setup-cfg-inline-comma-unsupported",
+		"setup-cfg-file-unsupported",
+		"setup-cfg-interpolation-unsupported",
+	} {
+		t.Run(fixture, func(t *testing.T) {
+			assertSetupCfgFixtureDependencies(t, fixture, nil)
+		})
+	}
+}
+
+func TestScanMatchesSetupCfgWithCommentsAndBlanks(t *testing.T) {
+	assertSetupCfgFixtureDependencies(t, "setup-cfg-comments-and-blanks", []string{"requests>=2.31", "urllib3<3"})
+}
+
+func TestScanMatchesSetupCfgWithMixedSupportedAndUnsupportedValues(t *testing.T) {
+	assertSetupCfgFixtureDependencies(t, "setup-cfg-mixed", []string{"requests>=2.31", "pytest>=8", "mkdocs>=1.6"})
+}
+
 func TestScanMatchesHTMLExternalScripts(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
@@ -1654,6 +1707,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("python-uv"),
 		ManifestType("python-pyproject"),
 		ManifestType("python-setup-py"),
+		ManifestType("python-setup-cfg"),
 		ManifestType("js"),
 		ManifestType("js-yarn"),
 		ManifestType("java"),
