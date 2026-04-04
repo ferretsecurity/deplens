@@ -24,6 +24,7 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "requirements.qt6_3.in", want: ManifestType("python-requirements")},
 		{name: "my_requirements.prod.txt", want: ManifestType("python-requirements")},
 		{name: "uv.lock", want: ManifestType("python-uv")},
+		{name: "poetry.lock", want: ManifestType("python-poetry-lock")},
 		{name: "package.json", want: ManifestType("js")},
 		{name: "yarn.lock", want: ManifestType("js-yarn")},
 		{name: "pom.xml", want: ManifestType("java")},
@@ -55,6 +56,7 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 		"pom.xml.backup",
 		"yarn.lock.old",
 		"uv.lock.json",
+		"poetry.lock.toml",
 		"index.html.bak",
 		"component.jsx",
 	}
@@ -215,6 +217,23 @@ func TestScanFindsRequirementsInFixture(t *testing.T) {
 	}
 
 	t.Fatalf("expected requirements.qt6_3.in fixture to be detected, got %+v", result.Manifests)
+}
+
+func TestScanFindsPoetryLockInFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "sample-monorepo"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	for _, manifest := range result.Manifests {
+		if manifest.Type == ManifestType("python-poetry-lock") && manifest.Path == "backend/poetry.lock" {
+			return
+		}
+	}
+
+	t.Fatalf("expected backend/poetry.lock fixture to be detected, got %+v", result.Manifests)
 }
 
 func TestScanDefaultRulesMatchRequirementsDirectoriesAnywhere(t *testing.T) {
@@ -1705,6 +1724,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("python-requirements"),
 		ManifestType("python-requirements-dir"),
 		ManifestType("python-uv"),
+		ManifestType("python-poetry-lock"),
 		ManifestType("python-pyproject"),
 		ManifestType("python-setup-py"),
 		ManifestType("python-setup-cfg"),
