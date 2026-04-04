@@ -56,6 +56,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.TOML != nil {
 		parserCount++
 	}
+	if raw.Pipfile != nil {
+		parserCount++
+	}
 	if raw.HTML != nil {
 		parserCount++
 	}
@@ -82,6 +85,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.TOML != nil {
 		return newTOMLQueryParser(*raw.TOML)
+	}
+	if raw.Pipfile != nil {
+		return newPipfileParser(*raw.Pipfile)
 	}
 	if raw.HTML != nil {
 		return newHTMLMatcher(*raw.HTML)

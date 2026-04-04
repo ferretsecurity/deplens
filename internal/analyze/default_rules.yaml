@@ -16,6 +16,9 @@ rules:
         - dependency-groups.*[]
         - tool.poetry.dependencies
         - tool.poetry.group.*.dependencies
+  - name: python-pipfile
+    filename-regex: '^Pipfile$'
+    pipfile: {}
   - name: python-setup-py
     filename-regex: '^setup\.py$'
     python:

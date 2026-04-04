@@ -73,6 +73,7 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 
 	testCases := []string{
 		"pyproject.toml",
+		"Pipfile",
 		"index.html",
 		"job.tf",
 		"app.js",
@@ -304,6 +305,144 @@ func TestScanMatchesPyprojectDependenciesFromFixture(t *testing.T) {
 	}
 	if !slices.Equal(manifest.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
+	}
+}
+
+func TestScanMatchesPipfileWithStandardAndCustomPackageSections(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "Pipfile"), `
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[requires]
+python_version = "3.12"
+
+[packages]
+requests = "*"
+
+[docs]
+sphinx = ">=7"
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("python-pipfile") || manifest.Path != "Pipfile" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+
+	want := []string{
+		"requests = \"*\"",
+		"sphinx = \">=7\"",
+	}
+	if !slices.Equal(manifest.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	}
+}
+
+func TestScanIgnoresPipfileWithMetadataOnly(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "Pipfile"), `
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[requires]
+python_version = "3.12"
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanMatchesPipfileDependenciesFromFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "toml", "pipfile"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("python-pipfile") || manifest.Path != "Pipfile" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+
+	want := []string{
+		"requests = \"*\"",
+		"pytest = \">=8\"",
+		"sphinx = { extras = [\"docs\"], version = \">=7\" }",
+	}
+	if !slices.Equal(manifest.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	}
+}
+
+func TestScanIgnoresPipfileMetadataOnlyFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "toml", "pipfile-metadata-only"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanMatchesPipfilePackagesOnlyFixture(t *testing.T) {
+	assertPipfileFixtureDependencies(t, "pipfile-packages-only", []string{"requests = \"*\""})
+}
+
+func TestScanMatchesPipfileDevPackagesOnlyFixture(t *testing.T) {
+	assertPipfileFixtureDependencies(t, "pipfile-dev-packages-only", []string{`pytest = ">=8"`})
+}
+
+func TestScanMatchesPipfileCustomCategoryOnlyFixture(t *testing.T) {
+	assertPipfileFixtureDependencies(t, "pipfile-tests-only", []string{`pytest-cov = ">=5"`})
+}
+
+func assertPipfileFixtureDependencies(t *testing.T, fixture string, want []string) {
+	t.Helper()
+
+	ruleset := mustLoadDefaultRules(t)
+	result, err := Scan(filepath.Join("..", "..", "testdata", "toml", fixture), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("python-pipfile") || manifest.Path != "Pipfile" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	if !slices.Equal(manifest.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
 	}
 }
 
@@ -1726,6 +1865,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("python-uv"),
 		ManifestType("python-poetry-lock"),
 		ManifestType("python-pyproject"),
+		ManifestType("python-pipfile"),
 		ManifestType("python-setup-py"),
 		ManifestType("python-setup-cfg"),
 		ManifestType("js"),

@@ -2,6 +2,7 @@ package analyze
 
 import (
 	"fmt"
+	"cmp"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -11,6 +12,8 @@ import (
 type tomlMatcherConfig struct {
 	Queries []string `yaml:"queries"`
 }
+
+type pipfileMatcherConfig struct{}
 
 type tomlSegment struct {
 	key    string
@@ -25,6 +28,20 @@ type tomlQuery struct {
 
 type tomlQueryParser struct {
 	queries []tomlQuery
+}
+
+type pipfileParser struct{}
+
+var pipfileIgnoredSections = map[string]struct{}{
+	"source":   {},
+	"requires": {},
+	"scripts":  {},
+	"pipenv":   {},
+}
+
+var pipfileSectionPriority = map[string]int{
+	"packages":     0,
+	"dev-packages": 1,
 }
 
 func newTOMLQueryParser(raw tomlMatcherConfig) (manifestParser, error) {
@@ -44,6 +61,10 @@ func newTOMLQueryParser(raw tomlMatcherConfig) (manifestParser, error) {
 	return tomlQueryParser{queries: queries}, nil
 }
 
+func newPipfileParser(raw pipfileMatcherConfig) (manifestParser, error) {
+	return pipfileParser{}, nil
+}
+
 func (p tomlQueryParser) Match(path string, content []byte) ([]string, bool, error) {
 	var root map[string]any
 	if err := toml.Unmarshal(content, &root); err != nil {
@@ -59,6 +80,48 @@ func (p tomlQueryParser) Match(path string, content []byte) ([]string, bool, err
 		return nil, false, nil
 	}
 	return dependencies, true, nil
+}
+
+func (p pipfileParser) Match(path string, content []byte) ([]string, bool, error) {
+	var root map[string]any
+	if err := toml.Unmarshal(content, &root); err != nil {
+		return nil, false, fmt.Errorf("parse toml file %q: %w", path, err)
+	}
+
+	keys := make([]string, 0, len(root))
+	for key := range root {
+		if _, ignored := pipfileIgnoredSections[key]; ignored {
+			continue
+		}
+		keys = append(keys, key)
+	}
+	slices.SortFunc(keys, func(a, b string) int {
+		return cmp.Or(
+			cmp.Compare(pipfileSectionPriorityValue(a), pipfileSectionPriorityValue(b)),
+			cmp.Compare(a, b),
+		)
+	})
+
+	dependencies := make([]string, 0)
+	for _, key := range keys {
+		table, ok := root[key].(map[string]any)
+		if !ok {
+			continue
+		}
+		dependencies = append(dependencies, serializeTOMLDependencyTable(table, false)...)
+	}
+	if len(dependencies) == 0 {
+		return nil, false, nil
+	}
+	return dependencies, true, nil
+}
+
+func pipfileSectionPriorityValue(key string) int {
+	priority, ok := pipfileSectionPriority[key]
+	if ok {
+		return priority
+	}
+	return len(pipfileSectionPriority) + 1
 }
 
 func compileTOMLQuery(raw string) (tomlQuery, error) {
@@ -193,22 +256,29 @@ func extractTOMLDependencies(nodes []any, query tomlQuery) []string {
 			if !allowDependencyTables {
 				continue
 			}
-			keys := make([]string, 0, len(value))
-			for key := range value {
-				if query.skipPython && key == "python" {
-					continue
-				}
-				keys = append(keys, key)
-			}
-			slices.Sort(keys)
-			for _, key := range keys {
-				serialized, ok := serializeTOMLValue(value[key])
-				if !ok {
-					continue
-				}
-				dependencies = append(dependencies, fmt.Sprintf("%s = %s", key, serialized))
-			}
+			dependencies = append(dependencies, serializeTOMLDependencyTable(value, query.skipPython)...)
 		}
+	}
+	return dependencies
+}
+
+func serializeTOMLDependencyTable(value map[string]any, skipPython bool) []string {
+	keys := make([]string, 0, len(value))
+	for key := range value {
+		if skipPython && key == "python" {
+			continue
+		}
+		keys = append(keys, key)
+	}
+	slices.Sort(keys)
+
+	dependencies := make([]string, 0, len(keys))
+	for _, key := range keys {
+		serialized, ok := serializeTOMLValue(value[key])
+		if !ok {
+			continue
+		}
+		dependencies = append(dependencies, fmt.Sprintf("%s = %s", key, serialized))
 	}
 	return dependencies
 }

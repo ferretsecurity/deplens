@@ -1,0 +1,16 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[requires]
+python_version = "3.12"
+
+[packages]
+requests = "*"
+
+[dev-packages]
+pytest = ">=8"
+
+[docs]
+sphinx = {version = ">=7", extras = ["docs"]}
