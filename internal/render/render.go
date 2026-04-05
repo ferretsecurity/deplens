@@ -10,7 +10,11 @@ import (
 	"github.com/ferretsecurity/deplens/internal/analyze"
 )
 
-func Human(result analyze.ScanResult, supportedTypes []analyze.ManifestType) string {
+type HumanOptions struct {
+	ShowEmpty bool
+}
+
+func Human(result analyze.ScanResult, supportedTypes []analyze.ManifestType, opts HumanOptions) string {
 	if len(result.Manifests) == 0 {
 		return fmt.Sprintf("Root: %s\nNo manifests found.\n", result.Root)
 	}
@@ -36,6 +40,7 @@ func Human(result analyze.ScanResult, supportedTypes []analyze.ManifestType) str
 	})
 
 	summary := summarizeManifests(manifests)
+	visibleManifests := filterVisibleManifests(manifests, opts)
 
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("Root: %s\n", result.Root))
@@ -44,7 +49,7 @@ func Human(result analyze.ScanResult, supportedTypes []analyze.ManifestType) str
 	for _, line := range summary.lines() {
 		b.WriteString(fmt.Sprintf("- %s\n", line))
 	}
-	for _, manifest := range manifests {
+	for _, manifest := range visibleManifests {
 		b.WriteString("\n")
 		b.WriteString(fmt.Sprintf("%s %s\n", manifest.Path, manifestStatusLabel(manifest)))
 		b.WriteString(renderDependencies(manifest.Dependencies))
@@ -174,6 +179,21 @@ func renderDependencies(dependencies []analyze.Dependency) string {
 		}
 	}
 	return b.String()
+}
+
+func filterVisibleManifests(manifests []analyze.ManifestMatch, opts HumanOptions) []analyze.ManifestMatch {
+	if opts.ShowEmpty {
+		return manifests
+	}
+
+	filtered := make([]analyze.ManifestMatch, 0, len(manifests))
+	for _, manifest := range manifests {
+		if manifestState(manifest) == "empty" {
+			continue
+		}
+		filtered = append(filtered, manifest)
+	}
+	return filtered
 }
 
 func pluralize(count int, singular, plural string) string {

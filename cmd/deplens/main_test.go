@@ -61,6 +61,38 @@ func TestRunExplicitPathDetectsRequirementsIn(t *testing.T) {
 	}
 }
 
+func TestRunHidesConfirmedEmptyManifestsByDefault(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{filepath.Join("..", "..", "testdata", "python", "setup-cfg-inline-comma-unsupported")}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "Found 1 manifest:") {
+		t.Fatalf("expected summary to include manifest count, got %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "- 1 confirmed empty") {
+		t.Fatalf("expected summary to include confirmed empty count, got %q", stdout.String())
+	}
+	if strings.Contains(stdout.String(), "setup.cfg [no dependencies]") {
+		t.Fatalf("expected confirmed-empty manifest to be hidden by default, got %q", stdout.String())
+	}
+}
+
+func TestRunShowEmptyIncludesConfirmedEmptyManifests(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{"--show-empty", filepath.Join("..", "..", "testdata", "python", "setup-cfg-inline-comma-unsupported")}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "setup.cfg [no dependencies]") {
+		t.Fatalf("expected confirmed-empty manifest to be shown with --show-empty, got %q", stdout.String())
+	}
+}
+
 func TestRunJSONOutput(t *testing.T) {
 	tmpDir := t.TempDir()
 	writeFile(t, filepath.Join(tmpDir, "pom.xml"), "<project/>")
@@ -85,6 +117,16 @@ func TestRunJSONOutput(t *testing.T) {
 	}
 	if len(payload.Manifests) != 1 || payload.Manifests[0].Type != "java" {
 		t.Fatalf("unexpected manifests payload: %+v", payload.Manifests)
+	}
+}
+
+func TestParseArgsShowEmptyFlag(t *testing.T) {
+	cfg, err := parseArgs([]string{"--show-empty"})
+	if err != nil {
+		t.Fatalf("parseArgs returned error: %v", err)
+	}
+	if !cfg.showEmpty {
+		t.Fatalf("expected showEmpty to be true")
 	}
 }
 
