@@ -23,6 +23,10 @@ rules:
         - dependency-groups.*[]
         - tool.poetry.dependencies
         - tool.poetry.group.*.dependencies
+  - name: python-conda-environment
+    filename-regex: '^environment\.ya?ml$'
+    yaml:
+      exists: dependencies
   - name: python-pipfile
     filename-regex: '^Pipfile$'
     toml:

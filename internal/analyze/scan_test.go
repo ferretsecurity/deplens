@@ -244,6 +244,26 @@ func TestScanFindsPoetryLockInFixture(t *testing.T) {
 	t.Fatalf("expected backend/poetry.lock fixture to be detected, got %+v", result.Manifests)
 }
 
+func TestScanFindsCondaEnvironmentInFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "conda-environment"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	for _, manifest := range result.Manifests {
+		if manifest.Type == ManifestType("python-conda-environment") && manifest.Path == "environment.yml" {
+			if manifest.Dependencies != nil {
+				t.Fatalf("expected no extracted dependencies, got %+v", manifest.Dependencies)
+			}
+			return
+		}
+	}
+
+	t.Fatalf("expected environment.yml fixture to be detected, got %+v", result.Manifests)
+}
+
 func TestScanFindsPipfileLockInFixture(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
@@ -1811,6 +1831,13 @@ func TestLoadRulesAcceptsYAMLParser(t *testing.T) {
 	}
 }
 
+func TestLoadRulesAcceptsYAMLExistsParser(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: conda-environment\n    filename-regex: '^environment\\.ya?ml$'\n    yaml:\n      exists: dependencies\n"))
+	if err != nil {
+		t.Fatalf("expected yaml exists parser to load: %v", err)
+	}
+}
+
 func TestLoadRulesSupportsTOMLTableQueriesAndExcludeKeys(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pipfile\n    filename-regex: '^Pipfile$'\n    toml:\n      table-queries:\n        - '*'\n      exclude-keys:\n        - source\n        - requires\n"))
 	if err != nil {
@@ -1825,10 +1852,24 @@ func TestLoadRulesRejectsYAMLParserWithoutQuery(t *testing.T) {
 	}
 }
 
+func TestLoadRulesRejectsYAMLParserWithQueryAndExists(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: conda-environment\n    filename-regex: '^environment\\.ya?ml$'\n    yaml:\n      query: dependencies[]\n      exists: dependencies\n"))
+	if err == nil {
+		t.Fatalf("expected mutually exclusive yaml query and exists error")
+	}
+}
+
 func TestLoadRulesRejectsMalformedYAMLQuery(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '.*\\.ya?ml$'\n    yaml:\n      query: workflow..steps[].config.packages.pip[]\n"))
 	if err == nil {
 		t.Fatalf("expected malformed yaml query error")
+	}
+}
+
+func TestLoadRulesRejectsMalformedYAMLExistsPath(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: conda-environment\n    filename-regex: '^environment\\.ya?ml$'\n    yaml:\n      exists: dependencies..\n"))
+	if err == nil {
+		t.Fatalf("expected malformed yaml exists path error")
 	}
 }
 
@@ -1935,6 +1976,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("python-pdm-lock"),
 		ManifestType("python-conda-lock"),
 		ManifestType("python-pyproject"),
+		ManifestType("python-conda-environment"),
 		ManifestType("python-pipfile"),
 		ManifestType("python-setup-py"),
 		ManifestType("python-setup-cfg"),
@@ -1984,6 +2026,35 @@ workflow:
 	}
 	if !slices.Equal(result.Manifests[0].Dependencies, []string{"requests", "pendulum"}) {
 		t.Fatalf("unexpected dependencies: %+v", result.Manifests[0].Dependencies)
+	}
+}
+
+func TestScanMatchesYAMLExistsRuleWithoutExtractingDependencies(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: conda-environment\n    filename-regex: '^environment\\.ya?ml$'\n    yaml:\n      exists: dependencies\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "environment.yml"), `
+name: app
+dependencies:
+  - python=3.12
+  - pip
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("conda-environment") || result.Manifests[0].Path != "environment.yml" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	if result.Manifests[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
 	}
 }
 
@@ -2222,6 +2293,28 @@ func TestScanDoesNotMatchYAMLWhenQueryMissing(t *testing.T) {
 workflow:
   jobs:
     - name: step1
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	}
+}
+
+func TestScanDoesNotMatchYAMLExistsRuleWhenPathMissing(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: conda-environment\n    filename-regex: '^environment\\.ya?ml$'\n    yaml:\n      exists: dependencies\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "environment.yaml"), `
+name: app
+channels:
+  - conda-forge
 `)
 
 	result, err := Scan(root, nil, ruleset)
