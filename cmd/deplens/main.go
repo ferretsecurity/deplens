@@ -53,7 +53,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if cfg.json {
 		output, err = render.JSON(result)
 	} else {
-		output = []byte(render.Human(result, ruleset.SupportedManifestTypes()))
+		output = []byte(render.Human(result, ruleset.SupportedManifestTypes(), render.HumanOptions{
+			ShowEmpty: cfg.showEmpty,
+		}))
 	}
 	if err != nil {
 		fmt.Fprintf(stderr, "error: %v\n", err)
@@ -74,6 +76,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 type config struct {
 	path       string
 	json       bool
+	showEmpty  bool
 	ignoreDirs []string
 	rulesPath  string
 }
@@ -87,6 +90,7 @@ func parseArgs(args []string) (config, error) {
 	fs := flag.NewFlagSet("deplens", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	fs.BoolVar(&cfg.json, "json", false, "emit machine-readable JSON output")
+	fs.BoolVar(&cfg.showEmpty, "show-empty", false, "include matched manifests that were confirmed to have no dependencies")
 
 	var ignore string
 	fs.StringVar(&ignore, "ignore", "", "comma-separated directory names to skip")

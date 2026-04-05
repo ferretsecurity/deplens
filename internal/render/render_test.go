@@ -37,7 +37,7 @@ func TestHumanIncludesDetectedPaths(t *testing.T) {
 		},
 	}
 
-	output := Human(result, []analyze.ManifestType{analyze.ManifestType("python-requirements"), analyze.ManifestType("js")})
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("python-requirements"), analyze.ManifestType("js")}, HumanOptions{ShowEmpty: true})
 	expected := strings.Join([]string{
 		"Root: /tmp/project",
 		"",
@@ -56,7 +56,7 @@ func TestHumanIncludesDetectedPaths(t *testing.T) {
 }
 
 func TestHumanEmptyState(t *testing.T) {
-	output := Human(analyze.ScanResult{Root: "/tmp/project"}, nil)
+	output := Human(analyze.ScanResult{Root: "/tmp/project"}, nil, HumanOptions{})
 	if !strings.Contains(output, "No manifests found.") {
 		t.Fatalf("expected empty state output, got %q", output)
 	}
@@ -72,7 +72,7 @@ func TestHumanUsesPathFirstOrder(t *testing.T) {
 		},
 	}
 
-	output := Human(result, []analyze.ManifestType{analyze.ManifestType("js"), analyze.ManifestType("python-requirements")})
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("js"), analyze.ManifestType("python-requirements")}, HumanOptions{})
 	if strings.Index(output, "api/requirements.txt") > strings.Index(output, "web/package.json") {
 		t.Fatalf("expected api/requirements.txt before web/package.json, got %q", output)
 	}
@@ -125,7 +125,7 @@ func TestHumanIncludesDependenciesWhenPresent(t *testing.T) {
 		},
 	}
 
-	output := Human(result, []analyze.ManifestType{analyze.ManifestType("yaml-pip")})
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("yaml-pip")}, HumanOptions{})
 	expected := strings.Join([]string{
 		"Root: /tmp/project",
 		"",
@@ -160,7 +160,7 @@ func TestHumanGroupsDependenciesBySectionWhenPresent(t *testing.T) {
 		},
 	}
 
-	output := Human(result, []analyze.ManifestType{analyze.ManifestType("python-pyproject")})
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("python-pyproject")}, HumanOptions{})
 	expected := strings.Join([]string{
 		"Root: /tmp/project",
 		"",
@@ -198,7 +198,7 @@ func TestHumanUsesDefaultGroupOnlyForMixedDependencies(t *testing.T) {
 		},
 	}
 
-	output := Human(result, []analyze.ManifestType{analyze.ManifestType("mixed")})
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("mixed")}, HumanOptions{})
 	expected := strings.Join([]string{
 		"Root: /tmp/project",
 		"",
@@ -255,7 +255,7 @@ func TestHumanSummarizesAllDependencyStates(t *testing.T) {
 		analyze.ManifestType("python-conda-environment"),
 		analyze.ManifestType("js"),
 		analyze.ManifestType("yaml"),
-	})
+	}, HumanOptions{ShowEmpty: true})
 	for _, expected := range []string{
 		"Found 4 manifests:",
 		"- 1 with extracted dependencies",
@@ -270,6 +270,41 @@ func TestHumanSummarizesAllDependencyStates(t *testing.T) {
 		if !strings.Contains(output, expected) {
 			t.Fatalf("expected output to contain %q, got:\n%s", expected, output)
 		}
+	}
+}
+
+func TestHumanHidesConfirmedEmptyManifestsByDefault(t *testing.T) {
+	hasDependencies := true
+	noDependencies := false
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type:            analyze.ManifestType("python-conda-environment"),
+				Path:            "environment.yml",
+				HasDependencies: &noDependencies,
+			},
+			{
+				Type:            analyze.ManifestType("js"),
+				Path:            "frontend/package.json",
+				HasDependencies: &hasDependencies,
+			},
+		},
+	}
+
+	output := Human(result, []analyze.ManifestType{
+		analyze.ManifestType("python-conda-environment"),
+		analyze.ManifestType("js"),
+	}, HumanOptions{})
+
+	if !strings.Contains(output, "- 1 confirmed empty") {
+		t.Fatalf("expected summary to include confirmed empty count, got:\n%s", output)
+	}
+	if strings.Contains(output, "environment.yml [no dependencies]") {
+		t.Fatalf("expected default human output to hide confirmed-empty manifests, got:\n%s", output)
+	}
+	if !strings.Contains(output, "frontend/package.json [dependencies present, not extracted]") {
+		t.Fatalf("expected non-empty manifests to remain visible, got:\n%s", output)
 	}
 }
 
@@ -391,7 +426,7 @@ func TestHumanIncludesExternalScriptURLs(t *testing.T) {
 		},
 	}
 
-	output := Human(result, []analyze.ManifestType{analyze.ManifestType("html-external-scripts")})
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("html-external-scripts")}, HumanOptions{})
 	if !strings.Contains(output, "templates/index.html") || !strings.Contains(output, "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js") {
 		t.Fatalf("expected human output to include external script URL, got %q", output)
 	}
@@ -411,7 +446,7 @@ func TestHumanSummaryPluralization(t *testing.T) {
 				HasDependencies: &hasDependencies,
 			},
 		},
-	}, []analyze.ManifestType{analyze.ManifestType("python-pyproject")})
+	}, []analyze.ManifestType{analyze.ManifestType("python-pyproject")}, HumanOptions{})
 
 	if !strings.Contains(output, fmt.Sprintf("Found %d manifest:", 1)) {
 		t.Fatalf("expected singular manifest count, got %q", output)

@@ -6,7 +6,7 @@ By default, the tool walks the target directory recursively, skips common genera
 
 JSON output contains a top-level `root` plus `manifests`. Each manifest entry includes `type`, `path`, optional `dependencies`, and `has_dependencies`. Each dependency is emitted as an object with `name` and optional `section`. `has_dependencies` is `null` when the detector cannot determine dependency presence, `true` when extraction confirmed at least one dependency, and `false` when a detector or extractor conclusively matched but found none.
 
-Human-readable output starts with summary counts and then prints one block per manifest path. Files with extracted dependencies show either a flat list or sectioned groups. If a file mixes sectioned and unsectioned dependencies, the unsectioned entries are rendered under `[default group]`.
+Human-readable output starts with summary counts and then prints one block per manifest path. By default, manifests that were conclusively matched but found to have no dependencies are counted in the summary and omitted from the detailed list; pass `--show-empty` to include them. Files with extracted dependencies show either a flat list or sectioned groups. If a file mixes sectioned and unsectioned dependencies, the unsectioned entries are rendered under `[default group]`.
 
 ## Supported Detectors
 
@@ -79,6 +79,12 @@ When a Conda environment file contains a top-level `dependencies` key but the de
 
 ```text
 environment.yml [dependencies present, not extracted]
+```
+
+When you need to audit empty matches as well, use `--show-empty` to include entries whose dependency status is conclusively empty:
+
+```text
+setup.cfg [no dependencies]
 ```
 
 When `setup.py` contains a `setuptools.setup(...)` call with `install_requires` or `extras_require`, extracted dependencies render either as a flat list or grouped by section. For example:
