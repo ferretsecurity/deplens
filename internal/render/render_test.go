@@ -72,6 +72,13 @@ func TestJSONMatchesExpectedSchema(t *testing.T) {
 	if !ok || len(manifests) != 1 {
 		t.Fatalf("unexpected manifests payload: %#v", payload["manifests"])
 	}
+	manifest, ok := manifests[0].(map[string]any)
+	if !ok {
+		t.Fatalf("unexpected manifest payload: %#v", manifests[0])
+	}
+	if value, ok := manifest["has_dependencies"]; !ok || value != nil {
+		t.Fatalf("expected has_dependencies to be present as null, got %#v", manifest["has_dependencies"])
+	}
 }
 
 func TestHumanIncludesDependenciesWhenPresent(t *testing.T) {
@@ -96,13 +103,15 @@ func TestHumanIncludesDependenciesWhenPresent(t *testing.T) {
 }
 
 func TestJSONIncludesDependenciesWhenPresent(t *testing.T) {
+	hasDependencies := true
 	result := analyze.ScanResult{
 		Root: "/tmp/project",
 		Manifests: []analyze.ManifestMatch{
 			{
-				Type:         analyze.ManifestType("yaml-pip"),
-				Path:         "workflow.yaml",
-				Dependencies: []string{"requests", "pendulum"},
+				Type:            analyze.ManifestType("yaml-pip"),
+				Path:            "workflow.yaml",
+				Dependencies:    []string{"requests", "pendulum"},
+				HasDependencies: &hasDependencies,
 			},
 		},
 	}
@@ -114,7 +123,8 @@ func TestJSONIncludesDependenciesWhenPresent(t *testing.T) {
 
 	var payload struct {
 		Manifests []struct {
-			Dependencies []string `json:"dependencies"`
+			Dependencies    []string `json:"dependencies"`
+			HasDependencies *bool    `json:"has_dependencies"`
 		} `json:"manifests"`
 	}
 	if err := json.Unmarshal(output, &payload); err != nil {
@@ -122,6 +132,40 @@ func TestJSONIncludesDependenciesWhenPresent(t *testing.T) {
 	}
 	if len(payload.Manifests) != 1 || len(payload.Manifests[0].Dependencies) != 2 {
 		t.Fatalf("unexpected dependencies payload: %+v", payload.Manifests)
+	}
+	if payload.Manifests[0].HasDependencies == nil || !*payload.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", payload.Manifests[0].HasDependencies)
+	}
+}
+
+func TestJSONIncludesHasDependenciesFalseWhenKnownEmpty(t *testing.T) {
+	hasDependencies := false
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type:            analyze.ManifestType("python-conda-environment"),
+				Path:            "environment.yml",
+				HasDependencies: &hasDependencies,
+			},
+		},
+	}
+
+	output, err := JSON(result)
+	if err != nil {
+		t.Fatalf("json render failed: %v", err)
+	}
+
+	var payload struct {
+		Manifests []struct {
+			HasDependencies *bool `json:"has_dependencies"`
+		} `json:"manifests"`
+	}
+	if err := json.Unmarshal(output, &payload); err != nil {
+		t.Fatalf("expected valid JSON, got error: %v", err)
+	}
+	if len(payload.Manifests) != 1 || payload.Manifests[0].HasDependencies == nil || *payload.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", payload.Manifests)
 	}
 }
 

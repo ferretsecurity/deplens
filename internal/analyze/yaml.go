@@ -72,13 +72,13 @@ func parseYAMLPath(raw string, fieldName string) ([]yamlPathSegment, error) {
 	return segments, nil
 }
 
-func (p yamlQueryParser) Match(path string, content []byte) ([]string, bool, error) {
+func (p yamlQueryParser) Match(path string, content []byte) ([]string, *bool, bool, error) {
 	current, err := resolveYAMLPath(path, content, p.segments)
 	if err != nil {
-		return nil, false, err
+		return nil, nil, false, err
 	}
 	if len(current) == 0 {
-		return nil, false, nil
+		return nil, nil, false, nil
 	}
 
 	dependencies := make([]string, 0, len(current))
@@ -90,20 +90,20 @@ func (p yamlQueryParser) Match(path string, content []byte) ([]string, bool, err
 		dependencies = append(dependencies, value)
 	}
 	if len(dependencies) == 0 {
-		return nil, false, nil
+		return nil, nil, false, nil
 	}
-	return dependencies, true, nil
+	return dependencies, boolPtr(true), true, nil
 }
 
-func (p yamlExistsParser) Match(path string, content []byte) ([]string, bool, error) {
+func (p yamlExistsParser) Match(path string, content []byte) ([]string, *bool, bool, error) {
 	current, err := resolveYAMLPath(path, content, p.segments)
 	if err != nil {
-		return nil, false, err
+		return nil, nil, false, err
 	}
 	if len(current) == 0 {
-		return nil, false, nil
+		return nil, nil, false, nil
 	}
-	return nil, true, nil
+	return nil, nil, true, nil
 }
 
 func resolveYAMLPath(path string, content []byte, segments []yamlPathSegment) ([]any, error) {

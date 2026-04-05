@@ -53,14 +53,14 @@ func newINIQueryParser(raw iniMatcherConfig) (manifestParser, error) {
 	return iniQueryParser{queries: queries}, nil
 }
 
-func (p iniQueryParser) Match(path string, content []byte) ([]string, bool, error) {
+func (p iniQueryParser) Match(path string, content []byte) ([]string, *bool, bool, error) {
 	file, err := ini.LoadSources(ini.LoadOptions{
 		AllowNestedValues:        true,
 		Insensitive:             true,
 		SpaceBeforeInlineComment: true,
 	}, content)
 	if err != nil {
-		return nil, false, fmt.Errorf("parse ini file %q: %w", path, err)
+		return nil, nil, false, fmt.Errorf("parse ini file %q: %w", path, err)
 	}
 
 	dependencies := make([]string, 0)
@@ -83,9 +83,12 @@ func (p iniQueryParser) Match(path string, content []byte) ([]string, bool, erro
 	}
 
 	if !found {
-		return nil, false, nil
+		return nil, nil, false, nil
 	}
-	return dependencies, true, nil
+	if len(dependencies) == 0 {
+		return nil, boolPtr(false), true, nil
+	}
+	return dependencies, boolPtr(true), true, nil
 }
 
 func matchingINIKeys(section *ini.Section, query iniQuery) []*ini.Key {

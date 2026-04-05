@@ -119,16 +119,16 @@ func newTerraformResourceParser(raw terraformMatcherConfig) (manifestParser, err
 	}, nil
 }
 
-func (m terraformResourceParserMatcher) Match(path string, content []byte) ([]string, bool, error) {
+func (m terraformResourceParserMatcher) Match(path string, content []byte) ([]string, *bool, bool, error) {
 	parser := hclparse.NewParser()
 	file, diags := parser.ParseHCL(content, path)
 	if diags.HasErrors() {
-		return nil, false, fmt.Errorf("parse terraform file %q: %s", path, diags.Error())
+		return nil, nil, false, fmt.Errorf("parse terraform file %q: %s", path, diags.Error())
 	}
 
 	body, ok := file.Body.(*hclsyntax.Body)
 	if !ok {
-		return nil, false, fmt.Errorf("parse terraform file %q: unexpected body type %T", path, file.Body)
+		return nil, nil, false, fmt.Errorf("parse terraform file %q: unexpected body type %T", path, file.Body)
 	}
 
 	for _, block := range body.Blocks {
@@ -137,14 +137,14 @@ func (m terraformResourceParserMatcher) Match(path string, content []byte) ([]st
 		}
 		matched, err := m.matchBlock(block.Body)
 		if err != nil {
-			return nil, false, fmt.Errorf("match terraform resource %q in %q: %w", m.resourceType, path, err)
+			return nil, nil, false, fmt.Errorf("match terraform resource %q in %q: %w", m.resourceType, path, err)
 		}
 		if matched {
-			return nil, true, nil
+			return nil, nil, true, nil
 		}
 	}
 
-	return nil, false, nil
+	return nil, nil, false, nil
 }
 
 func (m terraformResourceParserMatcher) matchBlock(body *hclsyntax.Body) (bool, error) {

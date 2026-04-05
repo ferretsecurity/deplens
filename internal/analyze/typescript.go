@@ -129,12 +129,12 @@ func newTypeScriptMatcher(raw typescriptMatcherConfig) (manifestParser, error) {
 	}, nil
 }
 
-func (m typescriptCDKConstructMatcher) Match(path string, content []byte) ([]string, bool, error) {
+func (m typescriptCDKConstructMatcher) Match(path string, content []byte) ([]string, *bool, bool, error) {
 	parser := sitter.NewParser()
 	defer parser.Close()
 
 	if err := parser.SetLanguage(sitter.NewLanguage(tstypescript.LanguageTypescript())); err != nil {
-		return nil, false, fmt.Errorf("configure typescript parser for %q: %w", path, err)
+		return nil, nil, false, fmt.Errorf("configure typescript parser for %q: %w", path, err)
 	}
 
 	tree := parser.Parse(content, nil)
@@ -143,7 +143,7 @@ func (m typescriptCDKConstructMatcher) Match(path string, content []byte) ([]str
 	root := tree.RootNode()
 	imports := collectTypeScriptImports(root, content, m.module, m.construct)
 	if len(imports.namespaces) == 0 && len(imports.named) == 0 {
-		return nil, false, nil
+		return nil, nil, false, nil
 	}
 
 	var (
@@ -166,7 +166,13 @@ func (m typescriptCDKConstructMatcher) Match(path string, content []byte) ([]str
 		return false
 	})
 
-	return dependencies, matched, nil
+	if !matched {
+		return nil, nil, false, nil
+	}
+	if len(dependencies) == 0 {
+		return dependencies, nil, true, nil
+	}
+	return dependencies, boolPtr(true), true, nil
 }
 
 func (m typescriptCDKConstructMatcher) matchNewExpression(root *sitter.Node, node *sitter.Node, content []byte, imports typeScriptImportTable) ([]string, bool) {

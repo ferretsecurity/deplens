@@ -27,21 +27,21 @@ func newBannerRegexParser(pattern string) (manifestParser, error) {
 	return bannerRegexParser{regex: compiled}, nil
 }
 
-func (p bannerRegexParser) Match(path string, content []byte) ([]string, bool, error) {
+func (p bannerRegexParser) Match(path string, content []byte) ([]string, *bool, bool, error) {
 	if len(content) > bannerRegexScanLimit {
 		content = content[:bannerRegexScanLimit]
 	}
 
 	match := p.regex.FindSubmatch(content)
 	if len(match) == 0 {
-		return nil, false, nil
+		return nil, nil, false, nil
 	}
 
 	name := string(match[1])
 	version := string(match[2])
 	if name == "" || version == "" {
-		return nil, false, nil
+		return nil, nil, false, nil
 	}
 
-	return []string{fmt.Sprintf("%s@%s", name, version)}, true, nil
+	return []string{fmt.Sprintf("%s@%s", name, version)}, boolPtr(true), true, nil
 }

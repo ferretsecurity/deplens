@@ -11,6 +11,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+func boolPtr(v bool) *bool {
+	return &v
+}
+
 //go:embed default_rules.yaml
 var defaultRulesYAML []byte
 
@@ -47,7 +51,7 @@ type ruleConfig struct {
 }
 
 type manifestParser interface {
-	Match(path string, content []byte) ([]string, bool, error)
+	Match(path string, content []byte) ([]string, *bool, bool, error)
 }
 
 func LoadDefaultRules() (Ruleset, error) {
@@ -130,15 +134,15 @@ func (r Ruleset) DetectManifest(name string) (ManifestType, bool) {
 	return "", false
 }
 
-func (r Ruleset) DetectManifestFile(path string, name string) (ManifestType, []string, bool, error) {
+func (r Ruleset) DetectManifestFile(path string, name string) (ManifestType, []string, *bool, bool, error) {
 	return r.detectManifestFile(path, name, "")
 }
 
-func (r Ruleset) DetectManifestFileAtRelativePath(path string, name string, relPath string) (ManifestType, []string, bool, error) {
+func (r Ruleset) DetectManifestFileAtRelativePath(path string, name string, relPath string) (ManifestType, []string, *bool, bool, error) {
 	return r.detectManifestFile(path, name, normalizeRelativePath(relPath))
 }
 
-func (r Ruleset) detectManifestFile(path string, name string, relPath string) (ManifestType, []string, bool, error) {
+func (r Ruleset) detectManifestFile(path string, name string, relPath string) (ManifestType, []string, *bool, bool, error) {
 	var content []byte
 	contentLoaded := false
 
@@ -147,25 +151,25 @@ func (r Ruleset) detectManifestFile(path string, name string, relPath string) (M
 			continue
 		}
 		if rule.Parser == nil {
-			return rule.Type, nil, true, nil
+			return rule.Type, nil, nil, true, nil
 		}
 		if !contentLoaded {
 			data, err := os.ReadFile(path)
 			if err != nil {
-				return "", nil, false, fmt.Errorf("read candidate file %q: %w", path, err)
+				return "", nil, nil, false, fmt.Errorf("read candidate file %q: %w", path, err)
 			}
 			content = data
 			contentLoaded = true
 		}
-		dependencies, ok, err := rule.Parser.Match(path, content)
+		dependencies, hasDependencies, ok, err := rule.Parser.Match(path, content)
 		if err != nil {
-			return "", nil, false, err
+			return "", nil, nil, false, err
 		}
 		if ok {
-			return rule.Type, dependencies, true, nil
+			return rule.Type, dependencies, hasDependencies, true, nil
 		}
 	}
-	return "", nil, false, nil
+	return "", nil, nil, false, nil
 }
 
 func (r manifestRule) matches(name string, relPath string) bool {
