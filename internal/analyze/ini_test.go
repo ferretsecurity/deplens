@@ -53,7 +53,7 @@ func TestINIParserExtractsMultilineDependencies(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []string{"requests>=2.31", "urllib3<3"}; !slices.Equal(deps, want) {
+	if want := []string{"requests>=2.31", "urllib3<3"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
@@ -77,7 +77,7 @@ func TestINIParserWildcardExtrasExtractsAcrossKeys(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []string{"pytest>=8", "ruff>=0.4", "sphinx>=7"}; !slices.Equal(deps, want) {
+	if want := []string{"pytest>=8", "ruff>=0.4", "sphinx>=7"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
@@ -101,7 +101,7 @@ func TestINIParserStripsCommentsAndBlankLines(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []string{"requests>=2.31", "urllib3<3"}; !slices.Equal(deps, want) {
+	if want := []string{"requests>=2.31", "urllib3<3"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
@@ -125,7 +125,7 @@ func TestINIParserSkipsUnsupportedEntriesButKeepsMatch(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []string{"requests>=2.31"}; !slices.Equal(deps, want) {
+	if want := []string{"requests>=2.31"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {

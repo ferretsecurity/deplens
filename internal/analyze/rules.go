@@ -51,7 +51,7 @@ type ruleConfig struct {
 }
 
 type manifestParser interface {
-	Match(path string, content []byte) ([]string, *bool, bool, error)
+	Match(path string, content []byte) ([]Dependency, *bool, bool, error)
 }
 
 func LoadDefaultRules() (Ruleset, error) {
@@ -134,15 +134,15 @@ func (r Ruleset) DetectManifest(name string) (ManifestType, bool) {
 	return "", false
 }
 
-func (r Ruleset) DetectManifestFile(path string, name string) (ManifestType, []string, *bool, bool, error) {
+func (r Ruleset) DetectManifestFile(path string, name string) (ManifestType, []Dependency, *bool, bool, error) {
 	return r.detectManifestFile(path, name, "")
 }
 
-func (r Ruleset) DetectManifestFileAtRelativePath(path string, name string, relPath string) (ManifestType, []string, *bool, bool, error) {
+func (r Ruleset) DetectManifestFileAtRelativePath(path string, name string, relPath string) (ManifestType, []Dependency, *bool, bool, error) {
 	return r.detectManifestFile(path, name, normalizeRelativePath(relPath))
 }
 
-func (r Ruleset) detectManifestFile(path string, name string, relPath string) (ManifestType, []string, *bool, bool, error) {
+func (r Ruleset) detectManifestFile(path string, name string, relPath string) (ManifestType, []Dependency, *bool, bool, error) {
 	var content []byte
 	contentLoaded := false
 

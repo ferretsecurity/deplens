@@ -8,6 +8,14 @@ import (
 	"testing"
 )
 
+func dependencyNames(dependencies []Dependency) []string {
+	names := make([]string, 0, len(dependencies))
+	for _, dependency := range dependencies {
+		names = append(names, dependency.Name)
+	}
+	return names
+}
+
 func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
@@ -394,19 +402,19 @@ func TestScanFindsAdditionalLockfilesInFixture(t *testing.T) {
 	}
 
 	want := map[string]ManifestType{
-		"frontend/pnpm-lock.yaml":       ManifestType("js-pnpm-lock"),
-		"frontend/bun.lock":             ManifestType("js-bun-lock"),
-		"frontend/bun.lockb":            ManifestType("js-bun-lockb"),
-		"frontend/deno.lock":            ManifestType("deno-lock"),
-		"java-service/gradle.lockfile":  ManifestType("java-gradle-lockfile"),
-		"ruby-app/Gemfile.lock":         ManifestType("ruby-gemfile-lock"),
-		"go-service/go.sum":             ManifestType("go-sum"),
-		"go-service/Gopkg.lock":         ManifestType("go-gopkg-lock"),
-		"go-service/glide.lock":         ManifestType("go-glide-lock"),
-		"cpp-app/conan.lock":            ManifestType("cpp-conan-lock"),
-		"ios-app/Package.resolved":      ManifestType("swift-package-resolved"),
-		"ios-app/Podfile.lock":          ManifestType("ios-podfile-lock"),
-		"elixir-app/mix.lock":           ManifestType("elixir-mix-lock"),
+		"frontend/pnpm-lock.yaml":      ManifestType("js-pnpm-lock"),
+		"frontend/bun.lock":            ManifestType("js-bun-lock"),
+		"frontend/bun.lockb":           ManifestType("js-bun-lockb"),
+		"frontend/deno.lock":           ManifestType("deno-lock"),
+		"java-service/gradle.lockfile": ManifestType("java-gradle-lockfile"),
+		"ruby-app/Gemfile.lock":        ManifestType("ruby-gemfile-lock"),
+		"go-service/go.sum":            ManifestType("go-sum"),
+		"go-service/Gopkg.lock":        ManifestType("go-gopkg-lock"),
+		"go-service/glide.lock":        ManifestType("go-glide-lock"),
+		"cpp-app/conan.lock":           ManifestType("cpp-conan-lock"),
+		"ios-app/Package.resolved":     ManifestType("swift-package-resolved"),
+		"ios-app/Podfile.lock":         ManifestType("ios-podfile-lock"),
+		"elixir-app/mix.lock":          ManifestType("elixir-mix-lock"),
 	}
 
 	for _, manifest := range result.Manifests {
@@ -479,19 +487,19 @@ func TestScanMatchesPyprojectDependenciesFromFixture(t *testing.T) {
 		t.Fatalf("unexpected manifest: %+v", manifest)
 	}
 
-	want := []string{
-		"scikit-build-core>=0.10",
-		"pybind11>=2.12.0",
-		"requests>=2.31",
-		"fastapi[all]>=0.110; python_version >= '3.10'",
-		"pytest>=8",
-		"ruff==0.4.8",
-		"mypy>=1.10",
-		"django = \"^5.0\"",
-		"httpx = { extras = [\"http2\"], version = \"^0.27\" }",
-		"private-lib = { branch = \"main\", git = \"https://github.com/acme/private-lib.git\" }",
-		"factory-boy = { markers = \"python_version >= '3.11'\", version = \"^3.3\" }",
-		"pytest-cov = \"^5.0\"",
+	want := []Dependency{
+		{Name: "scikit-build-core>=0.10", Section: "build-system.requires"},
+		{Name: "pybind11>=2.12.0", Section: "build-system.requires"},
+		{Name: "requests>=2.31", Section: "project.dependencies"},
+		{Name: "fastapi[all]>=0.110; python_version >= '3.10'", Section: "project.dependencies"},
+		{Name: "pytest>=8", Section: "project.optional-dependencies.dev"},
+		{Name: "ruff==0.4.8", Section: "project.optional-dependencies.dev"},
+		{Name: "mypy>=1.10", Section: "dependency-groups.lint"},
+		{Name: "django = \"^5.0\"", Section: "tool.poetry.dependencies"},
+		{Name: "httpx = { extras = [\"http2\"], version = \"^0.27\" }", Section: "tool.poetry.dependencies"},
+		{Name: "private-lib = { branch = \"main\", git = \"https://github.com/acme/private-lib.git\" }", Section: "tool.poetry.dependencies"},
+		{Name: "factory-boy = { markers = \"python_version >= '3.11'\", version = \"^3.3\" }", Section: "tool.poetry.group.test.dependencies"},
+		{Name: "pytest-cov = \"^5.0\"", Section: "tool.poetry.group.test.dependencies"},
 	}
 	if !slices.Equal(manifest.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
@@ -535,7 +543,7 @@ sphinx = ">=7"
 		"requests = \"*\"",
 		"sphinx = \">=7\"",
 	}
-	if !slices.Equal(manifest.Dependencies, want) {
+	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
 	}
 }
@@ -585,7 +593,7 @@ func TestScanMatchesPipfileDependenciesFromFixture(t *testing.T) {
 		"pytest = \">=8\"",
 		"sphinx = { extras = [\"docs\"], version = \">=7\" }",
 	}
-	if !slices.Equal(manifest.Dependencies, want) {
+	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
 	}
 }
@@ -631,7 +639,7 @@ func assertPipfileFixtureDependencies(t *testing.T, fixture string, want []strin
 	if manifest.Type != ManifestType("python-pipfile") || manifest.Path != "Pipfile" {
 		t.Fatalf("unexpected manifest: %+v", manifest)
 	}
-	if !slices.Equal(manifest.Dependencies, want) {
+	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
 	}
 }
@@ -652,7 +660,7 @@ func TestScanMatchesSetupPyWithInstallRequiresFromFixture(t *testing.T) {
 	if manifest.Type != ManifestType("python-setup-py") || manifest.Path != "setup.py" {
 		t.Fatalf("unexpected manifest: %+v", manifest)
 	}
-	if got := manifest.Dependencies; !slices.Equal(got, []string{"requests>=2.31", "pytest>=8", "ruff>=0.4"}) {
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests>=2.31", "pytest>=8", "ruff>=0.4"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
 }
@@ -667,7 +675,7 @@ func TestScanMatchesSetupPyWithExtrasRequireOnly(t *testing.T) {
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
-	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pytest>=8", "ruff>=0.4", "mkdocs>=1.6"}) {
+	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pytest>=8", "ruff>=0.4", "mkdocs>=1.6"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
 }
@@ -682,7 +690,7 @@ func TestScanMatchesSetupPyWithInstallRequiresAndExtrasRequire(t *testing.T) {
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
-	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"requests>=2.31", "pytest>=8"}) {
+	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"requests>=2.31", "pytest>=8"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
 }
@@ -718,7 +726,7 @@ func assertSetupCfgFixtureDependencies(t *testing.T, fixture string, want []stri
 	if manifest.Type != ManifestType("python-setup-cfg") || manifest.Path != "setup.cfg" {
 		t.Fatalf("unexpected manifest: %+v", manifest)
 	}
-	if got := manifest.Dependencies; !slices.Equal(got, want) {
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", got, want)
 	}
 }
@@ -786,7 +794,7 @@ func TestScanMatchesHTMLExternalScripts(t *testing.T) {
 		"https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js",
 		"https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js",
 	}
-	if !slices.Equal(manifest.Dependencies, want) {
+	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
 	}
 }
@@ -809,7 +817,7 @@ func TestScanMatchesHTMLModuleImportFromTestdata(t *testing.T) {
 	}
 
 	want := []string{"https://cdn.jsdelivr.net/npm/swiper@12.1.2/+esm"}
-	if !slices.Equal(manifest.Dependencies, want) {
+	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
 	}
 }
@@ -832,7 +840,7 @@ func TestScanMatchesHTMLNamespaceModuleImportFromTestdata(t *testing.T) {
 	}
 
 	want := []string{"https://cdn.jsdelivr.net/npm/d3@7/+esm"}
-	if !slices.Equal(manifest.Dependencies, want) {
+	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
 	}
 }
@@ -859,7 +867,7 @@ func TestScanMatchesHTMLImportMapFromTestdata(t *testing.T) {
 		"https://cdn.jsdelivr.net/npm/media-tracks@0.2/+esm",
 		"https://cdn.jsdelivr.net/npm/hls.js@1.6.0-beta.1/dist/hls.mjs",
 	}
-	if !slices.Equal(manifest.Dependencies, want) {
+	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
 	}
 }
@@ -902,7 +910,7 @@ func TestScanMatchesHTMLImportMapRemoteImports(t *testing.T) {
 		"https://cdn.jsdelivr.net/npm/hls.js@1.6.0-beta.1/dist/hls.mjs",
 		"https://registry.npmmirror.com/stylelint-config-recess-order/5.0.0/files/groups.js",
 	}
-	if !slices.Equal(manifest.Dependencies, want) {
+	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
 	}
 }
@@ -940,7 +948,7 @@ func TestScanMatchesHTMLImportMapESMShImports(t *testing.T) {
 		"https://esm.sh/recharts@^2.15.3",
 		"https://esm.sh/react-dom@^19.1.0/",
 	}
-	if !slices.Equal(result.Manifests[0].Dependencies, want) {
+	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
 	}
 }
@@ -1020,7 +1028,7 @@ func TestScanMatchesJavaScriptBannerDetectors(t *testing.T) {
 		if manifest.Type != tc.wantType {
 			t.Fatalf("unexpected manifest type for %q: got %q want %q", tc.path, manifest.Type, tc.wantType)
 		}
-		if !slices.Equal(manifest.Dependencies, tc.wantDeps) {
+		if !slices.Equal(dependencyNames(manifest.Dependencies), tc.wantDeps) {
 			t.Fatalf("unexpected dependencies for %q: got %+v want %+v", tc.path, manifest.Dependencies, tc.wantDeps)
 		}
 	}
@@ -1174,7 +1182,7 @@ new glue.CfnJob(this, "Job", {
 		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
 	}
 	wantDependencies := []string{"pandas==2.2.1", "scikit-learn==1.4.1.post1"}
-	if !slices.Equal(result.Manifests[0].Dependencies, wantDependencies) {
+	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), wantDependencies) {
 		t.Fatalf("unexpected dependencies: got %v want %v", result.Manifests[0].Dependencies, wantDependencies)
 	}
 }
@@ -1200,7 +1208,7 @@ new GlueJob(this, "Job", {
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
-	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -1296,7 +1304,7 @@ new CfnJob(this, "Job", props);
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
-	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -1324,7 +1332,7 @@ new CfnJob(this, "Job", {
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
-	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -1344,7 +1352,7 @@ func TestScanMatchesTypeScriptFixtureFromTestdata(t *testing.T) {
 		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
 	}
 	wantDependencies := []string{"pandas==2.2.1", "scikit-learn==1.4.1.post1"}
-	if !slices.Equal(result.Manifests[0].Dependencies, wantDependencies) {
+	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), wantDependencies) {
 		t.Fatalf("unexpected dependencies: got %v want %v", result.Manifests[0].Dependencies, wantDependencies)
 	}
 }
@@ -1380,7 +1388,7 @@ func TestScanMatchesTypeScriptVariablePropsFixtureFromTestdata(t *testing.T) {
 	if result.Manifests[0].Type != ManifestType("typescript.cdk.aws_glue_job.python") || result.Manifests[0].Path != "job.ts" {
 		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
 	}
-	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -1399,7 +1407,7 @@ func TestScanMatchesTypeScriptComputedModulesFixtureFromTestdata(t *testing.T) {
 	if result.Manifests[0].Type != ManifestType("typescript.cdk.aws_glue_job.python") || result.Manifests[0].Path != "job.ts" {
 		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
 	}
-	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -1452,7 +1460,7 @@ glue.CfnJob(
 		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
 	}
 	wantDependencies := []string{"pandas==2.2.1", "scikit-learn==1.4.1.post1"}
-	if !slices.Equal(result.Manifests[0].Dependencies, wantDependencies) {
+	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), wantDependencies) {
 		t.Fatalf("unexpected dependencies: got %v want %v", result.Manifests[0].Dependencies, wantDependencies)
 	}
 }
@@ -1485,7 +1493,7 @@ CfnJob(
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
-	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -1530,7 +1538,7 @@ func TestScanMatchesPythonFixtureFromTestdata(t *testing.T) {
 	if result.Manifests[0].Type != ManifestType("python.cdk.aws_glue_job.python") || result.Manifests[0].Path != "job.py" {
 		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
 	}
-	if got := result.Manifests[0].Dependencies; !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -2147,7 +2155,7 @@ workflow:
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
-	if !slices.Equal(result.Manifests[0].Dependencies, []string{"requests", "pendulum"}) {
+	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), []string{"requests", "pendulum"}) {
 		t.Fatalf("unexpected dependencies: %+v", result.Manifests[0].Dependencies)
 	}
 }
@@ -2219,7 +2227,7 @@ workflow:
 	if manifest.Type != ManifestType("yaml-pip") || manifest.Path != "apps/api/pipelines/workflow.yaml" {
 		t.Fatalf("unexpected manifest: %+v", manifest)
 	}
-	if !slices.Equal(manifest.Dependencies, []string{"requests", "pendulum"}) {
+	if !slices.Equal(dependencyNames(manifest.Dependencies), []string{"requests", "pendulum"}) {
 		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
 	}
 }
@@ -2251,7 +2259,7 @@ dependencies = ["should-not-match"]
 	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "services/api/pyproject.toml" {
 		t.Fatalf("unexpected manifest: %+v", manifest)
 	}
-	if !slices.Equal(manifest.Dependencies, []string{"requests>=2.31"}) {
+	if !slices.Equal(dependencyNames(manifest.Dependencies), []string{"requests>=2.31"}) {
 		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
 	}
 }
@@ -2287,7 +2295,7 @@ dependencies = ["wrong-name"]
 	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "apps/api/pipelines/pyproject.toml" {
 		t.Fatalf("unexpected manifest: %+v", manifest)
 	}
-	if !slices.Equal(manifest.Dependencies, []string{"requests>=2.31"}) {
+	if !slices.Equal(dependencyNames(manifest.Dependencies), []string{"requests>=2.31"}) {
 		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
 	}
 }
@@ -2321,7 +2329,7 @@ workflow:
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
-	if !slices.Equal(result.Manifests[0].Dependencies, []string{"requests", "pendulum"}) {
+	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), []string{"requests", "pendulum"}) {
 		t.Fatalf("unexpected dependencies: %+v", result.Manifests[0].Dependencies)
 	}
 }
@@ -2373,7 +2381,7 @@ workflow:
 	if manifest.Type != ManifestType("yaml-pip") || manifest.Path != "apps/api/pipelines/workflow.yaml" {
 		t.Fatalf("unexpected manifest: %+v", manifest)
 	}
-	if !slices.Equal(manifest.Dependencies, []string{"requests", "pendulum"}) {
+	if !slices.Equal(dependencyNames(manifest.Dependencies), []string{"requests", "pendulum"}) {
 		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
 	}
 }
@@ -2487,15 +2495,15 @@ pytest-cov = "^5.0"
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
 
-	want := []string{
-		"scikit-build-core>=0.10",
-		"pybind11>=2.12.0",
-		"requests>=2.31",
-		"pytest>=8",
-		"mypy>=1.10",
-		"django = \"^5.0\"",
-		"httpx = { extras = [\"http2\"], version = \"^0.27\" }",
-		"pytest-cov = \"^5.0\"",
+	want := []Dependency{
+		{Name: "scikit-build-core>=0.10", Section: "build-system.requires"},
+		{Name: "pybind11>=2.12.0", Section: "build-system.requires"},
+		{Name: "requests>=2.31", Section: "project.dependencies"},
+		{Name: "pytest>=8", Section: "project.optional-dependencies.dev"},
+		{Name: "mypy>=1.10", Section: "dependency-groups.lint"},
+		{Name: "django = \"^5.0\"", Section: "tool.poetry.dependencies"},
+		{Name: "httpx = { extras = [\"http2\"], version = \"^0.27\" }", Section: "tool.poetry.dependencies"},
+		{Name: "pytest-cov = \"^5.0\"", Section: "tool.poetry.group.test.dependencies"},
 	}
 	if !slices.Equal(result.Manifests[0].Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
@@ -2537,7 +2545,7 @@ pytest-cov = ">=5"
 		"requests = \"*\"",
 		"pytest-cov = \">=5\"",
 	}
-	if !slices.Equal(result.Manifests[0].Dependencies, want) {
+	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
 	}
 }
@@ -2587,7 +2595,7 @@ dev = [
 	}
 
 	want := []string{"pytest>=8"}
-	if !slices.Equal(result.Manifests[0].Dependencies, want) {
+	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
 	}
 }
@@ -2640,7 +2648,7 @@ django = "^5.0"
 		"django = \"^5.0\"",
 		"python = \"^3.12\"",
 	}
-	if !slices.Equal(result.Manifests[0].Dependencies, want) {
+	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
 	}
 }
@@ -2667,7 +2675,7 @@ django = "^5.0"
 	}
 
 	want := []string{"django = \"^5.0\""}
-	if !slices.Equal(result.Manifests[0].Dependencies, want) {
+	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
 	}
 }

@@ -72,7 +72,7 @@ func parseYAMLPath(raw string, fieldName string) ([]yamlPathSegment, error) {
 	return segments, nil
 }
 
-func (p yamlQueryParser) Match(path string, content []byte) ([]string, *bool, bool, error) {
+func (p yamlQueryParser) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
 	current, err := resolveYAMLPath(path, content, p.segments)
 	if err != nil {
 		return nil, nil, false, err
@@ -92,10 +92,10 @@ func (p yamlQueryParser) Match(path string, content []byte) ([]string, *bool, bo
 	if len(dependencies) == 0 {
 		return nil, nil, false, nil
 	}
-	return dependencies, boolPtr(true), true, nil
+	return dependenciesFromStrings(dependencies), boolPtr(true), true, nil
 }
 
-func (p yamlExistsParser) Match(path string, content []byte) ([]string, *bool, bool, error) {
+func (p yamlExistsParser) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
 	current, err := resolveYAMLPath(path, content, p.segments)
 	if err != nil {
 		return nil, nil, false, err

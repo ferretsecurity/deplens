@@ -129,7 +129,7 @@ func newTypeScriptMatcher(raw typescriptMatcherConfig) (manifestParser, error) {
 	}, nil
 }
 
-func (m typescriptCDKConstructMatcher) Match(path string, content []byte) ([]string, *bool, bool, error) {
+func (m typescriptCDKConstructMatcher) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
 	parser := sitter.NewParser()
 	defer parser.Close()
 
@@ -170,9 +170,9 @@ func (m typescriptCDKConstructMatcher) Match(path string, content []byte) ([]str
 		return nil, nil, false, nil
 	}
 	if len(dependencies) == 0 {
-		return dependencies, nil, true, nil
+		return dependenciesFromStrings(dependencies), nil, true, nil
 	}
-	return dependencies, boolPtr(true), true, nil
+	return dependenciesFromStrings(dependencies), boolPtr(true), true, nil
 }
 
 func (m typescriptCDKConstructMatcher) matchNewExpression(root *sitter.Node, node *sitter.Node, content []byte, imports typeScriptImportTable) ([]string, bool) {

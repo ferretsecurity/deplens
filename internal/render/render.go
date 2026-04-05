@@ -30,7 +30,7 @@ func Human(result analyze.ScanResult, supportedTypes []analyze.ManifestType) str
 		for _, manifest := range manifests {
 			b.WriteString(fmt.Sprintf("- %s\n", manifest.Path))
 			for _, dependency := range manifest.Dependencies {
-				b.WriteString(fmt.Sprintf("  - %s\n", dependency))
+				b.WriteString(fmt.Sprintf("  - %s\n", dependency.Name))
 			}
 		}
 	}

@@ -12,7 +12,7 @@ import (
 type ManifestMatch struct {
 	Type            ManifestType `json:"type"`
 	Path            string       `json:"path"`
-	Dependencies    []string     `json:"dependencies,omitempty"`
+	Dependencies    []Dependency `json:"dependencies,omitempty"`
 	HasDependencies *bool        `json:"has_dependencies"`
 }
 
@@ -109,4 +109,21 @@ func compareManifestType(a, b ManifestType) int {
 
 func normalizeRelativePath(relPath string) string {
 	return strings.ReplaceAll(filepath.ToSlash(relPath), "\\", "/")
+}
+
+type Dependency struct {
+	Name    string `json:"name"`
+	Section string `json:"section,omitempty"`
+}
+
+func dependenciesFromStrings(values []string) []Dependency {
+	if len(values) == 0 {
+		return nil
+	}
+
+	dependencies := make([]Dependency, 0, len(values))
+	for _, value := range values {
+		dependencies = append(dependencies, Dependency{Name: value})
+	}
+	return dependencies
 }
