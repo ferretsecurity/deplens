@@ -22,7 +22,7 @@ func TestINIParserMatchesOnPresenceWithoutDependencies(t *testing.T) {
 		t.Fatalf("newINIQueryParser failed: %v", err)
 	}
 
-	deps, ok, err := parser.Match("setup.cfg", []byte("[options]\ninstall_requires = requests>=2.31, urllib3<3\n"))
+	deps, hasDependencies, ok, err := parser.Match("setup.cfg", []byte("[options]\ninstall_requires = requests>=2.31, urllib3<3\n"))
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
@@ -31,6 +31,9 @@ func TestINIParserMatchesOnPresenceWithoutDependencies(t *testing.T) {
 	}
 	if len(deps) != 0 {
 		t.Fatalf("expected no dependencies, got %+v", deps)
+	}
+	if hasDependencies == nil || *hasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", hasDependencies)
 	}
 }
 
@@ -43,7 +46,7 @@ func TestINIParserExtractsMultilineDependencies(t *testing.T) {
 	}
 
 	content := []byte("[options]\ninstall_requires =\n    requests>=2.31\n    urllib3<3\n")
-	deps, ok, err := parser.Match("setup.cfg", content)
+	deps, hasDependencies, ok, err := parser.Match("setup.cfg", content)
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
@@ -52,6 +55,9 @@ func TestINIParserExtractsMultilineDependencies(t *testing.T) {
 	}
 	if want := []string{"requests>=2.31", "urllib3<3"}; !slices.Equal(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
+	}
+	if hasDependencies == nil || !*hasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
 	}
 }
 
@@ -64,7 +70,7 @@ func TestINIParserWildcardExtrasExtractsAcrossKeys(t *testing.T) {
 	}
 
 	content := []byte("[options.extras_require]\ndev =\n    pytest>=8\n    ruff>=0.4\ndocs =\n    sphinx>=7\n")
-	deps, ok, err := parser.Match("setup.cfg", content)
+	deps, hasDependencies, ok, err := parser.Match("setup.cfg", content)
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
@@ -73,6 +79,9 @@ func TestINIParserWildcardExtrasExtractsAcrossKeys(t *testing.T) {
 	}
 	if want := []string{"pytest>=8", "ruff>=0.4", "sphinx>=7"}; !slices.Equal(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
+	}
+	if hasDependencies == nil || !*hasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
 	}
 }
 
@@ -85,7 +94,7 @@ func TestINIParserStripsCommentsAndBlankLines(t *testing.T) {
 	}
 
 	content := []byte("[options]\ninstall_requires =\n    requests>=2.31  # runtime client\n\n    ; comment only\n    urllib3<3\n")
-	deps, ok, err := parser.Match("setup.cfg", content)
+	deps, hasDependencies, ok, err := parser.Match("setup.cfg", content)
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
@@ -94,6 +103,9 @@ func TestINIParserStripsCommentsAndBlankLines(t *testing.T) {
 	}
 	if want := []string{"requests>=2.31", "urllib3<3"}; !slices.Equal(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
+	}
+	if hasDependencies == nil || !*hasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
 	}
 }
 
@@ -106,7 +118,7 @@ func TestINIParserSkipsUnsupportedEntriesButKeepsMatch(t *testing.T) {
 	}
 
 	content := []byte("[options]\ninstall_requires =\n    file: requirements.txt\n    %(base_deps)s\n    requests>=2.31\n")
-	deps, ok, err := parser.Match("setup.cfg", content)
+	deps, hasDependencies, ok, err := parser.Match("setup.cfg", content)
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
@@ -115,6 +127,9 @@ func TestINIParserSkipsUnsupportedEntriesButKeepsMatch(t *testing.T) {
 	}
 	if want := []string{"requests>=2.31"}; !slices.Equal(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
+	}
+	if hasDependencies == nil || !*hasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
 	}
 }
 
@@ -126,11 +141,14 @@ func TestINIParserReturnsNoMatchWithoutConfiguredKeys(t *testing.T) {
 		t.Fatalf("newINIQueryParser failed: %v", err)
 	}
 
-	deps, ok, err := parser.Match("setup.cfg", []byte("[metadata]\nname = demo\n"))
+	deps, hasDependencies, ok, err := parser.Match("setup.cfg", []byte("[metadata]\nname = demo\n"))
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
 	if ok {
 		t.Fatalf("expected no match, got deps %+v", deps)
+	}
+	if hasDependencies != nil {
+		t.Fatalf("expected unknown has_dependencies, got %+v", hasDependencies)
 	}
 }

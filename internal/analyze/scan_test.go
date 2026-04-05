@@ -136,7 +136,7 @@ func TestDetectManifestFileAtRelativePathMatchesPathGlob(t *testing.T) {
 		t.Fatalf("loadRules failed: %v", err)
 	}
 
-	got, deps, ok, err := ruleset.DetectManifestFileAtRelativePath("apps/api/requirements/base.txt", "base.txt", "apps/api/requirements/base.txt")
+	got, deps, hasDependencies, ok, err := ruleset.DetectManifestFileAtRelativePath("apps/api/requirements/base.txt", "base.txt", "apps/api/requirements/base.txt")
 	if err != nil {
 		t.Fatalf("DetectManifestFileAtRelativePath failed: %v", err)
 	}
@@ -149,6 +149,9 @@ func TestDetectManifestFileAtRelativePathMatchesPathGlob(t *testing.T) {
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
+	if hasDependencies != nil {
+		t.Fatalf("expected unknown has_dependencies, got %+v", hasDependencies)
+	}
 }
 
 func TestDetectManifestFileAtRelativePathMatchesPathGlobWithAbsolutePath(t *testing.T) {
@@ -160,7 +163,7 @@ func TestDetectManifestFileAtRelativePathMatchesPathGlobWithAbsolutePath(t *test
 	root := t.TempDir()
 	absPath := filepath.Join(root, "apps", "api", "requirements", "base.txt")
 
-	got, deps, ok, err := ruleset.DetectManifestFileAtRelativePath(absPath, "base.txt", "apps/api/requirements/base.txt")
+	got, deps, hasDependencies, ok, err := ruleset.DetectManifestFileAtRelativePath(absPath, "base.txt", "apps/api/requirements/base.txt")
 	if err != nil {
 		t.Fatalf("DetectManifestFileAtRelativePath failed: %v", err)
 	}
@@ -173,6 +176,9 @@ func TestDetectManifestFileAtRelativePathMatchesPathGlobWithAbsolutePath(t *test
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
+	if hasDependencies != nil {
+		t.Fatalf("expected unknown has_dependencies, got %+v", hasDependencies)
+	}
 }
 
 func TestDetectManifestFileDoesNotMatchPathGlobWithoutRelativePath(t *testing.T) {
@@ -181,19 +187,19 @@ func TestDetectManifestFileDoesNotMatchPathGlobWithoutRelativePath(t *testing.T)
 		t.Fatalf("loadRules failed: %v", err)
 	}
 
-	got, deps, ok, err := ruleset.DetectManifestFile("apps/api/requirements/base.txt", "base.txt")
+	got, deps, hasDependencies, ok, err := ruleset.DetectManifestFile("apps/api/requirements/base.txt", "base.txt")
 	if err != nil {
 		t.Fatalf("DetectManifestFile failed: %v", err)
 	}
 	if ok {
-		t.Fatalf("expected no path-glob match without explicit relative path, got type=%q deps=%+v", got, deps)
+		t.Fatalf("expected no path-glob match without explicit relative path, got type=%q deps=%+v hasDependencies=%+v", got, deps, hasDependencies)
 	}
 }
 
 func TestDetectManifestFileMatchesFilenameRuleWithEmptyPath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	got, deps, ok, err := ruleset.DetectManifestFile("", "package.json")
+	got, deps, hasDependencies, ok, err := ruleset.DetectManifestFile("", "package.json")
 	if err != nil {
 		t.Fatalf("DetectManifestFile failed: %v", err)
 	}
@@ -205,6 +211,9 @@ func TestDetectManifestFileMatchesFilenameRuleWithEmptyPath(t *testing.T) {
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
+	}
+	if hasDependencies != nil {
+		t.Fatalf("expected unknown has_dependencies, got %+v", hasDependencies)
 	}
 }
 
@@ -283,11 +292,46 @@ func TestScanFindsCondaEnvironmentInFixture(t *testing.T) {
 			if manifest.Dependencies != nil {
 				t.Fatalf("expected no extracted dependencies, got %+v", manifest.Dependencies)
 			}
+			if manifest.HasDependencies != nil {
+				t.Fatalf("expected has_dependencies to remain unknown, got %+v", manifest.HasDependencies)
+			}
 			return
 		}
 	}
 
 	t.Fatalf("expected environment.yml fixture to be detected, got %+v", result.Manifests)
+}
+
+func TestScanLeavesHasDependenciesUnknownForDetectorOnlyManifest(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "package.json"), "{}")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies != nil {
+		t.Fatalf("expected has_dependencies to be unknown, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMarksHasDependenciesTrueWhenDependenciesAreExtracted(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "toml", "pipfile"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
 }
 
 func TestScanFindsPipfileLockInFixture(t *testing.T) {

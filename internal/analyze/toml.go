@@ -75,10 +75,10 @@ func newTOMLQueryParser(raw tomlMatcherConfig) (manifestParser, error) {
 	}, nil
 }
 
-func (p tomlQueryParser) Match(path string, content []byte) ([]string, bool, error) {
+func (p tomlQueryParser) Match(path string, content []byte) ([]string, *bool, bool, error) {
 	var root map[string]any
 	if err := toml.Unmarshal(content, &root); err != nil {
-		return nil, false, fmt.Errorf("parse toml file %q: %w", path, err)
+		return nil, nil, false, fmt.Errorf("parse toml file %q: %w", path, err)
 	}
 
 	dependencies := make([]string, 0)
@@ -91,9 +91,9 @@ func (p tomlQueryParser) Match(path string, content []byte) ([]string, bool, err
 		dependencies = append(dependencies, extractTOMLTableDependencies(tables, p.excludeKeys)...)
 	}
 	if len(dependencies) == 0 {
-		return nil, false, nil
+		return nil, nil, false, nil
 	}
-	return dependencies, true, nil
+	return dependencies, boolPtr(true), true, nil
 }
 
 func compileTOMLQuery(raw string) (tomlQuery, error) {

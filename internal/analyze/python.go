@@ -265,11 +265,11 @@ func newPythonCallExtracts(raw []pythonCallExtractConfig) ([]pythonCallExtract, 
 	return extracts, nil
 }
 
-func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]string, bool, error) {
+func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]string, *bool, bool, error) {
 	source := string(content)
 	imports := collectPythonImports(source, m.module, m.construct)
 	if len(imports.namespaces) == 0 && len(imports.named) == 0 {
-		return nil, false, nil
+		return nil, nil, false, nil
 	}
 
 	callStarts := pythonConstructorCallStarts(source, imports, m.construct)
@@ -313,7 +313,7 @@ func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]string,
 		}
 
 		if m.extract == nil {
-			return nil, true, nil
+			return nil, nil, true, nil
 		}
 
 		valueExpr, ok := pythonDictValue(source, current, m.extract.key, end)
@@ -329,17 +329,17 @@ func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]string,
 		if len(dependencies) == 0 {
 			continue
 		}
-		return dependencies, true, nil
+		return dependencies, boolPtr(true), true, nil
 	}
 
-	return nil, false, nil
+	return nil, nil, false, nil
 }
 
-func (m pythonCallMatcher) Match(path string, content []byte) ([]string, bool, error) {
+func (m pythonCallMatcher) Match(path string, content []byte) ([]string, *bool, bool, error) {
 	source := string(content)
 	imports := collectPythonImports(source, m.module, m.function)
 	if len(imports.namespaces) == 0 && len(imports.named) == 0 {
-		return nil, false, nil
+		return nil, nil, false, nil
 	}
 
 	callStarts := pythonConstructorCallStarts(source, imports, m.function)
@@ -349,11 +349,15 @@ func (m pythonCallMatcher) Match(path string, content []byte) ([]string, bool, e
 			continue
 		}
 		if m.conditions.match(source, args, start) {
-			return m.extractDependencies(args), true, nil
+			dependencies := m.extractDependencies(args)
+			if len(dependencies) == 0 {
+				return nil, nil, true, nil
+			}
+			return dependencies, boolPtr(true), true, nil
 		}
 	}
 
-	return nil, false, nil
+	return nil, nil, false, nil
 }
 
 func (m pythonCallMatcher) extractDependencies(args string) []string {
