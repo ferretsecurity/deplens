@@ -66,6 +66,8 @@ rules:
           key: '*'
   - name: js
     filename-regex: '^package\.json$'
+  - name: js-npm-lock
+    filename-regex: '^package-lock\.json$'
   - name: js-yarn
     filename-regex: '^yarn\.lock$'
   - name: js-pnpm-lock
@@ -80,14 +82,28 @@ rules:
     filename-regex: '^pom\.xml$'
   - name: java-gradle-lockfile
     filename-regex: '^gradle\.lockfile$'
+  - name: ruby-gemfile
+    filename-regex: '^Gemfile$'
   - name: ruby-gemfile-lock
     filename-regex: '^Gemfile\.lock$'
+  - name: php-composer
+    filename-regex: '^composer\.json$'
+  - name: php-composer-lock
+    filename-regex: '^composer\.lock$'
+  - name: go-mod
+    filename-regex: '^go\.mod$'
   - name: go-sum
     filename-regex: '^go\.sum$'
+  - name: rust-cargo
+    filename-regex: '^Cargo\.toml$'
+  - name: rust-cargo-lock
+    filename-regex: '^Cargo\.lock$'
   - name: go-gopkg-lock
     filename-regex: '^Gopkg\.lock$'
   - name: go-glide-lock
     filename-regex: '^glide\.lock$'
+  - name: dotnet-csproj
+    filename-regex: '.*\.csproj$'
   - name: cpp-conan-lock
     filename-regex: '^conan\.lock$'
   - name: swift-package-resolved

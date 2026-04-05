@@ -16,7 +16,7 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies |
 | --- | --- | --- |
-| filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `package.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `deno.lock`, `pom.xml`, `gradle.lockfile`, `Gemfile.lock`, `go.sum`, `Gopkg.lock`, `glide.lock`, `conan.lock`, `Package.resolved`, `Podfile.lock`, `mix.lock` | No |
+| filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `package.json`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `deno.lock`, `pom.xml`, `gradle.lockfile`, `Gemfile`, `Gemfile.lock`, `composer.json`, `composer.lock`, `go.mod`, `go.sum`, `Cargo.toml`, `Cargo.lock`, `*.csproj`, `Gopkg.lock`, `glide.lock`, `conan.lock`, `Package.resolved`, `Podfile.lock`, `mix.lock` | No |
 | path glob match | Built-in path-glob rules such as `python-requirements-dir` for `**/requirements/*.txt` | No |
 | toml | TOML files matched by a rule such as built-in `python-pyproject` for `pyproject.toml`; extracts from `build-system.requires[]`, `project.dependencies[]`, `project.optional-dependencies.*[]`, `dependency-groups.*[]`, `tool.poetry.dependencies`, and `tool.poetry.group.*.dependencies` | Yes |
 | pipfile | `Pipfile` matched by the built-in `python-pipfile` rule; reports only when the file contains at least one dependency-bearing package section such as `[packages]`, `[dev-packages]`, or a custom package category like `[docs]` | Yes |
