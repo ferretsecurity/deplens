@@ -11,6 +11,8 @@ rules:
     filename-regex: '^Pipfile\.lock$'
   - name: python-pdm-lock
     filename-regex: '^pdm\.lock$'
+  - name: python-conda-lock
+    filename-regex: '^conda-lock\.yml$'
   - name: python-pyproject
     filename-regex: '^pyproject\.toml$'
     toml:
@@ -25,6 +27,16 @@ rules:
     filename-regex: '^environment\.ya?ml$'
     yaml:
       exists: dependencies
+  - name: python-pipfile
+    filename-regex: '^Pipfile$'
+    toml:
+      table-queries:
+        - '*'
+      exclude-keys:
+        - source
+        - requires
+        - scripts
+        - pipenv
   - name: python-setup-py
     filename-regex: '^setup\.py$'
     python:

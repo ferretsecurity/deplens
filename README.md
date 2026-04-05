@@ -12,9 +12,10 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies |
 | --- | --- | --- |
-| filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `package.json`, `yarn.lock`, `pom.xml` | No |
+| filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `package.json`, `yarn.lock`, `pom.xml` | No |
 | path glob match | Built-in path-glob rules such as `python-requirements-dir` for `**/requirements/*.txt` | No |
 | toml | TOML files matched by a rule such as built-in `python-pyproject` for `pyproject.toml`; extracts from `build-system.requires[]`, `project.dependencies[]`, `project.optional-dependencies.*[]`, `dependency-groups.*[]`, `tool.poetry.dependencies`, and `tool.poetry.group.*.dependencies` | Yes |
+| pipfile | `Pipfile` matched by the built-in `python-pipfile` rule; reports only when the file contains at least one dependency-bearing package section such as `[packages]`, `[dev-packages]`, or a custom package category like `[docs]` | Yes |
 | python call | Python files matched by a rule such as built-in `python-setup-py` for `setup.py`; detects imported function calls with specific keyword arguments, for example `setuptools.setup(..., install_requires=..., extras_require=...)`, and can extract from simple literal arrays in `install_requires=[...]` plus `extras_require={"group": [...]}` | Yes |
 | ini | INI files matched by a rule such as built-in `python-setup-cfg` for `setup.cfg`; extracts from `[options]` keys `setup_requires` and `install_requires`, plus all keys under `[options.extras_require]`, when values are written as static multiline lists | Yes |
 | banner regex | JavaScript files whose first 4096 bytes match a configured `banner-regex` with capture groups 1 and 2 for package name and version | Yes |
@@ -29,6 +30,8 @@ Default JavaScript banner rules use `filename-regex: '.*\.js$'` and return `name
 The default Python requirements rules include both a filename selector for `*requirements*.txt` and `*requirements*.in`, plus a path selector for `**/requirements/*.txt`.
 
 The default rules also include `python-conda-environment` for `environment.yml` and `environment.yaml`, which reports the file only when a top-level `dependencies` key is present.
+
+When `Pipfile` is present, it is reported as `python-pipfile` only if at least one dependency-bearing package section exists, for example `[packages]`, `[dev-packages]`, or a custom package-category section. Extracted dependencies are emitted from those sections, while metadata sections such as `[[source]]` and `[requires]` are ignored.
 
 ## Example
 
@@ -56,6 +59,9 @@ python-pipfile-lock
 
 python-pdm-lock
 - backend/pdm.lock
+
+python-conda-lock
+- backend/conda-lock.yml
 
 js
 - frontend/package.json
