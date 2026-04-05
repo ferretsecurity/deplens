@@ -2,11 +2,20 @@ package render
 
 import (
 	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/ferretsecurity/deplens/internal/analyze"
 )
+
+func dependencyNames(dependencies []analyze.Dependency) []string {
+	names := make([]string, 0, len(dependencies))
+	for _, dependency := range dependencies {
+		names = append(names, dependency.Name)
+	}
+	return names
+}
 
 func TestHumanIncludesDetectedPaths(t *testing.T) {
 	result := analyze.ScanResult{
@@ -88,7 +97,7 @@ func TestHumanIncludesDependenciesWhenPresent(t *testing.T) {
 			{
 				Type:         analyze.ManifestType("yaml-pip"),
 				Path:         "workflow.yaml",
-				Dependencies: []string{"requests", "pendulum"},
+				Dependencies: []analyze.Dependency{{Name: "requests"}, {Name: "pendulum"}},
 			},
 		},
 	}
@@ -110,7 +119,7 @@ func TestJSONIncludesDependenciesWhenPresent(t *testing.T) {
 			{
 				Type:            analyze.ManifestType("yaml-pip"),
 				Path:            "workflow.yaml",
-				Dependencies:    []string{"requests", "pendulum"},
+				Dependencies:    []analyze.Dependency{{Name: "requests"}, {Name: "pendulum"}},
 				HasDependencies: &hasDependencies,
 			},
 		},
@@ -123,18 +132,55 @@ func TestJSONIncludesDependenciesWhenPresent(t *testing.T) {
 
 	var payload struct {
 		Manifests []struct {
-			Dependencies    []string `json:"dependencies"`
-			HasDependencies *bool    `json:"has_dependencies"`
+			Dependencies    []analyze.Dependency `json:"dependencies"`
+			HasDependencies *bool                `json:"has_dependencies"`
 		} `json:"manifests"`
 	}
 	if err := json.Unmarshal(output, &payload); err != nil {
 		t.Fatalf("expected valid JSON, got error: %v", err)
 	}
-	if len(payload.Manifests) != 1 || len(payload.Manifests[0].Dependencies) != 2 {
+	if len(payload.Manifests) != 1 || !slices.Equal(dependencyNames(payload.Manifests[0].Dependencies), []string{"requests", "pendulum"}) {
 		t.Fatalf("unexpected dependencies payload: %+v", payload.Manifests)
 	}
 	if payload.Manifests[0].HasDependencies == nil || !*payload.Manifests[0].HasDependencies {
 		t.Fatalf("expected has_dependencies=true, got %+v", payload.Manifests[0].HasDependencies)
+	}
+}
+
+func TestJSONIncludesDependencySectionsWhenPresent(t *testing.T) {
+	hasDependencies := true
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type: analyze.ManifestType("python-pyproject"),
+				Path: "pyproject.toml",
+				Dependencies: []analyze.Dependency{
+					{Name: "requests>=2.31", Section: "project.dependencies"},
+				},
+				HasDependencies: &hasDependencies,
+			},
+		},
+	}
+
+	output, err := JSON(result)
+	if err != nil {
+		t.Fatalf("json render failed: %v", err)
+	}
+
+	var payload struct {
+		Manifests []struct {
+			Dependencies []analyze.Dependency `json:"dependencies"`
+		} `json:"manifests"`
+	}
+	if err := json.Unmarshal(output, &payload); err != nil {
+		t.Fatalf("expected valid JSON, got error: %v", err)
+	}
+	if len(payload.Manifests) != 1 || len(payload.Manifests[0].Dependencies) != 1 {
+		t.Fatalf("unexpected dependencies payload: %+v", payload.Manifests)
+	}
+	if payload.Manifests[0].Dependencies[0].Section != "project.dependencies" {
+		t.Fatalf("expected dependency section to be preserved, got %+v", payload.Manifests[0].Dependencies[0])
 	}
 }
 
@@ -174,11 +220,9 @@ func TestHumanIncludesExternalScriptURLs(t *testing.T) {
 		Root: "/tmp/project",
 		Manifests: []analyze.ManifestMatch{
 			{
-				Type: analyze.ManifestType("html-external-scripts"),
-				Path: "templates/index.html",
-				Dependencies: []string{
-					"https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js",
-				},
+				Type:         analyze.ManifestType("html-external-scripts"),
+				Path:         "templates/index.html",
+				Dependencies: []analyze.Dependency{{Name: "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"}},
 			},
 		},
 	}

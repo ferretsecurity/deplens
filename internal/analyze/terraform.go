@@ -119,7 +119,7 @@ func newTerraformResourceParser(raw terraformMatcherConfig) (manifestParser, err
 	}, nil
 }
 
-func (m terraformResourceParserMatcher) Match(path string, content []byte) ([]string, *bool, bool, error) {
+func (m terraformResourceParserMatcher) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
 	parser := hclparse.NewParser()
 	file, diags := parser.ParseHCL(content, path)
 	if diags.HasErrors() {

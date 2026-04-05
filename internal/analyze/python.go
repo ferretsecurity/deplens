@@ -265,7 +265,7 @@ func newPythonCallExtracts(raw []pythonCallExtractConfig) ([]pythonCallExtract, 
 	return extracts, nil
 }
 
-func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]string, *bool, bool, error) {
+func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
 	source := string(content)
 	imports := collectPythonImports(source, m.module, m.construct)
 	if len(imports.namespaces) == 0 && len(imports.named) == 0 {
@@ -329,13 +329,13 @@ func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]string,
 		if len(dependencies) == 0 {
 			continue
 		}
-		return dependencies, boolPtr(true), true, nil
+		return dependenciesFromStrings(dependencies), boolPtr(true), true, nil
 	}
 
 	return nil, nil, false, nil
 }
 
-func (m pythonCallMatcher) Match(path string, content []byte) ([]string, *bool, bool, error) {
+func (m pythonCallMatcher) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
 	source := string(content)
 	imports := collectPythonImports(source, m.module, m.function)
 	if len(imports.namespaces) == 0 && len(imports.named) == 0 {
@@ -353,7 +353,7 @@ func (m pythonCallMatcher) Match(path string, content []byte) ([]string, *bool, 
 			if len(dependencies) == 0 {
 				return nil, nil, true, nil
 			}
-			return dependencies, boolPtr(true), true, nil
+			return dependenciesFromStrings(dependencies), boolPtr(true), true, nil
 		}
 	}
 

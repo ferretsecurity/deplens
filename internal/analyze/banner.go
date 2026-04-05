@@ -27,7 +27,7 @@ func newBannerRegexParser(pattern string) (manifestParser, error) {
 	return bannerRegexParser{regex: compiled}, nil
 }
 
-func (p bannerRegexParser) Match(path string, content []byte) ([]string, *bool, bool, error) {
+func (p bannerRegexParser) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
 	if len(content) > bannerRegexScanLimit {
 		content = content[:bannerRegexScanLimit]
 	}
@@ -43,5 +43,5 @@ func (p bannerRegexParser) Match(path string, content []byte) ([]string, *bool, 
 		return nil, nil, false, nil
 	}
 
-	return []string{fmt.Sprintf("%s@%s", name, version)}, boolPtr(true), true, nil
+	return dependenciesFromStrings([]string{fmt.Sprintf("%s@%s", name, version)}), boolPtr(true), true, nil
 }
