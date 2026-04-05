@@ -2,9 +2,11 @@
 
 `deplens` is a small CLI for scanning a directory tree and reporting dependency-related manifests it finds. It is aimed at mixed-language repositories and can detect both standard manifest files and rule-based sources such as Terraform resources or HTML pages that load external scripts.
 
-By default, the tool walks the target directory recursively, skips common generated/vendor directories, and prints a grouped summary. The default detector rules are embedded into the binary at build time. The tool can also emit JSON for machine-readable consumption and load additional detectors from a custom YAML rules file passed with `--rules`.
+By default, the tool walks the target directory recursively, skips common generated/vendor directories, and prints a summary plus path-first manifest details with explicit dependency-status labels. The default detector rules are embedded into the binary at build time. The tool can also emit JSON for machine-readable consumption and load additional detectors from a custom YAML rules file passed with `--rules`.
 
 JSON output contains a top-level `root` plus `manifests`. Each manifest entry includes `type`, `path`, optional `dependencies`, and `has_dependencies`. Each dependency is emitted as an object with `name` and optional `section`. `has_dependencies` is `null` when the detector cannot determine dependency presence, `true` when extraction confirmed at least one dependency, and `false` when a detector or extractor conclusively matched but found none.
+
+Human-readable output starts with summary counts and then prints one block per manifest path. Files with extracted dependencies show either a flat list or sectioned groups. If a file mixes sectioned and unsectioned dependencies, the unsectioned entries are rendered under `[default group]`.
 
 ## Supported Detectors
 
@@ -41,107 +43,80 @@ When `Pipfile` is present, it is reported as `python-pipfile` only if at least o
 go run ./cmd/deplens ./testdata/sample-monorepo
 ```
 
-Example output:
+Representative output:
 
 ```text
 Root: /path/to/project
 
-python-requirements
-- requirements.qt6_3.in
-- requirements.txt
+Found 24 manifests:
+- 24 with dependency status unknown
 
-python-uv
-- backend/uv.lock
+apps/backend/requirements/base.txt [dependency status unknown]
 
-python-poetry-lock
-- backend/poetry.lock
+backend/Pipfile.lock [matched]
 
-python-pipfile-lock
-- backend/Pipfile.lock
+backend/uv.lock [matched]
 
-python-pdm-lock
-- backend/pdm.lock
+frontend/package.json [matched]
 
-python-conda-lock
-- backend/conda-lock.yml
+go-service/go.sum [matched]
 
-js
-- frontend/package.json
-
-js-yarn
-- frontend/yarn.lock
-
-js-pnpm-lock
-- frontend/pnpm-lock.yaml
-
-js-bun-lock
-- frontend/bun.lock
-
-js-bun-lockb
-- frontend/bun.lockb
-
-deno-lock
-- frontend/deno.lock
-
-java
-- java-service/pom.xml
-
-java-gradle-lockfile
-- java-service/gradle.lockfile
-
-ruby-gemfile-lock
-- ruby-app/Gemfile.lock
-
-go-sum
-- go-service/go.sum
-
-go-gopkg-lock
-- go-service/Gopkg.lock
-
-go-glide-lock
-- go-service/glide.lock
-
-cpp-conan-lock
-- cpp-app/conan.lock
-
-swift-package-resolved
-- ios-app/Package.resolved
-
-ios-podfile-lock
-- ios-app/Podfile.lock
-
-elixir-mix-lock
-- elixir-app/mix.lock
+requirements.txt [matched]
 ```
 
-When `pyproject.toml` is present, it is reported as `python-pyproject`, for example:
+When dependencies are extracted from `pyproject.toml`, the output is grouped by section:
 
 ```text
-python-pyproject
-- pyproject.toml
+pyproject.toml [3 deps]
+  project.dependencies:
+    - requests>=2.31
+  project.optional-dependencies.dev:
+    - pytest>=8
+    - ruff>=0.4
 ```
 
-When a Conda environment file contains a top-level `dependencies` key, it is reported as `python-conda-environment`, for example:
+When a Conda environment file contains a top-level `dependencies` key but the detector does not extract the individual entries, it is reported with an explicit status label:
 
 ```text
-python-conda-environment
-- environment.yml
+environment.yml [dependencies present, not extracted]
 ```
 
-When `setup.py` contains a `setuptools.setup(...)` call with `install_requires` or `extras_require`, it is reported as `python-setup-py`. For simple literal forms such as `install_requires=[...]` and `extras_require={"dev": [...]}`, dependencies are extracted as well, for example:
+When `setup.py` contains a `setuptools.setup(...)` call with `install_requires` or `extras_require`, extracted dependencies render either as a flat list or grouped by section. For example:
 
 ```text
-python-setup-py
-- setup.py
+setup.py [2 deps]
+  install_requires:
+    - requests>=2.31
+  extras_require.dev:
+    - pytest>=8
+```
+
+When `setup.cfg` contains declarative setuptools dependency keys such as `[options] install_requires`, `[options] setup_requires`, or entries under `[options.extras_require]`, static multiline values are extracted and rendered similarly:
+
+```text
+setup.cfg [2 deps]
+  options.install_requires:
+    - requests>=2.31
+  options.extras_require.dev:
+    - pytest>=8
+```
+
+When dependencies are extracted without section metadata, the output stays flat:
+
+```text
+requirements.txt [2 deps]
   - requests>=2.31
-  - pytest>=8
+  - pendulum>=3
 ```
 
-When `setup.cfg` contains declarative setuptools dependency keys such as `[options] install_requires`, `[options] setup_requires`, or entries under `[options.extras_require]`, it is reported as `python-setup-cfg`. For static multiline values, dependencies are extracted as well, for example:
+When a manifest mixes sectioned and unsectioned dependencies, the unsectioned entries are placed under `[default group]`:
 
 ```text
-python-setup-cfg
-- setup.cfg
-  - requests>=2.31
-  - pytest>=8
+mixed.toml [3 deps]
+  [default group]
+    - build>=1.2
+  tool.custom.dev:
+    - pytest>=8
+  tool.custom.docs:
+    - mkdocs>=1.6
 ```

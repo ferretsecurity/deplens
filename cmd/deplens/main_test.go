@@ -106,7 +106,8 @@ resource "aws_glue_job" "python_shell_example" {
 	if exitCode != 0 {
 		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "terraform.aws_glue_job.python") || !strings.Contains(stdout.String(), "job.tf") {
+	if !strings.Contains(stdout.String(), "Found 1 manifest:") ||
+		!strings.Contains(stdout.String(), "job.tf [matched]") {
 		t.Fatalf("expected output to include terraform glue source, got %q", stdout.String())
 	}
 }
@@ -124,7 +125,8 @@ func TestRunDetectsHTMLExternalScripts(t *testing.T) {
 	if exitCode != 0 {
 		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "html-external-scripts") || !strings.Contains(stdout.String(), "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js") {
+	if !strings.Contains(stdout.String(), "index.html [1 dep]") ||
+		!strings.Contains(stdout.String(), "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js") {
 		t.Fatalf("expected output to include html external script dependency, got %q", stdout.String())
 	}
 }

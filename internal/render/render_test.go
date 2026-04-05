@@ -2,6 +2,7 @@ package render
 
 import (
 	"encoding/json"
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
@@ -18,20 +19,39 @@ func dependencyNames(dependencies []analyze.Dependency) []string {
 }
 
 func TestHumanIncludesDetectedPaths(t *testing.T) {
+	hasDependencies := true
+	noDependencies := false
 	result := analyze.ScanResult{
 		Root: "/tmp/project",
 		Manifests: []analyze.ManifestMatch{
-			{Type: analyze.ManifestType("js"), Path: "web/package.json"},
-			{Type: analyze.ManifestType("python-requirements"), Path: "api/requirements.txt"},
+			{
+				Type:            analyze.ManifestType("js"),
+				Path:            "web/package.json",
+				HasDependencies: &hasDependencies,
+			},
+			{
+				Type:            analyze.ManifestType("python-requirements"),
+				Path:            "api/requirements.txt",
+				HasDependencies: &noDependencies,
+			},
 		},
 	}
 
 	output := Human(result, []analyze.ManifestType{analyze.ManifestType("python-requirements"), analyze.ManifestType("js")})
-	if !strings.Contains(output, "web/package.json") {
-		t.Fatalf("expected human output to include package.json path, got %q", output)
-	}
-	if !strings.Contains(output, "api/requirements.txt") {
-		t.Fatalf("expected human output to include requirements path, got %q", output)
+	expected := strings.Join([]string{
+		"Root: /tmp/project",
+		"",
+		"Found 2 manifests:",
+		"- 1 confirmed empty",
+		"- 1 with dependencies present, not extracted",
+		"",
+		"api/requirements.txt [no dependencies]",
+		"",
+		"web/package.json [dependencies present, not extracted]",
+		"",
+	}, "\n")
+	if output != expected {
+		t.Fatalf("unexpected human output:\n%s", output)
 	}
 }
 
@@ -42,18 +62,19 @@ func TestHumanEmptyState(t *testing.T) {
 	}
 }
 
-func TestHumanUsesProvidedManifestTypeOrder(t *testing.T) {
+func TestHumanUsesPathFirstOrder(t *testing.T) {
+	hasDependencies := true
 	result := analyze.ScanResult{
 		Root: "/tmp/project",
 		Manifests: []analyze.ManifestMatch{
-			{Type: analyze.ManifestType("js"), Path: "web/package.json"},
-			{Type: analyze.ManifestType("python-requirements"), Path: "api/requirements.txt"},
+			{Type: analyze.ManifestType("js"), Path: "web/package.json", HasDependencies: &hasDependencies},
+			{Type: analyze.ManifestType("python-requirements"), Path: "api/requirements.txt", HasDependencies: &hasDependencies},
 		},
 	}
 
 	output := Human(result, []analyze.ManifestType{analyze.ManifestType("js"), analyze.ManifestType("python-requirements")})
-	if strings.Index(output, "js") > strings.Index(output, "python-requirements") {
-		t.Fatalf("expected js section before python-requirements, got %q", output)
+	if strings.Index(output, "api/requirements.txt") > strings.Index(output, "web/package.json") {
+		t.Fatalf("expected api/requirements.txt before web/package.json, got %q", output)
 	}
 }
 
@@ -91,23 +112,164 @@ func TestJSONMatchesExpectedSchema(t *testing.T) {
 }
 
 func TestHumanIncludesDependenciesWhenPresent(t *testing.T) {
+	hasDependencies := true
 	result := analyze.ScanResult{
 		Root: "/tmp/project",
 		Manifests: []analyze.ManifestMatch{
 			{
-				Type:         analyze.ManifestType("yaml-pip"),
-				Path:         "workflow.yaml",
-				Dependencies: []analyze.Dependency{{Name: "requests"}, {Name: "pendulum"}},
+				Type:            analyze.ManifestType("yaml-pip"),
+				Path:            "workflow.yaml",
+				HasDependencies: &hasDependencies,
+				Dependencies:    []analyze.Dependency{{Name: "requests"}, {Name: "pendulum"}},
 			},
 		},
 	}
 
 	output := Human(result, []analyze.ManifestType{analyze.ManifestType("yaml-pip")})
-	if !strings.Contains(output, "workflow.yaml") {
-		t.Fatalf("expected human output to include yaml manifest path, got %q", output)
+	expected := strings.Join([]string{
+		"Root: /tmp/project",
+		"",
+		"Found 1 manifest:",
+		"- 1 with extracted dependencies",
+		"",
+		"workflow.yaml [2 deps]",
+		"  - requests",
+		"  - pendulum",
+		"",
+	}, "\n")
+	if output != expected {
+		t.Fatalf("unexpected human output:\n%s", output)
 	}
-	if !strings.Contains(output, "requests") || !strings.Contains(output, "pendulum") {
-		t.Fatalf("expected human output to include dependencies, got %q", output)
+}
+
+func TestHumanGroupsDependenciesBySectionWhenPresent(t *testing.T) {
+	hasDependencies := true
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type: analyze.ManifestType("python-pyproject"),
+				Path: "backend/pyproject.toml",
+				Dependencies: []analyze.Dependency{
+					{Name: "requests>=2.31", Section: "project.dependencies"},
+					{Name: "pytest>=8", Section: "project.optional-dependencies.dev"},
+					{Name: "ruff>=0.4", Section: "project.optional-dependencies.dev"},
+				},
+				HasDependencies: &hasDependencies,
+			},
+		},
+	}
+
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("python-pyproject")})
+	expected := strings.Join([]string{
+		"Root: /tmp/project",
+		"",
+		"Found 1 manifest:",
+		"- 1 with extracted dependencies",
+		"",
+		"backend/pyproject.toml [3 deps]",
+		"  project.dependencies:",
+		"    - requests>=2.31",
+		"  project.optional-dependencies.dev:",
+		"    - pytest>=8",
+		"    - ruff>=0.4",
+		"",
+	}, "\n")
+	if output != expected {
+		t.Fatalf("unexpected human output:\n%s", output)
+	}
+}
+
+func TestHumanUsesDefaultGroupOnlyForMixedDependencies(t *testing.T) {
+	hasDependencies := true
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type: analyze.ManifestType("mixed"),
+				Path: "mixed.toml",
+				Dependencies: []analyze.Dependency{
+					{Name: "build>=1.2"},
+					{Name: "pytest>=8", Section: "tool.custom.dev"},
+					{Name: "mkdocs>=1.6", Section: "tool.custom.docs"},
+				},
+				HasDependencies: &hasDependencies,
+			},
+		},
+	}
+
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("mixed")})
+	expected := strings.Join([]string{
+		"Root: /tmp/project",
+		"",
+		"Found 1 manifest:",
+		"- 1 with extracted dependencies",
+		"",
+		"mixed.toml [3 deps]",
+		"  [default group]",
+		"    - build>=1.2",
+		"  tool.custom.dev:",
+		"    - pytest>=8",
+		"  tool.custom.docs:",
+		"    - mkdocs>=1.6",
+		"",
+	}, "\n")
+	if output != expected {
+		t.Fatalf("unexpected human output:\n%s", output)
+	}
+}
+
+func TestHumanSummarizesAllDependencyStates(t *testing.T) {
+	hasDependencies := true
+	noDependencies := false
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type: analyze.ManifestType("python-pyproject"),
+				Path: "backend/pyproject.toml",
+				Dependencies: []analyze.Dependency{
+					{Name: "requests>=2.31", Section: "project.dependencies"},
+				},
+				HasDependencies: &hasDependencies,
+			},
+			{
+				Type:            analyze.ManifestType("python-conda-environment"),
+				Path:            "environment.yml",
+				HasDependencies: &noDependencies,
+			},
+			{
+				Type:            analyze.ManifestType("js"),
+				Path:            "frontend/package.json",
+				HasDependencies: &hasDependencies,
+			},
+			{
+				Type: analyze.ManifestType("yaml"),
+				Path: "unknown.yaml",
+			},
+		},
+	}
+
+	output := Human(result, []analyze.ManifestType{
+		analyze.ManifestType("python-pyproject"),
+		analyze.ManifestType("python-conda-environment"),
+		analyze.ManifestType("js"),
+		analyze.ManifestType("yaml"),
+	})
+	for _, expected := range []string{
+		"Found 4 manifests:",
+		"- 1 with extracted dependencies",
+		"- 1 confirmed empty",
+		"- 1 with dependencies present, not extracted",
+		"- 1 with dependency status unknown",
+		"backend/pyproject.toml [1 dep]",
+		"environment.yml [no dependencies]",
+		"frontend/package.json [dependencies present, not extracted]",
+		"unknown.yaml [matched]",
+	} {
+		if !strings.Contains(output, expected) {
+			t.Fatalf("expected output to contain %q, got:\n%s", expected, output)
+		}
 	}
 }
 
@@ -216,13 +378,15 @@ func TestJSONIncludesHasDependenciesFalseWhenKnownEmpty(t *testing.T) {
 }
 
 func TestHumanIncludesExternalScriptURLs(t *testing.T) {
+	hasDependencies := true
 	result := analyze.ScanResult{
 		Root: "/tmp/project",
 		Manifests: []analyze.ManifestMatch{
 			{
-				Type:         analyze.ManifestType("html-external-scripts"),
-				Path:         "templates/index.html",
-				Dependencies: []analyze.Dependency{{Name: "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"}},
+				Type:            analyze.ManifestType("html-external-scripts"),
+				Path:            "templates/index.html",
+				HasDependencies: &hasDependencies,
+				Dependencies:    []analyze.Dependency{{Name: "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"}},
 			},
 		},
 	}
@@ -230,5 +394,29 @@ func TestHumanIncludesExternalScriptURLs(t *testing.T) {
 	output := Human(result, []analyze.ManifestType{analyze.ManifestType("html-external-scripts")})
 	if !strings.Contains(output, "templates/index.html") || !strings.Contains(output, "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js") {
 		t.Fatalf("expected human output to include external script URL, got %q", output)
+	}
+}
+
+func TestHumanSummaryPluralization(t *testing.T) {
+	hasDependencies := true
+	output := Human(analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type: analyze.ManifestType("python-pyproject"),
+				Path: "pyproject.toml",
+				Dependencies: []analyze.Dependency{
+					{Name: "requests>=2.31"},
+				},
+				HasDependencies: &hasDependencies,
+			},
+		},
+	}, []analyze.ManifestType{analyze.ManifestType("python-pyproject")})
+
+	if !strings.Contains(output, fmt.Sprintf("Found %d manifest:", 1)) {
+		t.Fatalf("expected singular manifest count, got %q", output)
+	}
+	if !strings.Contains(output, "[1 dep]") {
+		t.Fatalf("expected singular dependency count, got %q", output)
 	}
 }
