@@ -30,6 +30,19 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "conda-lock.yml", want: ManifestType("python-conda-lock")},
 		{name: "package.json", want: ManifestType("js")},
 		{name: "yarn.lock", want: ManifestType("js-yarn")},
+		{name: "pnpm-lock.yaml", want: ManifestType("js-pnpm-lock")},
+		{name: "bun.lock", want: ManifestType("js-bun-lock")},
+		{name: "bun.lockb", want: ManifestType("js-bun-lockb")},
+		{name: "deno.lock", want: ManifestType("deno-lock")},
+		{name: "gradle.lockfile", want: ManifestType("java-gradle-lockfile")},
+		{name: "Gemfile.lock", want: ManifestType("ruby-gemfile-lock")},
+		{name: "go.sum", want: ManifestType("go-sum")},
+		{name: "Gopkg.lock", want: ManifestType("go-gopkg-lock")},
+		{name: "glide.lock", want: ManifestType("go-glide-lock")},
+		{name: "conan.lock", want: ManifestType("cpp-conan-lock")},
+		{name: "Package.resolved", want: ManifestType("swift-package-resolved")},
+		{name: "Podfile.lock", want: ManifestType("ios-podfile-lock")},
+		{name: "mix.lock", want: ManifestType("elixir-mix-lock")},
 		{name: "pom.xml", want: ManifestType("java")},
 	}
 
@@ -58,8 +71,21 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 		"package-lock.json",
 		"pom.xml.backup",
 		"yarn.lock.old",
+		"pnpm-lock.yaml.bak",
+		"bun.lock.json",
+		"bun.lockb.old",
+		"deno.lock.backup",
+		"gradle.lockfile.tmp",
+		"Gemfile.lock.old",
 		"uv.lock.json",
 		"poetry.lock.toml",
+		"go.sum.bak",
+		"Gopkg.lock.json",
+		"glide.lock.old",
+		"conan.lock.txt",
+		"Package.resolved.backup",
+		"Podfile.lock.old",
+		"mix.lock.exs",
 		"Pipfile",
 		"Pipfile.lock.bak",
 		"conda-lock.yaml",
@@ -313,6 +339,46 @@ func TestScanFindsCondaLockInFixture(t *testing.T) {
 	}
 
 	t.Fatalf("expected backend/conda-lock.yml fixture to be detected, got %+v", result.Manifests)
+}
+
+func TestScanFindsAdditionalLockfilesInFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "sample-monorepo"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	want := map[string]ManifestType{
+		"frontend/pnpm-lock.yaml":       ManifestType("js-pnpm-lock"),
+		"frontend/bun.lock":             ManifestType("js-bun-lock"),
+		"frontend/bun.lockb":            ManifestType("js-bun-lockb"),
+		"frontend/deno.lock":            ManifestType("deno-lock"),
+		"java-service/gradle.lockfile":  ManifestType("java-gradle-lockfile"),
+		"ruby-app/Gemfile.lock":         ManifestType("ruby-gemfile-lock"),
+		"go-service/go.sum":             ManifestType("go-sum"),
+		"go-service/Gopkg.lock":         ManifestType("go-gopkg-lock"),
+		"go-service/glide.lock":         ManifestType("go-glide-lock"),
+		"cpp-app/conan.lock":            ManifestType("cpp-conan-lock"),
+		"ios-app/Package.resolved":      ManifestType("swift-package-resolved"),
+		"ios-app/Podfile.lock":          ManifestType("ios-podfile-lock"),
+		"elixir-app/mix.lock":           ManifestType("elixir-mix-lock"),
+	}
+
+	for _, manifest := range result.Manifests {
+		wantType, ok := want[manifest.Path]
+		if !ok {
+			continue
+		}
+		if manifest.Type != wantType {
+			t.Fatalf("expected %s to be detected as %q, got %q", manifest.Path, wantType, manifest.Type)
+		}
+		delete(want, manifest.Path)
+	}
+
+	if len(want) != 0 {
+		t.Fatalf("expected all additional lockfile fixtures to be detected, missing %+v", want)
+	}
 }
 
 func TestScanDefaultRulesMatchRequirementsDirectoriesAnywhere(t *testing.T) {
@@ -1982,7 +2048,20 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("python-setup-cfg"),
 		ManifestType("js"),
 		ManifestType("js-yarn"),
+		ManifestType("js-pnpm-lock"),
+		ManifestType("js-bun-lock"),
+		ManifestType("js-bun-lockb"),
+		ManifestType("deno-lock"),
 		ManifestType("java"),
+		ManifestType("java-gradle-lockfile"),
+		ManifestType("ruby-gemfile-lock"),
+		ManifestType("go-sum"),
+		ManifestType("go-gopkg-lock"),
+		ManifestType("go-glide-lock"),
+		ManifestType("cpp-conan-lock"),
+		ManifestType("swift-package-resolved"),
+		ManifestType("ios-podfile-lock"),
+		ManifestType("elixir-mix-lock"),
 		ManifestType("js-banner-block-start"),
 		ManifestType("js-banner-plain-block-start"),
 		ManifestType("js-banner-multiline-preserved"),

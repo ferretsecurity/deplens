@@ -12,7 +12,7 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies |
 | --- | --- | --- |
-| filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `package.json`, `yarn.lock`, `pom.xml` | No |
+| filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `package.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `deno.lock`, `pom.xml`, `gradle.lockfile`, `Gemfile.lock`, `go.sum`, `Gopkg.lock`, `glide.lock`, `conan.lock`, `Package.resolved`, `Podfile.lock`, `mix.lock` | No |
 | path glob match | Built-in path-glob rules such as `python-requirements-dir` for `**/requirements/*.txt` | No |
 | toml | TOML files matched by a rule such as built-in `python-pyproject` for `pyproject.toml`; extracts from `build-system.requires[]`, `project.dependencies[]`, `project.optional-dependencies.*[]`, `dependency-groups.*[]`, `tool.poetry.dependencies`, and `tool.poetry.group.*.dependencies` | Yes |
 | pipfile | `Pipfile` matched by the built-in `python-pipfile` rule; reports only when the file contains at least one dependency-bearing package section such as `[packages]`, `[dev-packages]`, or a custom package category like `[docs]` | Yes |
@@ -69,8 +69,47 @@ js
 js-yarn
 - frontend/yarn.lock
 
+js-pnpm-lock
+- frontend/pnpm-lock.yaml
+
+js-bun-lock
+- frontend/bun.lock
+
+js-bun-lockb
+- frontend/bun.lockb
+
+deno-lock
+- frontend/deno.lock
+
 java
 - java-service/pom.xml
+
+java-gradle-lockfile
+- java-service/gradle.lockfile
+
+ruby-gemfile-lock
+- ruby-app/Gemfile.lock
+
+go-sum
+- go-service/go.sum
+
+go-gopkg-lock
+- go-service/Gopkg.lock
+
+go-glide-lock
+- go-service/glide.lock
+
+cpp-conan-lock
+- cpp-app/conan.lock
+
+swift-package-resolved
+- ios-app/Package.resolved
+
+ios-podfile-lock
+- ios-app/Podfile.lock
+
+elixir-mix-lock
+- elixir-app/mix.lock
 ```
 
 When `pyproject.toml` is present, it is reported as `python-pyproject`, for example:

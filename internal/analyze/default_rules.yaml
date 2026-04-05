@@ -68,8 +68,34 @@ rules:
     filename-regex: '^package\.json$'
   - name: js-yarn
     filename-regex: '^yarn\.lock$'
+  - name: js-pnpm-lock
+    filename-regex: '^pnpm-lock\.yaml$'
+  - name: js-bun-lock
+    filename-regex: '^bun\.lock$'
+  - name: js-bun-lockb
+    filename-regex: '^bun\.lockb$'
+  - name: deno-lock
+    filename-regex: '^deno\.lock$'
   - name: java
     filename-regex: '^pom\.xml$'
+  - name: java-gradle-lockfile
+    filename-regex: '^gradle\.lockfile$'
+  - name: ruby-gemfile-lock
+    filename-regex: '^Gemfile\.lock$'
+  - name: go-sum
+    filename-regex: '^go\.sum$'
+  - name: go-gopkg-lock
+    filename-regex: '^Gopkg\.lock$'
+  - name: go-glide-lock
+    filename-regex: '^glide\.lock$'
+  - name: cpp-conan-lock
+    filename-regex: '^conan\.lock$'
+  - name: swift-package-resolved
+    filename-regex: '^Package\.resolved$'
+  - name: ios-podfile-lock
+    filename-regex: '^Podfile\.lock$'
+  - name: elixir-mix-lock
+    filename-regex: '^mix\.lock$'
   - name: js-banner-block-start
     filename-regex: '.*\.js$'
     banner-regex: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
