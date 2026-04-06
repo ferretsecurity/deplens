@@ -37,6 +37,8 @@ The detector can determine whether a matched file contains dependency declaratio
 
 This includes presence checks where the detector can conclusively report that dependencies are present or absent without extracting a structured dependency list.
 
+The maturity model describes detector capability, not necessarily the exact status labels currently emitted for every detector in scan output.
+
 Examples:
 
 - rules that detect a dependency-bearing section
@@ -87,6 +89,7 @@ The initial built-in maturity levels should be documented as follows.
 
 ### Level 2
 
+- yaml
 - terraform
 
 ### Level 3
@@ -100,14 +103,12 @@ The initial built-in maturity levels should be documented as follows.
 - typescript cdk construct
 - python cdk construct
 
-### Variable by Rule Configuration
+Built-in `yaml` support should be documented as level 2 because the shipped `python-conda-environment` rule is a presence check.
 
-The `yaml` detector family should be documented as configuration-dependent:
+The README should also state separately that custom `yaml` rules can be:
 
 - level 2 when used for presence checks only
 - level 3 when used for extraction
-
-This should be stated explicitly so the maturity model remains applicable to both built-in and custom YAML rules.
 
 ## README Changes
 

@@ -19,6 +19,8 @@ The maturity levels are:
 - Level 3: the detector can extract dependency data in a detector-specific form.
 - Level 4: the detector can extract dependency data into a normalized cross-detector format.
 
+The maturity model describes detector capability, not necessarily the exact status labels currently emitted for every detector in scan output.
+
 No current detector is level 4 because `deplens` does not yet define a shared normalized dependency schema.
 
 ## Supported Detectors
@@ -36,13 +38,13 @@ Built-in detectors:
 | python call | Python files matched by a rule such as built-in `python-setup-py` for `setup.py`; detects imported function calls with specific keyword arguments, for example `setuptools.setup(..., install_requires=..., extras_require=...)`, and can extract from simple literal arrays in `install_requires=[...]` plus `extras_require={"group": [...]}` | Yes | 3 |
 | ini | INI files matched by a rule such as built-in `python-setup-cfg` for `setup.cfg`; extracts from `[options]` keys `setup_requires` and `install_requires`, plus all keys under `[options.extras_require]`, when values are written as static multiline lists | Yes | 3 |
 | banner regex | JavaScript files whose first 4096 bytes match a configured `banner-regex` with capture groups 1 and 2 for package name and version | Yes | 3 |
-| yaml | Path expression such as `workflow.steps[].config.packages.pip[]` to extract data from yaml files, or a presence check such as `dependencies` to detect files that declare a dependency section without extracting it | Sometimes | 2 or 3, depending on rule configuration |
+| yaml | Path expression such as `workflow.steps[].config.packages.pip[]` to extract data from yaml files, or a presence check such as `dependencies` to detect files that declare a dependency section without extracting it | Sometimes | 2 |
 | html external scripts | HTML-like files (`.html`, `.htm`, `.xhtml`, `.tmpl`, `.gohtml`, `.mustache`, `.hbs`, `.njk`) matched by the built-in `html-external-scripts` rule; extracts remote URLs from external `<script src="https://...">` tags, `<script type="module">` imports, and `<script type="importmap">` `imports` entries | Yes | 3 |
 | terraform | Terraform `.tf` files with parsing content. For example containing a `aws_glue_job` resource with `default_arguments.--job-language = "python"` and `default_arguments.--additional-python-modules` present | No | 2 |
 | typescript cdk construct | TypeScript `.ts` files parsed with an AST. For example containing `new glue.CfnJob(..., { defaultArguments: { "--job-language": "python", "--additional-python-modules": "pandas==2.2.1" }})` imported from `aws-cdk-lib/aws-glue` | Yes | 3 |
 | python cdk construct | Python `.py` files with statically-resolved CDK `CfnJob(...)` calls. For example containing `glue.CfnJob(..., default_arguments={"--job-language": "python", "--additional-python-modules": "pandas==2.2.1"})` imported from `aws_cdk.aws_glue` | Yes | 3 |
 
-For configurable detector families such as `yaml`, the configured rule determines the maturity level: presence-check rules are level 2 and extraction rules are level 3.
+Built-in `yaml` support is currently level 2 via the presence-check `python-conda-environment` rule. Custom `yaml` rules can reach level 3 when they extract dependency data.
 
 The same maturity model applies to custom rules passed with `--rules`; selector-only rules are level 1, presence-check rules are level 2, extraction rules are level 3, and level 4 is reserved for future normalized output.
 
