@@ -1,0 +1,6 @@
+{
+  "name": "package-json-1-section",
+  "dependencies": {
+    "react": "^19.0.0"
+  }
+}

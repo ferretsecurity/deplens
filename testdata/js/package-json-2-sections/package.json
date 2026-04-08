@@ -1,0 +1,9 @@
+{
+  "name": "package-json-2-sections",
+  "dependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}

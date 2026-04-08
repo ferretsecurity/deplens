@@ -47,6 +47,7 @@ type ruleConfig struct {
 	Python        *pythonMatcherConfig     `yaml:"python"`
 	YAML          *yamlMatcherConfig       `yaml:"yaml"`
 	TOML          *tomlMatcherConfig       `yaml:"toml"`
+	JSON          *jsonMatcherConfig       `yaml:"json"`
 	HTML          *htmlMatcherConfig       `yaml:"html"`
 }
 

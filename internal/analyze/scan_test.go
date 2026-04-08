@@ -36,7 +36,6 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "Pipfile.lock", want: ManifestType("python-pipfile-lock")},
 		{name: "pdm.lock", want: ManifestType("python-pdm-lock")},
 		{name: "conda-lock.yml", want: ManifestType("python-conda-lock")},
-		{name: "package.json", want: ManifestType("js")},
 		{name: "package-lock.json", want: ManifestType("js-npm-lock")},
 		{name: "yarn.lock", want: ManifestType("js-yarn")},
 		{name: "pnpm-lock.yaml", want: ManifestType("js-pnpm-lock")},
@@ -163,6 +162,7 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	testCases := []string{
+		"package.json",
 		"pyproject.toml",
 		"Pipfile",
 		"index.html",
@@ -254,17 +254,17 @@ func TestDetectManifestFileDoesNotMatchPathGlobWithoutRelativePath(t *testing.T)
 	}
 }
 
-func TestDetectManifestFileMatchesFilenameRuleWithEmptyPath(t *testing.T) {
+func TestDetectManifestFileMatchesSelectorOnlyFilenameRuleWithEmptyPath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	got, deps, hasDependencies, ok, err := ruleset.DetectManifestFile("", "package.json")
+	got, deps, hasDependencies, ok, err := ruleset.DetectManifestFile("", "package-lock.json")
 	if err != nil {
 		t.Fatalf("DetectManifestFile failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected filename-only rule to match with empty path")
 	}
-	if got != ManifestType("js") {
+	if got != ManifestType("js-npm-lock") {
 		t.Fatalf("unexpected manifest type: got %q", got)
 	}
 	if deps != nil {
@@ -279,7 +279,7 @@ func TestScanFindsNestedManifestsSortedByRelativePath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "b", "requirements.dev.in"), "")
-	mustWriteFile(t, filepath.Join(root, "a", "package.json"), "")
+	mustWriteFile(t, filepath.Join(root, "a", "package.json"), "{}")
 	mustWriteFile(t, filepath.Join(root, "a", "index.html"), `<script src="https://cdn.example.com/app.js"></script>`)
 	mustWriteFile(t, filepath.Join(root, "c", "job.tf"), `
 resource "aws_glue_job" "python_shell_example" {
@@ -360,20 +360,60 @@ func TestScanFindsCondaEnvironmentInFixture(t *testing.T) {
 	t.Fatalf("expected environment.yml fixture to be detected, got %+v", result.Manifests)
 }
 
-func TestScanLeavesHasDependenciesUnknownForDetectorOnlyManifest(t *testing.T) {
+func TestScanFindsPackageJSONFixtureWithoutMatchingSections(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
-	root := t.TempDir()
-	mustWriteFile(t, filepath.Join(root, "package.json"), "{}")
 
-	result, err := Scan(root, nil, ruleset)
+	result, err := Scan(filepath.Join("..", "..", "testdata", "js", "package-json-0-sections"), nil, ruleset)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
-	if result.Manifests[0].HasDependencies != nil {
-		t.Fatalf("expected has_dependencies to be unknown, got %+v", result.Manifests[0].HasDependencies)
+	if result.Manifests[0].Path != "package.json" {
+		t.Fatalf("expected package.json fixture, got %+v", result.Manifests[0])
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanFindsPackageJSONFixtureWithOneMatchingSection(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "js", "package-json-1-section"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Path != "package.json" {
+		t.Fatalf("expected package.json fixture, got %+v", result.Manifests[0])
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+	if len(result.Manifests[0].Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	}
+}
+
+func TestScanFindsPackageJSONFixtureWithTwoMatchingSections(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "js", "package-json-2-sections"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Path != "package.json" {
+		t.Fatalf("expected package.json fixture, got %+v", result.Manifests[0])
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
 	}
 }
 
@@ -1604,8 +1644,8 @@ func TestScanMatchesPythonFixtureFromTestdata(t *testing.T) {
 func TestScanSkipsIgnoredDirectories(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
-	mustWriteFile(t, filepath.Join(root, "node_modules", "package.json"), "")
-	mustWriteFile(t, filepath.Join(root, "src", "package.json"), "")
+	mustWriteFile(t, filepath.Join(root, "node_modules", "package.json"), "{}")
+	mustWriteFile(t, filepath.Join(root, "src", "package.json"), "{}")
 
 	result, err := Scan(root, []string{"node_modules"}, ruleset)
 	if err != nil {

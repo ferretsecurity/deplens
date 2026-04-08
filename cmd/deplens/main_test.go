@@ -26,8 +26,14 @@ func TestRunDefaultPathWorks(t *testing.T) {
 	if exitCode != 0 {
 		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "package.json") {
-		t.Fatalf("expected output to include package.json, got %q", stdout.String())
+	if !strings.Contains(stdout.String(), "Found 1 manifest:") {
+		t.Fatalf("expected output to include manifest summary, got %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "- 1 confirmed empty") {
+		t.Fatalf("expected output to include confirmed empty summary, got %q", stdout.String())
+	}
+	if strings.Contains(stdout.String(), "package.json [no dependencies]") {
+		t.Fatalf("expected confirmed-empty package.json to be hidden by default, got %q", stdout.String())
 	}
 }
 
