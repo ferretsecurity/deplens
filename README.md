@@ -19,8 +19,6 @@ The maturity levels are:
 - Level 3: the detector can extract dependency data in a detector-specific form.
 - Level 4: the detector can extract dependency data into a normalized cross-detector format.
 
-The maturity model describes detector capability, not necessarily the exact status labels currently emitted for every detector in scan output.
-
 No current detector is level 4 because `deplens` does not yet define a shared normalized dependency schema.
 
 ## Supported Detectors
