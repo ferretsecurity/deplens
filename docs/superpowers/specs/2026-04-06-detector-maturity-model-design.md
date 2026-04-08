@@ -123,7 +123,7 @@ That section should:
 
 Update the `Supported Detectors` table to include a `Maturity` column.
 
-For detector families whose maturity varies by configuration, the table should say so explicitly rather than forcing a single fixed value.
+The built-in table should describe shipped detector behavior only. For configurable detector families such as `yaml`, document the built-in rule capability in the table and explain custom-rule maturity separately in prose after the table.
 
 Add a short note after the built-in table explaining how user-defined rules fit the same model.
 
