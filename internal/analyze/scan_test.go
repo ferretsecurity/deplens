@@ -360,22 +360,36 @@ func TestScanFindsCondaEnvironmentInFixture(t *testing.T) {
 	t.Fatalf("expected environment.yml fixture to be detected, got %+v", result.Manifests)
 }
 
-func TestScanMarksPackageJSONHasDependenciesTrueForDependencySections(t *testing.T) {
+func TestScanFindsPackageJSONFixtureWithoutMatchingSections(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
-	root := t.TempDir()
-	mustWriteFile(t, filepath.Join(root, "package.json"), `{
-  "name": "demo",
-  "dependencies": {
-    "react": "^19.0.0"
-  }
-}`)
 
-	result, err := Scan(root, nil, ruleset)
+	result, err := Scan(filepath.Join("..", "..", "testdata", "js", "package-json-0-sections"), nil, ruleset)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Path != "package.json" {
+		t.Fatalf("expected package.json fixture, got %+v", result.Manifests[0])
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanFindsPackageJSONFixtureWithOneMatchingSection(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "js", "package-json-1-section"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Path != "package.json" {
+		t.Fatalf("expected package.json fixture, got %+v", result.Manifests[0])
 	}
 	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
 		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
@@ -385,43 +399,21 @@ func TestScanMarksPackageJSONHasDependenciesTrueForDependencySections(t *testing
 	}
 }
 
-func TestScanMarksPackageJSONHasDependenciesFalseWithoutDependencySections(t *testing.T) {
+func TestScanFindsPackageJSONFixtureWithTwoMatchingSections(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
-	root := t.TempDir()
-	mustWriteFile(t, filepath.Join(root, "package.json"), `{
-  "name": "demo",
-  "private": true
-}`)
 
-	result, err := Scan(root, nil, ruleset)
+	result, err := Scan(filepath.Join("..", "..", "testdata", "js", "package-json-2-sections"), nil, ruleset)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Manifests[0].Path != "package.json" {
+		t.Fatalf("expected package.json fixture, got %+v", result.Manifests[0])
 	}
-}
-
-func TestScanMarksPackageJSONHasDependenciesFalseForEmptyDependencySections(t *testing.T) {
-	ruleset := mustLoadDefaultRules(t)
-	root := t.TempDir()
-	mustWriteFile(t, filepath.Join(root, "package.json"), `{
-  "name": "demo",
-  "devDependencies": {}
-}`)
-
-	result, err := Scan(root, nil, ruleset)
-	if err != nil {
-		t.Fatalf("scan failed: %v", err)
-	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
-	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
 	}
 }
 
