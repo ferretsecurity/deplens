@@ -66,6 +66,12 @@ rules:
           key: '*'
   - name: js
     filename-regex: '^package\.json$'
+    json:
+      exists-any:
+        - dependencies
+        - devDependencies
+        - peerDependencies
+        - optionalDependencies
   - name: js-bower
     filename-regex: '^bower\.json$'
   - name: js-npm-shrinkwrap
