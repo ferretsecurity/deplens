@@ -66,6 +66,10 @@ rules:
           key: '*'
   - name: js
     filename-regex: '^package\.json$'
+  - name: js-bower
+    filename-regex: '^bower\.json$'
+  - name: js-npm-shrinkwrap
+    filename-regex: '^npm-shrinkwrap\.json$'
   - name: js-npm-lock
     filename-regex: '^package-lock\.json$'
   - name: js-yarn
@@ -78,22 +82,74 @@ rules:
     filename-regex: '^bun\.lockb$'
   - name: deno-lock
     filename-regex: '^deno\.lock$'
+  - name: deno-json
+    filename-regex: '^deno\.json$'
+  - name: deno-jsonc
+    filename-regex: '^deno\.jsonc$'
   - name: java
     filename-regex: '^pom\.xml$'
   - name: java-gradle-lockfile
     filename-regex: '^gradle\.lockfile$'
+  - name: java-gradle
+    filename-regex: '^build\.gradle$'
+  - name: java-gradle-kts
+    filename-regex: '^build\.gradle\.kts$'
+  - name: java-gradle-settings
+    filename-regex: '^settings\.gradle$'
+  - name: java-gradle-settings-kts
+    filename-regex: '^settings\.gradle\.kts$'
   - name: ruby-gemfile
     filename-regex: '^Gemfile$'
   - name: ruby-gemfile-lock
     filename-regex: '^Gemfile\.lock$'
+  - name: swift-package
+    filename-regex: '^Package\.swift$'
+  - name: ios-podfile
+    filename-regex: '^Podfile$'
+  - name: ios-cartfile
+    filename-regex: '^Cartfile$'
   - name: php-composer
     filename-regex: '^composer\.json$'
   - name: php-composer-lock
     filename-regex: '^composer\.lock$'
+  - name: dart-pubspec
+    filename-regex: '^pubspec\.yaml$'
+  - name: dart-pubspec-lock
+    filename-regex: '^pubspec\.lock$'
+  - name: erlang-rebar-config
+    filename-regex: '^rebar\.config$'
+  - name: erlang-rebar-lock
+    filename-regex: '^rebar\.lock$'
+  - name: clojure-deps-edn
+    filename-regex: '^deps\.edn$'
+  - name: clojure-project-clj
+    filename-regex: '^project\.clj$'
+  - name: haskell-stack
+    filename-regex: '^stack\.yaml$'
+  - name: haskell-stack-lock
+    filename-regex: '^stack\.yaml\.lock$'
+  - name: haskell-cabal-project
+    filename-regex: '^cabal\.project$'
+  - name: dotnet-packages-config
+    filename-regex: '^packages\.config$'
+  - name: dotnet-packages-lock
+    filename-regex: '^packages\.lock\.json$'
+  - name: dotnet-directory-packages-props
+    filename-regex: '^Directory\.Packages\.props$'
+  - name: dotnet-paket-dependencies
+    filename-regex: '^paket\.dependencies$'
+  - name: dotnet-paket-lock
+    filename-regex: '^paket\.lock$'
   - name: go-mod
     filename-regex: '^go\.mod$'
   - name: go-sum
     filename-regex: '^go\.sum$'
+  - name: go-work
+    filename-regex: '^go\.work$'
+  - name: go-gopkg-toml
+    filename-regex: '^Gopkg\.toml$'
+  - name: go-glide-yaml
+    filename-regex: '^glide\.yaml$'
   - name: rust-cargo
     filename-regex: '^Cargo\.toml$'
   - name: rust-cargo-lock
