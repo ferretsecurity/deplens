@@ -8,6 +8,8 @@ JSON output contains a top-level `root` plus `manifests`. Each manifest entry in
 
 Human-readable output starts with summary counts and then prints one block per manifest path. By default, manifests that were conclusively matched but found to have no dependencies are counted in the summary and omitted from the detailed list; pass `--show-empty` to include them. Files with extracted dependencies show either a flat list or sectioned groups. If a file mixes sectioned and unsectioned dependencies, the unsectioned entries are rendered under `[default group]`.
 
+For project-specific terminology used in the CLI documentation and output descriptions, see [docs/glossary.md](docs/glossary.md).
+
 ## Detector Maturity Model
 
 `deplens` uses a detector maturity model to describe detector capability. The maturity level applies to detector capability itself, not the outcome for an individual matched file. Per-file outcomes are still represented by scan results such as `has_dependencies` and `dependencies`.
