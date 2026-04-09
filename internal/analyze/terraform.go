@@ -59,6 +59,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.JSON != nil {
 		parserCount++
 	}
+	if raw.XML != nil {
+		parserCount++
+	}
 	if raw.HTML != nil {
 		parserCount++
 	}
@@ -88,6 +91,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.JSON != nil {
 		return newJSONMatcher(*raw.JSON)
+	}
+	if raw.XML != nil {
+		return newXMLMatcher(*raw.XML)
 	}
 	if raw.HTML != nil {
 		return newHTMLMatcher(*raw.HTML)

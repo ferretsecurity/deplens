@@ -31,9 +31,10 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies | Maturity |
 | --- | --- | --- | --- |
-| filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `deno.lock`, `bower.json`, `npm-shrinkwrap.json`, `pom.xml`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `Package.swift`, `Podfile`, `Cartfile`, `composer.lock`, `pubspec.lock`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `packages.config`, `packages.lock.json`, `Directory.Packages.props`, `paket.dependencies`, `paket.lock`, `go.mod`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.yaml`, `Cargo.lock`, `*.csproj`, `Gopkg.lock`, `glide.lock`, `conan.lock`, `Package.resolved`, `Podfile.lock`, `mix.lock` | No | 1 |
+| filename regex match | Built-in filename rules: `*requirements*.txt`, `*requirements*.in`, `uv.lock`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `deno.lock`, `bower.json`, `npm-shrinkwrap.json`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `Package.swift`, `Podfile`, `Cartfile`, `composer.lock`, `pubspec.lock`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `packages.config`, `packages.lock.json`, `Directory.Packages.props`, `paket.dependencies`, `paket.lock`, `go.mod`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.yaml`, `Cargo.lock`, `*.csproj`, `Gopkg.lock`, `glide.lock`, `conan.lock`, `Package.resolved`, `Podfile.lock`, `mix.lock` | No | 1 |
 | path glob match | Built-in path-glob rules such as `python-requirements-dir` for `**/requirements/*.txt` | No | 1 |
 | json presence check | `package.json`; reports dependency presence when any of `dependencies`, `devDependencies`, `peerDependencies`, or `optionalDependencies` is a non-empty object. Also used for `composer.json` via `require` / `require-dev`, and `deno.json` / `deno.jsonc` via `imports` | No | 2 |
+| xml presence check | `pom.xml`; reports dependency presence when any configured element path exists, for example `project.dependencies.dependency`; XML namespaces are ignored for matching | No | 2 |
 | toml presence check | `Cargo.toml`; reports dependency presence when any of `dependencies`, `dev-dependencies`, `build-dependencies`, `workspace.dependencies`, `target.*.dependencies`, `target.*.dev-dependencies`, or `target.*.build-dependencies` is a non-empty table | No | 2 |
 | toml | TOML files matched by a rule such as built-in `python-pyproject` for `pyproject.toml`; extracts from `build-system.requires[]`, `project.dependencies[]`, `project.optional-dependencies.*[]`, `dependency-groups.*[]`, `tool.poetry.dependencies`, and `tool.poetry.group.*.dependencies` | Yes | 3 |
 | pipfile | `Pipfile` matched by the built-in `python-pipfile` rule; reports only when the file contains at least one dependency-bearing package section such as `[packages]`, `[dev-packages]`, or a custom package category like `[docs]` | Yes | 3 |
@@ -47,7 +48,7 @@ Built-in detectors:
 | typescript cdk construct | TypeScript `.ts` files parsed with an AST. For example containing `new glue.CfnJob(..., { defaultArguments: { "--job-language": "python", "--additional-python-modules": "pandas==2.2.1" }})` imported from `aws-cdk-lib/aws-glue` | Yes | 3 |
 | python cdk construct | Python `.py` files with statically-resolved CDK `CfnJob(...)` calls. For example containing `glue.CfnJob(..., default_arguments={"--job-language": "python", "--additional-python-modules": "pandas==2.2.1"})` imported from `aws_cdk.aws_glue` | Yes | 3 |
 
-The same maturity model applies to custom rules passed with `--rules`; selector-only rules are level 1, presence-check rules such as `json.exists-any`, `toml.table-exists-any`, and `yaml.exists-any` are level 2, extraction rules are level 3, and level 4 is reserved for future normalized output.
+The same maturity model applies to custom rules passed with `--rules`; selector-only rules are level 1, presence-check rules such as `json.exists-any`, `xml.exists-any`, `toml.table-exists-any`, and `yaml.exists-any` are level 2, extraction rules are level 3, and level 4 is reserved for future normalized output.
 
 Default JavaScript banner rules use `filename-regex: '.*\.js$'` and return `name@version` from `banner-regex` capture groups 1 and 2. The built-in banner rule set includes `js-banner-block-start`, `js-banner-plain-block-start`, `js-banner-multiline-preserved`, `js-banner-line-comment`, and `js-banner-version-tagged`.
 
@@ -115,6 +116,19 @@ Cargo.toml [matched]
 # After
 composer.json [dependencies present, not extracted]
 Cargo.toml [no dependencies]
+```
+
+`pom.xml` now also reports a conclusive Level 2 status instead of a generic match:
+
+```text
+# Before
+pom.xml [matched]
+
+# After, when direct Maven dependencies are declared
+pom.xml [dependencies present, not extracted]
+
+# After, when no direct Maven dependencies are declared and --show-empty is used
+pom.xml [no dependencies]
 ```
 
 When you need to audit empty matches as well, use `--show-empty` to include entries whose dependency status is conclusively empty:
