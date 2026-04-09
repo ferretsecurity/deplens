@@ -90,8 +90,14 @@ rules:
     filename-regex: '^deno\.lock$'
   - name: deno-json
     filename-regex: '^deno\.json$'
+    json:
+      exists-any:
+        - imports
   - name: deno-jsonc
     filename-regex: '^deno\.jsonc$'
+    json:
+      exists-any:
+        - imports
   - name: java
     filename-regex: '^pom\.xml$'
   - name: java-gradle-lockfile
@@ -116,10 +122,19 @@ rules:
     filename-regex: '^Cartfile$'
   - name: php-composer
     filename-regex: '^composer\.json$'
+    json:
+      exists-any:
+        - require
+        - require-dev
   - name: php-composer-lock
     filename-regex: '^composer\.lock$'
   - name: dart-pubspec
     filename-regex: '^pubspec\.yaml$'
+    yaml:
+      exists-any:
+        - dependencies
+        - dev_dependencies
+        - dependency_overrides
   - name: dart-pubspec-lock
     filename-regex: '^pubspec\.lock$'
   - name: erlang-rebar-config
@@ -158,6 +173,15 @@ rules:
     filename-regex: '^glide\.yaml$'
   - name: rust-cargo
     filename-regex: '^Cargo\.toml$'
+    toml:
+      table-exists-any:
+        - dependencies
+        - dev-dependencies
+        - build-dependencies
+        - workspace.dependencies
+        - target.*.dependencies
+        - target.*.dev-dependencies
+        - target.*.build-dependencies
   - name: rust-cargo-lock
     filename-regex: '^Cargo\.lock$'
   - name: go-gopkg-lock

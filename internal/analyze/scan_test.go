@@ -42,8 +42,6 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "bun.lock", want: ManifestType("js-bun-lock")},
 		{name: "bun.lockb", want: ManifestType("js-bun-lockb")},
 		{name: "deno.lock", want: ManifestType("deno-lock")},
-		{name: "deno.json", want: ManifestType("deno-json")},
-		{name: "deno.jsonc", want: ManifestType("deno-jsonc")},
 		{name: "bower.json", want: ManifestType("js-bower")},
 		{name: "npm-shrinkwrap.json", want: ManifestType("js-npm-shrinkwrap")},
 		{name: "gradle.lockfile", want: ManifestType("java-gradle-lockfile")},
@@ -56,9 +54,7 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "Package.swift", want: ManifestType("swift-package")},
 		{name: "Podfile", want: ManifestType("ios-podfile")},
 		{name: "Cartfile", want: ManifestType("ios-cartfile")},
-		{name: "composer.json", want: ManifestType("php-composer")},
 		{name: "composer.lock", want: ManifestType("php-composer-lock")},
-		{name: "pubspec.yaml", want: ManifestType("dart-pubspec")},
 		{name: "pubspec.lock", want: ManifestType("dart-pubspec-lock")},
 		{name: "rebar.config", want: ManifestType("erlang-rebar-config")},
 		{name: "rebar.lock", want: ManifestType("erlang-rebar-lock")},
@@ -77,7 +73,6 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "go.work", want: ManifestType("go-work")},
 		{name: "Gopkg.toml", want: ManifestType("go-gopkg-toml")},
 		{name: "glide.yaml", want: ManifestType("go-glide-yaml")},
-		{name: "Cargo.toml", want: ManifestType("rust-cargo")},
 		{name: "Cargo.lock", want: ManifestType("rust-cargo-lock")},
 		{name: "Gopkg.lock", want: ManifestType("go-gopkg-lock")},
 		{name: "glide.lock", want: ManifestType("go-glide-lock")},
@@ -163,8 +158,13 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 
 	testCases := []string{
 		"package.json",
+		"composer.json",
+		"deno.json",
+		"deno.jsonc",
 		"pyproject.toml",
 		"Pipfile",
+		"pubspec.yaml",
+		"Cargo.toml",
 		"index.html",
 		"job.tf",
 		"app.js",
@@ -414,6 +414,147 @@ func TestScanFindsPackageJSONFixtureWithTwoMatchingSections(t *testing.T) {
 	}
 	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
 		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesComposerJSONWithRequireSections(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "json", "composer-json-with-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("php-composer") || result.Manifests[0].Path != "composer.json" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+	if len(result.Manifests[0].Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	}
+}
+
+func TestScanMatchesComposerJSONWithoutRequireSections(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "json", "composer-json-no-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesDenoJSONWithImports(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "json", "deno-json-with-imports"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("deno-json") || result.Manifests[0].Path != "deno.json" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesDenoJSONCWithoutImports(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "json", "deno-jsonc-no-imports"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("deno-jsonc") || result.Manifests[0].Path != "deno.jsonc" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesCargoTOMLWithDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "toml", "cargo-with-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("rust-cargo") || result.Manifests[0].Path != "Cargo.toml" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+	if len(result.Manifests[0].Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	}
+}
+
+func TestScanMatchesCargoTOMLWithoutDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "toml", "cargo-no-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesPubspecYAMLWithDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "yaml", "pubspec-with-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("dart-pubspec") || result.Manifests[0].Path != "pubspec.yaml" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesPubspecYAMLWithoutDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "yaml", "pubspec-no-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
 	}
 }
 
@@ -2323,6 +2464,59 @@ dependencies:
 	}
 }
 
+func TestScanMatchesYAMLExistsAnyRuleWithDependenciesPresent(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: dart-pubspec\n    filename-regex: '^pubspec\\.yaml$'\n    yaml:\n      exists-any:\n        - dependencies\n        - dev_dependencies\n        - dependency_overrides\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "pubspec.yaml"), `
+name: app
+dependencies:
+  http: ^1.2.0
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+	if result.Manifests[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	}
+}
+
+func TestScanMatchesYAMLExistsAnyRuleWithoutDependencies(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: dart-pubspec\n    filename-regex: '^pubspec\\.yaml$'\n    yaml:\n      exists-any:\n        - dependencies\n        - dev_dependencies\n        - dependency_overrides\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "pubspec.yaml"), `
+name: app
+environment:
+  sdk: ^3.4.0
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
 func TestScanMatchesYAMLDependenciesFromPathGlobRule(t *testing.T) {
 	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    path-glob: '**/pipelines/workflow.yaml'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
 	if err != nil {
@@ -2681,6 +2875,62 @@ pytest-cov = ">=5"
 	}
 	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
+	}
+}
+
+func TestScanMatchesTOMLTableExistsAnyRuleWithDependenciesPresent(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: rust-cargo\n    filename-regex: '^Cargo\\.toml$'\n    toml:\n      table-exists-any:\n        - dependencies\n        - dev-dependencies\n        - build-dependencies\n        - workspace.dependencies\n        - target.*.dependencies\n        - target.*.dev-dependencies\n        - target.*.build-dependencies\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "Cargo.toml"), `
+[package]
+name = "demo"
+version = "0.1.0"
+
+[target.'cfg(unix)'.dependencies]
+nix = "0.29"
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+	if result.Manifests[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	}
+}
+
+func TestScanMatchesTOMLTableExistsAnyRuleWithoutDependencies(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: rust-cargo\n    filename-regex: '^Cargo\\.toml$'\n    toml:\n      table-exists-any:\n        - dependencies\n        - dev-dependencies\n        - build-dependencies\n        - workspace.dependencies\n        - target.*.dependencies\n        - target.*.dev-dependencies\n        - target.*.build-dependencies\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "Cargo.toml"), `
+[package]
+name = "demo"
+version = "0.1.0"
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
 	}
 }
 
