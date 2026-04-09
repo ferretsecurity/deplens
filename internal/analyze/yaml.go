@@ -8,8 +8,9 @@ import (
 )
 
 type yamlMatcherConfig struct {
-	Query  string `yaml:"query"`
-	Exists string `yaml:"exists"`
+	Query     string   `yaml:"query"`
+	Exists    string   `yaml:"exists"`
+	ExistsAny []string `yaml:"exists-any"`
 }
 
 type yamlPathSegment struct {
@@ -25,12 +26,26 @@ type yamlExistsParser struct {
 	segments []yamlPathSegment
 }
 
+type yamlExistsAnyParser struct {
+	queries [][]yamlPathSegment
+}
+
 func newYAMLQueryParser(raw yamlMatcherConfig) (manifestParser, error) {
-	if raw.Query != "" && raw.Exists != "" {
-		return nil, fmt.Errorf("yaml.query and yaml.exists are mutually exclusive")
+	modeCount := 0
+	if raw.Query != "" {
+		modeCount++
 	}
-	if raw.Query == "" && raw.Exists == "" {
-		return nil, fmt.Errorf("yaml.query or yaml.exists: required")
+	if raw.Exists != "" {
+		modeCount++
+	}
+	if len(raw.ExistsAny) > 0 {
+		modeCount++
+	}
+	if modeCount > 1 {
+		return nil, fmt.Errorf("yaml.query, yaml.exists, and yaml.exists-any are mutually exclusive")
+	}
+	if modeCount == 0 {
+		return nil, fmt.Errorf("yaml.query, yaml.exists, or yaml.exists-any: required")
 	}
 
 	if raw.Query != "" {
@@ -39,6 +54,18 @@ func newYAMLQueryParser(raw yamlMatcherConfig) (manifestParser, error) {
 			return nil, err
 		}
 		return yamlQueryParser{segments: segments}, nil
+	}
+
+	if len(raw.ExistsAny) > 0 {
+		queries := make([][]yamlPathSegment, 0, len(raw.ExistsAny))
+		for idx, rawPath := range raw.ExistsAny {
+			segments, err := parseYAMLPath(rawPath, fmt.Sprintf("yaml.exists-any[%d]", idx))
+			if err != nil {
+				return nil, err
+			}
+			queries = append(queries, segments)
+		}
+		return yamlExistsAnyParser{queries: queries}, nil
 	}
 
 	segments, err := parseYAMLPath(raw.Exists, "yaml.exists")
@@ -106,6 +133,19 @@ func (p yamlExistsParser) Match(path string, content []byte) ([]Dependency, *boo
 	return nil, nil, true, nil
 }
 
+func (p yamlExistsAnyParser) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
+	for _, query := range p.queries {
+		current, err := resolveYAMLPath(path, content, query)
+		if err != nil {
+			return nil, nil, false, err
+		}
+		if hasNonEmptyYAMLValue(current) {
+			return nil, boolPtr(true), true, nil
+		}
+	}
+	return nil, boolPtr(false), true, nil
+}
+
 func resolveYAMLPath(path string, content []byte, segments []yamlPathSegment) ([]any, error) {
 	var root any
 	if err := yaml.Unmarshal(content, &root); err != nil {
@@ -160,4 +200,32 @@ func asStringMap(value any) (map[string]any, bool) {
 	default:
 		return nil, false
 	}
+}
+
+func hasNonEmptyYAMLValue(values []any) bool {
+	for _, value := range values {
+		switch typed := value.(type) {
+		case nil:
+			continue
+		case string:
+			if typed != "" {
+				return true
+			}
+		case []any:
+			if len(typed) > 0 {
+				return true
+			}
+		case map[string]any:
+			if len(typed) > 0 {
+				return true
+			}
+		case map[any]any:
+			if len(typed) > 0 {
+				return true
+			}
+		default:
+			return true
+		}
+	}
+	return false
 }

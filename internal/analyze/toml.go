@@ -10,9 +10,10 @@ import (
 )
 
 type tomlMatcherConfig struct {
-	Queries      []string `yaml:"queries"`
-	TableQueries []string `yaml:"table-queries"`
-	ExcludeKeys  []string `yaml:"exclude-keys"`
+	Queries        []string `yaml:"queries"`
+	TableQueries   []string `yaml:"table-queries"`
+	TableExistsAny []string `yaml:"table-exists-any"`
+	ExcludeKeys    []string `yaml:"exclude-keys"`
 }
 
 type tomlSegment struct {
@@ -27,9 +28,10 @@ type tomlQuery struct {
 }
 
 type tomlQueryParser struct {
-	queries      []tomlQuery
-	tableQueries []tomlQuery
-	excludeKeys  map[string]struct{}
+	queries        []tomlQuery
+	tableQueries   []tomlQuery
+	tableExistsAny []tomlQuery
+	excludeKeys    map[string]struct{}
 }
 
 type tomlMatchedTable struct {
@@ -44,8 +46,8 @@ type tomlMatchedValue struct {
 }
 
 func newTOMLQueryParser(raw tomlMatcherConfig) (manifestParser, error) {
-	if len(raw.Queries) == 0 && len(raw.TableQueries) == 0 {
-		return nil, fmt.Errorf("toml: at least one of queries or table-queries must contain an entry")
+	if len(raw.Queries) == 0 && len(raw.TableQueries) == 0 && len(raw.TableExistsAny) == 0 {
+		return nil, fmt.Errorf("toml: at least one of queries, table-queries, or table-exists-any must contain an entry")
 	}
 
 	queries := make([]tomlQuery, 0, len(raw.Queries))
@@ -66,6 +68,15 @@ func newTOMLQueryParser(raw tomlMatcherConfig) (manifestParser, error) {
 		tableQueries = append(tableQueries, query)
 	}
 
+	tableExistsAny := make([]tomlQuery, 0, len(raw.TableExistsAny))
+	for queryIdx, rawQuery := range raw.TableExistsAny {
+		query, err := compileTOMLQuery(rawQuery)
+		if err != nil {
+			return nil, fmt.Errorf("toml.table-exists-any[%d]: %w", queryIdx, err)
+		}
+		tableExistsAny = append(tableExistsAny, query)
+	}
+
 	excludeKeys := make(map[string]struct{}, len(raw.ExcludeKeys))
 	for idx, key := range raw.ExcludeKeys {
 		if key == "" {
@@ -75,9 +86,10 @@ func newTOMLQueryParser(raw tomlMatcherConfig) (manifestParser, error) {
 	}
 
 	return tomlQueryParser{
-		queries:      queries,
-		tableQueries: tableQueries,
-		excludeKeys:  excludeKeys,
+		queries:        queries,
+		tableQueries:   tableQueries,
+		tableExistsAny: tableExistsAny,
+		excludeKeys:    excludeKeys,
 	}, nil
 }
 
@@ -97,9 +109,27 @@ func (p tomlQueryParser) Match(path string, content []byte) ([]Dependency, *bool
 		dependencies = append(dependencies, extractTOMLTableDependencies(tables, p.excludeKeys)...)
 	}
 	if len(dependencies) == 0 {
+		if len(p.tableExistsAny) > 0 {
+			for _, query := range p.tableExistsAny {
+				tables := evalTOMLTableQuery([]tomlMatchedTable{{value: root}}, query)
+				if hasNonEmptyTOMLTable(tables) {
+					return nil, boolPtr(true), true, nil
+				}
+			}
+			return nil, boolPtr(false), true, nil
+		}
 		return nil, nil, false, nil
 	}
 	return dependencies, boolPtr(true), true, nil
+}
+
+func hasNonEmptyTOMLTable(nodes []tomlMatchedTable) bool {
+	for _, node := range nodes {
+		if len(node.value) > 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func compileTOMLQuery(raw string) (tomlQuery, error) {
