@@ -81,7 +81,6 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "Package.resolved", want: ManifestType("swift-package-resolved")},
 		{name: "Podfile.lock", want: ManifestType("ios-podfile-lock")},
 		{name: "mix.lock", want: ManifestType("elixir-mix-lock")},
-		{name: "pom.xml", want: ManifestType("java")},
 	}
 
 	for _, tc := range testCases {
@@ -165,6 +164,7 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 		"Pipfile",
 		"pubspec.yaml",
 		"Cargo.toml",
+		"pom.xml",
 		"index.html",
 		"job.tf",
 		"app.js",
@@ -547,6 +547,72 @@ func TestScanMatchesPubspecYAMLWithoutDependencies(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	result, err := Scan(filepath.Join("..", "..", "testdata", "yaml", "pubspec-no-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesMavenPOMWithDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "xml", "pom-with-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("java") || result.Manifests[0].Path != "pom.xml" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+	if len(result.Manifests[0].Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	}
+}
+
+func TestScanMatchesMavenPOMWithoutDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "xml", "pom-no-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesNamespacedMavenPOMWithDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "xml", "pom-with-namespace-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesMavenPOMWithDependencyManagementOnlyAsNoDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "xml", "pom-dependency-management-only"), nil, ruleset)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
@@ -2255,6 +2321,27 @@ func TestLoadRulesRejectsTOMLParserWithOtherParserType(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: mixed\n    filename-regex: '^pyproject\\.toml$'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n    toml:\n      queries:\n        - project.dependencies[]\n"))
 	if err == nil {
 		t.Fatalf("expected multiple parser type error")
+	}
+}
+
+func TestLoadRulesAcceptsXMLParser(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: java\n    filename-regex: '^pom\\.xml$'\n    xml:\n      exists-any:\n        - project.dependencies.dependency\n"))
+	if err != nil {
+		t.Fatalf("expected xml parser to load: %v", err)
+	}
+}
+
+func TestLoadRulesRejectsXMLParserWithoutQueries(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: java\n    filename-regex: '^pom\\.xml$'\n    xml: {}\n"))
+	if err == nil {
+		t.Fatalf("expected missing xml queries error")
+	}
+}
+
+func TestLoadRulesRejectsMalformedXMLQuery(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: java\n    filename-regex: '^pom\\.xml$'\n    xml:\n      exists-any:\n        - project..dependencies.dependency\n"))
+	if err == nil {
+		t.Fatalf("expected malformed xml query error")
 	}
 }
 
