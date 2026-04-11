@@ -22,6 +22,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.PyRequirements != nil {
 		parserCount++
 	}
+	if raw.UVLock != nil {
+		parserCount++
+	}
 	if raw.YAML != nil {
 		parserCount++
 	}
@@ -57,6 +60,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.PyRequirements != nil {
 		return newPyRequirementsMatcher(*raw.PyRequirements)
+	}
+	if raw.UVLock != nil {
+		return newUVLockParser(*raw.UVLock)
 	}
 	if raw.YAML != nil {
 		return newYAMLQueryParser(*raw.YAML)

@@ -1,0 +1,11 @@
+version = 1
+
+[[package]]
+name = "requests"
+version = "2.32.3"
+source = { registry = "https://pypi.org/simple" }
+
+[[package]]
+name = "local-lib"
+version = "0.1.0"
+source = { path = "../local-lib" }
