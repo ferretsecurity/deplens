@@ -63,9 +63,7 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "stack.yaml", want: ManifestType("haskell-stack")},
 		{name: "stack.yaml.lock", want: ManifestType("haskell-stack-lock")},
 		{name: "cabal.project", want: ManifestType("haskell-cabal-project")},
-		{name: "packages.config", want: ManifestType("dotnet-packages-config")},
 		{name: "packages.lock.json", want: ManifestType("dotnet-packages-lock")},
-		{name: "Directory.Packages.props", want: ManifestType("dotnet-directory-packages-props")},
 		{name: "paket.dependencies", want: ManifestType("dotnet-paket-dependencies")},
 		{name: "paket.lock", want: ManifestType("dotnet-paket-lock")},
 		{name: "go.mod", want: ManifestType("go-mod")},
@@ -76,7 +74,6 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "Cargo.lock", want: ManifestType("rust-cargo-lock")},
 		{name: "Gopkg.lock", want: ManifestType("go-gopkg-lock")},
 		{name: "glide.lock", want: ManifestType("go-glide-lock")},
-		{name: "app.csproj", want: ManifestType("dotnet-csproj")},
 		{name: "conan.lock", want: ManifestType("cpp-conan-lock")},
 		{name: "Package.resolved", want: ManifestType("swift-package-resolved")},
 		{name: "Podfile.lock", want: ManifestType("ios-podfile-lock")},
@@ -87,16 +84,12 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "demo.gemspec", want: ManifestType("ruby-gemspec")},
 		{name: "conanfile.txt", want: ManifestType("cpp-conanfile")},
 		{name: "vcpkg.json", want: ManifestType("cpp-vcpkg")},
-		{name: "Project.toml", want: ManifestType("julia-project")},
 		{name: "Manifest.toml", want: ManifestType("julia-manifest")},
 		{name: "cpanfile", want: ManifestType("perl-cpanfile")},
 		{name: "build.zig.zon", want: ManifestType("zig-build-zon")},
 		{name: "demo.nimble", want: ManifestType("nim-nimble")},
 		{name: "demo.opam", want: ManifestType("ocaml-opam")},
-		{name: "shard.yml", want: ManifestType("crystal-shard")},
-		{name: "gleam.toml", want: ManifestType("gleam")},
 		{name: "v.mod", want: ManifestType("vlang")},
-		{name: "Chart.yaml", want: ManifestType("helm-chart")},
 		{name: "requirements.yml", want: ManifestType("ansible-requirements")},
 		{name: "requirements.yaml", want: ManifestType("ansible-requirements")},
 		{name: "buf.yaml", want: ManifestType("buf")},
@@ -778,6 +771,300 @@ func TestScanFindsAdditionalLockfilesInFixture(t *testing.T) {
 
 	if len(want) != 0 {
 		t.Fatalf("expected all additional lockfile fixtures to be detected, missing %+v", want)
+	}
+}
+
+func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	testCases := []struct {
+		name string
+		root string
+		path string
+		typ  ManifestType
+	}{
+		{
+			name: "helm chart",
+			root: filepath.Join("..", "..", "testdata", "helm", "chart"),
+			path: "Chart.yaml",
+			typ:  ManifestType("helm-chart"),
+		},
+		{
+			name: "crystal shard",
+			root: filepath.Join("..", "..", "testdata", "crystal", "shard"),
+			path: "shard.yml",
+			typ:  ManifestType("crystal-shard"),
+		},
+		{
+			name: "julia project",
+			root: filepath.Join("..", "..", "testdata", "julia", "project"),
+			path: "Project.toml",
+			typ:  ManifestType("julia-project"),
+		},
+		{
+			name: "gleam project",
+			root: filepath.Join("..", "..", "testdata", "gleam", "project"),
+			path: "gleam.toml",
+			typ:  ManifestType("gleam"),
+		},
+		{
+			name: "dotnet csproj",
+			root: filepath.Join("..", "..", "testdata", "sample-monorepo", "dotnet-app"),
+			path: "app.csproj",
+			typ:  ManifestType("dotnet-csproj"),
+		},
+		{
+			name: "directory packages props",
+			root: filepath.Join("..", "..", "testdata", "dotnet", "directory-packages-props-with-deps"),
+			path: "Directory.Packages.props",
+			typ:  ManifestType("dotnet-directory-packages-props"),
+		},
+		{
+			name: "packages config",
+			root: filepath.Join("..", "..", "testdata", "dotnet", "packages-config-with-deps"),
+			path: "packages.config",
+			typ:  ManifestType("dotnet-packages-config"),
+		},
+		{
+			name: "unity packages manifest",
+			root: filepath.Join("..", "..", "testdata", "unity", "packages-manifest-with-deps"),
+			path: "Packages/manifest.json",
+			typ:  ManifestType("unity-packages-manifest"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := Scan(tc.root, nil, ruleset)
+			if err != nil {
+				t.Fatalf("scan failed: %v", err)
+			}
+			if len(result.Manifests) != 1 {
+				t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+			}
+
+			manifest := result.Manifests[0]
+			if manifest.Type != tc.typ || manifest.Path != tc.path {
+				t.Fatalf("unexpected manifest: %+v", manifest)
+			}
+			if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+				t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+			}
+			if manifest.Dependencies != nil {
+				t.Fatalf("expected no extracted dependencies, got %+v", manifest.Dependencies)
+			}
+		})
+	}
+}
+
+func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	testCases := []struct {
+		name        string
+		withRoot    string
+		withPath    string
+		withoutRoot string
+		withoutPath string
+		typ         ManifestType
+	}{
+		{
+			name:        "helm chart",
+			withRoot:    filepath.Join("..", "..", "testdata", "helm", "chart"),
+			withPath:    "Chart.yaml",
+			withoutRoot: filepath.Join("..", "..", "testdata", "helm", "chart-no-deps"),
+			withoutPath: "Chart.yaml",
+			typ:         ManifestType("helm-chart"),
+		},
+		{
+			name:        "crystal shard",
+			withRoot:    filepath.Join("..", "..", "testdata", "crystal", "shard"),
+			withPath:    "shard.yml",
+			withoutRoot: filepath.Join("..", "..", "testdata", "crystal", "shard-no-deps"),
+			withoutPath: "shard.yml",
+			typ:         ManifestType("crystal-shard"),
+		},
+		{
+			name:        "julia project",
+			withRoot:    filepath.Join("..", "..", "testdata", "julia", "project"),
+			withPath:    "Project.toml",
+			withoutRoot: filepath.Join("..", "..", "testdata", "julia", "project-no-deps"),
+			withoutPath: "Project.toml",
+			typ:         ManifestType("julia-project"),
+		},
+		{
+			name:        "gleam project",
+			withRoot:    filepath.Join("..", "..", "testdata", "gleam", "project"),
+			withPath:    "gleam.toml",
+			withoutRoot: filepath.Join("..", "..", "testdata", "gleam", "project-no-deps"),
+			withoutPath: "gleam.toml",
+			typ:         ManifestType("gleam"),
+		},
+		{
+			name:        "dotnet csproj",
+			withRoot:    filepath.Join("..", "..", "testdata", "sample-monorepo", "dotnet-app"),
+			withPath:    "app.csproj",
+			withoutRoot: filepath.Join("..", "..", "testdata", "dotnet", "csproj-no-deps"),
+			withoutPath: "app.csproj",
+			typ:         ManifestType("dotnet-csproj"),
+		},
+		{
+			name:        "directory packages props",
+			withRoot:    filepath.Join("..", "..", "testdata", "dotnet", "directory-packages-props-with-deps"),
+			withPath:    "Directory.Packages.props",
+			withoutRoot: filepath.Join("..", "..", "testdata", "dotnet", "directory-packages-props-no-deps"),
+			withoutPath: "Directory.Packages.props",
+			typ:         ManifestType("dotnet-directory-packages-props"),
+		},
+		{
+			name:        "packages config",
+			withRoot:    filepath.Join("..", "..", "testdata", "dotnet", "packages-config-with-deps"),
+			withPath:    "packages.config",
+			withoutRoot: filepath.Join("..", "..", "testdata", "dotnet", "packages-config-no-deps"),
+			withoutPath: "packages.config",
+			typ:         ManifestType("dotnet-packages-config"),
+		},
+		{
+			name:        "unity packages manifest",
+			withRoot:    filepath.Join("..", "..", "testdata", "unity", "packages-manifest-with-deps"),
+			withPath:    "Packages/manifest.json",
+			withoutRoot: filepath.Join("..", "..", "testdata", "unity", "packages-manifest-no-deps"),
+			withoutPath: "Packages/manifest.json",
+			typ:         ManifestType("unity-packages-manifest"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			withResult, err := Scan(tc.withRoot, nil, ruleset)
+			if err != nil {
+				t.Fatalf("scan with-deps fixture failed: %v", err)
+			}
+			if len(withResult.Manifests) != 1 {
+				t.Fatalf("expected 1 with-deps manifest, got %+v", withResult.Manifests)
+			}
+			if withResult.Manifests[0].Type != tc.typ || withResult.Manifests[0].Path != tc.withPath {
+				t.Fatalf("unexpected with-deps manifest: %+v", withResult.Manifests[0])
+			}
+			if withResult.Manifests[0].HasDependencies == nil || !*withResult.Manifests[0].HasDependencies {
+				t.Fatalf("expected with-deps fixture to have has_dependencies=true, got %+v", withResult.Manifests[0].HasDependencies)
+			}
+
+			withoutResult, err := Scan(tc.withoutRoot, nil, ruleset)
+			if err != nil {
+				t.Fatalf("scan no-deps fixture failed: %v", err)
+			}
+			if len(withoutResult.Manifests) != 1 {
+				t.Fatalf("expected 1 no-deps manifest, got %+v", withoutResult.Manifests)
+			}
+			if withoutResult.Manifests[0].Type != tc.typ || withoutResult.Manifests[0].Path != tc.withoutPath {
+				t.Fatalf("unexpected no-deps manifest: %+v", withoutResult.Manifests[0])
+			}
+			if withoutResult.Manifests[0].HasDependencies == nil || *withoutResult.Manifests[0].HasDependencies {
+				t.Fatalf("expected no-deps fixture to have has_dependencies=false, got %+v", withoutResult.Manifests[0].HasDependencies)
+			}
+		})
+	}
+}
+
+func TestScanDefaultRulesMarkStructuredPriorityOneFilesWithoutDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	testCases := []struct {
+		name    string
+		relPath string
+		content string
+		typ     ManifestType
+	}{
+		{
+			name:    "helm chart missing dependencies",
+			relPath: "Chart.yaml",
+			content: "apiVersion: v2\nname: demo\nversion: 0.1.0\n",
+			typ:     ManifestType("helm-chart"),
+		},
+		{
+			name:    "crystal shard empty dependencies",
+			relPath: "shard.yml",
+			content: "name: demo\nversion: 0.1.0\ndependencies: {}\n",
+			typ:     ManifestType("crystal-shard"),
+		},
+		{
+			name:    "julia project empty deps",
+			relPath: "Project.toml",
+			content: "name = \"Demo\"\nuuid = \"00000000-0000-0000-0000-000000000000\"\n\n[deps]\n",
+			typ:     ManifestType("julia-project"),
+		},
+		{
+			name:    "gleam empty dependencies",
+			relPath: "gleam.toml",
+			content: "name = \"demo\"\nversion = \"0.1.0\"\n\n[dependencies]\n",
+			typ:     ManifestType("gleam"),
+		},
+		{
+			name:    "dotnet csproj without package reference",
+			relPath: "app.csproj",
+			content: "<Project Sdk=\"Microsoft.NET.Sdk\"><ItemGroup><Compile Include=\"Program.cs\" /></ItemGroup></Project>\n",
+			typ:     ManifestType("dotnet-csproj"),
+		},
+		{
+			name:    "directory packages props without package version",
+			relPath: "Directory.Packages.props",
+			content: "<Project><PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup></Project>\n",
+			typ:     ManifestType("dotnet-directory-packages-props"),
+		},
+		{
+			name:    "packages config empty",
+			relPath: "packages.config",
+			content: "<?xml version=\"1.0\" encoding=\"utf-8\"?><packages></packages>\n",
+			typ:     ManifestType("dotnet-packages-config"),
+		},
+		{
+			name:    "unity manifest empty dependencies",
+			relPath: filepath.Join("Packages", "manifest.json"),
+			content: "{\n  \"dependencies\": {}\n}\n",
+			typ:     ManifestType("unity-packages-manifest"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			root := t.TempDir()
+			mustWriteFile(t, filepath.Join(root, tc.relPath), tc.content)
+
+			result, err := Scan(root, nil, ruleset)
+			if err != nil {
+				t.Fatalf("scan failed: %v", err)
+			}
+			if len(result.Manifests) != 1 {
+				t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+			}
+
+			manifest := result.Manifests[0]
+			if manifest.Type != tc.typ {
+				t.Fatalf("unexpected manifest type: %+v", manifest)
+			}
+			if manifest.HasDependencies == nil || *manifest.HasDependencies {
+				t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+			}
+			if manifest.Dependencies != nil {
+				t.Fatalf("expected no extracted dependencies, got %+v", manifest.Dependencies)
+			}
+		})
+	}
+}
+
+func TestScanDefaultRulesDoNotMatchNonUnityManifestJSONPaths(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "manifest.json"), "{\n  \"dependencies\": {\"com.unity.textmeshpro\": \"3.0.6\"}\n}\n")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 0 {
+		t.Fatalf("expected no manifests, got %+v", result.Manifests)
 	}
 }
 
@@ -2540,6 +2827,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("homebrew-brewfile"),
 		ManifestType("jsonnet-bundler"),
 		ManifestType("terraform-lock"),
+		ManifestType("unity-packages-manifest"),
 		ManifestType("js-banner-block-start"),
 		ManifestType("js-banner-plain-block-start"),
 		ManifestType("js-banner-multiline-preserved"),
