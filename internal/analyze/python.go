@@ -265,11 +265,11 @@ func newPythonCallExtracts(raw []pythonCallExtractConfig) ([]pythonCallExtract, 
 	return extracts, nil
 }
 
-func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
+func (m pythonCDKConstructMatcher) Match(path string, content []byte) (manifestParserResult, error) {
 	source := string(content)
 	imports := collectPythonImports(source, m.module, m.construct)
 	if len(imports.namespaces) == 0 && len(imports.named) == 0 {
-		return nil, nil, false, nil
+		return manifestParserResult{}, nil
 	}
 
 	callStarts := pythonConstructorCallStarts(source, imports, m.construct)
@@ -313,7 +313,7 @@ func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]Depende
 		}
 
 		if m.extract == nil {
-			return nil, nil, true, nil
+			return manifestParserResult{Matched: true}, nil
 		}
 
 		valueExpr, ok := pythonDictValue(source, current, m.extract.key, end)
@@ -329,17 +329,21 @@ func (m pythonCDKConstructMatcher) Match(path string, content []byte) ([]Depende
 		if len(dependencies) == 0 {
 			continue
 		}
-		return dependenciesFromStrings(dependencies), boolPtr(true), true, nil
+		return manifestParserResult{
+			Dependencies:    dependenciesFromStrings(dependencies),
+			HasDependencies: boolPtr(true),
+			Matched:         true,
+		}, nil
 	}
 
-	return nil, nil, false, nil
+	return manifestParserResult{}, nil
 }
 
-func (m pythonCallMatcher) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
+func (m pythonCallMatcher) Match(path string, content []byte) (manifestParserResult, error) {
 	source := string(content)
 	imports := collectPythonImports(source, m.module, m.function)
 	if len(imports.namespaces) == 0 && len(imports.named) == 0 {
-		return nil, nil, false, nil
+		return manifestParserResult{}, nil
 	}
 
 	callStarts := pythonConstructorCallStarts(source, imports, m.function)
@@ -351,13 +355,17 @@ func (m pythonCallMatcher) Match(path string, content []byte) ([]Dependency, *bo
 		if m.conditions.match(source, args, start) {
 			dependencies := m.extractDependencies(args)
 			if len(dependencies) == 0 {
-				return nil, nil, true, nil
+				return manifestParserResult{Matched: true}, nil
 			}
-			return dependenciesFromStrings(dependencies), boolPtr(true), true, nil
+			return manifestParserResult{
+				Dependencies:    dependenciesFromStrings(dependencies),
+				HasDependencies: boolPtr(true),
+				Matched:         true,
+			}, nil
 		}
 	}
 
-	return nil, nil, false, nil
+	return manifestParserResult{}, nil
 }
 
 func (m pythonCallMatcher) extractDependencies(args string) []string {

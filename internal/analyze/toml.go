@@ -93,10 +93,10 @@ func newTOMLQueryParser(raw tomlMatcherConfig) (manifestParser, error) {
 	}, nil
 }
 
-func (p tomlQueryParser) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
+func (p tomlQueryParser) Match(path string, content []byte) (manifestParserResult, error) {
 	var root map[string]any
 	if err := toml.Unmarshal(content, &root); err != nil {
-		return nil, nil, false, fmt.Errorf("parse toml file %q: %w", path, err)
+		return manifestParserResult{}, fmt.Errorf("parse toml file %q: %w", path, err)
 	}
 
 	dependencies := make([]Dependency, 0)
@@ -113,14 +113,18 @@ func (p tomlQueryParser) Match(path string, content []byte) ([]Dependency, *bool
 			for _, query := range p.tableExistsAny {
 				tables := evalTOMLTableQuery([]tomlMatchedTable{{value: root}}, query)
 				if hasNonEmptyTOMLTable(tables) {
-					return nil, boolPtr(true), true, nil
+					return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
 				}
 			}
-			return nil, boolPtr(false), true, nil
+			return manifestParserResult{HasDependencies: boolPtr(false), Matched: true}, nil
 		}
-		return nil, nil, false, nil
+		return manifestParserResult{}, nil
 	}
-	return dependencies, boolPtr(true), true, nil
+	return manifestParserResult{
+		Dependencies:    dependencies,
+		HasDependencies: boolPtr(true),
+		Matched:         true,
+	}, nil
 }
 
 func hasNonEmptyTOMLTable(nodes []tomlMatchedTable) bool {

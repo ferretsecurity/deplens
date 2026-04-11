@@ -34,10 +34,10 @@ func newJSONMatcher(raw jsonMatcherConfig) (manifestParser, error) {
 	return jsonMatcher{keys: keys}, nil
 }
 
-func (m jsonMatcher) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
+func (m jsonMatcher) Match(path string, content []byte) (manifestParserResult, error) {
 	var root map[string]json.RawMessage
 	if err := json.Unmarshal(content, &root); err != nil {
-		return nil, nil, false, fmt.Errorf("parse json file %q: %w", path, err)
+		return manifestParserResult{}, fmt.Errorf("parse json file %q: %w", path, err)
 	}
 
 	for _, key := range m.keys {
@@ -50,9 +50,9 @@ func (m jsonMatcher) Match(path string, content []byte) ([]Dependency, *bool, bo
 			continue
 		}
 		if len(values) > 0 {
-			return nil, boolPtr(true), true, nil
+			return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
 		}
 	}
 
-	return nil, boolPtr(false), true, nil
+	return manifestParserResult{HasDependencies: boolPtr(false), Matched: true}, nil
 }

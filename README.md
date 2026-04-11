@@ -4,7 +4,7 @@
 
 By default, the tool walks the target directory recursively, skips common generated/vendor directories, and prints a summary plus path-first manifest details with explicit dependency-status labels. The default detector rules are embedded into the binary at build time. The tool can also emit JSON for machine-readable consumption and load additional detectors from a custom YAML rules file passed with `--rules`.
 
-JSON output contains a top-level `root` plus `manifests`. Each manifest entry includes `type`, `path`, optional `dependencies`, and `has_dependencies`. Each dependency is emitted as an object with `name` and optional `section`. `has_dependencies` is `null` when the detector cannot determine dependency presence, `true` when extraction confirmed at least one dependency, and `false` when a detector or extractor conclusively matched but found none.
+JSON output contains a top-level `root` plus `manifests`. Each manifest entry includes `type`, `path`, optional `dependencies`, `has_dependencies`, and optional `warnings`. Each dependency is emitted as an object with `name` and optional `section`. `has_dependencies` is `null` when the detector cannot determine dependency presence, `true` when extraction confirmed at least one dependency, and `false` when a detector or extractor conclusively matched but found none.
 
 Human-readable output starts with summary counts and then prints one block per manifest path. By default, manifests that were conclusively matched but found to have no dependencies are counted in the summary and omitted from the detailed list; pass `--show-empty` to include them. Files with extracted dependencies show either a flat list or sectioned groups. If a file mixes sectioned and unsectioned dependencies, the unsectioned entries are rendered under `[default group]`.
 
@@ -38,7 +38,7 @@ Built-in detectors:
 | toml presence check | `Cargo.toml`; reports dependency presence when any of `dependencies`, `dev-dependencies`, `build-dependencies`, `workspace.dependencies`, `target.*.dependencies`, `target.*.dev-dependencies`, or `target.*.build-dependencies` is a non-empty table. Also used for `Project.toml` via `[deps]` and `gleam.toml` via `[dependencies]` | No | 2 |
 | toml | TOML files matched by a rule such as built-in `python-pyproject` for `pyproject.toml`; extracts from `build-system.requires[]`, `project.dependencies[]`, `project.optional-dependencies.*[]`, `dependency-groups.*[]`, `tool.poetry.dependencies`, and `tool.poetry.group.*.dependencies` | Yes | 3 |
 | pipfile | `Pipfile` matched by the built-in `python-pipfile` rule; reports only when the file contains at least one dependency-bearing package section such as `[packages]`, `[dev-packages]`, or a custom package category like `[docs]` | Yes | 3 |
-| py requirements | Pip requirements files matched by built-in `python-requirements` and `python-requirements-dir`; extracts static non-empty, non-comment requirement lines from files such as `requirements.txt`, `requirements.in`, and `requirements/base.txt`, while ignoring directives such as `-r`, `-c`, `--index-url`, and `--hash` | Yes | 3 |
+| py requirements | Pip requirements files matched by built-in `python-requirements` and `python-requirements-dir`; extracts static non-empty, non-comment requirement lines from files such as `requirements.txt`, `requirements.in`, and `requirements/base.txt`, recursively expands local `-r`, `--requirement`, and `--requirements` includes, and ignores directives such as `-c`, `--index-url`, and `--hash` | Yes | 3 |
 | python call | Python files matched by a rule such as built-in `python-setup-py` for `setup.py`; detects imported function calls with specific keyword arguments, for example `setuptools.setup(..., install_requires=..., extras_require=...)`, and can extract from simple literal arrays in `install_requires=[...]` plus `extras_require={"group": [...]}` | Yes | 3 |
 | ini | INI files matched by a rule such as built-in `python-setup-cfg` for `setup.cfg`; extracts from `[options]` keys `setup_requires` and `install_requires`, plus all keys under `[options.extras_require]`, when values are written as static multiline lists | Yes | 3 |
 | banner regex | JavaScript files whose first 4096 bytes match a configured `banner-regex` with capture groups 1 and 2 for package name and version | Yes | 3 |
@@ -53,7 +53,7 @@ The same maturity model applies to custom rules passed with `--rules`; selector-
 
 Default JavaScript banner rules use `filename-regex: '.*\.js$'` and return `name@version` from `banner-regex` capture groups 1 and 2. The built-in banner rule set includes `js-banner-block-start`, `js-banner-plain-block-start`, `js-banner-multiline-preserved`, `js-banner-line-comment`, and `js-banner-version-tagged`.
 
-The default Python requirements rules use the `py-requirements` detector for both a filename selector matching `*requirements*.txt` and `*requirements*.in`, plus a path selector for `**/requirements/*.txt`. The detector extracts static dependency lines, joins trailing `\` continuations, ignores blank lines and `#` comments, and skips pip directives such as `-r`, `--requirement`, `-c`, `--constraint`, `--index-url`, `--extra-index-url`, `--find-links`, `--trusted-host`, and `--hash`. It does not resolve included files.
+The default Python requirements rules use the `py-requirements` detector for both a filename selector matching `*requirements*.txt` and `*requirements*.in`, plus a path selector for `**/requirements/*.txt`. The detector extracts static dependency lines, joins trailing `\` continuations, ignores blank lines and `#` comments, recursively resolves local `-r`, `--requirement`, and `--requirements` includes relative to the including file, and skips non-dependency directives such as `-c`, `--constraint`, `--index-url`, `--extra-index-url`, `--find-links`, `--trusted-host`, and `--hash`. If an included file cannot be read or an include cycle is detected, the manifest is still reported and a warning is attached to the result.
 
 The default rules also include `python-conda-environment` for `environment.yml` and `environment.yaml`, which reports the file only when a top-level `dependencies` key is present.
 
@@ -188,7 +188,7 @@ setup.cfg [2 deps]
     - pytest>=8
 ```
 
-Python requirements files now also report extracted static dependency lines instead of a generic match. For example:
+Python requirements files now also report extracted static dependency lines instead of a generic match, including dependencies pulled in via local include directives. For example:
 
 ```text
 # Before
@@ -198,6 +198,38 @@ requirements.txt [matched]
 requirements.txt [2 deps]
   - requests>=2.31
   - pendulum>=3
+```
+
+Included requirement files are expanded into the root manifest output:
+
+```text
+# requirements.txt
+-r base.txt
+pendulum>=3
+
+# base.txt
+requests>=2.31
+
+# Old output
+requirements.txt [1 dep]
+  - pendulum>=3
+
+# New output
+requirements.txt [2 deps]
+  - requests>=2.31
+  - pendulum>=3
+```
+
+If an included file cannot be read, extracted dependencies are still reported and a warning is attached:
+
+```text
+# requirements.txt
+-r missing.txt
+requests>=2.31
+
+requirements.txt [1 dep]
+  - requests>=2.31
+  warning: could not read included requirements file "missing.txt": open missing.txt: no such file or directory
 ```
 
 When dependencies are extracted without section metadata, the output stays flat:

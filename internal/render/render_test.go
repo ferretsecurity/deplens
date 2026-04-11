@@ -441,6 +441,62 @@ func TestJSONIncludesHasDependenciesFalseWhenKnownEmpty(t *testing.T) {
 	}
 }
 
+func TestHumanIncludesManifestWarnings(t *testing.T) {
+	hasDependencies := true
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type:            analyze.ManifestType("python-requirements"),
+				Path:            "requirements.txt",
+				HasDependencies: &hasDependencies,
+				Dependencies:    []analyze.Dependency{{Name: "requests>=2.31"}},
+				Warnings:        []string{`could not read included requirements file "missing.txt"`},
+			},
+		},
+	}
+
+	output := Human(result, []analyze.ManifestType{analyze.ManifestType("python-requirements")}, HumanOptions{})
+	if !strings.Contains(output, `warning: could not read included requirements file "missing.txt"`) {
+		t.Fatalf("expected human output to include warning, got %q", output)
+	}
+}
+
+func TestJSONIncludesWarningsWhenPresent(t *testing.T) {
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type:            analyze.ManifestType("python-requirements"),
+				Path:            "requirements.txt",
+				Warnings:        []string{`could not read included requirements file "missing.txt"`},
+				HasDependencies: nil,
+			},
+		},
+	}
+
+	output, err := JSON(result)
+	if err != nil {
+		t.Fatalf("json render failed: %v", err)
+	}
+
+	var payload struct {
+		Manifests []struct {
+			Warnings        []string `json:"warnings"`
+			HasDependencies *bool    `json:"has_dependencies"`
+		} `json:"manifests"`
+	}
+	if err := json.Unmarshal(output, &payload); err != nil {
+		t.Fatalf("expected valid JSON, got error: %v", err)
+	}
+	if len(payload.Manifests) != 1 || !slices.Equal(payload.Manifests[0].Warnings, []string{`could not read included requirements file "missing.txt"`}) {
+		t.Fatalf("unexpected warnings payload: %+v", payload.Manifests)
+	}
+	if payload.Manifests[0].HasDependencies != nil {
+		t.Fatalf("expected unknown has_dependencies, got %+v", payload.Manifests[0].HasDependencies)
+	}
+}
+
 func TestHumanIncludesExternalScriptURLs(t *testing.T) {
 	hasDependencies := true
 	result := analyze.ScanResult{

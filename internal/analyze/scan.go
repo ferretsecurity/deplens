@@ -14,6 +14,7 @@ type ManifestMatch struct {
 	Path            string       `json:"path"`
 	Dependencies    []Dependency `json:"dependencies,omitempty"`
 	HasDependencies *bool        `json:"has_dependencies"`
+	Warnings        []string     `json:"warnings,omitempty"`
 }
 
 type ScanResult struct {
@@ -64,7 +65,7 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 		}
 		relPath = normalizeRelativePath(relPath)
 
-		manifestType, dependencies, hasDependencies, ok, err := ruleset.DetectManifestFileAtRelativePath(path, d.Name(), relPath)
+		manifestType, dependencies, hasDependencies, warnings, ok, err := ruleset.DetectManifestFileAtRelativePath(path, d.Name(), relPath)
 		if err != nil {
 			return err
 		}
@@ -77,6 +78,7 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 			Path:            relPath,
 			Dependencies:    dependencies,
 			HasDependencies: hasDependencies,
+			Warnings:        warnings,
 		})
 		return nil
 	})

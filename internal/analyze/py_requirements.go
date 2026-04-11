@@ -1,14 +1,17 @@
 package analyze
 
-import "strings"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+)
 
 type pyRequirementsMatcherConfig struct{}
 
 type pyRequirementsMatcher struct{}
 
 var ignoredPyRequirementsLinePrefixes = []string{
-	"-r",
-	"--requirement",
 	"-c",
 	"--constraint",
 	"--index-url",
@@ -22,13 +25,58 @@ func newPyRequirementsMatcher(raw pyRequirementsMatcherConfig) (manifestParser, 
 	return pyRequirementsMatcher{}, nil
 }
 
-func (m pyRequirementsMatcher) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
+func (m pyRequirementsMatcher) Match(path string, content []byte) (manifestParserResult, error) {
+	dependencies, warnings := m.collectDependencies(path, content, map[string]bool{})
+	if len(dependencies) > 0 {
+		return manifestParserResult{
+			Dependencies:    dependenciesFromStrings(dependencies),
+			HasDependencies: boolPtr(true),
+			Warnings:        warnings,
+			Matched:         true,
+		}, nil
+	}
+	if len(warnings) > 0 {
+		return manifestParserResult{
+			Warnings: warnings,
+			Matched:  true,
+		}, nil
+	}
+	return manifestParserResult{
+		HasDependencies: boolPtr(false),
+		Matched:         true,
+	}, nil
+}
+
+func (m pyRequirementsMatcher) collectDependencies(path string, content []byte, active map[string]bool) ([]string, []string) {
 	logicalLines := joinPyRequirementsContinuations(string(content))
 	dependencies := make([]string, 0, len(logicalLines))
+	warnings := make([]string, 0)
+
+	cleanPath := filepath.Clean(path)
+	active[cleanPath] = true
+	defer delete(active, cleanPath)
 
 	for _, line := range logicalLines {
 		trimmed := strings.TrimSpace(line)
 		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+			continue
+		}
+		if includeTarget, ok := parsePyRequirementsInclude(trimmed); ok {
+			includedPath := filepath.Clean(filepath.Join(filepath.Dir(cleanPath), includeTarget))
+			if active[includedPath] {
+				warnings = append(warnings, fmt.Sprintf("detected requirements include cycle for %q via %q", includedPath, includeTarget))
+				continue
+			}
+
+			includedContent, err := os.ReadFile(includedPath)
+			if err != nil {
+				warnings = append(warnings, fmt.Sprintf("could not read included requirements file %q: %v", includeTarget, err))
+				continue
+			}
+
+			includedDependencies, includedWarnings := m.collectDependencies(includedPath, includedContent, active)
+			dependencies = append(dependencies, includedDependencies...)
+			warnings = append(warnings, includedWarnings...)
 			continue
 		}
 		if isIgnoredPyRequirementsDirective(trimmed) {
@@ -37,10 +85,7 @@ func (m pyRequirementsMatcher) Match(path string, content []byte) ([]Dependency,
 		dependencies = append(dependencies, trimmed)
 	}
 
-	if len(dependencies) == 0 {
-		return nil, boolPtr(false), true, nil
-	}
-	return dependenciesFromStrings(dependencies), boolPtr(true), true, nil
+	return dependencies, warnings
 }
 
 func joinPyRequirementsContinuations(content string) []string {
@@ -97,4 +142,21 @@ func isIgnoredPyRequirementsDirective(line string) bool {
 		}
 	}
 	return false
+}
+
+func parsePyRequirementsInclude(line string) (string, bool) {
+	for _, prefix := range []string{"-r", "--requirement", "--requirements"} {
+		if line == prefix {
+			return "", false
+		}
+		if strings.HasPrefix(line, prefix+" ") || strings.HasPrefix(line, prefix+"\t") {
+			target := strings.TrimSpace(line[len(prefix):])
+			return target, target != ""
+		}
+		if strings.HasPrefix(line, prefix+"=") {
+			target := strings.TrimSpace(line[len(prefix)+1:])
+			return target, target != ""
+		}
+	}
+	return "", false
 }
