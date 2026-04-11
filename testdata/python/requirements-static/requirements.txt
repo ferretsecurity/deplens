@@ -1,0 +1,2 @@
+requests>=2.31
+uvicorn[standard]>=0.30 ; python_version >= "3.11"

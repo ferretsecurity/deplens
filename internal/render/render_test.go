@@ -111,6 +111,35 @@ func TestJSONMatchesExpectedSchema(t *testing.T) {
 	}
 }
 
+func TestJSONDoesNotEscapeHTMLSensitiveCharacters(t *testing.T) {
+	hasDependencies := true
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Manifests: []analyze.ManifestMatch{
+			{
+				Type:            analyze.ManifestType("python-requirements"),
+				Path:            "requirements.txt",
+				HasDependencies: &hasDependencies,
+				Dependencies: []analyze.Dependency{
+					{Name: "requests>=2.31"},
+				},
+			},
+		},
+	}
+
+	output, err := JSON(result)
+	if err != nil {
+		t.Fatalf("json render failed: %v", err)
+	}
+
+	if strings.Contains(string(output), `\u003e`) {
+		t.Fatalf("expected JSON output to preserve '>', got %q", output)
+	}
+	if !strings.Contains(string(output), `"name": "requests>=2.31"`) {
+		t.Fatalf("expected JSON output to contain literal dependency string, got %q", output)
+	}
+}
+
 func TestHumanIncludesDependenciesWhenPresent(t *testing.T) {
 	hasDependencies := true
 	result := analyze.ScanResult{

@@ -23,14 +23,6 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		name string
 		want ManifestType
 	}{
-		{name: "requirements.txt", want: ManifestType("python-requirements")},
-		{name: "requirements.in", want: ManifestType("python-requirements")},
-		{name: "my-requirements.txt", want: ManifestType("python-requirements")},
-		{name: "my-requirements.in", want: ManifestType("python-requirements")},
-		{name: "requirements-dev.txt", want: ManifestType("python-requirements")},
-		{name: "requirements.dev.in", want: ManifestType("python-requirements")},
-		{name: "requirements.qt6_3.in", want: ManifestType("python-requirements")},
-		{name: "my_requirements.prod.txt", want: ManifestType("python-requirements")},
 		{name: "uv.lock", want: ManifestType("python-uv")},
 		{name: "poetry.lock", want: ManifestType("python-poetry-lock")},
 		{name: "Pipfile.lock", want: ManifestType("python-pipfile-lock")},
@@ -190,6 +182,14 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	testCases := []string{
+		"requirements.txt",
+		"requirements.in",
+		"my-requirements.txt",
+		"my-requirements.in",
+		"requirements-dev.txt",
+		"requirements.dev.in",
+		"requirements.qt6_3.in",
+		"my_requirements.prod.txt",
 		"package.json",
 		"composer.json",
 		"deno.json",
@@ -349,11 +349,65 @@ func TestScanFindsRequirementsInFixture(t *testing.T) {
 
 	for _, manifest := range result.Manifests {
 		if manifest.Type == ManifestType("python-requirements") && manifest.Path == "requirements.qt6_3.in" {
+			if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"PyQt6==6.7.0"}) {
+				t.Fatalf("unexpected dependencies: got %+v", manifest.Dependencies)
+			}
+			if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+				t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+			}
 			return
 		}
 	}
 
 	t.Fatalf("expected requirements.qt6_3.in fixture to be detected, got %+v", result.Manifests)
+}
+
+func TestScanMatchesRequirementsFixtureWithExtractedDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "requirements-static"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("python-requirements") || manifest.Path != "requirements.txt" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests>=2.31", `uvicorn[standard]>=0.30 ; python_version >= "3.11"`}) {
+		t.Fatalf("unexpected dependencies: got %+v", manifest.Dependencies)
+	}
+	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	}
+}
+
+func TestScanMatchesRequirementsFixtureWithOnlyDirectivesAsConclusiveEmpty(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "requirements-directives-only"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("python-requirements") || manifest.Path != "requirements.txt" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	if manifest.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	}
+	if manifest.HasDependencies == nil || *manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+	}
 }
 
 func TestScanFindsPoetryLockInFixture(t *testing.T) {
@@ -1071,8 +1125,8 @@ func TestScanDefaultRulesDoNotMatchNonUnityManifestJSONPaths(t *testing.T) {
 func TestScanDefaultRulesMatchRequirementsDirectoriesAnywhere(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
-	mustWriteFile(t, filepath.Join(root, "requirements", "base.txt"), "")
-	mustWriteFile(t, filepath.Join(root, "apps", "api", "requirements", "base.txt"), "")
+	mustWriteFile(t, filepath.Join(root, "requirements", "base.txt"), "requests>=2.31\n")
+	mustWriteFile(t, filepath.Join(root, "apps", "api", "requirements", "base.txt"), "urllib3<3\n")
 
 	result, err := Scan(root, nil, ruleset)
 	if err != nil {
@@ -1087,6 +1141,43 @@ func TestScanDefaultRulesMatchRequirementsDirectoriesAnywhere(t *testing.T) {
 	}
 	if result.Manifests[0].Path != "apps/api/requirements/base.txt" || result.Manifests[1].Path != "requirements/base.txt" {
 		t.Fatalf("unexpected manifests: %+v", result.Manifests)
+	}
+	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"urllib3<3"}) {
+		t.Fatalf("unexpected dependencies for nested requirements dir file: %+v", result.Manifests[0].Dependencies)
+	}
+	if got := dependencyNames(result.Manifests[1].Dependencies); !slices.Equal(got, []string{"requests>=2.31"}) {
+		t.Fatalf("unexpected dependencies for top-level requirements dir file: %+v", result.Manifests[1].Dependencies)
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected nested requirements dir file to have dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+	if result.Manifests[1].HasDependencies == nil || !*result.Manifests[1].HasDependencies {
+		t.Fatalf("expected top-level requirements dir file to have dependencies=true, got %+v", result.Manifests[1].HasDependencies)
+	}
+}
+
+func TestScanDefaultRulesReportEmptyRequirementsFilesConclusiveEmpty(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "requirements.txt"), "\n# comment only\n")
+	mustWriteFile(t, filepath.Join(root, "requirements", "base.txt"), "--index-url https://pypi.example.com/simple\n")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 2 {
+		t.Fatalf("expected 2 manifests, got %+v", result.Manifests)
+	}
+
+	for _, manifest := range result.Manifests {
+		if manifest.Dependencies != nil {
+			t.Fatalf("expected no extracted dependencies, got %+v", manifest.Dependencies)
+		}
+		if manifest.HasDependencies == nil || *manifest.HasDependencies {
+			t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+		}
 	}
 }
 
@@ -2406,6 +2497,13 @@ func TestLoadRulesAcceptsBannerRegexParser(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js-banner\n    filename-regex: '.*\\.js$'\n    banner-regex: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n"))
 	if err != nil {
 		t.Fatalf("expected banner regex rule to load: %v", err)
+	}
+}
+
+func TestLoadRulesAcceptsPyRequirementsParser(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    filename-regex: '^requirements\\.txt$'\n    py-requirements: {}\n"))
+	if err != nil {
+		t.Fatalf("expected py-requirements rule to load: %v", err)
 	}
 }
 

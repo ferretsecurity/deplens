@@ -60,6 +60,7 @@ func Human(result analyze.ScanResult, supportedTypes []analyze.ManifestType, opt
 func JSON(result analyze.ScanResult) ([]byte, error) {
 	var b bytes.Buffer
 	encoder := json.NewEncoder(&b)
+	encoder.SetEscapeHTML(false)
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(result); err != nil {
 		return nil, err

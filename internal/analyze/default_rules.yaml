@@ -1,8 +1,10 @@
 rules:
   - name: python-requirements
     filename-regex: '(^|.*[^A-Za-z])requirements([^A-Za-z].*)?\.(txt|in)$'
+    py-requirements: {}
   - name: python-requirements-dir
     path-glob: '**/requirements/*.txt'
+    py-requirements: {}
   - name: python-uv
     filename-regex: '^uv\.lock$'
   - name: python-poetry-lock
