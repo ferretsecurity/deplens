@@ -162,10 +162,16 @@ rules:
     filename-regex: '^package\.yaml$'
   - name: dotnet-packages-config
     filename-regex: '^packages\.config$'
+    xml:
+      exists-any:
+        - packages.package
   - name: dotnet-packages-lock
     filename-regex: '^packages\.lock\.json$'
   - name: dotnet-directory-packages-props
     filename-regex: '^Directory\.Packages\.props$'
+    xml:
+      exists-any:
+        - Project.ItemGroup.PackageVersion
   - name: dotnet-paket-dependencies
     filename-regex: '^paket\.dependencies$'
   - name: dotnet-paket-lock
@@ -199,6 +205,9 @@ rules:
     filename-regex: '^glide\.lock$'
   - name: dotnet-csproj
     filename-regex: '.*\.csproj$'
+    xml:
+      exists-any:
+        - Project.ItemGroup.PackageReference
   - name: cpp-conanfile
     filename-regex: '^conanfile\.txt$'
   - name: cpp-conan-lock
@@ -215,6 +224,9 @@ rules:
     filename-regex: '^mix\.lock$'
   - name: julia-project
     filename-regex: '^Project\.toml$'
+    toml:
+      table-exists-any:
+        - deps
   - name: julia-manifest
     filename-regex: '^Manifest\.toml$'
   - name: perl-cpanfile
@@ -227,12 +239,21 @@ rules:
     filename-regex: '.*\.opam$'
   - name: crystal-shard
     filename-regex: '^shard\.yml$'
+    yaml:
+      exists-any:
+        - dependencies
   - name: gleam
     filename-regex: '^gleam\.toml$'
+    toml:
+      table-exists-any:
+        - dependencies
   - name: vlang
     filename-regex: '^v\.mod$'
   - name: helm-chart
     filename-regex: '^Chart\.yaml$'
+    yaml:
+      exists-any:
+        - dependencies
   - name: ansible-requirements
     filename-regex: '^requirements\.ya?ml$'
   - name: buf
@@ -243,6 +264,11 @@ rules:
     filename-regex: '^jsonnetfile\.json$'
   - name: terraform-lock
     filename-regex: '^\.terraform\.lock\.hcl$'
+  - name: unity-packages-manifest
+    path-glob: 'Packages/manifest.json'
+    json:
+      exists-any:
+        - dependencies
   - name: js-banner-block-start
     filename-regex: '.*\.js$'
     banner-regex: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
