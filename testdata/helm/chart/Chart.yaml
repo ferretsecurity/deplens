@@ -1,0 +1,7 @@
+apiVersion: v2
+name: demo
+version: 0.1.0
+dependencies:
+  - name: redis
+    version: 19.6.1
+    repository: https://charts.bitnami.com/bitnami

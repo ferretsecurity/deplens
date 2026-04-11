@@ -117,6 +117,8 @@ rules:
     filename-regex: '^Gemfile$'
   - name: ruby-gemfile-lock
     filename-regex: '^Gemfile\.lock$'
+  - name: ruby-gemspec
+    filename-regex: '.*\.gemspec$'
   - name: swift-package
     filename-regex: '^Package\.swift$'
   - name: ios-podfile
@@ -154,6 +156,10 @@ rules:
     filename-regex: '^stack\.yaml\.lock$'
   - name: haskell-cabal-project
     filename-regex: '^cabal\.project$'
+  - name: haskell-cabal
+    filename-regex: '.*\.cabal$'
+  - name: haskell-package-yaml
+    filename-regex: '^package\.yaml$'
   - name: dotnet-packages-config
     filename-regex: '^packages\.config$'
   - name: dotnet-packages-lock
@@ -193,14 +199,50 @@ rules:
     filename-regex: '^glide\.lock$'
   - name: dotnet-csproj
     filename-regex: '.*\.csproj$'
+  - name: cpp-conanfile
+    filename-regex: '^conanfile\.txt$'
   - name: cpp-conan-lock
     filename-regex: '^conan\.lock$'
+  - name: cpp-vcpkg
+    filename-regex: '^vcpkg\.json$'
   - name: swift-package-resolved
     filename-regex: '^Package\.resolved$'
   - name: ios-podfile-lock
     filename-regex: '^Podfile\.lock$'
+  - name: elixir-mix
+    filename-regex: '^mix\.exs$'
   - name: elixir-mix-lock
     filename-regex: '^mix\.lock$'
+  - name: julia-project
+    filename-regex: '^Project\.toml$'
+  - name: julia-manifest
+    filename-regex: '^Manifest\.toml$'
+  - name: perl-cpanfile
+    filename-regex: '^cpanfile$'
+  - name: zig-build-zon
+    filename-regex: '^build\.zig\.zon$'
+  - name: nim-nimble
+    filename-regex: '.*\.nimble$'
+  - name: ocaml-opam
+    filename-regex: '.*\.opam$'
+  - name: crystal-shard
+    filename-regex: '^shard\.yml$'
+  - name: gleam
+    filename-regex: '^gleam\.toml$'
+  - name: vlang
+    filename-regex: '^v\.mod$'
+  - name: helm-chart
+    filename-regex: '^Chart\.yaml$'
+  - name: ansible-requirements
+    filename-regex: '^requirements\.ya?ml$'
+  - name: buf
+    filename-regex: '^buf\.yaml$'
+  - name: homebrew-brewfile
+    filename-regex: '^Brewfile$'
+  - name: jsonnet-bundler
+    filename-regex: '^jsonnetfile\.json$'
+  - name: terraform-lock
+    filename-regex: '^\.terraform\.lock\.hcl$'
   - name: js-banner-block-start
     filename-regex: '.*\.js$'
     banner-regex: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
