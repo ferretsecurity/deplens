@@ -50,6 +50,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.Python != nil {
 		parserCount++
 	}
+	if raw.PyRequirements != nil {
+		parserCount++
+	}
 	if raw.YAML != nil {
 		parserCount++
 	}
@@ -82,6 +85,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.Python != nil {
 		return newPythonMatcher(*raw.Python)
+	}
+	if raw.PyRequirements != nil {
+		return newPyRequirementsMatcher(*raw.PyRequirements)
 	}
 	if raw.YAML != nil {
 		return newYAMLQueryParser(*raw.YAML)
