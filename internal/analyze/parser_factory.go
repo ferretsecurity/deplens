@@ -22,6 +22,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.PyRequirements != nil {
 		parserCount++
 	}
+	if raw.UVLock != nil {
+		parserCount++
+	}
 	if raw.YAML != nil {
 		parserCount++
 	}
@@ -58,6 +61,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.PyRequirements != nil {
 		return newPyRequirementsMatcher(*raw.PyRequirements)
 	}
+	if raw.UVLock != nil {
+		return newUVLockParser(*raw.UVLock)
+	}
 	if raw.YAML != nil {
 		return newYAMLQueryParser(*raw.YAML)
 	}
@@ -74,4 +80,14 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 		return newHTMLMatcher(*raw.HTML)
 	}
 	return nil, nil
+}
+
+type uvLockParser struct{}
+
+func newUVLockParser(raw uvLockMatcherConfig) (manifestParser, error) {
+	return uvLockParser{}, nil
+}
+
+func (p uvLockParser) Match(path string, content []byte) (manifestParserResult, error) {
+	return manifestParserResult{}, nil
 }

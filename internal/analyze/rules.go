@@ -46,12 +46,15 @@ type ruleConfig struct {
 	TypeScript     *typescriptMatcherConfig     `yaml:"typescript"`
 	Python         *pythonMatcherConfig         `yaml:"python"`
 	PyRequirements *pyRequirementsMatcherConfig `yaml:"py-requirements"`
+	UVLock         *uvLockMatcherConfig         `yaml:"uv-lock"`
 	YAML           *yamlMatcherConfig           `yaml:"yaml"`
 	TOML           *tomlMatcherConfig           `yaml:"toml"`
 	JSON           *jsonMatcherConfig           `yaml:"json"`
 	XML            *xmlMatcherConfig            `yaml:"xml"`
 	HTML           *htmlMatcherConfig           `yaml:"html"`
 }
+
+type uvLockMatcherConfig struct{}
 
 type manifestParser interface {
 	Match(path string, content []byte) (manifestParserResult, error)

@@ -2591,6 +2591,29 @@ func TestLoadRulesAcceptsPyRequirementsParser(t *testing.T) {
 	}
 }
 
+func TestLoadRulesAcceptsUVLockParser(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-uv\n    filename-regex: '^uv\\.lock$'\n    uv-lock: {}\n"))
+	if err != nil {
+		t.Fatalf("expected uv-lock rule to load: %v", err)
+	}
+
+	if got := ruleset.SupportedManifestTypes(); !slices.Equal(got, []ManifestType{ManifestType("python-uv")}) {
+		t.Fatalf("unexpected supported types: %+v", got)
+	}
+
+	root := t.TempDir()
+	filePath := filepath.Join(root, "uv.lock")
+	mustWriteFile(t, filePath, "")
+
+	_, _, _, _, ok, err := ruleset.DetectManifestFile(filePath, "uv.lock")
+	if err != nil {
+		t.Fatalf("DetectManifestFile failed: %v", err)
+	}
+	if ok {
+		t.Fatalf("expected uv-lock parser-backed rule to defer filename-only detection")
+	}
+}
+
 func TestLoadRulesRejectsInvalidBannerRegex(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js-banner\n    filename-regex: '.*\\.js$'\n    banner-regex: '('\n"))
 	if err == nil {
