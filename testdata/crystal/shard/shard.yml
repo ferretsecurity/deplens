@@ -1,0 +1,6 @@
+name: demo
+version: 0.1.0
+dependencies:
+  kemal:
+    github: kemalcr/kemal
+    version: 1.5.0

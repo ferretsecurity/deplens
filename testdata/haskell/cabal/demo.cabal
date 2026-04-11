@@ -1,0 +1,6 @@
+name:                demo
+version:             0.1.0.0
+build-type:          Simple
+
+library
+  build-depends:       base >=4.14 && <5, aeson >=2.0

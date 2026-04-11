@@ -1,0 +1,5 @@
+julia_version = "1.11.0"
+manifest_format = "2.0"
+
+[[deps.JSON]]
+version = "0.21.4"
