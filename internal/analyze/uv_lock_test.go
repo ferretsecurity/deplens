@@ -97,6 +97,65 @@ source = { registry = "https://pypi.org/simple" }
 	}
 }
 
+func TestUVLockParserIgnoresVirtualSelfEntries(t *testing.T) {
+	parser, err := newUVLockParser(uvLockMatcherConfig{})
+	if err != nil {
+		t.Fatalf("newUVLockParser failed: %v", err)
+	}
+
+	result, err := parser.Match("uv.lock", []byte(`
+version = 1
+
+[[package]]
+name = "virtual-lib"
+version = "0.1.0"
+source = { virtual = "." }
+
+[[package]]
+name = "requests"
+version = "2.32.3"
+source = { registry = "https://pypi.org/simple" }
+`))
+	if err != nil {
+		t.Fatalf("Match failed: %v", err)
+	}
+	if !result.Matched {
+		t.Fatalf("expected match")
+	}
+	if want := []string{"requests==2.32.3"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
+	}
+	if result.HasDependencies == nil || !*result.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	}
+}
+
+func TestUVLockParserReturnsNoMatchWithoutTopLevelVersion(t *testing.T) {
+	parser, err := newUVLockParser(uvLockMatcherConfig{})
+	if err != nil {
+		t.Fatalf("newUVLockParser failed: %v", err)
+	}
+
+	result, err := parser.Match("uv.lock", []byte(`
+[[package]]
+name = "requests"
+version = "2.32.3"
+source = { registry = "https://pypi.org/simple" }
+`))
+	if err != nil {
+		t.Fatalf("Match failed: %v", err)
+	}
+	if result.Matched {
+		t.Fatalf("expected no match, got %+v", result)
+	}
+	if result.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", result.Dependencies)
+	}
+	if result.HasDependencies != nil {
+		t.Fatalf("expected unknown has_dependencies, got %+v", result.HasDependencies)
+	}
+}
+
 func TestUVLockParserRejectsInvalidTOML(t *testing.T) {
 	parser, err := newUVLockParser(uvLockMatcherConfig{})
 	if err != nil {

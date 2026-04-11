@@ -2603,7 +2603,7 @@ func TestLoadRulesAcceptsUVLockParser(t *testing.T) {
 
 	root := t.TempDir()
 	filePath := filepath.Join(root, "uv.lock")
-	mustWriteFile(t, filePath, "")
+	mustWriteFile(t, filePath, "version = 1\n")
 
 	gotType, deps, hasDeps, warnings, ok, err := ruleset.DetectManifestFile(filePath, "uv.lock")
 	if err != nil {
