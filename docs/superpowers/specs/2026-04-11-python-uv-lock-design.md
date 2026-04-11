@@ -37,7 +37,7 @@ The detector should match only files selected by the rule, then parse the file a
 The detector is a conclusive match when the file is valid TOML and is structurally recognizable as a `uv.lock` file. At minimum, this means:
 
 - the file parses as TOML
-- the top-level document may contain `version`
+- the top-level document contains `version`
 - package entries, when present, appear under `[[package]]`
 
 ### Dependency Presence

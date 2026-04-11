@@ -117,6 +117,11 @@ version = "0.1.0"
 source = { editable = "." }
 
 [[package]]
+name = "editable-dot-slash"
+version = "0.1.1"
+source = { editable = "./" }
+
+[[package]]
 name = "requests"
 version = "2.32.3"
 source = { registry = "https://pypi.org/simple" }
