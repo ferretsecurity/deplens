@@ -28,10 +28,10 @@ func newHTMLMatcher(raw htmlMatcherConfig) (manifestParser, error) {
 	return htmlExternalScriptsParser{}, nil
 }
 
-func (p htmlExternalScriptsParser) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
+func (p htmlExternalScriptsParser) Match(path string, content []byte) (manifestParserResult, error) {
 	matches := scriptBlockRegexp.FindAllSubmatch(content, -1)
 	if len(matches) == 0 {
-		return nil, nil, false, nil
+		return manifestParserResult{}, nil
 	}
 
 	dependencies := make([]string, 0, len(matches))
@@ -70,9 +70,13 @@ func (p htmlExternalScriptsParser) Match(path string, content []byte) ([]Depende
 		}
 	}
 	if len(dependencies) == 0 {
-		return nil, nil, false, nil
+		return manifestParserResult{}, nil
 	}
-	return dependenciesFromStrings(dependencies), boolPtr(true), true, nil
+	return manifestParserResult{
+		Dependencies:    dependenciesFromStrings(dependencies),
+		HasDependencies: boolPtr(true),
+		Matched:         true,
+	}, nil
 }
 
 func firstNonEmptyMatch(values ...string) string {

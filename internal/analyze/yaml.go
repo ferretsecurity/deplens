@@ -99,13 +99,13 @@ func parseYAMLPath(raw string, fieldName string) ([]yamlPathSegment, error) {
 	return segments, nil
 }
 
-func (p yamlQueryParser) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
+func (p yamlQueryParser) Match(path string, content []byte) (manifestParserResult, error) {
 	current, err := resolveYAMLPath(path, content, p.segments)
 	if err != nil {
-		return nil, nil, false, err
+		return manifestParserResult{}, err
 	}
 	if len(current) == 0 {
-		return nil, nil, false, nil
+		return manifestParserResult{}, nil
 	}
 
 	dependencies := make([]string, 0, len(current))
@@ -117,33 +117,37 @@ func (p yamlQueryParser) Match(path string, content []byte) ([]Dependency, *bool
 		dependencies = append(dependencies, value)
 	}
 	if len(dependencies) == 0 {
-		return nil, nil, false, nil
+		return manifestParserResult{}, nil
 	}
-	return dependenciesFromStrings(dependencies), boolPtr(true), true, nil
+	return manifestParserResult{
+		Dependencies:    dependenciesFromStrings(dependencies),
+		HasDependencies: boolPtr(true),
+		Matched:         true,
+	}, nil
 }
 
-func (p yamlExistsParser) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
+func (p yamlExistsParser) Match(path string, content []byte) (manifestParserResult, error) {
 	current, err := resolveYAMLPath(path, content, p.segments)
 	if err != nil {
-		return nil, nil, false, err
+		return manifestParserResult{}, err
 	}
 	if len(current) == 0 {
-		return nil, nil, false, nil
+		return manifestParserResult{}, nil
 	}
-	return nil, nil, true, nil
+	return manifestParserResult{Matched: true}, nil
 }
 
-func (p yamlExistsAnyParser) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
+func (p yamlExistsAnyParser) Match(path string, content []byte) (manifestParserResult, error) {
 	for _, query := range p.queries {
 		current, err := resolveYAMLPath(path, content, query)
 		if err != nil {
-			return nil, nil, false, err
+			return manifestParserResult{}, err
 		}
 		if hasNonEmptyYAMLValue(current) {
-			return nil, boolPtr(true), true, nil
+			return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
 		}
 	}
-	return nil, boolPtr(false), true, nil
+	return manifestParserResult{HasDependencies: boolPtr(false), Matched: true}, nil
 }
 
 func resolveYAMLPath(path string, content []byte, segments []yamlPathSegment) ([]any, error) {

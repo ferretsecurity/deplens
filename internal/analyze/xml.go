@@ -48,7 +48,7 @@ func parseXMLPath(raw string, fieldName string) ([]string, error) {
 	return segments, nil
 }
 
-func (p xmlExistsAnyParser) Match(path string, content []byte) ([]Dependency, *bool, bool, error) {
+func (p xmlExistsAnyParser) Match(path string, content []byte) (manifestParserResult, error) {
 	decoder := xml.NewDecoder(bytes.NewReader(content))
 	stack := make([]string, 0)
 
@@ -56,9 +56,9 @@ func (p xmlExistsAnyParser) Match(path string, content []byte) ([]Dependency, *b
 		token, err := decoder.Token()
 		if err != nil {
 			if err == io.EOF {
-				return nil, boolPtr(false), true, nil
+				return manifestParserResult{HasDependencies: boolPtr(false), Matched: true}, nil
 			}
-			return nil, nil, false, fmt.Errorf("parse xml file %q: %w", path, err)
+			return manifestParserResult{}, fmt.Errorf("parse xml file %q: %w", path, err)
 		}
 
 		switch typed := token.(type) {
@@ -69,7 +69,7 @@ func (p xmlExistsAnyParser) Match(path string, content []byte) ([]Dependency, *b
 					continue
 				}
 				if xmlPathMatches(stack, query) {
-					return nil, boolPtr(true), true, nil
+					return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
 				}
 			}
 		case xml.EndElement:

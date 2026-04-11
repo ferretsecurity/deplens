@@ -53,6 +53,7 @@ func Human(result analyze.ScanResult, supportedTypes []analyze.ManifestType, opt
 		b.WriteString("\n")
 		b.WriteString(fmt.Sprintf("%s %s\n", manifest.Path, manifestStatusLabel(manifest)))
 		b.WriteString(renderDependencies(manifest.Dependencies))
+		b.WriteString(renderWarnings(manifest.Warnings))
 	}
 	return b.String()
 }
@@ -178,6 +179,18 @@ func renderDependencies(dependencies []analyze.Dependency) string {
 		for _, dependency := range grouped[groupName] {
 			b.WriteString(fmt.Sprintf("    - %s\n", dependency))
 		}
+	}
+	return b.String()
+}
+
+func renderWarnings(warnings []string) string {
+	if len(warnings) == 0 {
+		return ""
+	}
+
+	var b strings.Builder
+	for _, warning := range warnings {
+		b.WriteString(fmt.Sprintf("  warning: %s\n", warning))
 	}
 	return b.String()
 }

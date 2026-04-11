@@ -230,7 +230,7 @@ func TestDetectManifestFileAtRelativePathMatchesPathGlob(t *testing.T) {
 		t.Fatalf("loadRules failed: %v", err)
 	}
 
-	got, deps, hasDependencies, ok, err := ruleset.DetectManifestFileAtRelativePath("apps/api/requirements/base.txt", "base.txt", "apps/api/requirements/base.txt")
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFileAtRelativePath("apps/api/requirements/base.txt", "base.txt", "apps/api/requirements/base.txt")
 	if err != nil {
 		t.Fatalf("DetectManifestFileAtRelativePath failed: %v", err)
 	}
@@ -246,6 +246,9 @@ func TestDetectManifestFileAtRelativePathMatchesPathGlob(t *testing.T) {
 	if hasDependencies != nil {
 		t.Fatalf("expected unknown has_dependencies, got %+v", hasDependencies)
 	}
+	if warnings != nil {
+		t.Fatalf("expected no warnings, got %+v", warnings)
+	}
 }
 
 func TestDetectManifestFileAtRelativePathMatchesPathGlobWithAbsolutePath(t *testing.T) {
@@ -257,7 +260,7 @@ func TestDetectManifestFileAtRelativePathMatchesPathGlobWithAbsolutePath(t *test
 	root := t.TempDir()
 	absPath := filepath.Join(root, "apps", "api", "requirements", "base.txt")
 
-	got, deps, hasDependencies, ok, err := ruleset.DetectManifestFileAtRelativePath(absPath, "base.txt", "apps/api/requirements/base.txt")
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFileAtRelativePath(absPath, "base.txt", "apps/api/requirements/base.txt")
 	if err != nil {
 		t.Fatalf("DetectManifestFileAtRelativePath failed: %v", err)
 	}
@@ -273,6 +276,9 @@ func TestDetectManifestFileAtRelativePathMatchesPathGlobWithAbsolutePath(t *test
 	if hasDependencies != nil {
 		t.Fatalf("expected unknown has_dependencies, got %+v", hasDependencies)
 	}
+	if warnings != nil {
+		t.Fatalf("expected no warnings, got %+v", warnings)
+	}
 }
 
 func TestDetectManifestFileDoesNotMatchPathGlobWithoutRelativePath(t *testing.T) {
@@ -281,19 +287,19 @@ func TestDetectManifestFileDoesNotMatchPathGlobWithoutRelativePath(t *testing.T)
 		t.Fatalf("loadRules failed: %v", err)
 	}
 
-	got, deps, hasDependencies, ok, err := ruleset.DetectManifestFile("apps/api/requirements/base.txt", "base.txt")
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile("apps/api/requirements/base.txt", "base.txt")
 	if err != nil {
 		t.Fatalf("DetectManifestFile failed: %v", err)
 	}
 	if ok {
-		t.Fatalf("expected no path-glob match without explicit relative path, got type=%q deps=%+v hasDependencies=%+v", got, deps, hasDependencies)
+		t.Fatalf("expected no path-glob match without explicit relative path, got type=%q deps=%+v hasDependencies=%+v warnings=%+v", got, deps, hasDependencies, warnings)
 	}
 }
 
 func TestDetectManifestFileMatchesSelectorOnlyFilenameRuleWithEmptyPath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	got, deps, hasDependencies, ok, err := ruleset.DetectManifestFile("", "package-lock.json")
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile("", "package-lock.json")
 	if err != nil {
 		t.Fatalf("DetectManifestFile failed: %v", err)
 	}
@@ -302,6 +308,9 @@ func TestDetectManifestFileMatchesSelectorOnlyFilenameRuleWithEmptyPath(t *testi
 	}
 	if got != ManifestType("js-npm-lock") {
 		t.Fatalf("unexpected manifest type: got %q", got)
+	}
+	if warnings != nil {
+		t.Fatalf("expected no warnings, got %+v", warnings)
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
@@ -407,6 +416,81 @@ func TestScanMatchesRequirementsFixtureWithOnlyDirectivesAsConclusiveEmpty(t *te
 	}
 	if manifest.HasDependencies == nil || *manifest.HasDependencies {
 		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+	}
+}
+
+func TestScanMatchesRequirementsFixtureWithRecursiveIncludes(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "requirements-recursive"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Type != ManifestType("python-requirements") || manifest.Path != "requirements.txt" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests>=2.31", "urllib3<3", "pendulum>=3", "pytest>=8"}) {
+		t.Fatalf("unexpected dependencies: got %+v", manifest.Dependencies)
+	}
+	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	}
+	if len(manifest.Warnings) != 0 {
+		t.Fatalf("expected no warnings, got %+v", manifest.Warnings)
+	}
+}
+
+func TestScanMatchesRequirementsFixtureWithWarnings(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "requirements-missing-include"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests>=2.31"}) {
+		t.Fatalf("unexpected dependencies: got %+v", manifest.Dependencies)
+	}
+	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	}
+	if len(manifest.Warnings) != 1 {
+		t.Fatalf("expected one warning, got %+v", manifest.Warnings)
+	}
+}
+
+func TestScanMatchesRequirementsFixtureAsUnknownWhenOnlyUnreadableIncludeRemains(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "requirements-missing-include-only"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	}
+	if manifest.HasDependencies != nil {
+		t.Fatalf("expected unknown has_dependencies, got %+v", manifest.HasDependencies)
+	}
+	if len(manifest.Warnings) != 1 {
+		t.Fatalf("expected one warning, got %+v", manifest.Warnings)
 	}
 }
 
