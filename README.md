@@ -31,7 +31,7 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies | Maturity |
 | --- | --- | --- | --- |
-| filename regex match | Built-in filename rules: `uv.lock`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `deno.lock`, `bower.json`, `npm-shrinkwrap.json`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `composer.lock`, `pubspec.lock`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `package.yaml`, `packages.lock.json`, `paket.dependencies`, `paket.lock`, `go.mod`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.yaml`, `Cargo.lock`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `vcpkg.json`, `Package.resolved`, `Podfile.lock`, `mix.exs`, `mix.lock`, `Manifest.toml`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `requirements.yml`, `requirements.yaml`, `buf.yaml`, `Brewfile`, `jsonnetfile.json`, `.terraform.lock.hcl` | No | 1 |
+| filename regex match | Built-in filename rules: `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `deno.lock`, `bower.json`, `npm-shrinkwrap.json`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `composer.lock`, `pubspec.lock`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `package.yaml`, `packages.lock.json`, `paket.dependencies`, `paket.lock`, `go.mod`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.yaml`, `Cargo.lock`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `vcpkg.json`, `Package.resolved`, `Podfile.lock`, `mix.exs`, `mix.lock`, `Manifest.toml`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `requirements.yml`, `requirements.yaml`, `buf.yaml`, `Brewfile`, `jsonnetfile.json`, `.terraform.lock.hcl` | No | 1 |
 | path glob match | Selector-only path-glob rules, for example a custom rule such as `apps/**/package.json` | No | 1 |
 | json presence check | `package.json`; reports dependency presence when any of `dependencies`, `devDependencies`, `peerDependencies`, or `optionalDependencies` is a non-empty object. Also used for `composer.json` via `require` / `require-dev`, `deno.json` / `deno.jsonc` via `imports`, and `Packages/manifest.json` via `dependencies` | No | 2 |
 | xml presence check | `pom.xml`; reports dependency presence when any configured element path exists, for example `project.dependencies.dependency`; XML namespaces are ignored for matching. Also used for `*.csproj` via `Project.ItemGroup.PackageReference`, `Directory.Packages.props` via `Project.ItemGroup.PackageVersion`, and `packages.config` via `packages.package` | No | 2 |
@@ -39,6 +39,7 @@ Built-in detectors:
 | toml | TOML files matched by a rule such as built-in `python-pyproject` for `pyproject.toml`; extracts from `build-system.requires[]`, `project.dependencies[]`, `project.optional-dependencies.*[]`, `dependency-groups.*[]`, `tool.poetry.dependencies`, and `tool.poetry.group.*.dependencies` | Yes | 3 |
 | pipfile | `Pipfile` matched by the built-in `python-pipfile` rule; reports only when the file contains at least one dependency-bearing package section such as `[packages]`, `[dev-packages]`, or a custom package category like `[docs]` | Yes | 3 |
 | py requirements | Pip requirements files matched by built-in `python-requirements` and `python-requirements-dir`; extracts static non-empty, non-comment requirement lines from files such as `requirements.txt`, `requirements.in`, and `requirements/base.txt`, recursively expands local `-r`, `--requirement`, and `--requirements` includes, and ignores directives such as `-c`, `--index-url`, and `--hash` | Yes | 3 |
+| uv lock | `uv.lock` matched by the built-in `python-uv` rule; extracts retained package entries from `[[package]]` records, ignores editable, workspace, and virtual self entries, and reports conclusive empty files when only `version = 1` is present | Yes | 3 |
 | python call | Python files matched by a rule such as built-in `python-setup-py` for `setup.py`; detects imported function calls with specific keyword arguments, for example `setuptools.setup(..., install_requires=..., extras_require=...)`, and can extract from simple literal arrays in `install_requires=[...]` plus `extras_require={"group": [...]}` | Yes | 3 |
 | ini | INI files matched by a rule such as built-in `python-setup-cfg` for `setup.cfg`; extracts from `[options]` keys `setup_requires` and `install_requires`, plus all keys under `[options.extras_require]`, when values are written as static multiline lists | Yes | 3 |
 | banner regex | JavaScript files whose first 4096 bytes match a configured `banner-regex` with capture groups 1 and 2 for package name and version | Yes | 3 |
@@ -54,6 +55,8 @@ The same maturity model applies to custom rules passed with `--rules`; selector-
 Default JavaScript banner rules use `filename-regex: '.*\.js$'` and return `name@version` from `banner-regex` capture groups 1 and 2. The built-in banner rule set includes `js-banner-block-start`, `js-banner-plain-block-start`, `js-banner-multiline-preserved`, `js-banner-line-comment`, and `js-banner-version-tagged`.
 
 The default Python requirements rules use the `py-requirements` detector for both a filename selector matching `*requirements*.txt` and `*requirements*.in`, plus a path selector for `**/requirements/*.txt`. The detector extracts static dependency lines, joins trailing `\` continuations, ignores blank lines and `#` comments, recursively resolves local `-r`, `--requirement`, and `--requirements` includes relative to the including file, and skips non-dependency directives such as `-c`, `--constraint`, `--index-url`, `--extra-index-url`, `--find-links`, `--trusted-host`, and `--hash`. If an included file cannot be read or an include cycle is detected, the manifest is still reported and a warning is attached to the result.
+
+The default `python-uv` rule now uses the dedicated `uv-lock` detector. It extracts retained package entries from `uv.lock`, skips editable, workspace, and virtual self entries, and reports `has_dependencies=false` when the file is only a version marker.
 
 The default rules also include `python-conda-environment` for `environment.yml` and `environment.yaml`, which reports the file only when a top-level `dependencies` key is present.
 
@@ -150,6 +153,22 @@ That also applies to `package.json` files that do not contain any non-empty `dep
 
 ```text
 package.json [no dependencies]
+```
+
+The old default `python-uv` behavior reported `uv.lock` only as a generic match:
+
+```text
+# Before
+uv.lock [matched]
+```
+
+Now the dedicated parser extracts the retained dependencies directly:
+
+```text
+# After
+uv.lock [2 deps]
+  - requests==2.32.3
+  - local-lib==0.1.0
 ```
 
 The same Level 2 behavior now applies to several additional structured manifests that were previously reported only as `[matched]`. For example:

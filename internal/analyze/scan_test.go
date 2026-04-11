@@ -23,7 +23,6 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		name string
 		want ManifestType
 	}{
-		{name: "uv.lock", want: ManifestType("python-uv")},
 		{name: "poetry.lock", want: ManifestType("python-poetry-lock")},
 		{name: "Pipfile.lock", want: ManifestType("python-pipfile-lock")},
 		{name: "pdm.lock", want: ManifestType("python-pdm-lock")},
@@ -2623,6 +2622,75 @@ func TestLoadRulesAcceptsUVLockParser(t *testing.T) {
 	}
 	if len(warnings) != 0 {
 		t.Fatalf("expected no warnings, got %+v", warnings)
+	}
+}
+
+func TestDefaultRulesScanUVLockExtractedFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "uv-lock-extracted"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Path != "uv.lock" {
+		t.Fatalf("unexpected manifest path: %+v", manifest)
+	}
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "local-lib==0.1.0"}) {
+		t.Fatalf("unexpected dependencies: got %+v", got)
+	}
+	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	}
+}
+
+func TestDefaultRulesScanUVLockEmptyFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "uv-lock-empty"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Path != "uv.lock" {
+		t.Fatalf("unexpected manifest path: %+v", manifest)
+	}
+	if manifest.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	}
+	if manifest.HasDependencies == nil || *manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+	}
+}
+
+func TestDefaultRulesScanUVLockIgnoredSelfFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "uv-lock-ignored-self"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Path != "uv.lock" {
+		t.Fatalf("unexpected manifest path: %+v", manifest)
+	}
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "local-lib==0.1.0"}) {
+		t.Fatalf("unexpected dependencies: got %+v", got)
+	}
+	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
 	}
 }
 

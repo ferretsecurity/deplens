@@ -7,6 +7,7 @@ rules:
     py-requirements: {}
   - name: python-uv
     filename-regex: '^uv\.lock$'
+    uv-lock: {}
   - name: python-poetry-lock
     filename-regex: '^poetry\.lock$'
   - name: python-pipfile-lock
