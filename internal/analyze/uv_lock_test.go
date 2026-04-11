@@ -59,7 +59,50 @@ func TestUVLockParserReturnsConclusiveEmptyForVersionOnlyFiles(t *testing.T) {
 	}
 }
 
-func TestUVLockParserIgnoresEditableAndWorkspaceSources(t *testing.T) {
+func TestUVLockParserRetainsEditableDependenciesAndIgnoresSelfStyleSources(t *testing.T) {
+	parser, err := newUVLockParser(uvLockMatcherConfig{})
+	if err != nil {
+		t.Fatalf("newUVLockParser failed: %v", err)
+	}
+
+	result, err := parser.Match("uv.lock", []byte(`
+version = 1
+
+[[package]]
+name = "foo"
+version = "0.1.0"
+source = { editable = "../packages/foo" }
+
+[[package]]
+name = "editable-lib"
+version = "0.1.0"
+source = { editable = "." }
+
+[[package]]
+name = "workspace-lib"
+version = "0.2.0"
+source = { workspace = true }
+
+[[package]]
+name = "requests"
+version = "2.32.3"
+source = { registry = "https://pypi.org/simple" }
+`))
+	if err != nil {
+		t.Fatalf("Match failed: %v", err)
+	}
+	if !result.Matched {
+		t.Fatalf("expected match")
+	}
+	if want := []string{"foo==0.1.0", "requests==2.32.3"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
+	}
+	if result.HasDependencies == nil || !*result.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	}
+}
+
+func TestUVLockParserIgnoresSelfStyleEditableEntries(t *testing.T) {
 	parser, err := newUVLockParser(uvLockMatcherConfig{})
 	if err != nil {
 		t.Fatalf("newUVLockParser failed: %v", err)
@@ -72,11 +115,6 @@ version = 1
 name = "editable-lib"
 version = "0.1.0"
 source = { editable = "." }
-
-[[package]]
-name = "workspace-lib"
-version = "0.2.0"
-source = { workspace = true }
 
 [[package]]
 name = "requests"

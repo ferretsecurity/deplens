@@ -2,6 +2,7 @@ package analyze
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 )
@@ -45,7 +46,7 @@ func (p uvLockParser) Match(path string, content []byte) (manifestParserResult, 
 			continue
 		}
 		if pkg.Source != nil {
-			if pkg.Source.Editable != nil {
+			if pkg.Source.Editable != nil && isSelfEditableSource(*pkg.Source.Editable) {
 				continue
 			}
 			if pkg.Source.Workspace != nil && *pkg.Source.Workspace {
@@ -73,4 +74,13 @@ func (p uvLockParser) Match(path string, content []byte) (manifestParserResult, 
 		Matched:         true,
 		HasDependencies: boolPtr(true),
 	}, nil
+}
+
+func isSelfEditableSource(value string) bool {
+	switch strings.TrimSpace(value) {
+	case ".", "./":
+		return true
+	default:
+		return false
+	}
 }

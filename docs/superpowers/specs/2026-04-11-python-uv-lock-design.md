@@ -50,7 +50,7 @@ After filtering ignored package entries, dependency presence is determined from 
 Examples of `has_dependencies=false`:
 
 - `version = 1`
-- only editable self/workspace entries are present
+- only self-style editable/workspace/virtual entries are present
 
 ## Extraction Semantics
 
@@ -92,12 +92,14 @@ The detector should ignore package entries that represent the current project or
 
 Ignore packages when:
 
-- `source.editable` is present
+- `source.editable` is `.` or an equivalent root-self marker
 - `source.workspace` is `true`
+- `source.virtual` is present and indicates a self entry
 
 This includes cases such as:
 
 - `source = { editable = "." }`
+- `source = { virtual = "." }`
 - editable paths to local workspace members
 - workspace-linked packages
 
