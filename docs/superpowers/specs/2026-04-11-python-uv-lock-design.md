@@ -113,8 +113,9 @@ The detector should retain package entries sourced from real dependency inputs, 
 - git
 - url
 - path
+- editable paths such as `source = { editable = "../packages/foo" }`
 
-Path dependencies should be retained unless they are editable/workspace entries covered by the ignore rules above.
+Path and editable dependencies should be retained unless they are self-style editable/workspace/virtual entries covered by the ignore rules above.
 
 ## Error Handling
 
@@ -139,6 +140,8 @@ If the lockfile contains both:
 - retained external packages
 
 the self package is ignored and the remaining packages are extracted normally.
+
+Genuine editable dependencies such as `source = { editable = "../packages/foo" }` remain retained.
 
 ### Duplicate Package Entries
 

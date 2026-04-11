@@ -2671,6 +2671,29 @@ func TestDefaultRulesScanUVLockEmptyFixture(t *testing.T) {
 	}
 }
 
+func TestDefaultRulesScanUVLockFilteredEmptyFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "uv-lock-filtered-empty"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Path != "uv.lock" {
+		t.Fatalf("unexpected manifest path: %+v", manifest)
+	}
+	if manifest.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	}
+	if manifest.HasDependencies == nil || *manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+	}
+}
+
 func TestDefaultRulesScanUVLockIgnoredSelfFixture(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 

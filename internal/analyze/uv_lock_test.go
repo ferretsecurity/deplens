@@ -135,6 +135,44 @@ source = { registry = "https://pypi.org/simple" }
 	}
 }
 
+func TestUVLockParserReturnsConclusiveEmptyAfterFilteringIgnoredEntries(t *testing.T) {
+	parser, err := newUVLockParser(uvLockMatcherConfig{})
+	if err != nil {
+		t.Fatalf("newUVLockParser failed: %v", err)
+	}
+
+	result, err := parser.Match("uv.lock", []byte(`
+version = 1
+
+[[package]]
+name = "editable-lib"
+version = "0.1.0"
+source = { editable = "." }
+
+[[package]]
+name = "workspace-lib"
+version = "0.2.0"
+source = { workspace = true }
+
+[[package]]
+name = "virtual-lib"
+version = "0.3.0"
+source = { virtual = "." }
+`))
+	if err != nil {
+		t.Fatalf("Match failed: %v", err)
+	}
+	if !result.Matched {
+		t.Fatalf("expected match")
+	}
+	if result.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", result.Dependencies)
+	}
+	if result.HasDependencies == nil || *result.HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.HasDependencies)
+	}
+}
+
 func TestUVLockParserIgnoresVirtualSelfEntries(t *testing.T) {
 	parser, err := newUVLockParser(uvLockMatcherConfig{})
 	if err != nil {
