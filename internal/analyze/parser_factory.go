@@ -81,13 +81,3 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	return nil, nil
 }
-
-type uvLockParser struct{}
-
-func newUVLockParser(raw uvLockMatcherConfig) (manifestParser, error) {
-	return uvLockParser{}, nil
-}
-
-func (p uvLockParser) Match(path string, content []byte) (manifestParserResult, error) {
-	return manifestParserResult{}, nil
-}

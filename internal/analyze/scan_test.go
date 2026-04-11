@@ -2605,12 +2605,24 @@ func TestLoadRulesAcceptsUVLockParser(t *testing.T) {
 	filePath := filepath.Join(root, "uv.lock")
 	mustWriteFile(t, filePath, "")
 
-	_, _, _, _, ok, err := ruleset.DetectManifestFile(filePath, "uv.lock")
+	gotType, deps, hasDeps, warnings, ok, err := ruleset.DetectManifestFile(filePath, "uv.lock")
 	if err != nil {
 		t.Fatalf("DetectManifestFile failed: %v", err)
 	}
-	if ok {
-		t.Fatalf("expected uv-lock parser-backed rule to defer filename-only detection")
+	if !ok {
+		t.Fatalf("expected uv-lock parser-backed rule to match the file")
+	}
+	if gotType != ManifestType("python-uv") {
+		t.Fatalf("unexpected type: %q", gotType)
+	}
+	if deps != nil {
+		t.Fatalf("expected no dependencies, got %+v", deps)
+	}
+	if hasDeps == nil || *hasDeps {
+		t.Fatalf("expected has_dependencies=false, got %+v", hasDeps)
+	}
+	if len(warnings) != 0 {
+		t.Fatalf("expected no warnings, got %+v", warnings)
 	}
 }
 
