@@ -1,0 +1,16 @@
+[[package]]
+name = "urllib3"
+version = "2.2.1"
+groups = ["main"]
+files = []
+
+[[package]]
+name = "urllib3"
+version = "2.2.2"
+groups = ["main"]
+files = []
+
+[metadata]
+lock-version = "2.1"
+python-versions = "^3.11"
+content-hash = "dup-different"
