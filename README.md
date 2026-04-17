@@ -70,7 +70,7 @@ When `Pipfile` is present, it is reported as `python-pipfile` only if at least o
 go run ./cmd/deplens ./testdata/sample-monorepo
 ```
 
-Representative output:
+Example output:
 
 ```text
 Root: /path/to/project
@@ -81,192 +81,18 @@ Found 32 manifests:
 - 3 with dependencies present, not extracted
 - 24 with dependency status unknown
 
-apps/backend/requirements/base.txt [2 deps]
-  - requests==2.32.3
-  - pydantic==2.9.2
+requirements.txt [2 deps]
+  - requests>=2.31
+  - pendulum>=3
 
-backend/Pipfile.lock [matched]
-
-backend/conda-lock.yml [matched]
-
-go-service/go.sum [matched]
-
-requirements.txt [1 dep]
-  - requests==2.32.0
-```
-
-When dependencies are extracted from `pyproject.toml`, the output is grouped by section:
-
-```text
 pyproject.toml [3 deps]
   project.dependencies:
     - requests>=2.31
   project.optional-dependencies.dev:
     - pytest>=8
     - ruff>=0.4
-```
 
-When a Conda environment file contains a top-level `dependencies` key but the detector does not extract the individual entries, it is reported with an explicit status label:
-
-```text
-environment.yml [dependencies present, not extracted]
-```
-
-When `package.json` contains at least one dependency declaration section with entries, it is also reported with an explicit status label:
-
-```text
 package.json [dependencies present, not extracted]
-```
-
-Before this change, several structured manifests such as `composer.json`, `deno.json`, `deno.jsonc`, `Cargo.toml`, and `pubspec.yaml` were reported only as `[matched]`. They now report a conclusive Level 2 status. For example:
-
-```text
-# Before
-composer.json [matched]
-Cargo.toml [matched]
-
-# After
-composer.json [dependencies present, not extracted]
-Cargo.toml [no dependencies]
-```
-
-`pom.xml` now also reports a conclusive Level 2 status instead of a generic match:
-
-```text
-# Before
-pom.xml [matched]
-
-# After, when direct Maven dependencies are declared
-pom.xml [dependencies present, not extracted]
-
-# After, when no direct Maven dependencies are declared and --show-empty is used
-pom.xml [no dependencies]
-```
-
-When you need to audit empty matches as well, use `--show-empty` to include entries whose dependency status is conclusively empty:
-
-```text
+go.sum [matched]
 setup.cfg [no dependencies]
-```
-
-That also applies to `package.json` files that do not contain any non-empty `dependencies`, `devDependencies`, `peerDependencies`, or `optionalDependencies` sections:
-
-```text
-package.json [no dependencies]
-```
-
-The old default `python-uv` behavior reported `uv.lock` only as a generic match:
-
-```text
-# Before
-uv.lock [matched]
-```
-
-Now the dedicated parser extracts the retained dependencies directly:
-
-```text
-# After
-uv.lock [2 deps]
-  - requests==2.32.3
-  - local-lib==0.1.0
-```
-
-The same Level 2 behavior now applies to several additional structured manifests that were previously reported only as `[matched]`. For example:
-
-```text
-# Before
-Chart.yaml [matched]
-Project.toml [matched]
-app.csproj [matched]
-Packages/manifest.json [matched]
-
-# After
-Chart.yaml [dependencies present, not extracted]
-Project.toml [dependencies present, not extracted]
-app.csproj [dependencies present, not extracted]
-Packages/manifest.json [dependencies present, not extracted]
-```
-
-When `setup.py` contains a `setuptools.setup(...)` call with `install_requires` or `extras_require`, extracted dependencies render either as a flat list or grouped by section. For example:
-
-```text
-setup.py [2 deps]
-  install_requires:
-    - requests>=2.31
-  extras_require.dev:
-    - pytest>=8
-```
-
-When `setup.cfg` contains declarative setuptools dependency keys such as `[options] install_requires`, `[options] setup_requires`, or entries under `[options.extras_require]`, static multiline values are extracted and rendered similarly:
-
-```text
-setup.cfg [2 deps]
-  options.install_requires:
-    - requests>=2.31
-  options.extras_require.dev:
-    - pytest>=8
-```
-
-Python requirements files now also report extracted static dependency lines instead of a generic match, including dependencies pulled in via local include directives. For example:
-
-```text
-# Before
-requirements.txt [matched]
-
-# After
-requirements.txt [2 deps]
-  - requests>=2.31
-  - pendulum>=3
-```
-
-Included requirement files are expanded into the root manifest output:
-
-```text
-# requirements.txt
--r base.txt
-pendulum>=3
-
-# base.txt
-requests>=2.31
-
-# Old output
-requirements.txt [1 dep]
-  - pendulum>=3
-
-# New output
-requirements.txt [2 deps]
-  - requests>=2.31
-  - pendulum>=3
-```
-
-If an included file cannot be read, extracted dependencies are still reported and a warning is attached:
-
-```text
-# requirements.txt
--r missing.txt
-requests>=2.31
-
-requirements.txt [1 dep]
-  - requests>=2.31
-  warning: could not read included requirements file "missing.txt": open missing.txt: no such file or directory
-```
-
-When dependencies are extracted without section metadata, the output stays flat:
-
-```text
-requirements.txt [2 deps]
-  - requests>=2.31
-  - pendulum>=3
-```
-
-When a manifest mixes sectioned and unsectioned dependencies, the unsectioned entries are placed under `[default group]`:
-
-```text
-mixed.toml [3 deps]
-  [default group]
-    - build>=1.2
-  tool.custom.dev:
-    - pytest>=8
-  tool.custom.docs:
-    - mkdocs>=1.6
 ```
