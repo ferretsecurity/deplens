@@ -10,6 +10,7 @@ rules:
     uv-lock: {}
   - name: python-poetry-lock
     filename-regex: '^poetry\.lock$'
+    poetry-lock: {}
   - name: python-pipfile-lock
     filename-regex: '^Pipfile\.lock$'
   - name: python-pdm-lock
