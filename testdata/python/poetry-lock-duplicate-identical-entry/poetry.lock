@@ -1,0 +1,16 @@
+[[package]]
+name = "requests"
+version = "2.32.3"
+groups = ["main"]
+files = []
+
+[[package]]
+name = "requests"
+version = "2.32.3"
+groups = ["main"]
+files = []
+
+[metadata]
+lock-version = "2.1"
+python-versions = "^3.11"
+content-hash = "dup-same"

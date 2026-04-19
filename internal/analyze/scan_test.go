@@ -23,7 +23,6 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		name string
 		want ManifestType
 	}{
-		{name: "poetry.lock", want: ManifestType("python-poetry-lock")},
 		{name: "Pipfile.lock", want: ManifestType("python-pipfile-lock")},
 		{name: "pdm.lock", want: ManifestType("python-pdm-lock")},
 		{name: "conda-lock.yml", want: ManifestType("python-conda-lock")},
@@ -2622,6 +2621,133 @@ func TestLoadRulesAcceptsUVLockParser(t *testing.T) {
 	}
 	if len(warnings) != 0 {
 		t.Fatalf("expected no warnings, got %+v", warnings)
+	}
+}
+
+func TestLoadRulesAcceptsPoetryLockParser(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-poetry-lock\n    filename-regex: '^poetry\\.lock$'\n    poetry-lock: {}\n"))
+	if err != nil {
+		t.Fatalf("expected poetry-lock rule to load: %v", err)
+	}
+
+	if got := ruleset.SupportedManifestTypes(); !slices.Equal(got, []ManifestType{ManifestType("python-poetry-lock")}) {
+		t.Fatalf("unexpected supported types: %+v", got)
+	}
+
+	root := t.TempDir()
+	filePath := filepath.Join(root, "poetry.lock")
+	mustWriteFile(t, filePath, "[metadata]\nlock-version = \"2.1\"\n")
+
+	gotType, deps, hasDeps, warnings, ok, err := ruleset.DetectManifestFile(filePath, "poetry.lock")
+	if err != nil {
+		t.Fatalf("DetectManifestFile failed: %v", err)
+	}
+	if !ok {
+		t.Fatalf("expected poetry-lock parser-backed rule to match the file")
+	}
+	if gotType != ManifestType("python-poetry-lock") {
+		t.Fatalf("unexpected type: %q", gotType)
+	}
+	if deps != nil {
+		t.Fatalf("expected no dependencies, got %+v", deps)
+	}
+	if hasDeps == nil || *hasDeps {
+		t.Fatalf("expected has_dependencies=false, got %+v", hasDeps)
+	}
+	if len(warnings) != 0 {
+		t.Fatalf("expected no warnings, got %+v", warnings)
+	}
+}
+
+func TestDefaultRulesScanPoetryLockBasicFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "poetry-lock-basic"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Path != "poetry.lock" {
+		t.Fatalf("unexpected manifest path: %+v", manifest)
+	}
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "urllib3==2.2.2"}) {
+		t.Fatalf("unexpected dependencies: got %+v", got)
+	}
+	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	}
+}
+
+func TestDefaultRulesScanPoetryLockEmptyFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "poetry-lock-empty-metadata-only"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Path != "poetry.lock" {
+		t.Fatalf("unexpected manifest path: %+v", manifest)
+	}
+	if manifest.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	}
+	if manifest.HasDependencies == nil || *manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+	}
+}
+
+func TestDefaultRulesScanPoetryLockFilteredFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "poetry-lock-git-dependency"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Path != "poetry.lock" {
+		t.Fatalf("unexpected manifest path: %+v", manifest)
+	}
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3"}) {
+		t.Fatalf("unexpected dependencies: got %+v", got)
+	}
+	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	}
+}
+
+func TestDefaultRulesScanPoetryLockIgnoredSelfFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "poetry-lock-path-dependency-self"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Path != "poetry.lock" {
+		t.Fatalf("unexpected manifest path: %+v", manifest)
+	}
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3"}) {
+		t.Fatalf("unexpected dependencies: got %+v", got)
+	}
+	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
 	}
 }
 

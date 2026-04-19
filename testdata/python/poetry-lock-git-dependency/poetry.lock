@@ -1,0 +1,26 @@
+[[package]]
+name = "internal-lib"
+version = "1.4.2"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = []
+
+[package.source]
+type = "git"
+url = "https://github.com/example/internal-lib.git"
+reference = "main"
+resolved_reference = "abc123def456"
+
+[[package]]
+name = "requests"
+version = "2.32.3"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = []
+
+[metadata]
+lock-version = "2.1"
+python-versions = "^3.11"
+content-hash = "git"

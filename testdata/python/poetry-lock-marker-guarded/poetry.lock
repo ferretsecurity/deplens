@@ -1,0 +1,21 @@
+[[package]]
+name = "colorama"
+version = "0.4.6"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+markers = "sys_platform == 'win32'"
+files = []
+
+[[package]]
+name = "requests"
+version = "2.32.3"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = []
+
+[metadata]
+lock-version = "2.1"
+python-versions = "^3.11"
+content-hash = "markers"

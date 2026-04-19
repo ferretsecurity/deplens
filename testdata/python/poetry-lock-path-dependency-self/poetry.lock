@@ -1,0 +1,25 @@
+[[package]]
+name = "my-app"
+version = "0.1.0"
+optional = false
+python-versions = "^3.11"
+groups = ["main"]
+develop = true
+files = []
+
+[package.source]
+type = "directory"
+url = "."
+
+[[package]]
+name = "requests"
+version = "2.32.3"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = []
+
+[metadata]
+lock-version = "2.1"
+python-versions = "^3.11"
+content-hash = "self-path"
