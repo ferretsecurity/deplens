@@ -182,6 +182,7 @@ rules:
     filename-regex: '^paket\.lock$'
   - name: go-mod
     filename-regex: '^go\.mod$'
+    go-mod: {}
   - name: go-sum
     filename-regex: '^go\.sum$'
   - name: go-work

@@ -28,6 +28,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.UVLock != nil {
 		parserCount++
 	}
+	if raw.GoMod != nil {
+		parserCount++
+	}
 	if raw.YAML != nil {
 		parserCount++
 	}
@@ -69,6 +72,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.UVLock != nil {
 		return newUVLockParser(*raw.UVLock)
+	}
+	if raw.GoMod != nil {
+		return newGoModMatcher(*raw.GoMod)
 	}
 	if raw.YAML != nil {
 		return newYAMLQueryParser(*raw.YAML)
