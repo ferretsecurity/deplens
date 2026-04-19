@@ -261,12 +261,22 @@ rules:
         - dependencies
   - name: ansible-requirements
     filename-regex: '^requirements\.ya?ml$'
+    yaml:
+      exists-any:
+        - roles
+        - collections
   - name: buf
     filename-regex: '^buf\.yaml$'
+    yaml:
+      exists-any:
+        - deps
   - name: homebrew-brewfile
     filename-regex: '^Brewfile$'
   - name: jsonnet-bundler
     filename-regex: '^jsonnetfile\.json$'
+    json:
+      exists-any:
+        - dependencies
   - name: terraform-lock
     filename-regex: '^\.terraform\.lock\.hcl$'
   - name: unity-packages-manifest
