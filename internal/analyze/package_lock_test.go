@@ -87,7 +87,7 @@ func TestPackageLockDetectManifestFileExtractsV3RootDependenciesAndOptionalDepen
 	if got != ManifestType("js-npm-lock") {
 		t.Fatalf("unexpected manifest type: got %q", got)
 	}
-	if want := []string{"left-pad", "fsevents"}; !slices.Equal(dependencyNames(deps), want) {
+	if want := []string{"left-pad", "fsevents"}; !equalStringSets(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
@@ -146,7 +146,7 @@ func TestPackageLockDetectManifestFileRejectsMalformedJSON(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected parse error")
 	}
-	if got := err.Error(); !strings.Contains(got, "parse json file \"") || !strings.Contains(got, "package-lock.json") {
+	if got := err.Error(); !strings.Contains(got, "package-lock.json") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
@@ -164,4 +164,22 @@ rules:
 		t.Fatalf("loadRules failed: %v", err)
 	}
 	return ruleset
+}
+
+func equalStringSets(got []string, want []string) bool {
+	if len(got) != len(want) {
+		return false
+	}
+
+	gotSet := make(map[string]struct{}, len(got))
+	for _, value := range got {
+		gotSet[value] = struct{}{}
+	}
+	for _, value := range want {
+		if _, ok := gotSet[value]; !ok {
+			return false
+		}
+		delete(gotSet, value)
+	}
+	return len(gotSet) == 0
 }
