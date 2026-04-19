@@ -47,6 +47,7 @@ type ruleConfig struct {
 	Python         *pythonMatcherConfig         `yaml:"python"`
 	PyRequirements *pyRequirementsMatcherConfig `yaml:"py-requirements"`
 	UVLock         *uvLockMatcherConfig         `yaml:"uv-lock"`
+	GoMod          *goModMatcherConfig          `yaml:"go-mod"`
 	YAML           *yamlMatcherConfig           `yaml:"yaml"`
 	TOML           *tomlMatcherConfig           `yaml:"toml"`
 	JSON           *jsonMatcherConfig           `yaml:"json"`
