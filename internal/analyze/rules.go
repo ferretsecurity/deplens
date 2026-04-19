@@ -49,6 +49,7 @@ type ruleConfig struct {
 	PoetryLock     *poetryLockMatcherConfig     `yaml:"poetry-lock"`
 	UVLock         *uvLockMatcherConfig         `yaml:"uv-lock"`
 	GoMod          *goModMatcherConfig          `yaml:"go-mod"`
+	PackageLock    *packageLockMatcherConfig    `yaml:"package-lock"`
 	YAML           *yamlMatcherConfig           `yaml:"yaml"`
 	TOML           *tomlMatcherConfig           `yaml:"toml"`
 	JSON           *jsonMatcherConfig           `yaml:"json"`
@@ -59,6 +60,8 @@ type ruleConfig struct {
 type uvLockMatcherConfig struct{}
 
 type poetryLockMatcherConfig struct{}
+
+type packageLockMatcherConfig struct{}
 
 type manifestParser interface {
 	Match(path string, content []byte) (manifestParserResult, error)
