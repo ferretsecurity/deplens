@@ -79,11 +79,7 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "demo.nimble", want: ManifestType("nim-nimble")},
 		{name: "demo.opam", want: ManifestType("ocaml-opam")},
 		{name: "v.mod", want: ManifestType("vlang")},
-		{name: "requirements.yml", want: ManifestType("ansible-requirements")},
-		{name: "requirements.yaml", want: ManifestType("ansible-requirements")},
-		{name: "buf.yaml", want: ManifestType("buf")},
 		{name: "Brewfile", want: ManifestType("homebrew-brewfile")},
-		{name: "jsonnetfile.json", want: ManifestType("jsonnet-bundler")},
 		{name: ".terraform.lock.hcl", want: ManifestType("terraform-lock")},
 	}
 
@@ -195,13 +191,17 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 		"environment.yml",
 		"environment.yaml",
 		"Pipfile",
-		"go.mod",
-		"pubspec.yaml",
-		"Cargo.toml",
-		"pom.xml",
-		"index.html",
-		"job.tf",
-		"app.js",
+			"go.mod",
+			"pubspec.yaml",
+			"Cargo.toml",
+			"pom.xml",
+			"requirements.yml",
+			"requirements.yaml",
+			"buf.yaml",
+			"jsonnetfile.json",
+			"index.html",
+			"job.tf",
+			"app.js",
 	}
 
 	for _, tc := range testCases {
@@ -3384,6 +3384,222 @@ environment:
 	}
 	if len(result.Manifests) != 1 {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesBufYAMLWithDeps(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "buf", "module-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("buf") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMarksBufYAMLEmptyDepsAsNoDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "buf", "module-empty-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("buf") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMarksBufYAMLWithoutDepsKeyAsNoDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "buf", "module-no-deps-key"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("buf") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesAnsibleRequirementsWithRoles(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "ansible", "requirements-roles"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("ansible-requirements") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesAnsibleRequirementsWithCollections(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "ansible", "requirements-collections"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("ansible-requirements") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesAnsibleRequirementsWithRolesAndCollections(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "ansible", "requirements-both"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("ansible-requirements") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMarksAnsibleRequirementsEmptyListsAsNoDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "ansible", "requirements-empty"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("ansible-requirements") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMarksAnsibleRequirementsWithoutKeysAsNoDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "ansible", "requirements-missing"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("ansible-requirements") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesJsonnetBundlerWithDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "jsonnet", "bundler-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("jsonnet-bundler") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMarksJsonnetBundlerEmptyDependenciesAsNoDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "jsonnet", "bundler-empty"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("jsonnet-bundler") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMarksJsonnetBundlerWithoutDependenciesKeyAsNoDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "jsonnet", "bundler-missing"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("jsonnet-bundler") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMarksJsonnetBundlerWrongTypeAsNoDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "jsonnet", "bundler-wrong-type"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("jsonnet-bundler") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
 	}
 	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
 		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)

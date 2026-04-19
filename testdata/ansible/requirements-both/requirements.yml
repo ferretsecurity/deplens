@@ -1,0 +1,7 @@
+---
+roles:
+  - name: geerlingguy.mysql
+    version: "4.0.0"
+collections:
+  - name: community.general
+    version: "9.1.0"

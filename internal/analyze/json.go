@@ -45,11 +45,44 @@ func (m jsonMatcher) Match(path string, content []byte) (manifestParserResult, e
 		if !ok {
 			continue
 		}
-		var values map[string]json.RawMessage
-		if err := json.Unmarshal(rawValue, &values); err != nil {
+		var objectValues map[string]json.RawMessage
+		if err := json.Unmarshal(rawValue, &objectValues); err == nil {
+			if len(objectValues) > 0 {
+				return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+			}
 			continue
 		}
-		if len(values) > 0 {
+
+		var arrayValues []json.RawMessage
+		if err := json.Unmarshal(rawValue, &arrayValues); err == nil {
+			if len(arrayValues) > 0 {
+				return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+			}
+			continue
+		}
+
+		var stringValue string
+		if err := json.Unmarshal(rawValue, &stringValue); err == nil {
+			if stringValue != "" {
+				return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+			}
+			continue
+		}
+
+		if string(rawValue) == "null" {
+			continue
+		}
+
+		var boolValue bool
+		if err := json.Unmarshal(rawValue, &boolValue); err == nil {
+			if boolValue {
+				return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+			}
+			continue
+		}
+
+		var numberValue float64
+		if err := json.Unmarshal(rawValue, &numberValue); err == nil {
 			return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
 		}
 	}
