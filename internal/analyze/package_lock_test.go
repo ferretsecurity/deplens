@@ -1,18 +1,17 @@
 package analyze
 
 import (
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
 )
 
-func TestPackageLockParserExtractsV1RootDependencies(t *testing.T) {
-	parser, err := newPackageLockParser(packageLockMatcherConfig{})
-	if err != nil {
-		t.Fatalf("newPackageLockParser failed: %v", err)
-	}
+func TestPackageLockDetectManifestFileExtractsV1RootDependencies(t *testing.T) {
+	ruleset := mustLoadPackageLockRules(t)
+	filePath := filepath.Join(t.TempDir(), "package-lock.json")
 
-	result, err := parser.Match("package-lock.json", []byte(`
+	mustWriteFile(t, filePath, `
 {
   "name": "demo",
   "lockfileVersion": 1,
@@ -25,28 +24,34 @@ func TestPackageLockParserExtractsV1RootDependencies(t *testing.T) {
     }
   }
 }
-`))
+`)
+
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
 	if err != nil {
-		t.Fatalf("Match failed: %v", err)
+		t.Fatalf("DetectManifestFile failed: %v", err)
 	}
-	if !result.Matched {
+	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []string{"left-pad@1.3.0", "lodash@4.17.21"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
+	if got != ManifestType("js-npm-lock") {
+		t.Fatalf("unexpected manifest type: got %q", got)
 	}
-	if result.HasDependencies == nil || !*result.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	if want := []string{"left-pad", "lodash"}; !slices.Equal(dependencyNames(deps), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
+	}
+	if hasDependencies == nil || !*hasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	}
+	if warnings != nil {
+		t.Fatalf("expected no warnings, got %+v", warnings)
 	}
 }
 
-func TestPackageLockParserExtractsV3RootDependenciesAndOptionalDependenciesWithDedupe(t *testing.T) {
-	parser, err := newPackageLockParser(packageLockMatcherConfig{})
-	if err != nil {
-		t.Fatalf("newPackageLockParser failed: %v", err)
-	}
+func TestPackageLockDetectManifestFileExtractsV3RootDependenciesAndOptionalDependenciesWithDedupe(t *testing.T) {
+	ruleset := mustLoadPackageLockRules(t)
+	filePath := filepath.Join(t.TempDir(), "package-lock.json")
 
-	result, err := parser.Match("package-lock.json", []byte(`
+	mustWriteFile(t, filePath, `
 {
   "name": "demo",
   "lockfileVersion": 3,
@@ -70,28 +75,34 @@ func TestPackageLockParserExtractsV3RootDependenciesAndOptionalDependenciesWithD
     }
   }
 }
-`))
+`)
+
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
 	if err != nil {
-		t.Fatalf("Match failed: %v", err)
+		t.Fatalf("DetectManifestFile failed: %v", err)
 	}
-	if !result.Matched {
+	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []string{"left-pad@1.3.0", "fsevents@2.3.3"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
+	if got != ManifestType("js-npm-lock") {
+		t.Fatalf("unexpected manifest type: got %q", got)
 	}
-	if result.HasDependencies == nil || !*result.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	if want := []string{"left-pad", "fsevents"}; !slices.Equal(dependencyNames(deps), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
+	}
+	if hasDependencies == nil || !*hasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	}
+	if warnings != nil {
+		t.Fatalf("expected no warnings, got %+v", warnings)
 	}
 }
 
-func TestPackageLockParserReturnsConclusiveEmptyWhenSupportedRootMapsAreMissing(t *testing.T) {
-	parser, err := newPackageLockParser(packageLockMatcherConfig{})
-	if err != nil {
-		t.Fatalf("newPackageLockParser failed: %v", err)
-	}
+func TestPackageLockDetectManifestFileReturnsConclusiveEmptyWhenSupportedRootMapsAreMissing(t *testing.T) {
+	ruleset := mustLoadPackageLockRules(t)
+	filePath := filepath.Join(t.TempDir(), "package-lock.json")
 
-	result, err := parser.Match("package-lock.json", []byte(`
+	mustWriteFile(t, filePath, `
 {
   "name": "demo",
   "lockfileVersion": 3,
@@ -102,32 +113,55 @@ func TestPackageLockParserReturnsConclusiveEmptyWhenSupportedRootMapsAreMissing(
     }
   }
 }
-`))
+`)
+
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
 	if err != nil {
-		t.Fatalf("Match failed: %v", err)
+		t.Fatalf("DetectManifestFile failed: %v", err)
 	}
-	if !result.Matched {
+	if !ok {
 		t.Fatalf("expected match")
 	}
-	if result.Dependencies != nil {
-		t.Fatalf("expected no dependencies, got %+v", result.Dependencies)
+	if got != ManifestType("js-npm-lock") {
+		t.Fatalf("unexpected manifest type: got %q", got)
 	}
-	if result.HasDependencies == nil || *result.HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.HasDependencies)
+	if deps != nil {
+		t.Fatalf("expected no dependencies, got %+v", deps)
+	}
+	if hasDependencies == nil || *hasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", hasDependencies)
+	}
+	if warnings != nil {
+		t.Fatalf("expected no warnings, got %+v", warnings)
 	}
 }
 
-func TestPackageLockParserRejectsMalformedJSON(t *testing.T) {
-	parser, err := newPackageLockParser(packageLockMatcherConfig{})
-	if err != nil {
-		t.Fatalf("newPackageLockParser failed: %v", err)
-	}
+func TestPackageLockDetectManifestFileRejectsMalformedJSON(t *testing.T) {
+	ruleset := mustLoadPackageLockRules(t)
+	filePath := filepath.Join(t.TempDir(), "package-lock.json")
 
-	_, err = parser.Match("package-lock.json", []byte(`{"lockfileVersion": 3,`))
+	mustWriteFile(t, filePath, `{"lockfileVersion": 3,`)
+
+	_, _, _, _, _, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
 	if err == nil {
 		t.Fatalf("expected parse error")
 	}
-	if got := err.Error(); !strings.Contains(got, "parse json file \"package-lock.json\"") {
+	if got := err.Error(); !strings.Contains(got, "parse json file \"") || !strings.Contains(got, "package-lock.json") {
 		t.Fatalf("unexpected error: %v", err)
 	}
+}
+
+func mustLoadPackageLockRules(t *testing.T) Ruleset {
+	t.Helper()
+
+	ruleset, err := loadRules("test.yaml", []byte(`
+rules:
+  - name: js-npm-lock
+    filename-regex: '^package-lock\.json$'
+    package-lock: {}
+`))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+	return ruleset
 }
