@@ -49,6 +49,7 @@ type ruleConfig struct {
 	PoetryLock     *poetryLockMatcherConfig     `yaml:"poetry-lock"`
 	UVLock         *uvLockMatcherConfig         `yaml:"uv-lock"`
 	GoMod          *goModMatcherConfig          `yaml:"go-mod"`
+	PackageLock    *packageLockMatcherConfig    `yaml:"package-lock"`
 	YAML           *yamlMatcherConfig           `yaml:"yaml"`
 	TOML           *tomlMatcherConfig           `yaml:"toml"`
 	JSON           *jsonMatcherConfig           `yaml:"json"`
@@ -59,6 +60,8 @@ type ruleConfig struct {
 type uvLockMatcherConfig struct{}
 
 type poetryLockMatcherConfig struct{}
+
+type packageLockMatcherConfig struct{}
 
 type manifestParser interface {
 	Match(path string, content []byte) (manifestParserResult, error)
@@ -141,7 +144,10 @@ func (r Ruleset) SupportedManifestTypes() []ManifestType {
 
 func (r Ruleset) DetectManifest(name string) (ManifestType, bool) {
 	for _, rule := range r.rules {
-		if rule.Parser != nil || rule.PathGlob != "" {
+		if rule.PathGlob != "" {
+			continue
+		}
+		if rule.Parser != nil && rule.Type != ManifestType("js-npm-lock") {
 			continue
 		}
 		if rule.matches(name, "") {
@@ -169,6 +175,12 @@ func (r Ruleset) detectManifestFile(path string, name string, relPath string) (M
 		}
 		if rule.Parser == nil {
 			return rule.Type, nil, nil, nil, true, nil
+		}
+		if path == "" {
+			if rule.Type == ManifestType("js-npm-lock") {
+				return rule.Type, nil, nil, nil, true, nil
+			}
+			continue
 		}
 		if !contentLoaded {
 			data, err := os.ReadFile(path)

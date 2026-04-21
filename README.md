@@ -31,9 +31,10 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies | Maturity |
 | --- | --- | --- | --- |
-| filename regex match | Built-in filename rules: `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `deno.lock`, `bower.json`, `npm-shrinkwrap.json`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `composer.lock`, `pubspec.lock`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `package.yaml`, `packages.lock.json`, `paket.dependencies`, `paket.lock`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.yaml`, `Cargo.lock`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `vcpkg.json`, `Package.resolved`, `Podfile.lock`, `mix.exs`, `mix.lock`, `Manifest.toml`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, `.terraform.lock.hcl` | No | 1 |
+| filename regex match | Built-in filename rules: `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `deno.lock`, `bower.json`, `npm-shrinkwrap.json`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `composer.lock`, `pubspec.lock`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `package.yaml`, `packages.lock.json`, `paket.dependencies`, `paket.lock`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.yaml`, `Cargo.lock`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `vcpkg.json`, `Package.resolved`, `Podfile.lock`, `mix.exs`, `mix.lock`, `Manifest.toml`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, `.terraform.lock.hcl` | No | 1 |
 | path glob match | Selector-only path-glob rules, for example a custom rule such as `apps/**/package.json` | No | 1 |
 | json presence check | `package.json`; reports dependency presence when any of `dependencies`, `devDependencies`, `peerDependencies`, or `optionalDependencies` is a non-empty object. Also used for `composer.json` via `require` / `require-dev`, `deno.json` / `deno.jsonc` via `imports`, `Packages/manifest.json` via `dependencies`, and `jsonnetfile.json` via a non-empty `dependencies` array | No | 2 |
+| package lock | `package-lock.json`; extracts versioned root project dependencies from lockfile version 1 `dependencies`, and from lockfile version 2 or 3 root-package `packages[""].dependencies` plus `optionalDependencies` | Yes | 3 |
 | xml presence check | `pom.xml`; reports dependency presence when any configured element path exists, for example `project.dependencies.dependency`; XML namespaces are ignored for matching. Also used for `*.csproj` via `Project.ItemGroup.PackageReference`, `Directory.Packages.props` via `Project.ItemGroup.PackageVersion`, and `packages.config` via `packages.package` | No | 2 |
 | toml presence check | `Cargo.toml`; reports dependency presence when any of `dependencies`, `dev-dependencies`, `build-dependencies`, `workspace.dependencies`, `target.*.dependencies`, `target.*.dev-dependencies`, or `target.*.build-dependencies` is a non-empty table. Also used for `Project.toml` via `[deps]` and `gleam.toml` via `[dependencies]` | No | 2 |
 | go mod | `go.mod`; extracts direct dependencies from `require` directives and ignores `replace` plus indirect-only requirements | Yes | 3 |
@@ -57,6 +58,8 @@ The same maturity model applies to custom rules passed with `--rules`; selector-
 Default JavaScript banner rules use `filename-regex: '.*\.js$'` and return `name@version` from `banner-regex` capture groups 1 and 2. The built-in banner rule set includes `js-banner-block-start`, `js-banner-plain-block-start`, `js-banner-multiline-preserved`, `js-banner-line-comment`, and `js-banner-version-tagged`.
 
 The default Python requirements rules use the `py-requirements` detector for both a filename selector matching `*requirements*.txt` and `*requirements*.in`, plus a path selector for `**/requirements/*.txt`. The detector extracts static dependency lines, joins trailing `\` continuations, ignores blank lines and `#` comments, recursively resolves local `-r`, `--requirement`, and `--requirements` includes relative to the including file, and skips non-dependency directives such as `-c`, `--constraint`, `--index-url`, `--extra-index-url`, `--find-links`, `--trusted-host`, and `--hash`. If an included file cannot be read or an include cycle is detected, the manifest is still reported and a warning is attached to the result.
+
+The default `js-npm-lock` rule now uses the dedicated `package-lock` detector. It extracts only the root project's declared dependencies, not every transitive `node_modules/...` entry in the lockfile. For lockfile version 1, dependencies come from the top-level `dependencies` object and are emitted as `name@version` when a version is available. For lockfile versions 2 and 3, dependency names come from the root package entry at `packages[""]`, including both `dependencies` and `optionalDependencies`, and versions are resolved from the matching `packages["node_modules/<name>"]` entries. Duplicates are removed. If a version cannot be resolved, `deplens` still emits the package name.
 
 The default `python-poetry-lock` rule now uses the dedicated `poetry-lock` detector. It extracts retained package entries from `poetry.lock`, ignores `category`, `groups`, `optional`, and `markers`, skips self-style directory entries and git-sourced packages, deduplicates exact duplicate `name==version` entries, and reports `has_dependencies=false` when the file is metadata-only or all package entries are filtered out.
 
@@ -103,4 +106,28 @@ go.mod [1 dep]
   - github.com/stretchr/testify
 go.sum [matched]
 setup.cfg [no dependencies]
+```
+
+For `package-lock.json`, older filename-only behavior reported the file as matched without extracting dependencies:
+
+```text
+package-lock.json [matched]
+```
+
+With the default `package-lock` detector, the same root project dependencies are extracted. The `testdata/javascript` fixtures include examples for lockfile versions 1, 2, and 3:
+
+```text
+package-lock-v1-with-deps/package-lock.json [2 deps]
+  - left-pad@1.3.0
+  - lodash@4.17.21
+
+package-lock-v2-with-deps/package-lock.json [3 deps]
+  - @types/node@20.12.7
+  - left-pad@1.3.0
+  - lodash@4.17.21
+
+package-lock-v3-with-deps/package-lock.json [3 deps]
+  - @types/node@20.12.7
+  - left-pad@1.3.0
+  - lodash@4.17.21
 ```

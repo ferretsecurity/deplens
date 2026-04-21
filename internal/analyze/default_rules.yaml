@@ -82,6 +82,7 @@ rules:
     filename-regex: '^npm-shrinkwrap\.json$'
   - name: js-npm-lock
     filename-regex: '^package-lock\.json$'
+    package-lock: {}
   - name: js-yarn
     filename-regex: '^yarn\.lock$'
   - name: js-pnpm-lock

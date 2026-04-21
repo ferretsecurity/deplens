@@ -191,17 +191,17 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 		"environment.yml",
 		"environment.yaml",
 		"Pipfile",
-			"go.mod",
-			"pubspec.yaml",
-			"Cargo.toml",
-			"pom.xml",
-			"requirements.yml",
-			"requirements.yaml",
-			"buf.yaml",
-			"jsonnetfile.json",
-			"index.html",
-			"job.tf",
-			"app.js",
+		"go.mod",
+		"pubspec.yaml",
+		"Cargo.toml",
+		"pom.xml",
+		"requirements.yml",
+		"requirements.yaml",
+		"buf.yaml",
+		"jsonnetfile.json",
+		"index.html",
+		"job.tf",
+		"app.js",
 	}
 
 	for _, tc := range testCases {
@@ -907,6 +907,84 @@ func TestScanFindsAdditionalLockfilesInFixture(t *testing.T) {
 
 	if len(want) != 0 {
 		t.Fatalf("expected all additional lockfile fixtures to be detected, missing %+v", want)
+	}
+}
+
+func TestDefaultRulesScanPackageLockExtractedFixtures(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	testCases := []struct {
+		name string
+		root string
+		want []string
+	}{
+		{
+			name: "lockfile v1",
+			root: filepath.Join("..", "..", "testdata", "javascript", "package-lock-v1-with-deps"),
+			want: []string{"left-pad@1.3.0", "lodash@4.17.21"},
+		},
+		{
+			name: "lockfile v2",
+			root: filepath.Join("..", "..", "testdata", "javascript", "package-lock-v2-with-deps"),
+			want: []string{"@types/node@20.12.7", "left-pad@1.3.0", "lodash@4.17.21"},
+		},
+		{
+			name: "lockfile v3",
+			root: filepath.Join("..", "..", "testdata", "javascript", "package-lock-v3-with-deps"),
+			want: []string{"@types/node@20.12.7", "left-pad@1.3.0", "lodash@4.17.21"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := Scan(tc.root, nil, ruleset)
+			if err != nil {
+				t.Fatalf("scan failed: %v", err)
+			}
+			if len(result.Manifests) != 1 {
+				t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+			}
+
+			manifest := result.Manifests[0]
+			if manifest.Path != "package-lock.json" {
+				t.Fatalf("unexpected manifest path: %+v", manifest)
+			}
+			if manifest.Type != ManifestType("js-npm-lock") {
+				t.Fatalf("unexpected manifest type: %+v", manifest)
+			}
+			if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, tc.want) {
+				t.Fatalf("unexpected dependencies: got %+v want %+v", got, tc.want)
+			}
+			if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+				t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+			}
+		})
+	}
+}
+
+func TestDefaultRulesScanPackageLockEmptyFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "javascript", "package-lock-no-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Path != "package-lock.json" {
+		t.Fatalf("unexpected manifest path: %+v", manifest)
+	}
+	if manifest.Type != ManifestType("js-npm-lock") {
+		t.Fatalf("unexpected manifest type: %+v", manifest)
+	}
+	if manifest.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	}
+	if manifest.HasDependencies == nil || *manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
 	}
 }
 
