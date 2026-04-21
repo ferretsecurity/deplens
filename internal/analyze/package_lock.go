@@ -17,6 +17,16 @@ type packageLockFile struct {
 type packageLockPackage struct {
 	Dependencies         map[string]json.RawMessage `json:"dependencies"`
 	OptionalDependencies map[string]json.RawMessage `json:"optionalDependencies"`
+	Version              string                     `json:"version"`
+}
+
+type packageLockV1Dependency struct {
+	Version string `json:"version"`
+}
+
+type packageLockDependency struct {
+	Name    string
+	Version string
 }
 
 func newPackageLockParser(raw packageLockMatcherConfig) (manifestParser, error) {
@@ -31,7 +41,7 @@ func (p packageLockParser) Match(path string, content []byte) (manifestParserRes
 
 	switch file.LockfileVersion {
 	case 1:
-		return matchPackageLockDependencies(file.Dependencies), nil
+		return matchPackageLockV1Dependencies(file.Dependencies), nil
 	case 2, 3:
 		root, ok := file.Packages[""]
 		if !ok {
@@ -41,14 +51,23 @@ func (p packageLockParser) Match(path string, content []byte) (manifestParserRes
 			}, nil
 		}
 		dependencyNames := collectPackageLockDependencyNames(root.Dependencies, root.OptionalDependencies)
-		return packageLockResultFromNames(dependencyNames), nil
+		return packageLockResultFromDependencies(resolvePackageLockDependencies(dependencyNames, file.Packages)), nil
 	default:
 		return manifestParserResult{}, nil
 	}
 }
 
-func matchPackageLockDependencies(dependencies map[string]json.RawMessage) manifestParserResult {
-	return packageLockResultFromNames(mapKeys(dependencies))
+func matchPackageLockV1Dependencies(dependencies map[string]json.RawMessage) manifestParserResult {
+	resolved := make([]packageLockDependency, 0, len(dependencies))
+	for _, name := range mapKeys(dependencies) {
+		dependency := packageLockDependency{Name: name}
+		var parsed packageLockV1Dependency
+		if err := json.Unmarshal(dependencies[name], &parsed); err == nil {
+			dependency.Version = parsed.Version
+		}
+		resolved = append(resolved, dependency)
+	}
+	return packageLockResultFromDependencies(resolved)
 }
 
 func collectPackageLockDependencyNames(dependencies map[string]json.RawMessage, optionalDependencies map[string]json.RawMessage) []string {
@@ -64,8 +83,24 @@ func collectPackageLockDependencyNames(dependencies map[string]json.RawMessage, 
 	return slices.Compact(names)
 }
 
-func packageLockResultFromNames(names []string) manifestParserResult {
-	if len(names) == 0 {
+func resolvePackageLockDependencies(names []string, packages map[string]packageLockPackage) []packageLockDependency {
+	dependencies := make([]packageLockDependency, 0, len(names))
+	for _, name := range names {
+		dependency := packageLockDependency{Name: name}
+		if pkg, ok := packages[packageLockPackagePath(name)]; ok {
+			dependency.Version = pkg.Version
+		}
+		dependencies = append(dependencies, dependency)
+	}
+	return dependencies
+}
+
+func packageLockPackagePath(name string) string {
+	return "node_modules/" + name
+}
+
+func packageLockResultFromDependencies(resolved []packageLockDependency) manifestParserResult {
+	if len(resolved) == 0 {
 		return manifestParserResult{
 			Matched:         true,
 			HasDependencies: boolPtr(false),
@@ -73,10 +108,25 @@ func packageLockResultFromNames(names []string) manifestParserResult {
 	}
 
 	return manifestParserResult{
-		Dependencies:    dependenciesFromStrings(names),
+		Dependencies:    dependenciesFromStrings(formatPackageLockDependencies(resolved)),
 		Matched:         true,
 		HasDependencies: boolPtr(true),
 	}
+}
+
+func formatPackageLockDependencies(resolved []packageLockDependency) []string {
+	values := make([]string, 0, len(resolved))
+	for _, dependency := range resolved {
+		if dependency.Name == "" {
+			continue
+		}
+		if dependency.Version == "" {
+			values = append(values, dependency.Name)
+			continue
+		}
+		values = append(values, dependency.Name+"@"+dependency.Version)
+	}
+	return values
 }
 
 func mapKeys(values map[string]json.RawMessage) []string {

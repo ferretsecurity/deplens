@@ -36,7 +36,7 @@ func TestPackageLockDetectManifestFileExtractsV1RootDependencies(t *testing.T) {
 	if got != ManifestType("js-npm-lock") {
 		t.Fatalf("unexpected manifest type: got %q", got)
 	}
-	if want := []string{"left-pad", "lodash"}; !slices.Equal(dependencyNames(deps), want) {
+	if want := []string{"left-pad@1.3.0", "lodash@4.17.21"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
@@ -87,7 +87,48 @@ func TestPackageLockDetectManifestFileExtractsV3RootDependenciesAndOptionalDepen
 	if got != ManifestType("js-npm-lock") {
 		t.Fatalf("unexpected manifest type: got %q", got)
 	}
-	if want := []string{"left-pad", "fsevents"}; !equalStringSets(dependencyNames(deps), want) {
+	if want := []string{"left-pad@1.3.0", "fsevents@2.3.3"}; !equalStringSets(dependencyNames(deps), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
+	}
+	if hasDependencies == nil || !*hasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	}
+	if warnings != nil {
+		t.Fatalf("expected no warnings, got %+v", warnings)
+	}
+}
+
+func TestPackageLockDetectManifestFileFallsBackToNameWhenVersionIsMissing(t *testing.T) {
+	ruleset := mustLoadPackageLockRules(t)
+	filePath := filepath.Join(t.TempDir(), "package-lock.json")
+
+	mustWriteFile(t, filePath, `
+{
+  "name": "demo",
+  "lockfileVersion": 3,
+  "packages": {
+    "": {
+      "name": "demo",
+      "version": "1.0.0",
+      "dependencies": {
+        "left-pad": "^1.3.0"
+      }
+    }
+  }
+}
+`)
+
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
+	if err != nil {
+		t.Fatalf("DetectManifestFile failed: %v", err)
+	}
+	if !ok {
+		t.Fatalf("expected match")
+	}
+	if got != ManifestType("js-npm-lock") {
+		t.Fatalf("unexpected manifest type: got %q", got)
+	}
+	if want := []string{"left-pad"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
