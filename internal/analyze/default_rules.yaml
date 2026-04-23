@@ -13,6 +13,7 @@ rules:
     poetry-lock: {}
   - name: python-pipfile-lock
     filename-regex: '^Pipfile\.lock$'
+    pipfile-lock: {}
   - name: python-pdm-lock
     filename-regex: '^pdm\.lock$'
   - name: python-conda-lock

@@ -23,7 +23,6 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		name string
 		want ManifestType
 	}{
-		{name: "Pipfile.lock", want: ManifestType("python-pipfile-lock")},
 		{name: "pdm.lock", want: ManifestType("python-pdm-lock")},
 		{name: "conda-lock.yml", want: ManifestType("python-conda-lock")},
 		{name: "yarn.lock", want: ManifestType("js-yarn")},
@@ -296,14 +295,14 @@ func TestDetectManifestFileDoesNotMatchPathGlobWithoutRelativePath(t *testing.T)
 func TestDetectManifestFileMatchesSelectorOnlyFilenameRuleWithEmptyPath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile("", "Pipfile.lock")
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile("", "pdm.lock")
 	if err != nil {
 		t.Fatalf("DetectManifestFile failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected filename-only rule to match with empty path")
 	}
-	if got != ManifestType("python-pipfile-lock") {
+	if got != ManifestType("python-pdm-lock") {
 		t.Fatalf("unexpected manifest type: got %q", got)
 	}
 	if warnings != nil {

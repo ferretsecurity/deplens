@@ -22,6 +22,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.PyRequirements != nil {
 		parserCount++
 	}
+	if raw.PipfileLock != nil {
+		parserCount++
+	}
 	if raw.PoetryLock != nil {
 		parserCount++
 	}
@@ -75,6 +78,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.PyRequirements != nil {
 		return newPyRequirementsMatcher(*raw.PyRequirements)
+	}
+	if raw.PipfileLock != nil {
+		return newPipfileLockParser(*raw.PipfileLock)
 	}
 	if raw.PoetryLock != nil {
 		return newPoetryLockParser(*raw.PoetryLock)
