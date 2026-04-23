@@ -52,6 +52,7 @@ type ruleConfig struct {
 	GoMod          *goModMatcherConfig          `yaml:"go-mod"`
 	PackageLock    *packageLockMatcherConfig    `yaml:"package-lock"`
 	ComposerLock   *composerLockMatcherConfig   `yaml:"composer-lock"`
+	CargoLock      *cargoLockMatcherConfig      `yaml:"cargo-lock"`
 	YAML           *yamlMatcherConfig           `yaml:"yaml"`
 	TOML           *tomlMatcherConfig           `yaml:"toml"`
 	JSON           *jsonMatcherConfig           `yaml:"json"`
@@ -68,6 +69,8 @@ type pipfileLockMatcherConfig struct{}
 type packageLockMatcherConfig struct{}
 
 type composerLockMatcherConfig struct{}
+
+type cargoLockMatcherConfig struct{}
 
 type manifestParser interface {
 	Match(path string, content []byte) (manifestParserResult, error)

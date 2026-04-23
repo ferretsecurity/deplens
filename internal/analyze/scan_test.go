@@ -57,7 +57,6 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "go.work", want: ManifestType("go-work")},
 		{name: "Gopkg.toml", want: ManifestType("go-gopkg-toml")},
 		{name: "glide.yaml", want: ManifestType("go-glide-yaml")},
-		{name: "Cargo.lock", want: ManifestType("rust-cargo-lock")},
 		{name: "Gopkg.lock", want: ManifestType("go-gopkg-lock")},
 		{name: "glide.lock", want: ManifestType("go-glide-lock")},
 		{name: "conan.lock", want: ManifestType("cpp-conan-lock")},
@@ -192,6 +191,7 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 		"go.mod",
 		"pubspec.yaml",
 		"Cargo.toml",
+		"Cargo.lock",
 		"pom.xml",
 		"requirements.yml",
 		"requirements.yaml",
@@ -3266,6 +3266,14 @@ func TestDetectSelectorOnlyManifestIgnoresPackageLockParserRule(t *testing.T) {
 
 	if _, ok := ruleset.DetectSelectorOnlyManifest("package-lock.json"); ok {
 		t.Fatalf("expected selector-only detection to ignore package-lock parser rule")
+	}
+}
+
+func TestDetectSelectorOnlyManifestIgnoresCargoLockParserRule(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	if _, ok := ruleset.DetectSelectorOnlyManifest("Cargo.lock"); ok {
+		t.Fatalf("expected selector-only detection to ignore cargo-lock parser rule")
 	}
 }
 
