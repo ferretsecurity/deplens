@@ -1,0 +1,12 @@
+{
+  "packages": [
+    {
+      "name": "monolog/monolog",
+      "version": "3.6.0"
+    },
+    {
+      "name": "psr/log",
+      "version": "3.0.0"
+    }
+  ]
+}
