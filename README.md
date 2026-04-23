@@ -31,10 +31,11 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies | Maturity |
 | --- | --- | --- | --- |
-| filename regex match | Built-in filename rules: `Pipfile.lock`, `pdm.lock`, `conda-lock.yml`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `deno.lock`, `bower.json`, `npm-shrinkwrap.json`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `pubspec.lock`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `package.yaml`, `packages.lock.json`, `paket.dependencies`, `paket.lock`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.yaml`, `Cargo.lock`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `vcpkg.json`, `Package.resolved`, `Podfile.lock`, `mix.exs`, `mix.lock`, `Manifest.toml`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, `.terraform.lock.hcl` | No | 1 |
+| filename regex match | Built-in filename rules: `pdm.lock`, `conda-lock.yml`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `deno.lock`, `bower.json`, `npm-shrinkwrap.json`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `pubspec.lock`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `package.yaml`, `packages.lock.json`, `paket.dependencies`, `paket.lock`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.yaml`, `Cargo.lock`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `vcpkg.json`, `Package.resolved`, `Podfile.lock`, `mix.exs`, `mix.lock`, `Manifest.toml`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, `.terraform.lock.hcl` | No | 1 |
 | path glob match | Selector-only path-glob rules, for example a custom rule such as `apps/**/package.json` | No | 1 |
 | json presence check | `package.json`; reports dependency presence when any of `dependencies`, `devDependencies`, `peerDependencies`, or `optionalDependencies` is a non-empty object. Also used for `composer.json` via `require` / `require-dev`, `deno.json` / `deno.jsonc` via `imports`, `Packages/manifest.json` via `dependencies`, and `jsonnetfile.json` via a non-empty `dependencies` array | No | 2 |
 | package lock | `package-lock.json`; extracts versioned root project dependencies from lockfile version 1 `dependencies`, and from lockfile version 2 or 3 root-package `packages[""].dependencies` plus `optionalDependencies` | Yes | 3 |
+| pipfile lock | `Pipfile.lock`; extracts locked entries from `default` and `develop`, rendering them as grouped `name==version` dependencies and falling back to the package name when the lock entry omits `version` | Yes | 3 |
 | composer lock | `composer.lock`; extracts package entries from `packages[]` and `packages-dev[]`, emitting `name@version` when a version is available and preserving the source section as dependency metadata | Yes | 3 |
 | xml presence check | `pom.xml`; reports dependency presence when any configured element path exists, for example `project.dependencies.dependency`; XML namespaces are ignored for matching. Also used for `*.csproj` via `Project.ItemGroup.PackageReference`, `Directory.Packages.props` via `Project.ItemGroup.PackageVersion`, and `packages.config` via `packages.package` | No | 2 |
 | toml presence check | `Cargo.toml`; reports dependency presence when any of `dependencies`, `dev-dependencies`, `build-dependencies`, `workspace.dependencies`, `target.*.dependencies`, `target.*.dev-dependencies`, or `target.*.build-dependencies` is a non-empty table. Also used for `Project.toml` via `[deps]` and `gleam.toml` via `[dependencies]` | No | 2 |
@@ -66,6 +67,8 @@ The default `python-poetry-lock` rule now uses the dedicated `poetry-lock` detec
 
 The default `python-uv` rule now uses the dedicated `uv-lock` detector. It extracts retained package entries from `uv.lock`, skips self-style editable/workspace/virtual entries, and reports `has_dependencies=false` when the file is only a version marker.
 
+The default `python-pipfile-lock` rule now uses the dedicated `pipfile-lock` detector. It extracts locked package entries from `default` and `develop`, renders them as grouped `name==version` dependencies, falls back to the package name when `version` is absent, and reports `has_dependencies=false` for metadata-only or empty lockfiles.
+
 The default rules also include `python-conda-environment` for `environment.yml` and `environment.yaml`, which reports the file only when a top-level `dependencies` key is present.
 
 Several additional ecosystem-specific filenames and extensions are still tracked at Level 1 only, including `mix.exs`, `*.gemspec`, `*.cabal`, `package.yaml`, `conanfile.txt`, `vcpkg.json`, `Manifest.toml`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, and `.terraform.lock.hcl`. These rules identify candidate dependency files but do not yet determine dependency presence or extract dependency data.
@@ -86,10 +89,10 @@ Example output:
 Root: /path/to/project
 
 Found 32 manifests:
-- 4 with extracted dependencies
-- 2 confirmed empty
+- 8 with extracted dependencies
+- 3 confirmed empty
 - 3 with dependencies present, not extracted
-- 23 with dependency status unknown
+- 18 with dependency status unknown
 
 requirements.txt [2 deps]
   - requests>=2.31
@@ -131,6 +134,22 @@ package-lock-v3-with-deps/package-lock.json [3 deps]
   - @types/node@20.12.7
   - left-pad@1.3.0
   - lodash@4.17.21
+```
+
+For `Pipfile.lock`, older filename-only behavior reported the file as matched without extracting dependencies:
+
+```text
+Pipfile.lock [matched]
+```
+
+With the default `pipfile-lock` detector, `default` and `develop` entries are extracted as grouped dependencies. In `testdata/sample-monorepo/backend` the same file is now reported as:
+
+```text
+Pipfile.lock [2 deps]
+  default:
+    - requests==2.32.3
+  develop:
+    - pytest==8.3.3
 ```
 
 For `composer.lock`, older filename-only behavior reported the file as matched without extracting dependencies:

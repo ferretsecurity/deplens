@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "hash": {
+      "sha256": "missing-version"
+    },
+    "pipfile-spec": 6
+  },
+  "default": {
+    "requests": {}
+  },
+  "develop": {
+    "pytest": {}
+  }
+}
