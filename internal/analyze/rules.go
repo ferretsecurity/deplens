@@ -46,6 +46,7 @@ type ruleConfig struct {
 	TypeScript     *typescriptMatcherConfig     `yaml:"typescript"`
 	Python         *pythonMatcherConfig         `yaml:"python"`
 	PyRequirements *pyRequirementsMatcherConfig `yaml:"py-requirements"`
+	PipfileLock    *pipfileLockMatcherConfig    `yaml:"pipfile-lock"`
 	PoetryLock     *poetryLockMatcherConfig     `yaml:"poetry-lock"`
 	UVLock         *uvLockMatcherConfig         `yaml:"uv-lock"`
 	GoMod          *goModMatcherConfig          `yaml:"go-mod"`
@@ -61,6 +62,8 @@ type ruleConfig struct {
 type uvLockMatcherConfig struct{}
 
 type poetryLockMatcherConfig struct{}
+
+type pipfileLockMatcherConfig struct{}
 
 type packageLockMatcherConfig struct{}
 

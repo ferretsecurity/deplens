@@ -1,16 +1,16 @@
 {
   "_meta": {
     "hash": {
-      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      "sha256": "basic"
     },
-    "pipfile-spec": 6,
-    "requires": {
-      "python_version": "3.12"
-    }
+    "pipfile-spec": 6
   },
   "default": {
     "requests": {
       "version": "==2.32.3"
+    },
+    "urllib3": {
+      "version": "==2.2.2"
     }
   },
   "develop": {
