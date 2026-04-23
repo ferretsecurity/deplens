@@ -16,7 +16,7 @@ func dependencyNames(dependencies []Dependency) []string {
 	return names
 }
 
-func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
+func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	testCases := []struct {
@@ -26,7 +26,6 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "Pipfile.lock", want: ManifestType("python-pipfile-lock")},
 		{name: "pdm.lock", want: ManifestType("python-pdm-lock")},
 		{name: "conda-lock.yml", want: ManifestType("python-conda-lock")},
-		{name: "package-lock.json", want: ManifestType("js-npm-lock")},
 		{name: "yarn.lock", want: ManifestType("js-yarn")},
 		{name: "pnpm-lock.yaml", want: ManifestType("js-pnpm-lock")},
 		{name: "bun.lock", want: ManifestType("js-bun-lock")},
@@ -84,7 +83,7 @@ func TestDetectManifestMatchesSupportedFiles(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		got, ok := ruleset.DetectManifest(tc.name)
+		got, ok := ruleset.DetectSelectorOnlyManifest(tc.name)
 		if !ok {
 			t.Fatalf("expected %s to be detected", tc.name)
 		}
@@ -165,7 +164,7 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		if _, ok := ruleset.DetectManifest(tc); ok {
+		if _, ok := ruleset.DetectSelectorOnlyManifest(tc); ok {
 			t.Fatalf("expected %s to be ignored", tc)
 		}
 	}
@@ -205,7 +204,7 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		if _, ok := ruleset.DetectManifest(tc); ok {
+		if _, ok := ruleset.DetectSelectorOnlyManifest(tc); ok {
 			t.Fatalf("expected %s to be ignored by DetectManifest", tc)
 		}
 	}
@@ -217,7 +216,7 @@ func TestDetectManifestIgnoresPathGlobBackedManifests(t *testing.T) {
 		t.Fatalf("loadRules failed: %v", err)
 	}
 
-	if _, ok := ruleset.DetectManifest("package.json"); ok {
+	if _, ok := ruleset.DetectSelectorOnlyManifest("package.json"); ok {
 		t.Fatalf("expected DetectManifest to ignore path-glob-backed rules")
 	}
 }
@@ -297,14 +296,14 @@ func TestDetectManifestFileDoesNotMatchPathGlobWithoutRelativePath(t *testing.T)
 func TestDetectManifestFileMatchesSelectorOnlyFilenameRuleWithEmptyPath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile("", "package-lock.json")
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile("", "Pipfile.lock")
 	if err != nil {
 		t.Fatalf("DetectManifestFile failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected filename-only rule to match with empty path")
 	}
-	if got != ManifestType("js-npm-lock") {
+	if got != ManifestType("python-pipfile-lock") {
 		t.Fatalf("unexpected manifest type: got %q", got)
 	}
 	if warnings != nil {
@@ -315,6 +314,18 @@ func TestDetectManifestFileMatchesSelectorOnlyFilenameRuleWithEmptyPath(t *testi
 	}
 	if hasDependencies != nil {
 		t.Fatalf("expected unknown has_dependencies, got %+v", hasDependencies)
+	}
+}
+
+func TestDetectManifestFileIgnoresParserBackedRuleWithEmptyPath(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile("", "package-lock.json")
+	if err != nil {
+		t.Fatalf("DetectManifestFile failed: %v", err)
+	}
+	if ok {
+		t.Fatalf("expected parser-backed rule to be ignored with empty path, got type=%q deps=%+v hasDependencies=%+v warnings=%+v", got, deps, hasDependencies, warnings)
 	}
 }
 
@@ -3242,12 +3253,20 @@ func TestLoadRulesSupportsCustomFirstMatchOrdering(t *testing.T) {
 		t.Fatalf("loadRules failed: %v", err)
 	}
 
-	got, ok := ruleset.DetectManifest("package.json")
+	got, ok := ruleset.DetectSelectorOnlyManifest("package.json")
 	if !ok {
 		t.Fatalf("expected match")
 	}
 	if got != ManifestType("broad") {
 		t.Fatalf("expected first pattern to win, got %q", got)
+	}
+}
+
+func TestDetectSelectorOnlyManifestIgnoresPackageLockParserRule(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	if _, ok := ruleset.DetectSelectorOnlyManifest("package-lock.json"); ok {
+		t.Fatalf("expected selector-only detection to ignore package-lock parser rule")
 	}
 }
 
