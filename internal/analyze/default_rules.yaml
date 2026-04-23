@@ -138,6 +138,7 @@ rules:
         - require-dev
   - name: php-composer-lock
     filename-regex: '^composer\.lock$'
+    composer-lock: {}
   - name: dart-pubspec
     filename-regex: '^pubspec\.yaml$'
     yaml:

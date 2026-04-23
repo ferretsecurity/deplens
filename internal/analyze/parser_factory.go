@@ -34,6 +34,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.PackageLock != nil {
 		parserCount++
 	}
+	if raw.ComposerLock != nil {
+		parserCount++
+	}
 	if raw.YAML != nil {
 		parserCount++
 	}
@@ -81,6 +84,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.PackageLock != nil {
 		return newPackageLockParser(*raw.PackageLock)
+	}
+	if raw.ComposerLock != nil {
+		return newComposerLockParser(*raw.ComposerLock)
 	}
 	if raw.YAML != nil {
 		return newYAMLQueryParser(*raw.YAML)
