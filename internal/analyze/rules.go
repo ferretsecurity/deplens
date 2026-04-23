@@ -142,12 +142,12 @@ func (r Ruleset) SupportedManifestTypes() []ManifestType {
 	return append([]ManifestType(nil), r.supportedTypes...)
 }
 
-func (r Ruleset) DetectManifest(name string) (ManifestType, bool) {
+func (r Ruleset) DetectSelectorOnlyManifest(name string) (ManifestType, bool) {
 	for _, rule := range r.rules {
 		if rule.PathGlob != "" {
 			continue
 		}
-		if rule.Parser != nil && rule.Type != ManifestType("js-npm-lock") {
+		if rule.Parser != nil {
 			continue
 		}
 		if rule.matches(name, "") {
@@ -177,9 +177,6 @@ func (r Ruleset) detectManifestFile(path string, name string, relPath string) (M
 			return rule.Type, nil, nil, nil, true, nil
 		}
 		if path == "" {
-			if rule.Type == ManifestType("js-npm-lock") {
-				return rule.Type, nil, nil, nil, true, nil
-			}
 			continue
 		}
 		if !contentLoaded {
