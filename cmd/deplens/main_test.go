@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -136,6 +137,58 @@ func TestParseArgsShowEmptyFlag(t *testing.T) {
 	}
 }
 
+func TestParseArgsDefaults(t *testing.T) {
+	cfg, err := parseArgs(nil)
+	if err != nil {
+		t.Fatalf("parseArgs returned error: %v", err)
+	}
+	if cfg.path != "." {
+		t.Fatalf("expected default path '.', got %q", cfg.path)
+	}
+	if cfg.json {
+		t.Fatalf("expected json to default to false")
+	}
+	if cfg.showEmpty {
+		t.Fatalf("expected showEmpty to default to false")
+	}
+	if cfg.rulesPath != "" {
+		t.Fatalf("expected rulesPath to default to empty, got %q", cfg.rulesPath)
+	}
+	if !slices.Equal(cfg.ignoreDirs, defaultIgnoreDirs) {
+		t.Fatalf("expected default ignore dirs %+v, got %+v", defaultIgnoreDirs, cfg.ignoreDirs)
+	}
+}
+
+func TestParseArgsSupportsIgnoreRulesJSONAndPath(t *testing.T) {
+	cfg, err := parseArgs([]string{"--json", "--rules", "custom-rules.yaml", "--ignore", "dist, build , vendor", "fixtures"})
+	if err != nil {
+		t.Fatalf("parseArgs returned error: %v", err)
+	}
+	if !cfg.json {
+		t.Fatalf("expected json to be true")
+	}
+	if cfg.rulesPath != "custom-rules.yaml" {
+		t.Fatalf("expected rulesPath to be custom-rules.yaml, got %q", cfg.rulesPath)
+	}
+	if cfg.path != "fixtures" {
+		t.Fatalf("expected path to be fixtures, got %q", cfg.path)
+	}
+	wantIgnoreDirs := []string{"dist", "build", "vendor"}
+	if !slices.Equal(cfg.ignoreDirs, wantIgnoreDirs) {
+		t.Fatalf("expected ignore dirs %+v, got %+v", wantIgnoreDirs, cfg.ignoreDirs)
+	}
+}
+
+func TestParseArgsRejectsTooManyPathArguments(t *testing.T) {
+	_, err := parseArgs([]string{"first", "second"})
+	if err == nil {
+		t.Fatalf("expected parseArgs to reject multiple path arguments")
+	}
+	if err.Error() != "expected at most one path argument" {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func TestRunDetectsTerraformGluePythonSource(t *testing.T) {
 	tmpDir := t.TempDir()
 	writeFile(t, filepath.Join(tmpDir, "job.tf"), `
@@ -189,6 +242,43 @@ func TestRunInvalidPathReturnsNonZero(t *testing.T) {
 	}
 	if stderr.Len() == 0 {
 		t.Fatalf("expected error output")
+	}
+}
+
+func TestRunNonDirectoryPathReturnsNonZero(t *testing.T) {
+	tmpDir := t.TempDir()
+	filePath := filepath.Join(tmpDir, "package.json")
+	writeFile(t, filePath, "{}")
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{filePath}, &stdout, &stderr)
+	if exitCode == 0 {
+		t.Fatalf("expected non-zero exit code")
+	}
+	if !strings.Contains(stderr.String(), "path is not a directory") {
+		t.Fatalf("expected non-directory error, got %q", stderr.String())
+	}
+}
+
+func TestRunIgnoreSkipsConfiguredDirectories(t *testing.T) {
+	tmpDir := t.TempDir()
+	writeFile(t, filepath.Join(tmpDir, "app", "requirements.txt"), "requests==2.0.0\n")
+	writeFile(t, filepath.Join(tmpDir, "build", "requirements.txt"), "urllib3==2.0.0\n")
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{"--ignore", "build", tmpDir}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "app/requirements.txt") {
+		t.Fatalf("expected non-ignored manifest to be reported, got %q", stdout.String())
+	}
+	if strings.Contains(stdout.String(), "build/requirements.txt") {
+		t.Fatalf("expected ignored manifest to be skipped, got %q", stdout.String())
 	}
 }
 
