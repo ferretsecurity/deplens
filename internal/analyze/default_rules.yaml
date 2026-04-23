@@ -206,6 +206,7 @@ rules:
         - target.*.build-dependencies
   - name: rust-cargo-lock
     filename-regex: '^Cargo\.lock$'
+    cargo-lock: {}
   - name: go-gopkg-lock
     filename-regex: '^Gopkg\.lock$'
   - name: go-glide-lock
