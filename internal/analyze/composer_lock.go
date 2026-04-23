@@ -32,7 +32,10 @@ func (p composerLockParser) Match(path string, content []byte) (manifestParserRe
 		return manifestParserResult{}, nil
 	}
 
-	dependencies := composerLockDependencies(file.Packages, file.PackagesDev)
+	dependencies := composerLockDependencies(
+		composerLockDependencyGroup{Name: "packages", Packages: file.Packages},
+		composerLockDependencyGroup{Name: "packages-dev", Packages: file.PackagesDev},
+	)
 	if len(dependencies) == 0 {
 		return manifestParserResult{
 			Matched:         true,
@@ -41,34 +44,43 @@ func (p composerLockParser) Match(path string, content []byte) (manifestParserRe
 	}
 
 	return manifestParserResult{
-		Dependencies:    dependenciesFromStrings(dependencies),
+		Dependencies:    dependencies,
 		Matched:         true,
 		HasDependencies: boolPtr(true),
 	}, nil
 }
 
-func composerLockDependencies(groups ...[]composerLockPackage) []string {
+type composerLockDependencyGroup struct {
+	Name     string
+	Packages []composerLockPackage
+}
+
+func composerLockDependencies(groups ...composerLockDependencyGroup) []Dependency {
 	if len(groups) == 0 {
 		return nil
 	}
 
-	values := make([]string, 0)
-	seen := make(map[string]struct{})
+	values := make([]Dependency, 0)
 	for _, group := range groups {
-		for _, pkg := range group {
+		if group.Name == "" {
+			continue
+		}
+
+		seen := make(map[string]struct{})
+		for _, pkg := range group.Packages {
 			if pkg.Name == "" {
 				continue
 			}
 
-			value := pkg.Name
+			name := pkg.Name
 			if pkg.Version != "" {
-				value += "@" + pkg.Version
+				name += "@" + pkg.Version
 			}
-			if _, ok := seen[value]; ok {
+			if _, ok := seen[name]; ok {
 				continue
 			}
-			seen[value] = struct{}{}
-			values = append(values, value)
+			seen[name] = struct{}{}
+			values = append(values, Dependency{Name: name, Section: group.Name})
 		}
 	}
 
@@ -76,6 +88,21 @@ func composerLockDependencies(groups ...[]composerLockPackage) []string {
 		return nil
 	}
 
-	slices.Sort(values)
+	slices.SortFunc(values, func(a, b Dependency) int {
+		if a.Section == b.Section {
+			switch {
+			case a.Name < b.Name:
+				return -1
+			case a.Name > b.Name:
+				return 1
+			default:
+				return 0
+			}
+		}
+		if a.Section < b.Section {
+			return -1
+		}
+		return 1
+	})
 	return values
 }

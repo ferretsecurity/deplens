@@ -63,6 +63,51 @@ func TestComposerLockParserReportsConclusiveEmpty(t *testing.T) {
 	}
 }
 
+func TestComposerLockParserExtractsSections(t *testing.T) {
+	parser, err := newComposerLockParser(composerLockMatcherConfig{})
+	if err != nil {
+		t.Fatalf("newComposerLockParser returned error: %v", err)
+	}
+
+	result, err := parser.Match("composer.lock", mustReadTestdataFile(t, "php", "composer-lock-packages-dev", "composer.lock"))
+	if err != nil {
+		t.Fatalf("Match returned error: %v", err)
+	}
+	if !result.Matched {
+		t.Fatalf("expected parser to match composer.lock")
+	}
+	want := []Dependency{
+		{Name: "monolog/monolog@3.6.0", Section: "packages"},
+		{Name: "phpunit/phpunit@11.5.3", Section: "packages-dev"},
+	}
+	if !slices.Equal(result.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
+	}
+}
+
+func TestComposerLockParserPreservesDuplicatesAcrossSections(t *testing.T) {
+	parser, err := newComposerLockParser(composerLockMatcherConfig{})
+	if err != nil {
+		t.Fatalf("newComposerLockParser returned error: %v", err)
+	}
+
+	result, err := parser.Match("composer.lock", mustReadTestdataFile(t, "php", "composer-lock-duplicate-across-groups", "composer.lock"))
+	if err != nil {
+		t.Fatalf("Match returned error: %v", err)
+	}
+	if !result.Matched {
+		t.Fatalf("expected parser to match composer.lock")
+	}
+	want := []Dependency{
+		{Name: "monolog/monolog@3.6.0", Section: "packages"},
+		{Name: "phpunit/phpunit@11.5.3", Section: "packages"},
+		{Name: "monolog/monolog@3.6.0", Section: "packages-dev"},
+	}
+	if !slices.Equal(result.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
+	}
+}
+
 func TestComposerLockParserFixtureCoverage(t *testing.T) {
 	parser, err := newComposerLockParser(composerLockMatcherConfig{})
 	if err != nil {
@@ -72,31 +117,43 @@ func TestComposerLockParserFixtureCoverage(t *testing.T) {
 	testCases := []struct {
 		name       string
 		fixtureDir string
-		wantDeps   []string
+		wantDeps   []Dependency
 		wantHas    *bool
 	}{
 		{
 			name:       "basic packages",
 			fixtureDir: "composer-lock-basic",
-			wantDeps:   []string{"monolog/monolog@3.6.0", "psr/log@3.0.0"},
+			wantDeps: []Dependency{
+				{Name: "monolog/monolog@3.6.0", Section: "packages"},
+				{Name: "psr/log@3.0.0", Section: "packages"},
+			},
 			wantHas:    boolPtr(true),
 		},
 		{
 			name:       "includes packages dev",
 			fixtureDir: "composer-lock-packages-dev",
-			wantDeps:   []string{"monolog/monolog@3.6.0", "phpunit/phpunit@11.5.3"},
+			wantDeps: []Dependency{
+				{Name: "monolog/monolog@3.6.0", Section: "packages"},
+				{Name: "phpunit/phpunit@11.5.3", Section: "packages-dev"},
+			},
 			wantHas:    boolPtr(true),
 		},
 		{
 			name:       "falls back to name when version missing",
 			fixtureDir: "composer-lock-missing-version",
-			wantDeps:   []string{"monolog/monolog"},
+			wantDeps: []Dependency{
+				{Name: "monolog/monolog", Section: "packages"},
+			},
 			wantHas:    boolPtr(true),
 		},
 		{
 			name:       "dedupes duplicate packages across groups",
 			fixtureDir: "composer-lock-duplicate-across-groups",
-			wantDeps:   []string{"monolog/monolog@3.6.0", "phpunit/phpunit@11.5.3"},
+			wantDeps: []Dependency{
+				{Name: "monolog/monolog@3.6.0", Section: "packages"},
+				{Name: "phpunit/phpunit@11.5.3", Section: "packages"},
+				{Name: "monolog/monolog@3.6.0", Section: "packages-dev"},
+			},
 			wantHas:    boolPtr(true),
 		},
 		{
@@ -124,7 +181,7 @@ func TestComposerLockParserFixtureCoverage(t *testing.T) {
 			} else if result.HasDependencies == nil || *result.HasDependencies != *tc.wantHas {
 				t.Fatalf("unexpected has_dependencies: got %+v want %+v", result.HasDependencies, tc.wantHas)
 			}
-			if !slices.Equal(dependencyNames(result.Dependencies), tc.wantDeps) {
+			if !slices.Equal(result.Dependencies, tc.wantDeps) {
 				t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, tc.wantDeps)
 			}
 		})

@@ -35,7 +35,7 @@ Built-in detectors:
 | path glob match | Selector-only path-glob rules, for example a custom rule such as `apps/**/package.json` | No | 1 |
 | json presence check | `package.json`; reports dependency presence when any of `dependencies`, `devDependencies`, `peerDependencies`, or `optionalDependencies` is a non-empty object. Also used for `composer.json` via `require` / `require-dev`, `deno.json` / `deno.jsonc` via `imports`, `Packages/manifest.json` via `dependencies`, and `jsonnetfile.json` via a non-empty `dependencies` array | No | 2 |
 | package lock | `package-lock.json`; extracts versioned root project dependencies from lockfile version 1 `dependencies`, and from lockfile version 2 or 3 root-package `packages[""].dependencies` plus `optionalDependencies` | Yes | 3 |
-| composer lock | `composer.lock`; extracts package entries from `packages[]` and `packages-dev[]`, emitting `name@version` when a version is available | Yes | 3 |
+| composer lock | `composer.lock`; extracts package entries from `packages[]` and `packages-dev[]`, emitting `name@version` when a version is available and preserving the source section as dependency metadata | Yes | 3 |
 | xml presence check | `pom.xml`; reports dependency presence when any configured element path exists, for example `project.dependencies.dependency`; XML namespaces are ignored for matching. Also used for `*.csproj` via `Project.ItemGroup.PackageReference`, `Directory.Packages.props` via `Project.ItemGroup.PackageVersion`, and `packages.config` via `packages.package` | No | 2 |
 | toml presence check | `Cargo.toml`; reports dependency presence when any of `dependencies`, `dev-dependencies`, `build-dependencies`, `workspace.dependencies`, `target.*.dependencies`, `target.*.dev-dependencies`, or `target.*.build-dependencies` is a non-empty table. Also used for `Project.toml` via `[deps]` and `gleam.toml` via `[dependencies]` | No | 2 |
 | go mod | `go.mod`; extracts direct dependencies from `require` directives and ignores `replace` plus indirect-only requirements | Yes | 3 |
@@ -143,5 +143,16 @@ With the default `composer-lock` detector, package entries are extracted from `p
 
 ```text
 composer.lock [1 dep]
-  - monolog/monolog@3.6.0
+  packages:
+    - monolog/monolog@3.6.0
+```
+
+When both sections are present, `deplens` renders them separately instead of collapsing them into a flat list. The `testdata/php/composer-lock-packages-dev` fixture is reported as:
+
+```text
+composer.lock [2 deps]
+  packages:
+    - monolog/monolog@3.6.0
+  packages-dev:
+    - phpunit/phpunit@11.5.3
 ```

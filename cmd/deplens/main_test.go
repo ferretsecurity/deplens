@@ -232,6 +232,26 @@ func TestRunDetectsHTMLExternalScripts(t *testing.T) {
 	}
 }
 
+func TestRunRendersComposerLockSections(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{filepath.Join("..", "..", "testdata", "php", "composer-lock-packages-dev")}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
+	}
+	output := stdout.String()
+	if !strings.Contains(output, "composer.lock [2 deps]") {
+		t.Fatalf("expected output to include composer.lock summary, got %q", output)
+	}
+	if !strings.Contains(output, "  packages:\n    - monolog/monolog@3.6.0") {
+		t.Fatalf("expected output to include packages section, got %q", output)
+	}
+	if !strings.Contains(output, "  packages-dev:\n    - phpunit/phpunit@11.5.3") {
+		t.Fatalf("expected output to include packages-dev section, got %q", output)
+	}
+}
+
 func TestRunInvalidPathReturnsNonZero(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
