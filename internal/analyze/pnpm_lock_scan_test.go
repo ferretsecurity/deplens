@@ -36,3 +36,78 @@ func TestScanPNPMLockExtractsDependencies(t *testing.T) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", pnpmLock.Dependencies, want)
 	}
 }
+
+func TestScanPNPMLockExtractsTopLevelDependenciesForOlderLocks(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "javascript", "pnpm-lock-v5-top-level"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("Scan failed: %v", err)
+	}
+
+	pnpmLock := mustFindPNPMLockManifest(t, result)
+	if pnpmLock.HasDependencies == nil || !*pnpmLock.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", pnpmLock.HasDependencies)
+	}
+
+	want := []Dependency{
+		{Name: "react@18.3.1", Section: "dependencies"},
+		{Name: "@types/node@20.12.7", Section: "devDependencies"},
+		{Name: "fsevents@2.3.3", Section: "optionalDependencies"},
+	}
+	if !slices.Equal(pnpmLock.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", pnpmLock.Dependencies, want)
+	}
+}
+
+func TestScanPNPMLockWorkspaceExtractsOnlyRootImporterDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "javascript", "pnpm-lock-workspace-root-only"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("Scan failed: %v", err)
+	}
+
+	pnpmLock := mustFindPNPMLockManifest(t, result)
+	if pnpmLock.HasDependencies == nil || !*pnpmLock.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", pnpmLock.HasDependencies)
+	}
+
+	want := []Dependency{
+		{Name: "react@18.3.1", Section: "dependencies"},
+		{Name: "@types/node@20.12.7", Section: "devDependencies"},
+	}
+	if !slices.Equal(pnpmLock.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", pnpmLock.Dependencies, want)
+	}
+}
+
+func TestScanPNPMLockWorkspaceWithoutRootDependenciesIsConclusiveEmpty(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "javascript", "pnpm-lock-workspace-empty-root"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("Scan failed: %v", err)
+	}
+
+	pnpmLock := mustFindPNPMLockManifest(t, result)
+	if pnpmLock.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", pnpmLock.Dependencies)
+	}
+	if pnpmLock.HasDependencies == nil || *pnpmLock.HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", pnpmLock.HasDependencies)
+	}
+}
+
+func mustFindPNPMLockManifest(t *testing.T, result ScanResult) *ManifestMatch {
+	t.Helper()
+
+	for i := range result.Manifests {
+		if result.Manifests[i].Type == ManifestType("js-pnpm-lock") && result.Manifests[i].Path == "pnpm-lock.yaml" {
+			return &result.Manifests[i]
+		}
+	}
+
+	t.Fatalf("expected js-pnpm-lock manifest, got %+v", result.Manifests)
+	return nil
+}
