@@ -4,9 +4,14 @@ importers:
   .:
     dependencies:
       react:
-        specifier: ^18.3.1
         version: 18.3.1
     devDependencies:
       '@types/node':
-        specifier: ^20.12.7
         version: 20.12.7
+  packages/api:
+    dependencies:
+      fastify:
+        version: 5.2.1
+    devDependencies:
+      vitest:
+        version: 2.1.8

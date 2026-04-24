@@ -37,6 +37,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.PackageLock != nil {
 		parserCount++
 	}
+	if raw.PNPMLock != nil {
+		parserCount++
+	}
 	if raw.ComposerLock != nil {
 		parserCount++
 	}
@@ -93,6 +96,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.PackageLock != nil {
 		return newPackageLockParser(*raw.PackageLock)
+	}
+	if raw.PNPMLock != nil {
+		return newPNPMLockParser(*raw.PNPMLock)
 	}
 	if raw.ComposerLock != nil {
 		return newComposerLockParser(*raw.ComposerLock)

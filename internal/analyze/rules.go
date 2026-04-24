@@ -51,6 +51,7 @@ type ruleConfig struct {
 	UVLock         *uvLockMatcherConfig         `yaml:"uv-lock"`
 	GoMod          *goModMatcherConfig          `yaml:"go-mod"`
 	PackageLock    *packageLockMatcherConfig    `yaml:"package-lock"`
+	PNPMLock       *pnpmLockMatcherConfig       `yaml:"pnpm-lock"`
 	ComposerLock   *composerLockMatcherConfig   `yaml:"composer-lock"`
 	CargoLock      *cargoLockMatcherConfig      `yaml:"cargo-lock"`
 	YAML           *yamlMatcherConfig           `yaml:"yaml"`
@@ -67,6 +68,8 @@ type poetryLockMatcherConfig struct{}
 type pipfileLockMatcherConfig struct{}
 
 type packageLockMatcherConfig struct{}
+
+type pnpmLockMatcherConfig struct{}
 
 type composerLockMatcherConfig struct{}
 

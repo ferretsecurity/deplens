@@ -88,6 +88,7 @@ rules:
     filename-regex: '^yarn\.lock$'
   - name: js-pnpm-lock
     filename-regex: '^pnpm-lock\.yaml$'
+    pnpm-lock: {}
   - name: js-bun-lock
     filename-regex: '^bun\.lock$'
   - name: js-bun-lockb
