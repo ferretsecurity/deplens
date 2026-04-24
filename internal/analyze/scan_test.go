@@ -25,7 +25,6 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 	}{
 		{name: "pdm.lock", want: ManifestType("python-pdm-lock")},
 		{name: "conda-lock.yml", want: ManifestType("python-conda-lock")},
-		{name: "yarn.lock", want: ManifestType("js-yarn")},
 		{name: "bun.lock", want: ManifestType("js-bun-lock")},
 		{name: "bun.lockb", want: ManifestType("js-bun-lockb")},
 		{name: "deno.lock", want: ManifestType("deno-lock")},
@@ -206,6 +205,14 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 		if _, ok := ruleset.DetectSelectorOnlyManifest(tc); ok {
 			t.Fatalf("expected %s to be ignored by DetectManifest", tc)
 		}
+	}
+}
+
+func TestDetectSelectorOnlyManifestIgnoresYarnLockParserRule(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	if _, ok := ruleset.DetectSelectorOnlyManifest("yarn.lock"); ok {
+		t.Fatalf("expected yarn.lock to be ignored by DetectSelectorOnlyManifest")
 	}
 }
 
@@ -2674,6 +2681,41 @@ func TestLoadRulesAcceptsPyRequirementsParser(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    filename-regex: '^requirements\\.txt$'\n    py-requirements: {}\n"))
 	if err != nil {
 		t.Fatalf("expected py-requirements rule to load: %v", err)
+	}
+}
+
+func TestLoadRulesAcceptsYarnLockParserRule(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js-yarn\n    filename-regex: '^yarn\\.lock$'\n    yarn-lock: {}\n"))
+	if err != nil {
+		t.Fatalf("expected yarn-lock rule to load: %v", err)
+	}
+}
+
+func TestDetectManifestFileMatchesYarnLockParserRule(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	root := t.TempDir()
+	filePath := filepath.Join(root, "yarn.lock")
+	mustWriteFile(t, filePath, "# yarn lockfile v1\n")
+
+	gotType, deps, hasDeps, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	if err != nil {
+		t.Fatalf("DetectManifestFile failed: %v", err)
+	}
+	if !ok {
+		t.Fatalf("expected yarn-lock parser-backed rule to match the file")
+	}
+	if gotType != ManifestType("js-yarn") {
+		t.Fatalf("unexpected type: %q", gotType)
+	}
+	if deps != nil {
+		t.Fatalf("expected no dependencies, got %+v", deps)
+	}
+	if hasDeps == nil || *hasDeps {
+		t.Fatalf("expected has_dependencies=false, got %+v", hasDeps)
+	}
+	if warnings != nil {
+		t.Fatalf("expected no warnings, got %+v", warnings)
 	}
 }
 

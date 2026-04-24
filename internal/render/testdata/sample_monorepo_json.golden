@@ -117,7 +117,7 @@
     {
       "type": "js-yarn",
       "path": "frontend/yarn.lock",
-      "has_dependencies": null
+      "has_dependencies": false
     },
     {
       "type": "go-gopkg-lock",

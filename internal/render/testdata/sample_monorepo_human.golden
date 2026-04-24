@@ -2,9 +2,9 @@ Root: /path/to/sample-monorepo
 
 Found 32 manifests:
 - 10 with extracted dependencies
-- 3 confirmed empty
+- 4 confirmed empty
 - 3 with dependencies present, not extracted
-- 16 with dependency status unknown
+- 15 with dependency status unknown
 
 apps/backend/requirements/base.txt [2 deps]
   - requests==2.32.3
@@ -43,8 +43,6 @@ frontend/pnpm-lock.yaml [2 deps]
     - react@18.3.1
   devDependencies:
     - @types/node@20.12.7
-
-frontend/yarn.lock [matched]
 
 go-service/Gopkg.lock [matched]
 
