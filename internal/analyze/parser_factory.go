@@ -46,6 +46,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	if raw.CargoLock != nil {
 		parserCount++
 	}
+	if raw.YarnLock != nil {
+		parserCount++
+	}
 	if raw.YAML != nil {
 		parserCount++
 	}
@@ -105,6 +108,9 @@ func compileManifestParser(raw ruleConfig) (manifestParser, error) {
 	}
 	if raw.CargoLock != nil {
 		return newCargoLockParser(*raw.CargoLock)
+	}
+	if raw.YarnLock != nil {
+		return newYarnLockParser(*raw.YarnLock)
 	}
 	if raw.YAML != nil {
 		return newYAMLQueryParser(*raw.YAML)

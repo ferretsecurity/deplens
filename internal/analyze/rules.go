@@ -54,6 +54,7 @@ type ruleConfig struct {
 	PNPMLock       *pnpmLockMatcherConfig       `yaml:"pnpm-lock"`
 	ComposerLock   *composerLockMatcherConfig   `yaml:"composer-lock"`
 	CargoLock      *cargoLockMatcherConfig      `yaml:"cargo-lock"`
+	YarnLock       *yarnLockMatcherConfig       `yaml:"yarn-lock"`
 	YAML           *yamlMatcherConfig           `yaml:"yaml"`
 	TOML           *tomlMatcherConfig           `yaml:"toml"`
 	JSON           *jsonMatcherConfig           `yaml:"json"`
@@ -74,6 +75,8 @@ type pnpmLockMatcherConfig struct{}
 type composerLockMatcherConfig struct{}
 
 type cargoLockMatcherConfig struct{}
+
+type yarnLockMatcherConfig struct{}
 
 type manifestParser interface {
 	Match(path string, content []byte) (manifestParserResult, error)

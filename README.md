@@ -31,10 +31,11 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies | Maturity |
 | --- | --- | --- | --- |
-| filename regex match | Built-in filename rules: `pdm.lock`, `conda-lock.yml`, `yarn.lock`, `bun.lock`, `bun.lockb`, `deno.lock`, `bower.json`, `npm-shrinkwrap.json`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `pubspec.lock`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `package.yaml`, `packages.lock.json`, `paket.dependencies`, `paket.lock`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.yaml`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `vcpkg.json`, `Package.resolved`, `Podfile.lock`, `mix.exs`, `mix.lock`, `Manifest.toml`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, `.terraform.lock.hcl` | No | 1 |
+| filename regex match | Built-in filename rules: `pdm.lock`, `conda-lock.yml`, `bun.lock`, `bun.lockb`, `deno.lock`, `bower.json`, `npm-shrinkwrap.json`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `pubspec.lock`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `package.yaml`, `packages.lock.json`, `paket.dependencies`, `paket.lock`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.yaml`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `vcpkg.json`, `Package.resolved`, `Podfile.lock`, `mix.exs`, `mix.lock`, `Manifest.toml`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, `.terraform.lock.hcl` | No | 1 |
 | path glob match | Selector-only path-glob rules, for example a custom rule such as `apps/**/package.json` | No | 1 |
 | json presence check | `package.json`; reports dependency presence when any of `dependencies`, `devDependencies`, `peerDependencies`, or `optionalDependencies` is a non-empty object. Also used for `composer.json` via `require` / `require-dev`, `deno.json` / `deno.jsonc` via `imports`, `Packages/manifest.json` via `dependencies`, and `jsonnetfile.json` via a non-empty `dependencies` array | No | 2 |
 | package lock | `package-lock.json`; extracts versioned root project dependencies from lockfile version 1 `dependencies`, and from lockfile version 2 or 3 root-package `packages[""].dependencies` plus `optionalDependencies` | Yes | 3 |
+| yarn lock | `yarn.lock`; extracts deduplicated `name@version` dependencies from classic Yarn v1 entries and from package entries in modern Yarn lockfiles recognized by their `__metadata`-prefixed structure, falling back to the package name when a lock entry omits `version`, and reporting conclusive empty results for header-only classic files or metadata-only modern files | Yes | 3 |
 | pnpm lock | `pnpm-lock.yaml`; extracts root importer `dependencies`, `devDependencies`, and `optionalDependencies`, emitting `name@version` when the lock entry has a version and falling back to the specifier or name when needed | Yes | 3 |
 | pipfile lock | `Pipfile.lock`; extracts locked entries from `default` and `develop`, rendering them as grouped `name==version` dependencies and falling back to the package name when the lock entry omits `version` | Yes | 3 |
 | composer lock | `composer.lock`; extracts package entries from `packages[]` and `packages-dev[]`, emitting `name@version` when a version is available and preserving the source section as dependency metadata | Yes | 3 |
@@ -138,6 +139,32 @@ package-lock-v3-with-deps/package-lock.json [3 deps]
   - @types/node@20.12.7
   - left-pad@1.3.0
   - lodash@4.17.21
+```
+
+For `yarn.lock`, older filename-only behavior reported the file as matched without extracting dependencies:
+
+```text
+yarn-lock-v1-with-deps/yarn.lock [matched]
+yarn-lock-modern-with-deps/yarn.lock [matched]
+```
+
+With the default `yarn lock` detector, classic and newer lockfiles both extract flat, deduplicated `name@version` dependencies. The `testdata/javascript` fixtures include examples for classic and modern formats:
+
+```text
+yarn-lock-v1-with-deps/yarn.lock [2 deps]
+  - left-pad@1.3.0
+  - lodash@4.17.21
+
+yarn-lock-modern-with-deps/yarn.lock [3 deps]
+  - @babel/code-frame@7.27.1
+  - react@18.3.1
+  - typescript@5.4.5
+```
+
+With `--show-empty`, a metadata-only modern lockfile is rendered explicitly:
+
+```text
+yarn-lock-no-deps/yarn.lock [no dependencies]
 ```
 
 For `pnpm-lock.yaml`, older filename-only behavior reported the file as matched without extracting dependencies:

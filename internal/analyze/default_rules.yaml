@@ -86,6 +86,7 @@ rules:
     package-lock: {}
   - name: js-yarn
     filename-regex: '^yarn\.lock$'
+    yarn-lock: {}
   - name: js-pnpm-lock
     filename-regex: '^pnpm-lock\.yaml$'
     pnpm-lock: {}
