@@ -28,11 +28,22 @@ func main() {
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
-	cfg, err := parseArgs(args)
+	cfg, usage, err := parseArgs(args)
 	if err != nil {
-		fmt.Fprintf(stderr, "error: %v\n", err)
 		if errors.Is(err, flag.ErrHelp) {
+			if _, writeErr := stdout.Write([]byte(usage)); writeErr != nil {
+				fmt.Fprintf(stderr, "error: writing output: %v\n", writeErr)
+				return 1
+			}
 			return 0
+		}
+		fmt.Fprintf(stderr, "error: %v\n", err)
+		if usage != "" {
+			fmt.Fprintln(stderr)
+			if _, writeErr := stderr.Write([]byte(usage)); writeErr != nil {
+				fmt.Fprintf(stderr, "error: writing output: %v\n", writeErr)
+				return 1
+			}
 		}
 		return 1
 	}
@@ -81,7 +92,7 @@ type config struct {
 	rulesPath  string
 }
 
-func parseArgs(args []string) (config, error) {
+func parseArgs(args []string) (config, string, error) {
 	cfg := config{
 		path:       ".",
 		ignoreDirs: append([]string(nil), defaultIgnoreDirs...),
@@ -89,6 +100,20 @@ func parseArgs(args []string) (config, error) {
 
 	fs := flag.NewFlagSet("deplens", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
+	fs.Usage = func() {
+	}
+	renderUsage := func() string {
+		var usage strings.Builder
+		fmt.Fprintln(&usage, "Usage: deplens [flags] [path]")
+		fmt.Fprintln(&usage)
+		fmt.Fprintln(&usage, "Scan a directory tree and report dependency-related manifests.")
+		fmt.Fprintln(&usage)
+		fmt.Fprintln(&usage, "Flags:")
+		fs.SetOutput(&usage)
+		fs.PrintDefaults()
+		fs.SetOutput(io.Discard)
+		return usage.String()
+	}
 	fs.BoolVar(&cfg.json, "json", false, "emit machine-readable JSON output")
 	fs.BoolVar(&cfg.showEmpty, "show-empty", false, "include matched manifests that were confirmed to have no dependencies")
 
@@ -97,7 +122,7 @@ func parseArgs(args []string) (config, error) {
 	fs.StringVar(&cfg.rulesPath, "rules", "", "path to a YAML file with manifest detection rules")
 
 	if err := fs.Parse(args); err != nil {
-		return config{}, err
+		return config{}, renderUsage(), err
 	}
 
 	if ignore != "" {
@@ -105,13 +130,13 @@ func parseArgs(args []string) (config, error) {
 	}
 
 	if fs.NArg() > 1 {
-		return config{}, fmt.Errorf("expected at most one path argument")
+		return config{}, renderUsage(), fmt.Errorf("expected at most one path argument")
 	}
 	if fs.NArg() == 1 {
 		cfg.path = fs.Arg(0)
 	}
 
-	return cfg, nil
+	return cfg, renderUsage(), nil
 }
 
 func parseIgnoreList(value string) []string {
