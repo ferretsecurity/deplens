@@ -63,10 +63,8 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "mix.exs", want: ManifestType("elixir-mix")},
 		{name: "mix.lock", want: ManifestType("elixir-mix-lock")},
 		{name: "demo.cabal", want: ManifestType("haskell-cabal")},
-		{name: "package.yaml", want: ManifestType("haskell-package-yaml")},
 		{name: "demo.gemspec", want: ManifestType("ruby-gemspec")},
 		{name: "conanfile.txt", want: ManifestType("cpp-conanfile")},
-		{name: "vcpkg.json", want: ManifestType("cpp-vcpkg")},
 		{name: "Manifest.toml", want: ManifestType("julia-manifest")},
 		{name: "cpanfile", want: ManifestType("perl-cpanfile")},
 		{name: "build.zig.zon", want: ManifestType("zig-build-zon")},
@@ -196,6 +194,8 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 		"requirements.yaml",
 		"buf.yaml",
 		"jsonnetfile.json",
+		"package.yaml",
+		"vcpkg.json",
 		"index.html",
 		"job.tf",
 		"app.js",
@@ -3745,6 +3745,84 @@ func TestScanMarksJsonnetBundlerWrongTypeAsNoDependencies(t *testing.T) {
 		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
 	}
 	if result.Manifests[0].Type != ManifestType("jsonnet-bundler") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesHaskellPackageYAMLWithDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "haskell", "package-yaml"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("haskell-package-yaml") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+	if result.Manifests[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	}
+}
+
+func TestScanMarksHaskellPackageYAMLWithoutDependenciesAsNoDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "haskell", "package-yaml-no-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("haskell-package-yaml") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesVcpkgWithDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "cpp", "vcpkg"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("cpp-vcpkg") {
+		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+	if result.Manifests[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	}
+}
+
+func TestScanMarksVcpkgWithoutDependenciesAsNoDependencies(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "cpp", "vcpkg-no-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].Type != ManifestType("cpp-vcpkg") {
 		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
 	}
 	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
