@@ -169,6 +169,9 @@ rules:
     filename-regex: '.*\.cabal$'
   - name: haskell-package-yaml
     filename-regex: '^package\.yaml$'
+    yaml:
+      exists-any:
+        - dependencies
   - name: dotnet-packages-config
     filename-regex: '^packages\.config$'
     xml:
@@ -225,6 +228,9 @@ rules:
     filename-regex: '^conan\.lock$'
   - name: cpp-vcpkg
     filename-regex: '^vcpkg\.json$'
+    json:
+      exists-any:
+        - dependencies
   - name: swift-package-resolved
     filename-regex: '^Package\.resolved$'
   - name: ios-podfile-lock
