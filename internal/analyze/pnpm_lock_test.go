@@ -84,6 +84,42 @@ importers:
 	}
 }
 
+func TestPNPMLockDetectManifestFileAcceptsScalarImporterDependencies(t *testing.T) {
+	ruleset := mustLoadPNPMLockRules(t)
+	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
+
+	mustWriteFile(t, filePath, `
+lockfileVersion: '6.0'
+
+importers:
+  .:
+    dependencies:
+      react: 18.3.1
+    devDependencies:
+      '@types/node': 20.12.7
+    optionalDependencies:
+      fsevents: 2.3.3
+`)
+
+	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	if err != nil {
+		t.Fatalf("DetectManifestFile failed: %v", err)
+	}
+	if !ok {
+		t.Fatalf("expected match")
+	}
+	if want := []Dependency{
+		{Name: "react@18.3.1", Section: "dependencies"},
+		{Name: "@types/node@20.12.7", Section: "devDependencies"},
+		{Name: "fsevents@2.3.3", Section: "optionalDependencies"},
+	}; !slices.Equal(deps, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
+	}
+	if hasDependencies == nil || !*hasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	}
+}
+
 func TestPNPMLockDetectManifestFileFallsBackToNameWhenVersionAndSpecifierAreMissing(t *testing.T) {
 	ruleset := mustLoadPNPMLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
