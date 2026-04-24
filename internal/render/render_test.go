@@ -3,6 +3,8 @@ package render
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -538,5 +540,74 @@ func TestHumanSummaryPluralization(t *testing.T) {
 	}
 	if !strings.Contains(output, "[1 dep]") {
 		t.Fatalf("expected singular dependency count, got %q", output)
+	}
+}
+
+func TestSampleMonorepoHumanGoldenOutput(t *testing.T) {
+	ruleset := mustLoadRenderDefaultRules(t)
+	result, err := analyze.Scan(filepath.Join("..", "..", "testdata", "sample-monorepo"), renderDefaultIgnoreDirs(), ruleset)
+	if err != nil {
+		t.Fatalf("Scan failed: %v", err)
+	}
+	result.Root = renderSampleMonorepoRoot
+
+	output := Human(result, ruleset.SupportedManifestTypes(), HumanOptions{})
+	want := mustReadRenderGolden(t, "sample_monorepo_human.golden")
+	if output != want {
+		t.Fatalf("unexpected human output:\n%s", output)
+	}
+}
+
+func TestSampleMonorepoJSONGoldenOutput(t *testing.T) {
+	ruleset := mustLoadRenderDefaultRules(t)
+	result, err := analyze.Scan(filepath.Join("..", "..", "testdata", "sample-monorepo"), renderDefaultIgnoreDirs(), ruleset)
+	if err != nil {
+		t.Fatalf("Scan failed: %v", err)
+	}
+	result.Root = renderSampleMonorepoRoot
+
+	output, err := JSON(result)
+	if err != nil {
+		t.Fatalf("JSON failed: %v", err)
+	}
+	want := mustReadRenderGolden(t, "sample_monorepo_json.golden")
+	if string(output) != want {
+		t.Fatalf("unexpected JSON output:\n%s", output)
+	}
+}
+
+func mustLoadRenderDefaultRules(t *testing.T) analyze.Ruleset {
+	t.Helper()
+
+	ruleset, err := analyze.LoadDefaultRules()
+	if err != nil {
+		t.Fatalf("LoadDefaultRules failed: %v", err)
+	}
+	return ruleset
+}
+
+func mustReadRenderGolden(t *testing.T, name string) string {
+	t.Helper()
+
+	data, err := os.ReadFile(filepath.Join("testdata", name))
+	if err != nil {
+		t.Fatalf("read golden %s failed: %v", name, err)
+	}
+	return string(data)
+}
+
+const renderSampleMonorepoRoot = "/path/to/sample-monorepo"
+
+func renderDefaultIgnoreDirs() []string {
+	// Mirror CLI defaults so the sample-monorepo golden covers user-facing output.
+	return []string{
+		".git",
+		"node_modules",
+		".venv",
+		"venv",
+		"vendor",
+		".tox",
+		".mypy_cache",
+		".pytest_cache",
 	}
 }

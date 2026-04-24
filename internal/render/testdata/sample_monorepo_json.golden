@@ -1,0 +1,229 @@
+{
+  "root": "/path/to/sample-monorepo",
+  "manifests": [
+    {
+      "type": "python-requirements-dir",
+      "path": "apps/backend/requirements/base.txt",
+      "dependencies": [
+        {
+          "name": "requests==2.32.3"
+        },
+        {
+          "name": "pydantic==2.9.2"
+        }
+      ],
+      "has_dependencies": true
+    },
+    {
+      "type": "python-pipfile-lock",
+      "path": "backend/Pipfile.lock",
+      "dependencies": [
+        {
+          "name": "requests==2.32.3",
+          "section": "default"
+        },
+        {
+          "name": "pytest==8.3.3",
+          "section": "develop"
+        }
+      ],
+      "has_dependencies": true
+    },
+    {
+      "type": "python-conda-lock",
+      "path": "backend/conda-lock.yml",
+      "has_dependencies": null
+    },
+    {
+      "type": "python-pdm-lock",
+      "path": "backend/pdm.lock",
+      "has_dependencies": null
+    },
+    {
+      "type": "python-poetry-lock",
+      "path": "backend/poetry.lock",
+      "dependencies": [
+        {
+          "name": "requests==2.32.3"
+        }
+      ],
+      "has_dependencies": true
+    },
+    {
+      "type": "python-uv",
+      "path": "backend/uv.lock",
+      "has_dependencies": false
+    },
+    {
+      "type": "cpp-conan-lock",
+      "path": "cpp-app/conan.lock",
+      "has_dependencies": null
+    },
+    {
+      "type": "dotnet-csproj",
+      "path": "dotnet-app/app.csproj",
+      "has_dependencies": true
+    },
+    {
+      "type": "elixir-mix-lock",
+      "path": "elixir-app/mix.lock",
+      "has_dependencies": null
+    },
+    {
+      "type": "js-bun-lock",
+      "path": "frontend/bun.lock",
+      "has_dependencies": null
+    },
+    {
+      "type": "js-bun-lockb",
+      "path": "frontend/bun.lockb",
+      "has_dependencies": null
+    },
+    {
+      "type": "deno-lock",
+      "path": "frontend/deno.lock",
+      "has_dependencies": null
+    },
+    {
+      "type": "js-npm-lock",
+      "path": "frontend/package-lock.json",
+      "dependencies": [
+        {
+          "name": "react"
+        }
+      ],
+      "has_dependencies": true
+    },
+    {
+      "type": "js",
+      "path": "frontend/package.json",
+      "has_dependencies": false
+    },
+    {
+      "type": "js-pnpm-lock",
+      "path": "frontend/pnpm-lock.yaml",
+      "dependencies": [
+        {
+          "name": "react@18.3.1",
+          "section": "dependencies"
+        },
+        {
+          "name": "@types/node@20.12.7",
+          "section": "devDependencies"
+        }
+      ],
+      "has_dependencies": true
+    },
+    {
+      "type": "js-yarn",
+      "path": "frontend/yarn.lock",
+      "has_dependencies": null
+    },
+    {
+      "type": "go-gopkg-lock",
+      "path": "go-service/Gopkg.lock",
+      "has_dependencies": null
+    },
+    {
+      "type": "go-glide-lock",
+      "path": "go-service/glide.lock",
+      "has_dependencies": null
+    },
+    {
+      "type": "go-mod",
+      "path": "go-service/go.mod",
+      "dependencies": [
+        {
+          "name": "github.com/stretchr/testify"
+        }
+      ],
+      "has_dependencies": true
+    },
+    {
+      "type": "go-sum",
+      "path": "go-service/go.sum",
+      "has_dependencies": null
+    },
+    {
+      "type": "swift-package-resolved",
+      "path": "ios-app/Package.resolved",
+      "has_dependencies": null
+    },
+    {
+      "type": "ios-podfile-lock",
+      "path": "ios-app/Podfile.lock",
+      "has_dependencies": null
+    },
+    {
+      "type": "java-gradle-lockfile",
+      "path": "java-service/gradle.lockfile",
+      "has_dependencies": null
+    },
+    {
+      "type": "java",
+      "path": "java-service/pom.xml",
+      "has_dependencies": false
+    },
+    {
+      "type": "php-composer",
+      "path": "php-app/composer.json",
+      "has_dependencies": true
+    },
+    {
+      "type": "php-composer-lock",
+      "path": "php-app/composer.lock",
+      "dependencies": [
+        {
+          "name": "monolog/monolog@3.6.0",
+          "section": "packages"
+        }
+      ],
+      "has_dependencies": true
+    },
+    {
+      "type": "python-requirements",
+      "path": "requirements.qt6_3.in",
+      "dependencies": [
+        {
+          "name": "PyQt6==6.7.0"
+        }
+      ],
+      "has_dependencies": true
+    },
+    {
+      "type": "python-requirements",
+      "path": "requirements.txt",
+      "dependencies": [
+        {
+          "name": "requests==2.32.0"
+        }
+      ],
+      "has_dependencies": true
+    },
+    {
+      "type": "ruby-gemfile",
+      "path": "ruby-app/Gemfile",
+      "has_dependencies": null
+    },
+    {
+      "type": "ruby-gemfile-lock",
+      "path": "ruby-app/Gemfile.lock",
+      "has_dependencies": null
+    },
+    {
+      "type": "rust-cargo-lock",
+      "path": "rust-app/Cargo.lock",
+      "dependencies": [
+        {
+          "name": "serde@1.0.217"
+        }
+      ],
+      "has_dependencies": true
+    },
+    {
+      "type": "rust-cargo",
+      "path": "rust-app/Cargo.toml",
+      "has_dependencies": true
+    }
+  ]
+}
