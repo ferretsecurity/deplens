@@ -31,10 +31,11 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies | Maturity |
 | --- | --- | --- | --- |
-| filename regex match | Built-in filename rules: `pdm.lock`, `conda-lock.yml`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `deno.lock`, `bower.json`, `npm-shrinkwrap.json`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `pubspec.lock`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `package.yaml`, `packages.lock.json`, `paket.dependencies`, `paket.lock`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.yaml`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `vcpkg.json`, `Package.resolved`, `Podfile.lock`, `mix.exs`, `mix.lock`, `Manifest.toml`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, `.terraform.lock.hcl` | No | 1 |
+| filename regex match | Built-in filename rules: `pdm.lock`, `conda-lock.yml`, `yarn.lock`, `bun.lock`, `bun.lockb`, `deno.lock`, `bower.json`, `npm-shrinkwrap.json`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `pubspec.lock`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `package.yaml`, `packages.lock.json`, `paket.dependencies`, `paket.lock`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.yaml`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `vcpkg.json`, `Package.resolved`, `Podfile.lock`, `mix.exs`, `mix.lock`, `Manifest.toml`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, `.terraform.lock.hcl` | No | 1 |
 | path glob match | Selector-only path-glob rules, for example a custom rule such as `apps/**/package.json` | No | 1 |
 | json presence check | `package.json`; reports dependency presence when any of `dependencies`, `devDependencies`, `peerDependencies`, or `optionalDependencies` is a non-empty object. Also used for `composer.json` via `require` / `require-dev`, `deno.json` / `deno.jsonc` via `imports`, `Packages/manifest.json` via `dependencies`, and `jsonnetfile.json` via a non-empty `dependencies` array | No | 2 |
 | package lock | `package-lock.json`; extracts versioned root project dependencies from lockfile version 1 `dependencies`, and from lockfile version 2 or 3 root-package `packages[""].dependencies` plus `optionalDependencies` | Yes | 3 |
+| pnpm lock | `pnpm-lock.yaml`; extracts root importer `dependencies`, `devDependencies`, and `optionalDependencies`, emitting `name@version` when the lock entry has a version and falling back to the specifier or name when needed | Yes | 3 |
 | pipfile lock | `Pipfile.lock`; extracts locked entries from `default` and `develop`, rendering them as grouped `name==version` dependencies and falling back to the package name when the lock entry omits `version` | Yes | 3 |
 | composer lock | `composer.lock`; extracts package entries from `packages[]` and `packages-dev[]`, emitting `name@version` when a version is available and preserving the source section as dependency metadata | Yes | 3 |
 | cargo lock | `Cargo.lock`; extracts package entries from `[[package]]` as `name@version` and reports conclusive empty files when only the top-level `version` marker is present | Yes | 3 |
@@ -50,9 +51,9 @@ Built-in detectors:
 | ini | INI files matched by a rule such as built-in `python-setup-cfg` for `setup.cfg`; extracts from `[options]` keys `setup_requires` and `install_requires`, plus all keys under `[options.extras_require]`, when values are written as static multiline lists | Yes | 3 |
 | banner regex | JavaScript files whose first 4096 bytes match a configured `banner-regex` with capture groups 1 and 2 for package name and version | Yes | 3 |
 | yaml presence check | `pubspec.yaml`; reports dependency presence when any of `dependencies`, `dev_dependencies`, or `dependency_overrides` is present and non-empty. Also used for `Chart.yaml` and `shard.yml` via a non-empty top-level `dependencies` key, `buf.yaml` via `deps`, and Ansible `requirements.yml` / `requirements.yaml` via non-empty `roles` or `collections` | No | 2 |
-| yaml | Path expression such as `workflow.steps[].config.packages.pip[]` to extract data from yaml files, or a presence check such as `dependencies` to detect files that declare a dependency section without extracting it | Sometimes | 3 |
+| yaml | Extraction path expressions such as `workflow.steps[].config.packages.pip[]` to extract dependency data from YAML files | Yes | 3 |
 | html external scripts | HTML-like files (`.html`, `.htm`, `.xhtml`, `.tmpl`, `.gohtml`, `.mustache`, `.hbs`, `.njk`) matched by the built-in `html-external-scripts` rule; extracts remote URLs from external `<script src="https://...">` tags, `<script type="module">` imports, and `<script type="importmap">` `imports` entries | Yes | 3 |
-| terraform | Terraform `.tf` files with parsing content. For example containing a `aws_glue_job` resource with `default_arguments.--job-language = "python"` and `default_arguments.--additional-python-modules` present | No | 2 |
+| terraform | Terraform `.tf` files parsed for configured resource conditions. For example containing a `aws_glue_job` resource with `default_arguments.--job-language = "python"` and `default_arguments.--additional-python-modules` present | No | 2 |
 | typescript cdk construct | TypeScript `.ts` files parsed with an AST. For example containing `new glue.CfnJob(..., { defaultArguments: { "--job-language": "python", "--additional-python-modules": "pandas==2.2.1" }})` imported from `aws-cdk-lib/aws-glue` | Yes | 3 |
 | python cdk construct | Python `.py` files with statically-resolved CDK `CfnJob(...)` calls. For example containing `glue.CfnJob(..., default_arguments={"--job-language": "python", "--additional-python-modules": "pandas==2.2.1"})` imported from `aws_cdk.aws_glue` | Yes | 3 |
 
@@ -62,15 +63,15 @@ Default JavaScript banner rules use `filename-regex: '.*\.js$'` and return `name
 
 The default Python requirements rules use the `py-requirements` detector for both a filename selector matching `*requirements*.txt` and `*requirements*.in`, plus a path selector for `**/requirements/*.txt`. The detector extracts static dependency lines, joins trailing `\` continuations, ignores blank lines and `#` comments, recursively resolves local `-r`, `--requirement`, and `--requirements` includes relative to the including file, and skips non-dependency directives such as `-c`, `--constraint`, `--index-url`, `--extra-index-url`, `--find-links`, `--trusted-host`, and `--hash`. If an included file cannot be read or an include cycle is detected, the manifest is still reported and a warning is attached to the result.
 
-The default `js-npm-lock` rule now uses the dedicated `package-lock` detector. It extracts only the root project's declared dependencies, not every transitive `node_modules/...` entry in the lockfile. For lockfile version 1, dependencies come from the top-level `dependencies` object and are emitted as `name@version` when a version is available. For lockfile versions 2 and 3, dependency names come from the root package entry at `packages[""]`, including both `dependencies` and `optionalDependencies`, and versions are resolved from the matching `packages["node_modules/<name>"]` entries. Duplicates are removed. If a version cannot be resolved, `deplens` still emits the package name.
+The default `js-npm-lock` rule uses the dedicated `package-lock` detector. It extracts only the root project's declared dependencies, not every transitive `node_modules/...` entry in the lockfile. For lockfile version 1, dependencies come from the top-level `dependencies` object and are emitted as `name@version` when a version is available. For lockfile versions 2 and 3, dependency names come from the root package entry at `packages[""]`, including both `dependencies` and `optionalDependencies`, and versions are resolved from the matching `packages["node_modules/<name>"]` entries. Duplicates are removed. If a version cannot be resolved, `deplens` still emits the package name.
 
-The default `python-poetry-lock` rule now uses the dedicated `poetry-lock` detector. It extracts retained package entries from `poetry.lock`, ignores `category`, `groups`, `optional`, and `markers`, skips self-style directory entries and git-sourced packages, deduplicates exact duplicate `name==version` entries, and reports `has_dependencies=false` when the file is metadata-only or all package entries are filtered out.
+The default `python-poetry-lock` rule uses the dedicated `poetry-lock` detector. It extracts retained package entries from `poetry.lock`, ignores `category`, `groups`, `optional`, and `markers`, skips self-style directory entries and git-sourced packages, deduplicates exact duplicate `name==version` entries, and reports `has_dependencies=false` when the file is metadata-only or all package entries are filtered out.
 
-The default `python-uv` rule now uses the dedicated `uv-lock` detector. It extracts retained package entries from `uv.lock`, skips self-style editable/workspace/virtual entries, and reports `has_dependencies=false` when the file is only a version marker.
+The default `python-uv` rule uses the dedicated `uv-lock` detector. It extracts retained package entries from `uv.lock`, skips self-style editable/workspace/virtual entries, and reports `has_dependencies=false` when the file is only a version marker.
 
-The default `python-pipfile-lock` rule now uses the dedicated `pipfile-lock` detector. It extracts locked package entries from `default` and `develop`, renders them as grouped `name==version` dependencies, falls back to the package name when `version` is absent, and reports `has_dependencies=false` for metadata-only or empty lockfiles.
+The default `python-pipfile-lock` rule uses the dedicated `pipfile-lock` detector. It extracts locked package entries from `default` and `develop`, renders them as grouped `name==version` dependencies, falls back to the package name when `version` is absent, and reports `has_dependencies=false` for metadata-only or empty lockfiles.
 
-The default `rust-cargo-lock` rule now uses the dedicated `cargo-lock` detector. It extracts retained `[[package]]` entries from `Cargo.lock` as `name@version` and reports `has_dependencies=false` when the file contains only the top-level `version` marker.
+The default `rust-cargo-lock` rule uses the dedicated `cargo-lock` detector. It extracts retained `[[package]]` entries from `Cargo.lock` as `name@version` and reports `has_dependencies=false` when the file contains only the top-level `version` marker.
 
 The default rules also include `python-conda-environment` for `environment.yml` and `environment.yaml`, which reports the file only when a top-level `dependencies` key is present.
 
@@ -86,33 +87,33 @@ When `Pipfile` is present, it is reported as `python-pipfile` only if at least o
 go run ./cmd/deplens ./testdata/sample-monorepo
 ```
 
-Example output:
+Example output excerpt:
 
 ```text
 Root: /path/to/project
 
 Found 32 manifests:
-- 8 with extracted dependencies
+- 10 with extracted dependencies
 - 3 confirmed empty
 - 3 with dependencies present, not extracted
-- 18 with dependency status unknown
+- 16 with dependency status unknown
 
-requirements.txt [2 deps]
-  - requests>=2.31
-  - pendulum>=3
+apps/backend/requirements/base.txt [2 deps]
+  - requests==2.32.3
+  - pydantic==2.9.2
 
-pyproject.toml [3 deps]
-  project.dependencies:
-    - requests>=2.31
-  project.optional-dependencies.dev:
-    - pytest>=8
-    - ruff>=0.4
+frontend/pnpm-lock.yaml [2 deps]
+  dependencies:
+    - react@18.3.1
+  devDependencies:
+    - @types/node@20.12.7
 
-package.json [dependencies present, not extracted]
-go.mod [1 dep]
+php-app/composer.json [dependencies present, not extracted]
+go-service/go.mod [1 dep]
   - github.com/stretchr/testify
-go.sum [matched]
-setup.cfg [no dependencies]
+go-service/go.sum [matched]
+
+...
 ```
 
 For `package-lock.json`, older filename-only behavior reported the file as matched without extracting dependencies:
@@ -137,6 +138,22 @@ package-lock-v3-with-deps/package-lock.json [3 deps]
   - @types/node@20.12.7
   - left-pad@1.3.0
   - lodash@4.17.21
+```
+
+For `pnpm-lock.yaml`, older filename-only behavior reported the file as matched without extracting dependencies:
+
+```text
+pnpm-lock.yaml [matched]
+```
+
+With the default `pnpm-lock` detector, the root importer dependencies are extracted and grouped by dependency section:
+
+```text
+pnpm-lock.yaml [2 deps]
+  dependencies:
+    - react@18.3.1
+  devDependencies:
+    - @types/node@20.12.7
 ```
 
 For `Pipfile.lock`, older filename-only behavior reported the file as matched without extracting dependencies:
@@ -191,6 +208,10 @@ With the default `cargo-lock` detector, package entries are extracted from `[[pa
 cargo-lock-with-deps/Cargo.lock [2 deps]
   - serde@1.0.217
   - tokio@1.43.0
+```
 
+With `--show-empty`, empty lockfiles are rendered explicitly:
+
+```text
 cargo-lock-empty/Cargo.lock [no dependencies]
 ```
