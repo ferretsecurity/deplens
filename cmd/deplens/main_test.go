@@ -128,7 +128,7 @@ func TestRunJSONOutput(t *testing.T) {
 }
 
 func TestParseArgsShowEmptyFlag(t *testing.T) {
-	cfg, err := parseArgs([]string{"--show-empty"})
+	cfg, _, err := parseArgs([]string{"--show-empty"})
 	if err != nil {
 		t.Fatalf("parseArgs returned error: %v", err)
 	}
@@ -138,7 +138,7 @@ func TestParseArgsShowEmptyFlag(t *testing.T) {
 }
 
 func TestParseArgsDefaults(t *testing.T) {
-	cfg, err := parseArgs(nil)
+	cfg, _, err := parseArgs(nil)
 	if err != nil {
 		t.Fatalf("parseArgs returned error: %v", err)
 	}
@@ -160,7 +160,7 @@ func TestParseArgsDefaults(t *testing.T) {
 }
 
 func TestParseArgsSupportsIgnoreRulesJSONAndPath(t *testing.T) {
-	cfg, err := parseArgs([]string{"--json", "--rules", "custom-rules.yaml", "--ignore", "dist, build , vendor", "fixtures"})
+	cfg, _, err := parseArgs([]string{"--json", "--rules", "custom-rules.yaml", "--ignore", "dist, build , vendor", "fixtures"})
 	if err != nil {
 		t.Fatalf("parseArgs returned error: %v", err)
 	}
@@ -180,12 +180,52 @@ func TestParseArgsSupportsIgnoreRulesJSONAndPath(t *testing.T) {
 }
 
 func TestParseArgsRejectsTooManyPathArguments(t *testing.T) {
-	_, err := parseArgs([]string{"first", "second"})
+	_, _, err := parseArgs([]string{"first", "second"})
 	if err == nil {
 		t.Fatalf("expected parseArgs to reject multiple path arguments")
 	}
 	if err.Error() != "expected at most one path argument" {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestRunHelpPrintsUsageToStdout(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{"-h"}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
+	}
+	if stderr.Len() != 0 {
+		t.Fatalf("expected no stderr output, got %q", stderr.String())
+	}
+	output := stdout.String()
+	if !strings.Contains(output, "Usage: deplens [flags] [path]") {
+		t.Fatalf("expected usage line in stdout, got %q", output)
+	}
+	if !strings.Contains(output, "-show-empty") {
+		t.Fatalf("expected help output to list flags, got %q", output)
+	}
+}
+
+func TestRunInvalidFlagPrintsErrorAndUsageToStderr(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := run([]string{"--bogus"}, &stdout, &stderr)
+	if exitCode == 0 {
+		t.Fatalf("expected non-zero exit code")
+	}
+	if stdout.Len() != 0 {
+		t.Fatalf("expected no stdout output, got %q", stdout.String())
+	}
+	output := stderr.String()
+	if !strings.Contains(output, "error: flag provided but not defined: -bogus") {
+		t.Fatalf("expected flag error in stderr, got %q", output)
+	}
+	if !strings.Contains(output, "Usage: deplens [flags] [path]") {
+		t.Fatalf("expected usage line in stderr, got %q", output)
 	}
 }
 
