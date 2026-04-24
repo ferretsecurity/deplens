@@ -10,8 +10,11 @@ import (
 type pnpmLockParser struct{}
 
 type pnpmLockFile struct {
-	LockfileVersion string                      `yaml:"lockfileVersion"`
-	Importers       map[string]pnpmLockImporter `yaml:"importers"`
+	LockfileVersion      string                        `yaml:"lockfileVersion"`
+	Importers            map[string]pnpmLockImporter   `yaml:"importers"`
+	Dependencies         map[string]pnpmLockDependency `yaml:"dependencies"`
+	DevDependencies      map[string]pnpmLockDependency `yaml:"devDependencies"`
+	OptionalDependencies map[string]pnpmLockDependency `yaml:"optionalDependencies"`
 }
 
 type pnpmLockImporter struct {
@@ -54,11 +57,14 @@ func (p pnpmLockParser) Match(path string, content []byte) (manifestParserResult
 	}
 
 	dependencies := make([]Dependency, 0)
-	for _, importerPath := range sortedPNPMLockImporterPaths(file.Importers) {
-		importer := file.Importers[importerPath]
+	if importer, ok := file.Importers["."]; ok {
 		dependencies = appendPNPMLockDependencies(dependencies, "dependencies", importer.Dependencies)
 		dependencies = appendPNPMLockDependencies(dependencies, "devDependencies", importer.DevDependencies)
 		dependencies = appendPNPMLockDependencies(dependencies, "optionalDependencies", importer.OptionalDependencies)
+	} else {
+		dependencies = appendPNPMLockDependencies(dependencies, "dependencies", file.Dependencies)
+		dependencies = appendPNPMLockDependencies(dependencies, "devDependencies", file.DevDependencies)
+		dependencies = appendPNPMLockDependencies(dependencies, "optionalDependencies", file.OptionalDependencies)
 	}
 
 	if len(dependencies) == 0 {
@@ -93,19 +99,6 @@ func formatPNPMLockDependencyName(name string, dependency pnpmLockDependency) st
 		return name + "@" + dependency.Specifier
 	}
 	return name
-}
-
-func sortedPNPMLockImporterPaths(importers map[string]pnpmLockImporter) []string {
-	if len(importers) == 0 {
-		return nil
-	}
-
-	paths := make([]string, 0, len(importers))
-	for path := range importers {
-		paths = append(paths, path)
-	}
-	slices.Sort(paths)
-	return paths
 }
 
 func sortedPNPMLockDependencyNames(dependencies map[string]pnpmLockDependency) []string {
