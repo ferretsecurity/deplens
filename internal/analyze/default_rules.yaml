@@ -88,6 +88,7 @@ rules:
         - devDependencies
   - name: js-npm-shrinkwrap
     filename-regex: '^npm-shrinkwrap\.json$'
+    package-lock: {}
   - name: js-npm-lock
     filename-regex: '^package-lock\.json$'
     package-lock: {}

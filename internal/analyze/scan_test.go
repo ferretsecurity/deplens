@@ -26,7 +26,6 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "pdm.lock", want: ManifestType("python-pdm-lock")},
 		{name: "bun.lock", want: ManifestType("js-bun-lock")},
 		{name: "bun.lockb", want: ManifestType("js-bun-lockb")},
-		{name: "npm-shrinkwrap.json", want: ManifestType("js-npm-shrinkwrap")},
 		{name: "gradle.lockfile", want: ManifestType("java-gradle-lockfile")},
 		{name: "build.gradle", want: ManifestType("java-gradle")},
 		{name: "build.gradle.kts", want: ManifestType("java-gradle-kts")},
@@ -168,6 +167,7 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 		"requirements.qt6_3.in",
 		"my_requirements.prod.txt",
 		"package.json",
+		"npm-shrinkwrap.json",
 		"pnpm-lock.yaml",
 		"conda-lock.yml",
 		"bower.json",
@@ -994,6 +994,58 @@ func TestDefaultRulesScanPackageLockEmptyFixture(t *testing.T) {
 		t.Fatalf("unexpected manifest path: %+v", manifest)
 	}
 	if manifest.Type != ManifestType("js-npm-lock") {
+		t.Fatalf("unexpected manifest type: %+v", manifest)
+	}
+	if manifest.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	}
+	if manifest.HasDependencies == nil || *manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+	}
+}
+
+func TestDefaultRulesScanNpmShrinkwrapExtractedFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "javascript", "npm-shrinkwrap-v3-with-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Path != "npm-shrinkwrap.json" {
+		t.Fatalf("unexpected manifest path: %+v", manifest)
+	}
+	if manifest.Type != ManifestType("js-npm-shrinkwrap") {
+		t.Fatalf("unexpected manifest type: %+v", manifest)
+	}
+	if want := []string{"@types/node@20.12.7", "left-pad@1.3.0"}; !slices.Equal(dependencyNames(manifest.Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	}
+	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	}
+}
+
+func TestDefaultRulesScanNpmShrinkwrapEmptyFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "javascript", "npm-shrinkwrap-no-deps"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	}
+
+	manifest := result.Manifests[0]
+	if manifest.Path != "npm-shrinkwrap.json" {
+		t.Fatalf("unexpected manifest path: %+v", manifest)
+	}
+	if manifest.Type != ManifestType("js-npm-shrinkwrap") {
 		t.Fatalf("unexpected manifest type: %+v", manifest)
 	}
 	if manifest.Dependencies != nil {
