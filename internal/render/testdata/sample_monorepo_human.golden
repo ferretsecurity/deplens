@@ -2,9 +2,9 @@ Root: /path/to/sample-monorepo
 
 Found 32 manifests:
 - 10 with extracted dependencies
-- 4 confirmed empty
+- 5 confirmed empty
 - 3 with dependencies present, not extracted
-- 15 with dependency status unknown
+- 14 with dependency status unknown
 
 apps/backend/requirements/base.txt [2 deps]
   - requests==2.32.3
@@ -15,8 +15,6 @@ backend/Pipfile.lock [2 deps]
     - requests==2.32.3
   develop:
     - pytest==8.3.3
-
-backend/conda-lock.yml [matched]
 
 backend/pdm.lock [matched]
 

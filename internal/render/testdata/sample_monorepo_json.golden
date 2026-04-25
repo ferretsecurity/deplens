@@ -32,7 +32,7 @@
     {
       "type": "python-conda-lock",
       "path": "backend/conda-lock.yml",
-      "has_dependencies": null
+      "has_dependencies": false
     },
     {
       "type": "python-pdm-lock",
