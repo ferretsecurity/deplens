@@ -18,6 +18,9 @@ rules:
     filename-regex: '^pdm\.lock$'
   - name: python-conda-lock
     filename-regex: '^conda-lock\.yml$'
+    yaml:
+      exists-any:
+        - package
   - name: python-pyproject
     filename-regex: '^pyproject\.toml$'
     toml:
@@ -179,6 +182,9 @@ rules:
         - packages.package
   - name: dotnet-packages-lock
     filename-regex: '^packages\.lock\.json$'
+    json:
+      exists-any:
+        - dependencies
   - name: dotnet-directory-packages-props
     filename-regex: '^Directory\.Packages\.props$'
     xml:

@@ -24,7 +24,6 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		want ManifestType
 	}{
 		{name: "pdm.lock", want: ManifestType("python-pdm-lock")},
-		{name: "conda-lock.yml", want: ManifestType("python-conda-lock")},
 		{name: "bun.lock", want: ManifestType("js-bun-lock")},
 		{name: "bun.lockb", want: ManifestType("js-bun-lockb")},
 		{name: "deno.lock", want: ManifestType("deno-lock")},
@@ -48,7 +47,6 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "stack.yaml", want: ManifestType("haskell-stack")},
 		{name: "stack.yaml.lock", want: ManifestType("haskell-stack-lock")},
 		{name: "cabal.project", want: ManifestType("haskell-cabal-project")},
-		{name: "packages.lock.json", want: ManifestType("dotnet-packages-lock")},
 		{name: "paket.dependencies", want: ManifestType("dotnet-paket-dependencies")},
 		{name: "paket.lock", want: ManifestType("dotnet-paket-lock")},
 		{name: "go.sum", want: ManifestType("go-sum")},
@@ -177,6 +175,7 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 		"my_requirements.prod.txt",
 		"package.json",
 		"pnpm-lock.yaml",
+		"conda-lock.yml",
 		"composer.json",
 		"composer.lock",
 		"deno.json",
@@ -190,6 +189,7 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 		"Cargo.toml",
 		"Cargo.lock",
 		"pom.xml",
+		"packages.lock.json",
 		"requirements.yml",
 		"requirements.yaml",
 		"buf.yaml",
@@ -1100,6 +1100,14 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 		typ         ManifestType
 	}{
 		{
+			name:        "python conda lock",
+			withRoot:    filepath.Join("..", "..", "testdata", "python", "conda-lock-with-deps"),
+			withPath:    "conda-lock.yml",
+			withoutRoot: filepath.Join("..", "..", "testdata", "python", "conda-lock-no-deps"),
+			withoutPath: "conda-lock.yml",
+			typ:         ManifestType("python-conda-lock"),
+		},
+		{
 			name:        "helm chart",
 			withRoot:    filepath.Join("..", "..", "testdata", "helm", "chart"),
 			withPath:    "Chart.yaml",
@@ -1154,6 +1162,14 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withoutRoot: filepath.Join("..", "..", "testdata", "dotnet", "packages-config-no-deps"),
 			withoutPath: "packages.config",
 			typ:         ManifestType("dotnet-packages-config"),
+		},
+		{
+			name:        "packages lock",
+			withRoot:    filepath.Join("..", "..", "testdata", "dotnet", "packages-lock-with-deps"),
+			withPath:    "packages.lock.json",
+			withoutRoot: filepath.Join("..", "..", "testdata", "dotnet", "packages-lock-no-deps"),
+			withoutPath: "packages.lock.json",
+			typ:         ManifestType("dotnet-packages-lock"),
 		},
 		{
 			name:        "unity packages manifest",
