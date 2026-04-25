@@ -1,0 +1,13 @@
+version: 1
+metadata:
+  content_hash:
+    linux-64: deadbeef
+package:
+  - name: python
+    version: 3.12.1
+    manager: conda
+    platform: linux-64
+  - name: requests
+    version: 2.32.3
+    manager: pip
+    platform: linux-64
