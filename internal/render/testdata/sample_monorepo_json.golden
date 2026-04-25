@@ -147,7 +147,7 @@
     {
       "type": "swift-package-resolved",
       "path": "ios-app/Package.resolved",
-      "has_dependencies": null
+      "has_dependencies": false
     },
     {
       "type": "ios-podfile-lock",

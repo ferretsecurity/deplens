@@ -82,6 +82,10 @@ rules:
         - optionalDependencies
   - name: js-bower
     filename-regex: '^bower\.json$'
+    json:
+      exists-any:
+        - dependencies
+        - devDependencies
   - name: js-npm-shrinkwrap
     filename-regex: '^npm-shrinkwrap\.json$'
   - name: js-npm-lock
@@ -154,6 +158,9 @@ rules:
         - dependency_overrides
   - name: dart-pubspec-lock
     filename-regex: '^pubspec\.lock$'
+    yaml:
+      exists-any:
+        - packages
   - name: erlang-rebar-config
     filename-regex: '^rebar\.config$'
   - name: erlang-rebar-lock
@@ -205,6 +212,10 @@ rules:
     filename-regex: '^Gopkg\.toml$'
   - name: go-glide-yaml
     filename-regex: '^glide\.yaml$'
+    yaml:
+      exists-any:
+        - import
+        - testImport
   - name: rust-cargo
     filename-regex: '^Cargo\.toml$'
     toml:
@@ -239,6 +250,9 @@ rules:
         - dependencies
   - name: swift-package-resolved
     filename-regex: '^Package\.resolved$'
+    json:
+      exists-any:
+        - pins
   - name: ios-podfile-lock
     filename-regex: '^Podfile\.lock$'
   - name: elixir-mix
@@ -252,6 +266,9 @@ rules:
         - deps
   - name: julia-manifest
     filename-regex: '^Manifest\.toml$'
+    toml:
+      table-exists-any:
+        - deps
   - name: perl-cpanfile
     filename-regex: '^cpanfile$'
   - name: zig-build-zon

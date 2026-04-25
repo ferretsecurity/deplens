@@ -1,0 +1,5 @@
+package: github.com/example/demo
+import:
+  - package: github.com/gin-gonic/gin
+testImport:
+  - package: github.com/stretchr/testify
