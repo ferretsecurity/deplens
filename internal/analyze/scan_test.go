@@ -47,7 +47,6 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "go.sum", want: ManifestType("go-sum")},
 		{name: "go.work", want: ManifestType("go-work")},
 		{name: "Gopkg.toml", want: ManifestType("go-gopkg-toml")},
-		{name: "Gopkg.lock", want: ManifestType("go-gopkg-lock")},
 		{name: "glide.lock", want: ManifestType("go-glide-lock")},
 		{name: "conan.lock", want: ManifestType("cpp-conan-lock")},
 		{name: "mix.exs", want: ManifestType("elixir-mix")},
@@ -865,6 +864,29 @@ func TestScanFindsPdmLockInFixture(t *testing.T) {
 	t.Fatalf("expected backend/pdm.lock fixture to be detected, got %+v", result.Manifests)
 }
 
+func TestScanFindsGopkgLockInFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	result, err := Scan(filepath.Join("..", "..", "testdata", "sample-monorepo"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	for _, manifest := range result.Manifests {
+		if manifest.Type == ManifestType("go-gopkg-lock") && manifest.Path == "go-service/Gopkg.lock" {
+			if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+				t.Fatalf("expected go-service/Gopkg.lock fixture to have has_dependencies=true, got %+v", manifest.HasDependencies)
+			}
+			if manifest.Dependencies != nil {
+				t.Fatalf("expected go-service/Gopkg.lock fixture to remain non-extracting, got %+v", manifest.Dependencies)
+			}
+			return
+		}
+	}
+
+	t.Fatalf("expected go-service/Gopkg.lock fixture to be detected, got %+v", result.Manifests)
+}
+
 func TestScanFindsCondaLockInFixture(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
@@ -1142,6 +1164,12 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			typ:  ManifestType("go-glide-yaml"),
 		},
 		{
+			name: "gopkg lock",
+			root: filepath.Join("..", "..", "testdata", "go", "gopkg-lock-with-deps"),
+			path: "Gopkg.lock",
+			typ:  ManifestType("go-gopkg-lock"),
+		},
+		{
 			name: "swift package resolved",
 			root: filepath.Join("..", "..", "testdata", "swift", "package-resolved-with-deps"),
 			path: "Package.resolved",
@@ -1303,6 +1331,14 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withoutRoot: filepath.Join("..", "..", "testdata", "go", "glide-yaml-no-deps"),
 			withoutPath: "glide.yaml",
 			typ:         ManifestType("go-glide-yaml"),
+		},
+		{
+			name:        "gopkg lock",
+			withRoot:    filepath.Join("..", "..", "testdata", "go", "gopkg-lock-with-deps"),
+			withPath:    "Gopkg.lock",
+			withoutRoot: filepath.Join("..", "..", "testdata", "go", "gopkg-lock-no-deps"),
+			withoutPath: "Gopkg.lock",
+			typ:         ManifestType("go-gopkg-lock"),
 		},
 		{
 			name:        "swift package resolved",
@@ -3495,6 +3531,14 @@ func TestDetectSelectorOnlyManifestIgnoresPodfileLockParserRule(t *testing.T) {
 
 	if _, ok := ruleset.DetectSelectorOnlyManifest("Podfile.lock"); ok {
 		t.Fatalf("expected selector-only detection to ignore Podfile.lock parser rule")
+	}
+}
+
+func TestDetectSelectorOnlyManifestIgnoresGopkgLockParserRule(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	if _, ok := ruleset.DetectSelectorOnlyManifest("Gopkg.lock"); ok {
+		t.Fatalf("expected selector-only detection to ignore Gopkg.lock parser rule")
 	}
 }
 

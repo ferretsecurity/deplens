@@ -236,6 +236,9 @@ rules:
     cargo-lock: {}
   - name: go-gopkg-lock
     filename-regex: '^Gopkg\.lock$'
+    toml:
+      exists-any:
+        - projects
   - name: go-glide-lock
     filename-regex: '^glide\.lock$'
   - name: dotnet-csproj
