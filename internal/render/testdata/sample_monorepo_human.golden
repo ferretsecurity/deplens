@@ -3,8 +3,8 @@ Root: /path/to/sample-monorepo
 Found 32 manifests:
 - 10 with extracted dependencies
 - 7 confirmed empty
-- 4 with dependencies present, not extracted
-- 11 with dependency status unknown
+- 5 with dependencies present, not extracted
+- 10 with dependency status unknown
 
 apps/backend/requirements/base.txt [2 deps]
   - requests==2.32.3
@@ -42,7 +42,7 @@ frontend/pnpm-lock.yaml [2 deps]
   devDependencies:
     - @types/node@20.12.7
 
-go-service/Gopkg.lock [matched]
+go-service/Gopkg.lock [dependencies present, not extracted]
 
 go-service/glide.lock [matched]
 

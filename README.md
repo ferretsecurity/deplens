@@ -31,7 +31,7 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies | Maturity |
 | --- | --- | --- | --- |
-| filename regex match | Built-in filename rules: `bun.lock`, `bun.lockb`, `deno.lock`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `paket.dependencies`, `paket.lock`, `go.sum`, `go.work`, `Gopkg.toml`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `mix.exs`, `mix.lock`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, `.terraform.lock.hcl` | No | 1 |
+| filename regex match | Built-in filename rules: `bun.lock`, `bun.lockb`, `deno.lock`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `paket.dependencies`, `paket.lock`, `go.sum`, `go.work`, `Gopkg.toml`, `glide.lock`, `conanfile.txt`, `conan.lock`, `mix.exs`, `mix.lock`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, `.terraform.lock.hcl` | No | 1 |
 | path glob match | Selector-only path-glob rules, for example a custom rule such as `apps/**/package.json` | No | 1 |
 | json presence check | `package.json`; reports dependency presence when any of `dependencies`, `devDependencies`, `peerDependencies`, or `optionalDependencies` is a non-empty object. Also used for `bower.json` via `dependencies` / `devDependencies`, `composer.json` via `require` / `require-dev`, `deno.json` / `deno.jsonc` via `imports`, `packages.lock.json` via `dependencies`, `vcpkg.json` via `dependencies`, `Packages/manifest.json` via `dependencies`, `Package.resolved` via `pins`, and `jsonnetfile.json` via a non-empty `dependencies` array | No | 2 |
 | package lock | `package-lock.json`; extracts versioned root project dependencies from lockfile version 1 `dependencies`, and from lockfile version 2 or 3 root-package `packages[""].dependencies` plus `optionalDependencies`. Also used for `npm-shrinkwrap.json` with the same root dependency extraction behavior | Yes | 3 |
@@ -41,7 +41,7 @@ Built-in detectors:
 | composer lock | `composer.lock`; extracts package entries from `packages[]` and `packages-dev[]`, emitting `name@version` when a version is available and preserving the source section as dependency metadata | Yes | 3 |
 | cargo lock | `Cargo.lock`; extracts package entries from `[[package]]` as `name@version` and reports conclusive empty files when only the top-level `version` marker is present | Yes | 3 |
 | xml presence check | `pom.xml`; reports dependency presence when any configured element path exists, for example `project.dependencies.dependency`; XML namespaces are ignored for matching. Also used for `*.csproj` via `Project.ItemGroup.PackageReference`, `Directory.Packages.props` via `Project.ItemGroup.PackageVersion`, and `packages.config` via `packages.package` | No | 2 |
-| toml presence check | TOML files matched by a rule such as built-in `python-pdm-lock` for `pdm.lock` or `rust-cargo` for `Cargo.toml`; reports dependency presence from non-empty queried values. Built-in uses include `pdm.lock` via non-empty `package`, `Cargo.toml` via non-empty dependency tables, `Project.toml` via `[deps]`, `Manifest.toml` via non-empty `[[deps.*]]` entries under `deps`, and `gleam.toml` via `[dependencies]` | No | 2 |
+| toml presence check | TOML files matched by a rule such as built-in `python-pdm-lock` for `pdm.lock` or `rust-cargo` for `Cargo.toml`; reports dependency presence from non-empty queried values. Built-in uses include `pdm.lock` via non-empty `package`, `Cargo.toml` via non-empty dependency tables, `Project.toml` via `[deps]`, `Manifest.toml` via non-empty `[[deps.*]]` entries under `deps`, `Gopkg.lock` via a non-empty `projects` array, and `gleam.toml` via `[dependencies]` | No | 2 |
 | go mod | `go.mod`; extracts direct dependencies from `require` directives and ignores `replace` plus indirect-only requirements | Yes | 3 |
 | toml | TOML files matched by a rule such as built-in `python-pyproject` for `pyproject.toml`; extracts from `build-system.requires[]`, `project.dependencies[]`, `project.optional-dependencies.*[]`, `dependency-groups.*[]`, `tool.poetry.dependencies`, and `tool.poetry.group.*.dependencies` | Yes | 3 |
 | pipfile | `Pipfile` matched by the built-in `python-pipfile` rule; reports only when the file contains at least one dependency-bearing package section such as `[packages]`, `[dev-packages]`, or a custom package category like `[docs]` | Yes | 3 |
@@ -78,7 +78,7 @@ The default rules also include `python-conda-environment` for `environment.yml` 
 
 Several additional ecosystem-specific filenames and extensions are still tracked at Level 1 only, including `mix.exs`, `*.gemspec`, `*.cabal`, `conanfile.txt`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, and `.terraform.lock.hcl`. These rules identify candidate dependency files but do not yet determine dependency presence or extract dependency data.
 
-The default rules now treat `conda-lock.yml` as level 2 by checking for a non-empty top-level `package` list; `pdm.lock` as level 2 by checking for a non-empty top-level `package` array; `bower.json`, `packages.lock.json`, `vcpkg.json`, `Package.resolved`, and `jsonnetfile.json` as level 2 by checking for a non-empty dependency container; `pubspec.lock`, `glide.yaml`, `package.yaml`, `buf.yaml`, `Chart.yaml`, and `Podfile.lock` as level 2 by checking for non-empty top-level dependency keys; `Manifest.toml` as level 2 by checking for non-empty `deps` entries; and Ansible `requirements.yml` / `requirements.yaml` as level 2 by checking for non-empty `roles` or `collections`.
+The default rules now treat `conda-lock.yml` as level 2 by checking for a non-empty top-level `package` list; `pdm.lock` as level 2 by checking for a non-empty top-level `package` array; `Gopkg.lock` as level 2 by checking for a non-empty `projects` array; `bower.json`, `packages.lock.json`, `vcpkg.json`, `Package.resolved`, and `jsonnetfile.json` as level 2 by checking for a non-empty dependency container; `pubspec.lock`, `glide.yaml`, `package.yaml`, `buf.yaml`, `Chart.yaml`, and `Podfile.lock` as level 2 by checking for non-empty top-level dependency keys; `Manifest.toml` as level 2 by checking for non-empty `deps` entries; and Ansible `requirements.yml` / `requirements.yaml` as level 2 by checking for non-empty `roles` or `collections`.
 
 When `Pipfile` is present, it is reported as `python-pipfile` only if at least one dependency-bearing package section exists, for example `[packages]`, `[dev-packages]`, or a custom package-category section. Extracted dependencies are emitted from those sections, while metadata sections such as `[[source]]` and `[requires]` are ignored.
 
@@ -95,9 +95,9 @@ Root: /path/to/project
 
 Found 32 manifests:
 - 10 with extracted dependencies
-- 3 confirmed empty
-- 3 with dependencies present, not extracted
-- 16 with dependency status unknown
+- 7 confirmed empty
+- 5 with dependencies present, not extracted
+- 10 with dependency status unknown
 
 apps/backend/requirements/base.txt [2 deps]
   - requests==2.32.3
@@ -110,6 +110,7 @@ frontend/pnpm-lock.yaml [2 deps]
     - @types/node@20.12.7
 
 php-app/composer.json [dependencies present, not extracted]
+go-service/Gopkg.lock [dependencies present, not extracted]
 go-service/go.mod [1 dep]
   - github.com/stretchr/testify
 go-service/go.sum [matched]
@@ -229,6 +230,18 @@ With `--show-empty`, an otherwise empty lockfile is reported conclusively:
 
 ```text
 podfile-lock-no-deps/Podfile.lock [no dependencies]
+```
+
+For `Gopkg.lock`, older filename-only behavior reported the file as matched without determining dependency presence:
+
+```text
+go-service/Gopkg.lock [matched]
+```
+
+With the default TOML presence detector reused for `Gopkg.lock`, a populated file is now reported as having dependencies present:
+
+```text
+go-service/Gopkg.lock [dependencies present, not extracted]
 ```
 
 For `composer.lock`, older filename-only behavior reported the file as matched without extracting dependencies:
