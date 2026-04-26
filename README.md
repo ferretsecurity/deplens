@@ -31,7 +31,7 @@ Built-in detectors:
 
 | Detector | Matches | Extracts dependencies | Maturity |
 | --- | --- | --- | --- |
-| filename regex match | Built-in filename rules: `bun.lock`, `bun.lockb`, `deno.lock`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `paket.dependencies`, `paket.lock`, `go.sum`, `go.work`, `Gopkg.toml`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `Podfile.lock`, `mix.exs`, `mix.lock`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, `.terraform.lock.hcl` | No | 1 |
+| filename regex match | Built-in filename rules: `bun.lock`, `bun.lockb`, `deno.lock`, `gradle.lockfile`, `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, `Gemfile`, `Gemfile.lock`, `*.gemspec`, `Package.swift`, `Podfile`, `Cartfile`, `rebar.config`, `rebar.lock`, `deps.edn`, `project.clj`, `stack.yaml`, `stack.yaml.lock`, `cabal.project`, `*.cabal`, `paket.dependencies`, `paket.lock`, `go.sum`, `go.work`, `Gopkg.toml`, `Gopkg.lock`, `glide.lock`, `conanfile.txt`, `conan.lock`, `mix.exs`, `mix.lock`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, `.terraform.lock.hcl` | No | 1 |
 | path glob match | Selector-only path-glob rules, for example a custom rule such as `apps/**/package.json` | No | 1 |
 | json presence check | `package.json`; reports dependency presence when any of `dependencies`, `devDependencies`, `peerDependencies`, or `optionalDependencies` is a non-empty object. Also used for `bower.json` via `dependencies` / `devDependencies`, `composer.json` via `require` / `require-dev`, `deno.json` / `deno.jsonc` via `imports`, `packages.lock.json` via `dependencies`, `vcpkg.json` via `dependencies`, `Packages/manifest.json` via `dependencies`, `Package.resolved` via `pins`, and `jsonnetfile.json` via a non-empty `dependencies` array | No | 2 |
 | package lock | `package-lock.json`; extracts versioned root project dependencies from lockfile version 1 `dependencies`, and from lockfile version 2 or 3 root-package `packages[""].dependencies` plus `optionalDependencies`. Also used for `npm-shrinkwrap.json` with the same root dependency extraction behavior | Yes | 3 |
@@ -51,7 +51,7 @@ Built-in detectors:
 | python call | Python files matched by a rule such as built-in `python-setup-py` for `setup.py`; detects imported function calls with specific keyword arguments, for example `setuptools.setup(..., install_requires=..., extras_require=...)`, and can extract from simple literal arrays in `install_requires=[...]` plus `extras_require={"group": [...]}` | Yes | 3 |
 | ini | INI files matched by a rule such as built-in `python-setup-cfg` for `setup.cfg`; extracts from `[options]` keys `setup_requires` and `install_requires`, plus all keys under `[options.extras_require]`, when values are written as static multiline lists | Yes | 3 |
 | banner regex | JavaScript files whose first 4096 bytes match a configured `banner-regex` with capture groups 1 and 2 for package name and version | Yes | 3 |
-| yaml presence check | `pubspec.yaml`; reports dependency presence when any of `dependencies`, `dev_dependencies`, or `dependency_overrides` is present and non-empty. Also used for `pubspec.lock` via `packages`, `conda-lock.yml` via `package`, `glide.yaml` via `import` / `testImport`, `package.yaml`, `Chart.yaml`, and `shard.yml` via a non-empty top-level `dependencies` key, `buf.yaml` via `deps`, and Ansible `requirements.yml` / `requirements.yaml` via non-empty `roles` or `collections` | No | 2 |
+| yaml presence check | `pubspec.yaml`; reports dependency presence when any of `dependencies`, `dev_dependencies`, or `dependency_overrides` is present and non-empty. Also used for `pubspec.lock` via `packages`, `conda-lock.yml` via `package`, `glide.yaml` via `import` / `testImport`, `package.yaml`, `Chart.yaml`, and `shard.yml` via a non-empty top-level `dependencies` key, `buf.yaml` via `deps`, `Podfile.lock` via non-empty `PODS` or `DEPENDENCIES`, and Ansible `requirements.yml` / `requirements.yaml` via non-empty `roles` or `collections` | No | 2 |
 | yaml | Extraction path expressions such as `workflow.steps[].config.packages.pip[]` to extract dependency data from YAML files | Yes | 3 |
 | html external scripts | HTML-like files (`.html`, `.htm`, `.xhtml`, `.tmpl`, `.gohtml`, `.mustache`, `.hbs`, `.njk`) matched by the built-in `html-external-scripts` rule; extracts remote URLs from external `<script src="https://...">` tags, `<script type="module">` imports, and `<script type="importmap">` `imports` entries | Yes | 3 |
 | terraform | Terraform `.tf` files parsed for configured resource conditions. For example containing a `aws_glue_job` resource with `default_arguments.--job-language = "python"` and `default_arguments.--additional-python-modules` present | No | 2 |
@@ -78,7 +78,7 @@ The default rules also include `python-conda-environment` for `environment.yml` 
 
 Several additional ecosystem-specific filenames and extensions are still tracked at Level 1 only, including `mix.exs`, `*.gemspec`, `*.cabal`, `conanfile.txt`, `cpanfile`, `build.zig.zon`, `*.nimble`, `*.opam`, `v.mod`, `Brewfile`, and `.terraform.lock.hcl`. These rules identify candidate dependency files but do not yet determine dependency presence or extract dependency data.
 
-The default rules now treat `conda-lock.yml` as level 2 by checking for a non-empty top-level `package` list; `pdm.lock` as level 2 by checking for a non-empty top-level `package` array; `bower.json`, `packages.lock.json`, `vcpkg.json`, `Package.resolved`, and `jsonnetfile.json` as level 2 by checking for a non-empty dependency container; `pubspec.lock`, `glide.yaml`, `package.yaml`, `buf.yaml`, and `Chart.yaml` as level 2 by checking for non-empty top-level dependency keys; `Manifest.toml` as level 2 by checking for non-empty `deps` entries; and Ansible `requirements.yml` / `requirements.yaml` as level 2 by checking for non-empty `roles` or `collections`.
+The default rules now treat `conda-lock.yml` as level 2 by checking for a non-empty top-level `package` list; `pdm.lock` as level 2 by checking for a non-empty top-level `package` array; `bower.json`, `packages.lock.json`, `vcpkg.json`, `Package.resolved`, and `jsonnetfile.json` as level 2 by checking for a non-empty dependency container; `pubspec.lock`, `glide.yaml`, `package.yaml`, `buf.yaml`, `Chart.yaml`, and `Podfile.lock` as level 2 by checking for non-empty top-level dependency keys; `Manifest.toml` as level 2 by checking for non-empty `deps` entries; and Ansible `requirements.yml` / `requirements.yaml` as level 2 by checking for non-empty `roles` or `collections`.
 
 When `Pipfile` is present, it is reported as `python-pipfile` only if at least one dependency-bearing package section exists, for example `[packages]`, `[dev-packages]`, or a custom package-category section. Extracted dependencies are emitted from those sections, while metadata sections such as `[[source]]` and `[requires]` are ignored.
 
@@ -211,6 +211,24 @@ Pipfile.lock [2 deps]
     - requests==2.32.3
   develop:
     - pytest==8.3.3
+```
+
+For `Podfile.lock`, older filename-only behavior reported the file as matched without determining dependency presence:
+
+```text
+podfile-lock-with-deps/Podfile.lock [matched]
+```
+
+With the default YAML presence detector reused for `Podfile.lock`, a populated file is now reported as having dependencies present:
+
+```text
+podfile-lock-with-deps/Podfile.lock [dependencies present, not extracted]
+```
+
+With `--show-empty`, an otherwise empty lockfile is reported conclusively:
+
+```text
+podfile-lock-no-deps/Podfile.lock [no dependencies]
 ```
 
 For `composer.lock`, older filename-only behavior reported the file as matched without extracting dependencies:

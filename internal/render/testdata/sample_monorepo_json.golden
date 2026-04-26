@@ -152,7 +152,7 @@
     {
       "type": "ios-podfile-lock",
       "path": "ios-app/Podfile.lock",
-      "has_dependencies": null
+      "has_dependencies": false
     },
     {
       "type": "java-gradle-lockfile",
