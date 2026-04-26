@@ -259,6 +259,10 @@ rules:
         - pins
   - name: ios-podfile-lock
     filename-regex: '^Podfile\.lock$'
+    yaml:
+      exists-any:
+        - PODS
+        - DEPENDENCIES
   - name: elixir-mix
     filename-regex: '^mix\.exs$'
   - name: elixir-mix-lock

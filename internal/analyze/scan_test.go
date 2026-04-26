@@ -50,7 +50,6 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "Gopkg.lock", want: ManifestType("go-gopkg-lock")},
 		{name: "glide.lock", want: ManifestType("go-glide-lock")},
 		{name: "conan.lock", want: ManifestType("cpp-conan-lock")},
-		{name: "Podfile.lock", want: ManifestType("ios-podfile-lock")},
 		{name: "mix.exs", want: ManifestType("elixir-mix")},
 		{name: "mix.lock", want: ManifestType("elixir-mix-lock")},
 		{name: "demo.cabal", want: ManifestType("haskell-cabal")},
@@ -1312,6 +1311,14 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withoutRoot: filepath.Join("..", "..", "testdata", "swift", "package-resolved-no-deps"),
 			withoutPath: "Package.resolved",
 			typ:         ManifestType("swift-package-resolved"),
+		},
+		{
+			name:        "ios podfile lock",
+			withRoot:    filepath.Join("..", "..", "testdata", "ios", "podfile-lock-with-deps"),
+			withPath:    "Podfile.lock",
+			withoutRoot: filepath.Join("..", "..", "testdata", "ios", "podfile-lock-no-deps"),
+			withoutPath: "Podfile.lock",
+			typ:         ManifestType("ios-podfile-lock"),
 		},
 	}
 
@@ -3480,6 +3487,14 @@ func TestDetectSelectorOnlyManifestIgnoresCargoLockParserRule(t *testing.T) {
 
 	if _, ok := ruleset.DetectSelectorOnlyManifest("Cargo.lock"); ok {
 		t.Fatalf("expected selector-only detection to ignore cargo-lock parser rule")
+	}
+}
+
+func TestDetectSelectorOnlyManifestIgnoresPodfileLockParserRule(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	if _, ok := ruleset.DetectSelectorOnlyManifest("Podfile.lock"); ok {
+		t.Fatalf("expected selector-only detection to ignore Podfile.lock parser rule")
 	}
 }
 

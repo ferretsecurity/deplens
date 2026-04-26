@@ -2,9 +2,9 @@ Root: /path/to/sample-monorepo
 
 Found 32 manifests:
 - 10 with extracted dependencies
-- 6 confirmed empty
+- 7 confirmed empty
 - 4 with dependencies present, not extracted
-- 12 with dependency status unknown
+- 11 with dependency status unknown
 
 apps/backend/requirements/base.txt [2 deps]
   - requests==2.32.3
@@ -50,8 +50,6 @@ go-service/go.mod [1 dep]
   - github.com/stretchr/testify
 
 go-service/go.sum [matched]
-
-ios-app/Podfile.lock [matched]
 
 java-service/gradle.lockfile [matched]
 
