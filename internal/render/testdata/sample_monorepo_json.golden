@@ -37,7 +37,7 @@
     {
       "type": "python-pdm-lock",
       "path": "backend/pdm.lock",
-      "has_dependencies": null
+      "has_dependencies": true
     },
     {
       "type": "python-poetry-lock",

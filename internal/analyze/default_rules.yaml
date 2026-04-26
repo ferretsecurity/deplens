@@ -16,6 +16,9 @@ rules:
     pipfile-lock: {}
   - name: python-pdm-lock
     filename-regex: '^pdm\.lock$'
+    toml:
+      exists-any:
+        - package
   - name: python-conda-lock
     filename-regex: '^conda-lock\.yml$'
     yaml:
