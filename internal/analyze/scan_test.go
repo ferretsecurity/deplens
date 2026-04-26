@@ -23,7 +23,6 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		name string
 		want ManifestType
 	}{
-		{name: "pdm.lock", want: ManifestType("python-pdm-lock")},
 		{name: "bun.lock", want: ManifestType("js-bun-lock")},
 		{name: "bun.lockb", want: ManifestType("js-bun-lockb")},
 		{name: "gradle.lockfile", want: ManifestType("java-gradle-lockfile")},
@@ -301,14 +300,14 @@ func TestDetectManifestFileDoesNotMatchPathGlobWithoutRelativePath(t *testing.T)
 func TestDetectManifestFileMatchesSelectorOnlyFilenameRuleWithEmptyPath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile("", "pdm.lock")
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile("", "bun.lock")
 	if err != nil {
 		t.Fatalf("DetectManifestFile failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected filename-only rule to match with empty path")
 	}
-	if got != ManifestType("python-pdm-lock") {
+	if got != ManifestType("js-bun-lock") {
 		t.Fatalf("unexpected manifest type: got %q", got)
 	}
 	if warnings != nil {
@@ -854,6 +853,12 @@ func TestScanFindsPdmLockInFixture(t *testing.T) {
 
 	for _, manifest := range result.Manifests {
 		if manifest.Type == ManifestType("python-pdm-lock") && manifest.Path == "backend/pdm.lock" {
+			if manifest.HasDependencies == nil || !*manifest.HasDependencies {
+				t.Fatalf("expected backend/pdm.lock fixture to have has_dependencies=true, got %+v", manifest.HasDependencies)
+			}
+			if manifest.Dependencies != nil {
+				t.Fatalf("expected backend/pdm.lock fixture to remain non-extracting, got %+v", manifest.Dependencies)
+			}
 			return
 		}
 	}
@@ -1180,6 +1185,14 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 		withoutPath string
 		typ         ManifestType
 	}{
+		{
+			name:        "python pdm lock",
+			withRoot:    filepath.Join("..", "..", "testdata", "python", "pdm-lock-with-deps"),
+			withPath:    "pdm.lock",
+			withoutRoot: filepath.Join("..", "..", "testdata", "python", "pdm-lock-no-deps"),
+			withoutPath: "pdm.lock",
+			typ:         ManifestType("python-pdm-lock"),
+		},
 		{
 			name:        "python conda lock",
 			withRoot:    filepath.Join("..", "..", "testdata", "python", "conda-lock-with-deps"),
@@ -3299,6 +3312,13 @@ func TestLoadRulesSupportsTOMLTableQueriesAndExcludeKeys(t *testing.T) {
 	}
 }
 
+func TestLoadRulesAcceptsTOMLExistsAnyParser(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pdm-lock\n    filename-regex: '^pdm\\.lock$'\n    toml:\n      exists-any:\n        - package\n"))
+	if err != nil {
+		t.Fatalf("expected generic toml exists-any config to load: %v", err)
+	}
+}
+
 func TestLoadRulesRejectsYAMLParserWithoutQuery(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '.*\\.ya?ml$'\n    yaml: {}\n"))
 	if err == nil {
@@ -3345,6 +3365,13 @@ func TestLoadRulesRejectsMalformedTOMLQuery(t *testing.T) {
 	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project..dependencies[]\n"))
 	if err == nil {
 		t.Fatalf("expected malformed toml query error")
+	}
+}
+
+func TestLoadRulesRejectsMalformedTOMLExistsAnyQuery(t *testing.T) {
+	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pdm-lock\n    filename-regex: '^pdm\\.lock$'\n    toml:\n      exists-any:\n        - package..\n"))
+	if err == nil {
+		t.Fatalf("expected malformed toml exists-any query error")
 	}
 }
 
@@ -4381,6 +4408,62 @@ version = "0.1.0"
 	}
 	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
 		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+}
+
+func TestScanMatchesTOMLExistsAnyRuleWithDependenciesPresent(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pdm-lock\n    filename-regex: '^pdm\\.lock$'\n    toml:\n      exists-any:\n        - package\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "pdm.lock"), `
+version = "4.5.0"
+
+[[package]]
+name = "requests"
+version = "2.32.0"
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	}
+	if result.Manifests[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	}
+}
+
+func TestScanMatchesTOMLExistsAnyRuleWithoutDependencies(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pdm-lock\n    filename-regex: '^pdm\\.lock$'\n    toml:\n      exists-any:\n        - package\n"))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "pdm.lock"), `
+version = "4.5.0"
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
+		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	}
+	if result.Manifests[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
 	}
 }
 
