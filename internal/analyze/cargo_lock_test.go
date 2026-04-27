@@ -71,6 +71,44 @@ func TestCargoLockDetectManifestFileReturnsConclusiveEmptyForVersionOnlyFiles(t 
 	}
 }
 
+func TestCargoLockParserSetsStructuredFields(t *testing.T) {
+	parser, err := newCargoLockParser(cargoLockMatcherConfig{})
+	if err != nil {
+		t.Fatalf("newCargoLockParser: %v", err)
+	}
+	result, err := parser.Match("Cargo.lock", []byte(`
+version = 3
+
+[[package]]
+name = "serde"
+version = "1.0.217"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "abc123"
+`))
+	if err != nil {
+		t.Fatalf("Match failed: %v", err)
+	}
+	if len(result.Dependencies) != 1 {
+		t.Fatalf("expected 1 dependency, got %d", len(result.Dependencies))
+	}
+	dep := result.Dependencies[0]
+	if dep.Raw != "serde@1.0.217" {
+		t.Errorf("Raw: got %q want %q", dep.Raw, "serde@1.0.217")
+	}
+	if dep.Name != "serde" {
+		t.Errorf("Name: got %q want %q", dep.Name, "serde")
+	}
+	if dep.Version != "1.0.217" {
+		t.Errorf("Version: got %q want %q", dep.Version, "1.0.217")
+	}
+	if dep.Source != "registry" {
+		t.Errorf("Source: got %q want %q", dep.Source, "registry")
+	}
+	if dep.Extras["checksum"] != "abc123" {
+		t.Errorf("Extras[checksum]: got %q want %q", dep.Extras["checksum"], "abc123")
+	}
+}
+
 func TestCargoLockDetectManifestFileRejectsMalformedTOML(t *testing.T) {
 	ruleset := mustLoadCargoLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "Cargo.lock")

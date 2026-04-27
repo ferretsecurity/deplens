@@ -3,6 +3,7 @@ package analyze
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -11,9 +12,32 @@ import (
 func dependencyNames(dependencies []Dependency) []string {
 	names := make([]string, 0, len(dependencies))
 	for _, dependency := range dependencies {
-		names = append(names, dependency.Name)
+		if dependency.Raw != "" {
+			names = append(names, dependency.Raw)
+		} else {
+			names = append(names, dependency.Name)
+		}
 	}
 	return names
+}
+
+func equalDependencies(a, b []Dependency) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func TestDependenciesFromStringsSetsRaw(t *testing.T) {
+	got := dependenciesFromStrings([]string{"requests==2.32.3", "flask==3.0.0"})
+	if len(got) != 2 {
+		t.Fatalf("expected 2 dependencies, got %d", len(got))
+	}
+	for i, dep := range got {
+		if dep.Raw == "" {
+			t.Errorf("dependency[%d]: expected Raw to be set, got empty", i)
+		}
+		if dep.Name != "" {
+			t.Errorf("dependency[%d]: expected Name to be empty, got %q", i, dep.Name)
+		}
+	}
 }
 
 func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
@@ -968,12 +992,12 @@ func TestDefaultRulesScanPackageLockExtractedFixtures(t *testing.T) {
 		{
 			name: "lockfile v2",
 			root: filepath.Join("..", "..", "testdata", "javascript", "package-lock-v2-with-deps"),
-			want: []string{"@types/node@20.12.7", "left-pad@1.3.0", "lodash@4.17.21"},
+			want: []string{"left-pad@1.3.0", "lodash@4.17.21", "@types/node@20.12.7"},
 		},
 		{
 			name: "lockfile v3",
 			root: filepath.Join("..", "..", "testdata", "javascript", "package-lock-v3-with-deps"),
-			want: []string{"@types/node@20.12.7", "left-pad@1.3.0", "lodash@4.17.21"},
+			want: []string{"left-pad@1.3.0", "lodash@4.17.21", "@types/node@20.12.7"},
 		},
 	}
 
@@ -1048,7 +1072,7 @@ func TestDefaultRulesScanNpmShrinkwrapExtractedFixture(t *testing.T) {
 	if manifest.Type != ManifestType("js-npm-shrinkwrap") {
 		t.Fatalf("unexpected manifest type: %+v", manifest)
 	}
-	if want := []string{"@types/node@20.12.7", "left-pad@1.3.0"}; !slices.Equal(dependencyNames(manifest.Dependencies), want) {
+	if want := []string{"left-pad@1.3.0", "@types/node@20.12.7"}; !slices.Equal(dependencyNames(manifest.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
 	}
 	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
@@ -1584,20 +1608,20 @@ func TestScanMatchesPyprojectDependenciesFromFixture(t *testing.T) {
 	}
 
 	want := []Dependency{
-		{Name: "scikit-build-core>=0.10", Section: "build-system.requires"},
-		{Name: "pybind11>=2.12.0", Section: "build-system.requires"},
-		{Name: "requests>=2.31", Section: "project.dependencies"},
-		{Name: "fastapi[all]>=0.110; python_version >= '3.10'", Section: "project.dependencies"},
-		{Name: "pytest>=8", Section: "project.optional-dependencies.dev"},
-		{Name: "ruff==0.4.8", Section: "project.optional-dependencies.dev"},
-		{Name: "mypy>=1.10", Section: "dependency-groups.lint"},
-		{Name: "django = \"^5.0\"", Section: "tool.poetry.dependencies"},
-		{Name: "httpx = { extras = [\"http2\"], version = \"^0.27\" }", Section: "tool.poetry.dependencies"},
-		{Name: "private-lib = { branch = \"main\", git = \"https://github.com/acme/private-lib.git\" }", Section: "tool.poetry.dependencies"},
-		{Name: "factory-boy = { markers = \"python_version >= '3.11'\", version = \"^3.3\" }", Section: "tool.poetry.group.test.dependencies"},
-		{Name: "pytest-cov = \"^5.0\"", Section: "tool.poetry.group.test.dependencies"},
+		{Raw: "scikit-build-core>=0.10", Name: "scikit-build-core", Constraint: ">=0.10", Section: "build-system.requires"},
+		{Raw: "pybind11>=2.12.0", Name: "pybind11", Constraint: ">=2.12.0", Section: "build-system.requires"},
+		{Raw: "requests>=2.31", Name: "requests", Constraint: ">=2.31", Section: "project.dependencies"},
+		{Raw: "fastapi[all]>=0.110; python_version >= '3.10'", Name: "fastapi", Constraint: "[all]>=0.110; python_version >= '3.10'", Section: "project.dependencies"},
+		{Raw: "pytest>=8", Name: "pytest", Constraint: ">=8", Section: "project.optional-dependencies.dev"},
+		{Raw: "ruff==0.4.8", Name: "ruff", Constraint: "==0.4.8", Section: "project.optional-dependencies.dev"},
+		{Raw: "mypy>=1.10", Name: "mypy", Constraint: ">=1.10", Section: "dependency-groups.lint"},
+		{Raw: "django = \"^5.0\"", Section: "tool.poetry.dependencies"},
+		{Raw: "httpx = { extras = [\"http2\"], version = \"^0.27\" }", Section: "tool.poetry.dependencies"},
+		{Raw: "private-lib = { branch = \"main\", git = \"https://github.com/acme/private-lib.git\" }", Section: "tool.poetry.dependencies"},
+		{Raw: "factory-boy = { markers = \"python_version >= '3.11'\", version = \"^3.3\" }", Section: "tool.poetry.group.test.dependencies"},
+		{Raw: "pytest-cov = \"^5.0\"", Section: "tool.poetry.group.test.dependencies"},
 	}
-	if !slices.Equal(manifest.Dependencies, want) {
+	if !equalDependencies(manifest.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
 	}
 }
@@ -3043,7 +3067,7 @@ func TestDefaultRulesScanPoetryLockFilteredFixture(t *testing.T) {
 	if manifest.Path != "poetry.lock" {
 		t.Fatalf("unexpected manifest path: %+v", manifest)
 	}
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3"}) {
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"internal-lib", "requests==2.32.3"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
 	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
@@ -3089,7 +3113,7 @@ func TestDefaultRulesScanUVLockExtractedFixture(t *testing.T) {
 	if manifest.Path != "uv.lock" {
 		t.Fatalf("unexpected manifest path: %+v", manifest)
 	}
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "local-lib==0.1.0"}) {
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "local-lib"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
 	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
@@ -3158,7 +3182,7 @@ func TestDefaultRulesScanUVLockIgnoredSelfFixture(t *testing.T) {
 	if manifest.Path != "uv.lock" {
 		t.Fatalf("unexpected manifest path: %+v", manifest)
 	}
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "local-lib==0.1.0"}) {
+	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "local-lib"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
 	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
@@ -4360,16 +4384,16 @@ pytest-cov = "^5.0"
 	}
 
 	want := []Dependency{
-		{Name: "scikit-build-core>=0.10", Section: "build-system.requires"},
-		{Name: "pybind11>=2.12.0", Section: "build-system.requires"},
-		{Name: "requests>=2.31", Section: "project.dependencies"},
-		{Name: "pytest>=8", Section: "project.optional-dependencies.dev"},
-		{Name: "mypy>=1.10", Section: "dependency-groups.lint"},
-		{Name: "django = \"^5.0\"", Section: "tool.poetry.dependencies"},
-		{Name: "httpx = { extras = [\"http2\"], version = \"^0.27\" }", Section: "tool.poetry.dependencies"},
-		{Name: "pytest-cov = \"^5.0\"", Section: "tool.poetry.group.test.dependencies"},
+		{Raw: "scikit-build-core>=0.10", Name: "scikit-build-core", Constraint: ">=0.10", Section: "build-system.requires"},
+		{Raw: "pybind11>=2.12.0", Name: "pybind11", Constraint: ">=2.12.0", Section: "build-system.requires"},
+		{Raw: "requests>=2.31", Name: "requests", Constraint: ">=2.31", Section: "project.dependencies"},
+		{Raw: "pytest>=8", Name: "pytest", Constraint: ">=8", Section: "project.optional-dependencies.dev"},
+		{Raw: "mypy>=1.10", Name: "mypy", Constraint: ">=1.10", Section: "dependency-groups.lint"},
+		{Raw: "django = \"^5.0\"", Section: "tool.poetry.dependencies"},
+		{Raw: "httpx = { extras = [\"http2\"], version = \"^0.27\" }", Section: "tool.poetry.dependencies"},
+		{Raw: "pytest-cov = \"^5.0\"", Section: "tool.poetry.group.test.dependencies"},
 	}
-	if !slices.Equal(result.Manifests[0].Dependencies, want) {
+	if !equalDependencies(result.Manifests[0].Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
 	}
 }

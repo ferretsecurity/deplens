@@ -26,10 +26,20 @@ func newPyRequirementsMatcher(raw pyRequirementsMatcherConfig) (manifestParser, 
 }
 
 func (m pyRequirementsMatcher) Match(path string, content []byte) (manifestParserResult, error) {
-	dependencies, warnings := m.collectDependencies(path, content, map[string]bool{})
-	if len(dependencies) > 0 {
+	rawDeps, warnings := m.collectDependencies(path, content, map[string]bool{})
+	if len(rawDeps) > 0 {
+		deps := make([]Dependency, 0, len(rawDeps))
+		for _, spec := range rawDeps {
+			name, rest := parsePEP508Dep(spec)
+			dep := Dependency{Raw: spec}
+			if name != "" {
+				dep.Name = name
+				dep.Constraint = rest
+			}
+			deps = append(deps, dep)
+		}
 		return manifestParserResult{
-			Dependencies:    dependenciesFromStrings(dependencies),
+			Dependencies:    deps,
 			HasDependencies: boolPtr(true),
 			Warnings:        warnings,
 			Matched:         true,

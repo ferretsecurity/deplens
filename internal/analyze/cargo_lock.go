@@ -2,6 +2,7 @@ package analyze
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 )
@@ -14,8 +15,10 @@ type cargoLockFile struct {
 }
 
 type cargoLockPackage struct {
-	Name    string `toml:"name"`
-	Version string `toml:"version"`
+	Name     string  `toml:"name"`
+	Version  string  `toml:"version"`
+	Source   *string `toml:"source"`
+	Checksum *string `toml:"checksum"`
 }
 
 func newCargoLockParser(raw cargoLockMatcherConfig) (manifestParser, error) {
@@ -36,9 +39,23 @@ func (p cargoLockParser) Match(path string, content []byte) (manifestParserResul
 		if pkg.Name == "" || pkg.Version == "" {
 			continue
 		}
-		dependencies = append(dependencies, Dependency{
-			Name: pkg.Name + "@" + pkg.Version,
-		})
+		dep := Dependency{
+			Raw:     pkg.Name + "@" + pkg.Version,
+			Name:    pkg.Name,
+			Version: pkg.Version,
+		}
+		if pkg.Source != nil && *pkg.Source != "" {
+			sourceType, extras := parseCargoLockSource(*pkg.Source, nil)
+			dep.Source = sourceType
+			dep.Extras = extras
+		}
+		if pkg.Checksum != nil && *pkg.Checksum != "" {
+			if dep.Extras == nil {
+				dep.Extras = make(map[string]string)
+			}
+			dep.Extras["checksum"] = *pkg.Checksum
+		}
+		dependencies = append(dependencies, dep)
 	}
 
 	if len(dependencies) == 0 {
@@ -53,4 +70,28 @@ func (p cargoLockParser) Match(path string, content []byte) (manifestParserResul
 		Matched:         true,
 		HasDependencies: boolPtr(true),
 	}, nil
+}
+
+func parseCargoLockSource(source string, extras map[string]string) (sourceType string, updatedExtras map[string]string) {
+	if extras == nil {
+		extras = make(map[string]string)
+	}
+	switch {
+	case strings.HasPrefix(source, "registry+"):
+		url := strings.TrimPrefix(source, "registry+")
+		extras["source_url"] = url
+		return "registry", extras
+	case strings.HasPrefix(source, "git+"):
+		raw := strings.TrimPrefix(source, "git+")
+		if idx := strings.LastIndex(raw, "#"); idx >= 0 {
+			extras["source_url"] = raw[:idx]
+			extras["source_ref"] = raw[idx+1:]
+		} else {
+			extras["source_url"] = raw
+		}
+		return "git", extras
+	default:
+		extras["source_url"] = source
+		return "url", extras
+	}
 }

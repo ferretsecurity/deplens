@@ -2,7 +2,6 @@ package analyze
 
 import (
 	"path/filepath"
-	"slices"
 	"testing"
 )
 
@@ -20,10 +19,10 @@ func TestScanYarnLockClassicExtractsDependencies(t *testing.T) {
 	}
 
 	want := []Dependency{
-		{Name: "left-pad@1.3.0"},
-		{Name: "lodash@4.17.21"},
+		{Raw: "left-pad@1.3.0", Name: "left-pad", Version: "1.3.0"},
+		{Raw: "lodash@4.17.21", Name: "lodash", Version: "4.17.21"},
 	}
-	if !slices.Equal(yarnLock.Dependencies, want) {
+	if !equalDependencies(yarnLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", yarnLock.Dependencies, want)
 	}
 }
@@ -42,11 +41,11 @@ func TestScanYarnLockModernExtractsDependencies(t *testing.T) {
 	}
 
 	want := []Dependency{
-		{Name: "@babel/code-frame@7.27.1"},
-		{Name: "react@18.3.1"},
-		{Name: "typescript@5.4.5"},
+		{Raw: "@babel/code-frame@7.27.1", Name: "@babel/code-frame", Version: "7.27.1"},
+		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1"},
+		{Raw: "typescript@5.4.5", Name: "typescript", Version: "5.4.5"},
 	}
-	if !slices.Equal(yarnLock.Dependencies, want) {
+	if !equalDependencies(yarnLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", yarnLock.Dependencies, want)
 	}
 }

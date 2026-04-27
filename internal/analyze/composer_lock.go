@@ -16,6 +16,7 @@ type composerLockFile struct {
 type composerLockPackage struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
+	Type    string `json:"type"`
 }
 
 func newComposerLockParser(raw composerLockMatcherConfig) (manifestParser, error) {
@@ -72,15 +73,24 @@ func composerLockDependencies(groups ...composerLockDependencyGroup) []Dependenc
 				continue
 			}
 
-			name := pkg.Name
+			raw := pkg.Name
 			if pkg.Version != "" {
-				name += "@" + pkg.Version
+				raw += "@" + pkg.Version
 			}
-			if _, ok := seen[name]; ok {
+			if _, ok := seen[raw]; ok {
 				continue
 			}
-			seen[name] = struct{}{}
-			values = append(values, Dependency{Name: name, Section: group.Name})
+			seen[raw] = struct{}{}
+			dep := Dependency{
+				Raw:     raw,
+				Name:    pkg.Name,
+				Version: pkg.Version,
+				Section: group.Name,
+			}
+			if pkg.Type != "" {
+				dep.Extras = map[string]string{"package_type": pkg.Type}
+			}
+			values = append(values, dep)
 		}
 	}
 
@@ -91,9 +101,9 @@ func composerLockDependencies(groups ...composerLockDependencyGroup) []Dependenc
 	slices.SortFunc(values, func(a, b Dependency) int {
 		if a.Section == b.Section {
 			switch {
-			case a.Name < b.Name:
+			case a.Raw < b.Raw:
 				return -1
-			case a.Name > b.Name:
+			case a.Raw > b.Raw:
 				return 1
 			default:
 				return 0

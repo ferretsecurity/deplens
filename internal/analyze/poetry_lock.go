@@ -27,8 +27,9 @@ type poetryLockPackage struct {
 }
 
 type poetryLockSource struct {
-	Type string `toml:"type"`
-	URL  string `toml:"url"`
+	Type      string `toml:"type"`
+	URL       string `toml:"url"`
+	Reference string `toml:"reference"`
 }
 
 func newPoetryLockParser(raw poetryLockMatcherConfig) (manifestParser, error) {
@@ -48,19 +49,48 @@ func (p poetryLockParser) Match(path string, content []byte) (manifestParserResu
 	dependencies := make([]Dependency, 0, len(file.Packages))
 	seen := make(map[string]struct{}, len(file.Packages))
 	for _, pkg := range file.Packages {
-		if pkg.Name == "" || pkg.Version == "" {
+		if pkg.Name == "" {
+			continue
+		}
+		if pkg.Source != nil && strings.TrimSpace(pkg.Source.Type) == "git" {
+			dep := Dependency{
+				Raw:    pkg.Name,
+				Name:   pkg.Name,
+				Source: "git",
+			}
+			if pkg.Source.URL != "" || pkg.Source.Reference != "" {
+				dep.Extras = make(map[string]string)
+				if u := strings.TrimSpace(pkg.Source.URL); u != "" {
+					dep.Extras["source_url"] = u
+				}
+				if r := strings.TrimSpace(pkg.Source.Reference); r != "" {
+					dep.Extras["source_ref"] = r
+				}
+			}
+			key := "git:" + pkg.Name
+			if _, ok := seen[key]; ok {
+				continue
+			}
+			seen[key] = struct{}{}
+			dependencies = append(dependencies, dep)
 			continue
 		}
 		if shouldIgnorePoetryLockPackage(pkg) {
 			continue
 		}
-
-		name := pkg.Name + "==" + pkg.Version
-		if _, ok := seen[name]; ok {
+		if pkg.Version == "" {
 			continue
 		}
-		seen[name] = struct{}{}
-		dependencies = append(dependencies, Dependency{Name: name})
+		raw := pkg.Name + "==" + pkg.Version
+		if _, ok := seen[raw]; ok {
+			continue
+		}
+		seen[raw] = struct{}{}
+		dependencies = append(dependencies, Dependency{
+			Raw:     raw,
+			Name:    pkg.Name,
+			Version: pkg.Version,
+		})
 	}
 
 	if len(dependencies) == 0 {
@@ -89,15 +119,10 @@ func shouldIgnorePoetryLockPackage(pkg poetryLockPackage) bool {
 	if pkg.Source == nil {
 		return false
 	}
-
-	switch strings.TrimSpace(pkg.Source.Type) {
-	case "git":
-		return true
-	case "directory":
+	if strings.TrimSpace(pkg.Source.Type) == "directory" {
 		return isSelfDirectorySource(pkg.Source.URL)
-	default:
-		return false
 	}
+	return false
 }
 
 func isSelfDirectorySource(value string) bool {

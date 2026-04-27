@@ -47,7 +47,7 @@ func (p yarnLockParser) Match(path string, content []byte) (manifestParserResult
 		}
 
 		return manifestParserResult{
-			Dependencies:    dependenciesFromStrings(dependencies),
+			Dependencies:    dependencies,
 			Matched:         true,
 			HasDependencies: boolPtr(true),
 		}, nil
@@ -72,19 +72,19 @@ func (p yarnLockParser) Match(path string, content []byte) (manifestParserResult
 	}
 
 	return manifestParserResult{
-		Dependencies:    dependenciesFromStrings(dependencies),
+		Dependencies:    dependencies,
 		Matched:         true,
 		HasDependencies: boolPtr(true),
 	}, nil
 }
 
-func parseModernYarnLockDependencies(path string, content []byte) ([]string, error) {
+func parseModernYarnLockDependencies(path string, content []byte) ([]Dependency, error) {
 	var entries map[string]modernYarnLockEntry
 	if err := yaml.Unmarshal(content, &entries); err != nil {
 		return nil, fmt.Errorf("parse yarn.lock %q: %w", path, err)
 	}
 
-	dependencies := make([]string, 0, len(entries))
+	dependencies := make([]Dependency, 0, len(entries))
 	seen := make(map[string]struct{}, len(entries))
 	for selector, entry := range entries {
 		if selector == "__metadata" {
@@ -96,18 +96,30 @@ func parseModernYarnLockDependencies(path string, content []byte) ([]string, err
 			continue
 		}
 
-		dependency := name
+		raw := name
 		if entry.Version != "" {
-			dependency += "@" + entry.Version
+			raw += "@" + entry.Version
 		}
-		if _, ok := seen[dependency]; ok {
+		if _, ok := seen[raw]; ok {
 			continue
 		}
-		seen[dependency] = struct{}{}
-		dependencies = append(dependencies, dependency)
+		seen[raw] = struct{}{}
+		dep := Dependency{Raw: raw, Name: name}
+		if entry.Version != "" {
+			dep.Version = entry.Version
+		}
+		dependencies = append(dependencies, dep)
 	}
 
-	slices.Sort(dependencies)
+	slices.SortFunc(dependencies, func(a, b Dependency) int {
+		if a.Raw < b.Raw {
+			return -1
+		}
+		if a.Raw > b.Raw {
+			return 1
+		}
+		return 0
+	})
 	return dependencies, nil
 }
 
@@ -144,23 +156,31 @@ func trimLeadingCommentLines(content string) string {
 	return ""
 }
 
-func parseClassicYarnLockDependencies(content string) []string {
+func parseClassicYarnLockDependencies(content string) []Dependency {
 	lines := strings.Split(content, "\n")
-	dependencies := make([]string, 0)
+	dependencies := make([]Dependency, 0)
 	seen := make(map[string]struct{})
 
 	var selectors []string
 	addDependencies := func(selectors []string, version string) {
 		for _, selector := range selectors {
-			dependency := classicYarnDependencyName(selector, version)
-			if dependency == "" {
+			name := classicYarnSelectorName(selector)
+			if name == "" {
 				continue
 			}
-			if _, ok := seen[dependency]; ok {
+			raw := name
+			if version != "" {
+				raw = name + "@" + version
+			}
+			if _, ok := seen[raw]; ok {
 				continue
 			}
-			seen[dependency] = struct{}{}
-			dependencies = append(dependencies, dependency)
+			seen[raw] = struct{}{}
+			dep := Dependency{Raw: raw, Name: name}
+			if version != "" {
+				dep.Version = version
+			}
+			dependencies = append(dependencies, dep)
 		}
 	}
 	flushSelectors := func() {
@@ -218,17 +238,6 @@ func parseClassicYarnLockSelectors(header string) []string {
 func parseClassicYarnLockVersion(line string) string {
 	value := strings.TrimSpace(strings.TrimPrefix(line, "version"))
 	return strings.Trim(value, `"`)
-}
-
-func classicYarnDependencyName(selector string, version string) string {
-	name := classicYarnSelectorName(selector)
-	if name == "" {
-		return ""
-	}
-	if version == "" {
-		return name
-	}
-	return name + "@" + version
 }
 
 func classicYarnSelectorName(selector string) string {

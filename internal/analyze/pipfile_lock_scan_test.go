@@ -2,7 +2,6 @@ package analyze
 
 import (
 	"path/filepath"
-	"slices"
 	"testing"
 )
 
@@ -32,10 +31,10 @@ func TestScanPipfileLockExtractsDependencies(t *testing.T) {
 	}
 
 	want := []Dependency{
-		{Name: "requests==2.32.3", Section: "default"},
-		{Name: "pytest==8.3.3", Section: "develop"},
+		{Raw: "requests==2.32.3", Name: "requests", Version: "2.32.3", Section: "default"},
+		{Raw: "pytest==8.3.3", Name: "pytest", Version: "8.3.3", Section: "develop"},
 	}
-	if !slices.Equal(pipfileLock.Dependencies, want) {
+	if !equalDependencies(pipfileLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", pipfileLock.Dependencies, want)
 	}
 }

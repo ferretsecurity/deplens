@@ -15,7 +15,11 @@ import (
 func dependencyNames(dependencies []analyze.Dependency) []string {
 	names := make([]string, 0, len(dependencies))
 	for _, dependency := range dependencies {
-		names = append(names, dependency.Name)
+		if dependency.Raw != "" {
+			names = append(names, dependency.Raw)
+		} else {
+			names = append(names, dependency.Name)
+		}
 	}
 	return names
 }
@@ -123,7 +127,7 @@ func TestJSONDoesNotEscapeHTMLSensitiveCharacters(t *testing.T) {
 				Path:            "requirements.txt",
 				HasDependencies: &hasDependencies,
 				Dependencies: []analyze.Dependency{
-					{Name: "requests>=2.31"},
+					{Raw: "requests>=2.31"},
 				},
 			},
 		},
@@ -137,7 +141,7 @@ func TestJSONDoesNotEscapeHTMLSensitiveCharacters(t *testing.T) {
 	if strings.Contains(string(output), `\u003e`) {
 		t.Fatalf("expected JSON output to preserve '>', got %q", output)
 	}
-	if !strings.Contains(string(output), `"name": "requests>=2.31"`) {
+	if !strings.Contains(string(output), `"raw": "requests>=2.31"`) {
 		t.Fatalf("expected JSON output to contain literal dependency string, got %q", output)
 	}
 }
@@ -151,7 +155,7 @@ func TestHumanIncludesDependenciesWhenPresent(t *testing.T) {
 				Type:            analyze.ManifestType("yaml-pip"),
 				Path:            "workflow.yaml",
 				HasDependencies: &hasDependencies,
-				Dependencies:    []analyze.Dependency{{Name: "requests"}, {Name: "pendulum"}},
+				Dependencies:    []analyze.Dependency{{Raw: "requests"}, {Raw: "pendulum"}},
 			},
 		},
 	}
@@ -182,9 +186,9 @@ func TestHumanGroupsDependenciesBySectionWhenPresent(t *testing.T) {
 				Type: analyze.ManifestType("python-pyproject"),
 				Path: "backend/pyproject.toml",
 				Dependencies: []analyze.Dependency{
-					{Name: "requests>=2.31", Section: "project.dependencies"},
-					{Name: "pytest>=8", Section: "project.optional-dependencies.dev"},
-					{Name: "ruff>=0.4", Section: "project.optional-dependencies.dev"},
+					{Raw: "requests>=2.31", Section: "project.dependencies"},
+					{Raw: "pytest>=8", Section: "project.optional-dependencies.dev"},
+					{Raw: "ruff>=0.4", Section: "project.optional-dependencies.dev"},
 				},
 				HasDependencies: &hasDependencies,
 			},
@@ -220,9 +224,9 @@ func TestHumanUsesDefaultGroupOnlyForMixedDependencies(t *testing.T) {
 				Type: analyze.ManifestType("mixed"),
 				Path: "mixed.toml",
 				Dependencies: []analyze.Dependency{
-					{Name: "build>=1.2"},
-					{Name: "pytest>=8", Section: "tool.custom.dev"},
-					{Name: "mkdocs>=1.6", Section: "tool.custom.docs"},
+					{Raw: "build>=1.2"},
+					{Raw: "pytest>=8", Section: "tool.custom.dev"},
+					{Raw: "mkdocs>=1.6", Section: "tool.custom.docs"},
 				},
 				HasDependencies: &hasDependencies,
 			},
@@ -260,7 +264,7 @@ func TestHumanSummarizesAllDependencyStates(t *testing.T) {
 				Type: analyze.ManifestType("python-pyproject"),
 				Path: "backend/pyproject.toml",
 				Dependencies: []analyze.Dependency{
-					{Name: "requests>=2.31", Section: "project.dependencies"},
+					{Raw: "requests>=2.31", Section: "project.dependencies"},
 				},
 				HasDependencies: &hasDependencies,
 			},
@@ -347,7 +351,7 @@ func TestJSONIncludesDependenciesWhenPresent(t *testing.T) {
 			{
 				Type:            analyze.ManifestType("yaml-pip"),
 				Path:            "workflow.yaml",
-				Dependencies:    []analyze.Dependency{{Name: "requests"}, {Name: "pendulum"}},
+				Dependencies:    []analyze.Dependency{{Raw: "requests"}, {Raw: "pendulum"}},
 				HasDependencies: &hasDependencies,
 			},
 		},
@@ -384,7 +388,7 @@ func TestJSONIncludesDependencySectionsWhenPresent(t *testing.T) {
 				Type: analyze.ManifestType("python-pyproject"),
 				Path: "pyproject.toml",
 				Dependencies: []analyze.Dependency{
-					{Name: "requests>=2.31", Section: "project.dependencies"},
+					{Raw: "requests>=2.31", Section: "project.dependencies"},
 				},
 				HasDependencies: &hasDependencies,
 			},
@@ -452,7 +456,7 @@ func TestHumanIncludesManifestWarnings(t *testing.T) {
 				Type:            analyze.ManifestType("python-requirements"),
 				Path:            "requirements.txt",
 				HasDependencies: &hasDependencies,
-				Dependencies:    []analyze.Dependency{{Name: "requests>=2.31"}},
+				Dependencies:    []analyze.Dependency{{Raw: "requests>=2.31"}},
 				Warnings:        []string{`could not read included requirements file "missing.txt"`},
 			},
 		},
@@ -508,7 +512,7 @@ func TestHumanIncludesExternalScriptURLs(t *testing.T) {
 				Type:            analyze.ManifestType("html-external-scripts"),
 				Path:            "templates/index.html",
 				HasDependencies: &hasDependencies,
-				Dependencies:    []analyze.Dependency{{Name: "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"}},
+				Dependencies:    []analyze.Dependency{{Raw: "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"}},
 			},
 		},
 	}
@@ -528,7 +532,7 @@ func TestHumanSummaryPluralization(t *testing.T) {
 				Type: analyze.ManifestType("python-pyproject"),
 				Path: "pyproject.toml",
 				Dependencies: []analyze.Dependency{
-					{Name: "requests>=2.31"},
+					{Raw: "requests>=2.31"},
 				},
 				HasDependencies: &hasDependencies,
 			},

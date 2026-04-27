@@ -2,7 +2,6 @@ package analyze
 
 import (
 	"path/filepath"
-	"slices"
 	"strings"
 	"testing"
 )
@@ -41,10 +40,10 @@ importers:
 		t.Fatalf("unexpected manifest type: got %q", got)
 	}
 	if want := []Dependency{
-		{Name: "react@18.3.1", Section: "dependencies"},
-		{Name: "@types/node@20.12.7", Section: "devDependencies"},
-		{Name: "fsevents@2.3.3", Section: "optionalDependencies"},
-	}; !slices.Equal(deps, want) {
+		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies", Extras: map[string]string{"specifier": "^18.3.1"}},
+		{Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies", Extras: map[string]string{"specifier": "^20.12.7"}},
+		{Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", Section: "optionalDependencies", Extras: map[string]string{"specifier": "^2.3.3"}},
+	}; !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
@@ -76,7 +75,7 @@ importers:
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []Dependency{{Name: "left-pad@^1.3.0", Section: "dependencies"}}; !slices.Equal(deps, want) {
+	if want := []Dependency{{Raw: "left-pad@^1.3.0", Name: "left-pad", Section: "dependencies", Constraint: "^1.3.0"}}; !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
@@ -109,10 +108,10 @@ importers:
 		t.Fatalf("expected match")
 	}
 	if want := []Dependency{
-		{Name: "react@18.3.1", Section: "dependencies"},
-		{Name: "@types/node@20.12.7", Section: "devDependencies"},
-		{Name: "fsevents@2.3.3", Section: "optionalDependencies"},
-	}; !slices.Equal(deps, want) {
+		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"},
+		{Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies"},
+		{Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", Section: "optionalDependencies"},
+	}; !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
@@ -143,10 +142,10 @@ optionalDependencies:
 		t.Fatalf("expected match")
 	}
 	if want := []Dependency{
-		{Name: "react@18.3.1", Section: "dependencies"},
-		{Name: "@types/node@20.12.7", Section: "devDependencies"},
-		{Name: "fsevents@2.3.3", Section: "optionalDependencies"},
-	}; !slices.Equal(deps, want) {
+		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"},
+		{Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies"},
+		{Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", Section: "optionalDependencies"},
+	}; !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
@@ -179,7 +178,7 @@ importers:
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []Dependency{{Name: "react@18.3.1", Section: "dependencies"}}; !slices.Equal(deps, want) {
+	if want := []Dependency{{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"}}; !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
@@ -207,7 +206,7 @@ importers:
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []Dependency{{Name: "left-pad", Section: "dependencies"}}; !slices.Equal(deps, want) {
+	if want := []Dependency{{Raw: "left-pad", Name: "left-pad", Section: "dependencies"}}; !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {

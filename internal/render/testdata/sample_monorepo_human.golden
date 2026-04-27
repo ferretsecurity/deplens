@@ -12,14 +12,14 @@ apps/backend/requirements/base.txt [2 deps]
 
 backend/Pipfile.lock [2 deps]
   default:
-    - requests==2.32.3
+    - requests@2.32.3
   develop:
-    - pytest==8.3.3
+    - pytest@8.3.3
 
 backend/pdm.lock [dependencies present, not extracted]
 
 backend/poetry.lock [1 dep]
-  - requests==2.32.3
+  - requests@2.32.3
 
 cpp-app/conan.lock [matched]
 
@@ -34,7 +34,8 @@ frontend/bun.lockb [matched]
 frontend/deno.lock [matched]
 
 frontend/package-lock.json [1 dep]
-  - react
+  dependencies:
+    - react
 
 frontend/pnpm-lock.yaml [2 deps]
   dependencies:
@@ -47,7 +48,7 @@ go-service/Gopkg.lock [dependencies present, not extracted]
 go-service/glide.lock [matched]
 
 go-service/go.mod [1 dep]
-  - github.com/stretchr/testify
+  - github.com/stretchr/testify@v1.9.0
 
 go-service/go.sum [matched]
 

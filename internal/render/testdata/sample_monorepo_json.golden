@@ -6,10 +6,14 @@
       "path": "apps/backend/requirements/base.txt",
       "dependencies": [
         {
-          "name": "requests==2.32.3"
+          "raw": "requests==2.32.3",
+          "name": "requests",
+          "constraint": "==2.32.3"
         },
         {
-          "name": "pydantic==2.9.2"
+          "raw": "pydantic==2.9.2",
+          "name": "pydantic",
+          "constraint": "==2.9.2"
         }
       ],
       "has_dependencies": true
@@ -19,11 +23,15 @@
       "path": "backend/Pipfile.lock",
       "dependencies": [
         {
-          "name": "requests==2.32.3",
+          "raw": "requests==2.32.3",
+          "name": "requests",
+          "version": "2.32.3",
           "section": "default"
         },
         {
-          "name": "pytest==8.3.3",
+          "raw": "pytest==8.3.3",
+          "name": "pytest",
+          "version": "8.3.3",
           "section": "develop"
         }
       ],
@@ -44,7 +52,9 @@
       "path": "backend/poetry.lock",
       "dependencies": [
         {
-          "name": "requests==2.32.3"
+          "raw": "requests==2.32.3",
+          "name": "requests",
+          "version": "2.32.3"
         }
       ],
       "has_dependencies": true
@@ -89,7 +99,9 @@
       "path": "frontend/package-lock.json",
       "dependencies": [
         {
-          "name": "react"
+          "raw": "react",
+          "name": "react",
+          "section": "dependencies"
         }
       ],
       "has_dependencies": true
@@ -104,12 +116,22 @@
       "path": "frontend/pnpm-lock.yaml",
       "dependencies": [
         {
-          "name": "react@18.3.1",
-          "section": "dependencies"
+          "raw": "react@18.3.1",
+          "name": "react",
+          "version": "18.3.1",
+          "section": "dependencies",
+          "extras": {
+            "specifier": "^18.3.1"
+          }
         },
         {
-          "name": "@types/node@20.12.7",
-          "section": "devDependencies"
+          "raw": "@types/node@20.12.7",
+          "name": "@types/node",
+          "version": "20.12.7",
+          "section": "devDependencies",
+          "extras": {
+            "specifier": "^20.12.7"
+          }
         }
       ],
       "has_dependencies": true
@@ -134,7 +156,9 @@
       "path": "go-service/go.mod",
       "dependencies": [
         {
-          "name": "github.com/stretchr/testify"
+          "raw": "github.com/stretchr/testify",
+          "name": "github.com/stretchr/testify",
+          "version": "v1.9.0"
         }
       ],
       "has_dependencies": true
@@ -174,7 +198,9 @@
       "path": "php-app/composer.lock",
       "dependencies": [
         {
-          "name": "monolog/monolog@3.6.0",
+          "raw": "monolog/monolog@3.6.0",
+          "name": "monolog/monolog",
+          "version": "3.6.0",
           "section": "packages"
         }
       ],
@@ -185,7 +211,9 @@
       "path": "requirements.qt6_3.in",
       "dependencies": [
         {
-          "name": "PyQt6==6.7.0"
+          "raw": "PyQt6==6.7.0",
+          "name": "PyQt6",
+          "constraint": "==6.7.0"
         }
       ],
       "has_dependencies": true
@@ -195,7 +223,9 @@
       "path": "requirements.txt",
       "dependencies": [
         {
-          "name": "requests==2.32.0"
+          "raw": "requests==2.32.0",
+          "name": "requests",
+          "constraint": "==2.32.0"
         }
       ],
       "has_dependencies": true
@@ -215,7 +245,9 @@
       "path": "rust-app/Cargo.lock",
       "dependencies": [
         {
-          "name": "serde@1.0.217"
+          "raw": "serde@1.0.217",
+          "name": "serde",
+          "version": "1.0.217"
         }
       ],
       "has_dependencies": true

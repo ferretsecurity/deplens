@@ -2,7 +2,6 @@ package analyze
 
 import (
 	"path/filepath"
-	"slices"
 	"testing"
 )
 
@@ -43,11 +42,11 @@ func TestPipfileLockDetectManifestFileExtractsDefaultAndDevelopDependencies(t *t
 		t.Fatalf("unexpected manifest type: got %q", got)
 	}
 	want := []Dependency{
-		{Name: "requests==2.32.3", Section: "default"},
-		{Name: "urllib3==2.2.2", Section: "default"},
-		{Name: "pytest==8.3.3", Section: "develop"},
+		{Raw: "requests==2.32.3", Name: "requests", Version: "2.32.3", Section: "default"},
+		{Raw: "urllib3==2.2.2", Name: "urllib3", Version: "2.2.2", Section: "default"},
+		{Raw: "pytest==8.3.3", Name: "pytest", Version: "8.3.3", Section: "develop"},
 	}
-	if !slices.Equal(deps, want) {
+	if !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
@@ -55,6 +54,28 @@ func TestPipfileLockDetectManifestFileExtractsDefaultAndDevelopDependencies(t *t
 	}
 	if warnings != nil {
 		t.Fatalf("expected no warnings, got %+v", warnings)
+	}
+}
+
+func TestPipfileLockParserSetsStructuredFields(t *testing.T) {
+	parser, _ := newPipfileLockParser(pipfileLockMatcherConfig{})
+	result, _ := parser.Match("Pipfile.lock", []byte(`{
+        "_meta": {},
+        "default": {"requests": {"version": "==2.32.3"}},
+        "develop": {}
+    }`))
+	dep := result.Dependencies[0]
+	if dep.Raw != "requests==2.32.3" {
+		t.Errorf("Raw: got %q", dep.Raw)
+	}
+	if dep.Name != "requests" {
+		t.Errorf("Name: got %q", dep.Name)
+	}
+	if dep.Version != "2.32.3" {
+		t.Errorf("Version: got %q", dep.Version)
+	}
+	if dep.Section != "default" {
+		t.Errorf("Section: got %q", dep.Section)
 	}
 }
 
@@ -81,8 +102,8 @@ func TestPipfileLockDetectManifestFileFallsBackToNameWhenVersionIsMissing(t *tes
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	want := []Dependency{{Name: "requests", Section: "default"}}
-	if !slices.Equal(deps, want) {
+	want := []Dependency{{Raw: "requests", Name: "requests", Section: "default"}}
+	if !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
 	if hasDependencies == nil || !*hasDependencies {
@@ -136,9 +157,9 @@ func TestPipfileLockParserFixtureCoverage(t *testing.T) {
 			name:       "basic sections",
 			fixtureDir: "pipfile-lock-basic",
 			wantDeps: []Dependency{
-				{Name: "requests==2.32.3", Section: "default"},
-				{Name: "urllib3==2.2.2", Section: "default"},
-				{Name: "pytest==8.3.3", Section: "develop"},
+				{Raw: "requests==2.32.3", Name: "requests", Version: "2.32.3", Section: "default"},
+				{Raw: "urllib3==2.2.2", Name: "urllib3", Version: "2.2.2", Section: "default"},
+				{Raw: "pytest==8.3.3", Name: "pytest", Version: "8.3.3", Section: "develop"},
 			},
 			wantHas: boolPtr(true),
 		},
@@ -146,8 +167,8 @@ func TestPipfileLockParserFixtureCoverage(t *testing.T) {
 			name:       "missing versions fall back to names",
 			fixtureDir: "pipfile-lock-missing-version",
 			wantDeps: []Dependency{
-				{Name: "requests", Section: "default"},
-				{Name: "pytest", Section: "develop"},
+				{Raw: "requests", Name: "requests", Section: "default"},
+				{Raw: "pytest", Name: "pytest", Section: "develop"},
 			},
 			wantHas: boolPtr(true),
 		},
@@ -176,7 +197,7 @@ func TestPipfileLockParserFixtureCoverage(t *testing.T) {
 			} else if result.HasDependencies == nil || *result.HasDependencies != *tc.wantHas {
 				t.Fatalf("unexpected has_dependencies: got %+v want %+v", result.HasDependencies, tc.wantHas)
 			}
-			if !slices.Equal(result.Dependencies, tc.wantDeps) {
+			if !equalDependencies(result.Dependencies, tc.wantDeps) {
 				t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, tc.wantDeps)
 			}
 		})

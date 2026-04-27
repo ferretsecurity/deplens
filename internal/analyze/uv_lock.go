@@ -42,7 +42,7 @@ func (p uvLockParser) Match(path string, content []byte) (manifestParserResult, 
 
 	dependencies := make([]Dependency, 0, len(file.Packages))
 	for _, pkg := range file.Packages {
-		if pkg.Name == "" || pkg.Version == "" {
+		if pkg.Name == "" {
 			continue
 		}
 		if pkg.Source != nil {
@@ -55,10 +55,22 @@ func (p uvLockParser) Match(path string, content []byte) (manifestParserResult, 
 			if pkg.Source.Virtual != nil {
 				continue
 			}
+			if pkg.Source.Path != nil {
+				dependencies = append(dependencies, Dependency{
+					Raw:    pkg.Name,
+					Name:   pkg.Name,
+					Source: "path",
+				})
+				continue
+			}
 		}
-
+		if pkg.Version == "" {
+			continue
+		}
 		dependencies = append(dependencies, Dependency{
-			Name: pkg.Name + "==" + pkg.Version,
+			Raw:     pkg.Name + "==" + pkg.Version,
+			Name:    pkg.Name,
+			Version: pkg.Version,
 		})
 	}
 
