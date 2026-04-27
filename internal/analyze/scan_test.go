@@ -1018,8 +1018,9 @@ func TestDefaultRulesScanPackageLockExtractedFixtures(t *testing.T) {
 			if manifest.Type != ManifestType("js-npm-lock") {
 				t.Fatalf("unexpected manifest type: %+v", manifest)
 			}
-			if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, tc.want) {
-				t.Fatalf("unexpected dependencies: got %+v want %+v", got, tc.want)
+			got := dependencyNames(manifest.Dependencies)
+			if !equalStringSets(got, tc.want) {
+				t.Fatalf("unexpected dependencies: got %+v want %+v (order-independent)", got, tc.want)
 			}
 			if manifest.HasDependencies == nil || !*manifest.HasDependencies {
 				t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
@@ -1072,8 +1073,9 @@ func TestDefaultRulesScanNpmShrinkwrapExtractedFixture(t *testing.T) {
 	if manifest.Type != ManifestType("js-npm-shrinkwrap") {
 		t.Fatalf("unexpected manifest type: %+v", manifest)
 	}
-	if want := []string{"left-pad@1.3.0", "@types/node@20.12.7"}; !slices.Equal(dependencyNames(manifest.Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	want := []string{"left-pad@1.3.0", "@types/node@20.12.7"}
+	if got := dependencyNames(manifest.Dependencies); !equalStringSets(got, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v (order-independent)", manifest.Dependencies, want)
 	}
 	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
 		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)

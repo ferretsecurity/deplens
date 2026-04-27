@@ -98,6 +98,72 @@ func TestPackageLockDetectManifestFileExtractsV3RootDependenciesAndOptionalDepen
 	}
 }
 
+func TestPackageLockV3DetectManifestFileIncludesTransitiveNodeModules(t *testing.T) {
+	ruleset := mustLoadPackageLockRules(t)
+	filePath := filepath.Join(t.TempDir(), "package-lock.json")
+
+	mustWriteFile(t, filePath, `
+{
+  "name": "demo",
+  "lockfileVersion": 3,
+  "packages": {
+    "": {
+      "name": "demo",
+      "version": "1.0.0",
+      "dependencies": { "left-pad": "^1.3.0" }
+    },
+    "node_modules/left-pad": { "version": "1.3.0" },
+    "node_modules/loose-envify": { "version": "1.4.0" }
+  }
+}
+`)
+	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
+	if err != nil {
+		t.Fatalf("DetectManifestFile failed: %v", err)
+	}
+	if !ok {
+		t.Fatalf("expected match")
+	}
+	want := []string{"left-pad@1.3.0", "loose-envify@1.4.0"}
+	if !equalStringSets(dependencyNames(deps), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", dependencyNames(deps), want)
+	}
+	if hasDependencies == nil || !*hasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	}
+}
+
+func TestPackageLockV1WalksNestedDependencies(t *testing.T) {
+	ruleset := mustLoadPackageLockRules(t)
+	filePath := filepath.Join(t.TempDir(), "package-lock.json")
+	mustWriteFile(t, filePath, `{
+  "name": "demo",
+  "lockfileVersion": 1,
+  "dependencies": {
+    "left-pad": {
+      "version": "1.3.0",
+      "dependencies": {
+        "loose-envify": { "version": "1.4.0" }
+      }
+    }
+  }
+}`)
+
+	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
+	if err != nil {
+		t.Fatalf("DetectManifestFile failed: %v", err)
+	}
+	if !ok {
+		t.Fatalf("expected match")
+	}
+	if want := []string{"left-pad@1.3.0", "loose-envify@1.4.0"}; !equalStringSets(dependencyNames(deps), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", dependencyNames(deps), want)
+	}
+	if hasDependencies == nil || !*hasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	}
+}
+
 func TestPackageLockDetectManifestFileFallsBackToNameWhenVersionIsMissing(t *testing.T) {
 	ruleset := mustLoadPackageLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "package-lock.json")

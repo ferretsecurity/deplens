@@ -3,6 +3,7 @@ package analyze
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -15,6 +16,8 @@ type pnpmLockFile struct {
 	Dependencies         map[string]pnpmLockDependency `yaml:"dependencies"`
 	DevDependencies      map[string]pnpmLockDependency `yaml:"devDependencies"`
 	OptionalDependencies map[string]pnpmLockDependency `yaml:"optionalDependencies"`
+	// `packages` lists every resolved version in the store (transitive, etc.).
+	Packages map[string]yaml.Node `yaml:"packages"`
 }
 
 type pnpmLockImporter struct {
@@ -57,15 +60,19 @@ func (p pnpmLockParser) Match(path string, content []byte) (manifestParserResult
 	}
 
 	dependencies := make([]Dependency, 0)
+	seen := make(map[string]struct{})
+
 	if importer, ok := file.Importers["."]; ok {
-		dependencies = appendPNPMLockDependencies(dependencies, "dependencies", importer.Dependencies)
-		dependencies = appendPNPMLockDependencies(dependencies, "devDependencies", importer.DevDependencies)
-		dependencies = appendPNPMLockDependencies(dependencies, "optionalDependencies", importer.OptionalDependencies)
+		dependencies = appendPNPMLockDependencies(dependencies, seen, "dependencies", importer.Dependencies)
+		dependencies = appendPNPMLockDependencies(dependencies, seen, "devDependencies", importer.DevDependencies)
+		dependencies = appendPNPMLockDependencies(dependencies, seen, "optionalDependencies", importer.OptionalDependencies)
 	} else {
-		dependencies = appendPNPMLockDependencies(dependencies, "dependencies", file.Dependencies)
-		dependencies = appendPNPMLockDependencies(dependencies, "devDependencies", file.DevDependencies)
-		dependencies = appendPNPMLockDependencies(dependencies, "optionalDependencies", file.OptionalDependencies)
+		dependencies = appendPNPMLockDependencies(dependencies, seen, "dependencies", file.Dependencies)
+		dependencies = appendPNPMLockDependencies(dependencies, seen, "devDependencies", file.DevDependencies)
+		dependencies = appendPNPMLockDependencies(dependencies, seen, "optionalDependencies", file.OptionalDependencies)
 	}
+
+	dependencies = appendPNPMLockTransitiveFromPackages(dependencies, seen, file.Packages)
 
 	if len(dependencies) == 0 {
 		return manifestParserResult{
@@ -81,7 +88,90 @@ func (p pnpmLockParser) Match(path string, content []byte) (manifestParserResult
 	}, nil
 }
 
-func appendPNPMLockDependencies(dependencies []Dependency, section string, values map[string]pnpmLockDependency) []Dependency {
+func appendPNPMLockTransitiveFromPackages(dependencies []Dependency, seen map[string]struct{}, packages map[string]yaml.Node) []Dependency {
+	if len(packages) == 0 {
+		return dependencies
+	}
+	keys := make([]string, 0, len(packages))
+	for k := range packages {
+		if k != "" {
+			keys = append(keys, k)
+		}
+	}
+	slices.Sort(keys)
+	for _, key := range keys {
+		name, version := pnpmLockPackageKeyNameVersion(pnpmLockStripPeeringSuffix(key))
+		if name == "" {
+			continue
+		}
+		raw := name
+		if version != "" {
+			raw = name + "@" + version
+		}
+		if _, ok := seen[raw]; ok {
+			continue
+		}
+		seen[raw] = struct{}{}
+		dep := Dependency{Raw: raw, Name: name}
+		if version != "" {
+			dep.Version = version
+		}
+		dependencies = append(dependencies, dep)
+	}
+	return dependencies
+}
+
+func pnpmLockStripPeeringSuffix(key string) string {
+	if i := strings.Index(key, "("); i != -1 {
+		return strings.TrimSpace(key[:i])
+	}
+	return key
+}
+
+// pnpmLockPackageKeyNameVersion parses a `packages` / lockfile key into name and resolved version.
+// v9+: "react@1.0.0", "@types/node@20.0.0". v5/v6: "/react/1.0.0", "/@types/node/20.0.0".
+func pnpmLockPackageKeyNameVersion(key string) (name, version string) {
+	if key == "" {
+		return "", ""
+	}
+	if strings.HasPrefix(key, "/") {
+		return pnpmLockPackageKeyNameVersionV5Path(key)
+	}
+	return pnpmLockPackageKeyNameVersionV9(key)
+}
+
+func pnpmLockPackageKeyNameVersionV5Path(key string) (name, version string) {
+	k := strings.TrimPrefix(key, "/")
+	if k == "" {
+		return "", ""
+	}
+	last := strings.LastIndex(k, "/")
+	if last == -1 {
+		return k, ""
+	}
+	return k[:last], k[last+1:]
+}
+
+func pnpmLockPackageKeyNameVersionV9(key string) (name, version string) {
+	if strings.HasPrefix(key, "@") {
+		rest := key[1:]
+		i := strings.LastIndex(rest, "@")
+		if i == -1 {
+			return key, ""
+		}
+		if i == 0 { // "@@" weird
+			return key, ""
+		}
+		return "@" + rest[:i], rest[i+1:]
+	}
+	i := strings.LastIndex(key, "@")
+	if i <= 0 {
+		return key, ""
+	}
+	return key[:i], key[i+1:]
+}
+
+func appendPNPMLockDependencies(dependencies []Dependency, seen map[string]struct{}, section string, values map[string]pnpmLockDependency) []Dependency {
 	for _, name := range sortedPNPMLockDependencyNames(values) {
 		d := values[name]
 		dep := Dependency{
@@ -97,6 +187,7 @@ func appendPNPMLockDependencies(dependencies []Dependency, section string, value
 		} else if d.Specifier != "" {
 			dep.Constraint = d.Specifier
 		}
+		seen[dep.Raw] = struct{}{}
 		dependencies = append(dependencies, dep)
 	}
 	return dependencies

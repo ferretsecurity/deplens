@@ -153,6 +153,77 @@ optionalDependencies:
 	}
 }
 
+func TestPNPMLockDetectManifestFileMergesPackagesSectionV9(t *testing.T) {
+	ruleset := mustLoadPNPMLockRules(t)
+	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
+
+	mustWriteFile(t, filePath, `
+lockfileVersion: '9.0'
+
+importers:
+  .:
+    dependencies:
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+
+packages:
+  react@18.3.1: {}
+  loose-envify@1.4.0: {}
+`)
+
+	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	if err != nil {
+		t.Fatalf("DetectManifestFile failed: %v", err)
+	}
+	if !ok {
+		t.Fatalf("expected match")
+	}
+	want := []Dependency{
+		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies", Extras: map[string]string{"specifier": "^18.3.1"}},
+		{Raw: "loose-envify@1.4.0", Name: "loose-envify", Version: "1.4.0"},
+	}
+	if !equalDependencies(deps, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
+	}
+	if hasDependencies == nil || !*hasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	}
+}
+
+func TestPNPMLockPackageKeyV5Path(t *testing.T) {
+	ruleset := mustLoadPNPMLockRules(t)
+	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
+	mustWriteFile(t, filePath, `
+lockfileVersion: '5.4'
+
+dependencies:
+  react: 18.3.1
+
+packages:
+  /react/18.3.1: {}
+  /loose-envify/1.4.0: {}
+`)
+
+	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	if err != nil {
+		t.Fatalf("DetectManifestFile failed: %v", err)
+	}
+	if !ok {
+		t.Fatalf("expected match")
+	}
+	want := []Dependency{
+		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"},
+		{Raw: "loose-envify@1.4.0", Name: "loose-envify", Version: "1.4.0"},
+	}
+	if !equalDependencies(deps, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
+	}
+	if hasDependencies == nil || !*hasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	}
+}
+
 func TestPNPMLockDetectManifestFileExtractsOnlyRootImporterDependencies(t *testing.T) {
 	ruleset := mustLoadPNPMLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
