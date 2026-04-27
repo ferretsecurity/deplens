@@ -6,6 +6,33 @@ import (
 	"testing"
 )
 
+func TestPyRequirementsParserSetsStructuredFields(t *testing.T) {
+	parser, _ := newPyRequirementsMatcher(pyRequirementsMatcherConfig{})
+	result, _ := parser.Match("requirements.txt", []byte("requests>=2.28.0,<3\nflask==3.0.0\npytest\n"))
+	cases := []struct {
+		raw, wantName, wantConstraint string
+	}{
+		{"requests>=2.28.0,<3", "requests", ">=2.28.0,<3"},
+		{"flask==3.0.0", "flask", "==3.0.0"},
+		{"pytest", "pytest", ""},
+	}
+	for i, tc := range cases {
+		if i >= len(result.Dependencies) {
+			t.Fatalf("missing dependency %d", i)
+		}
+		dep := result.Dependencies[i]
+		if dep.Raw != tc.raw {
+			t.Errorf("[%d] Raw: got %q want %q", i, dep.Raw, tc.raw)
+		}
+		if dep.Name != tc.wantName {
+			t.Errorf("[%d] Name: got %q want %q", i, dep.Name, tc.wantName)
+		}
+		if dep.Constraint != tc.wantConstraint {
+			t.Errorf("[%d] Constraint: got %q want %q", i, dep.Constraint, tc.wantConstraint)
+		}
+	}
+}
+
 func TestPyRequirementsParserExtractsStaticDependencyLines(t *testing.T) {
 	parser, err := newPyRequirementsMatcher(pyRequirementsMatcherConfig{})
 	if err != nil {

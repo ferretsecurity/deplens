@@ -83,10 +83,21 @@ func (p pnpmLockParser) Match(path string, content []byte) (manifestParserResult
 
 func appendPNPMLockDependencies(dependencies []Dependency, section string, values map[string]pnpmLockDependency) []Dependency {
 	for _, name := range sortedPNPMLockDependencyNames(values) {
-		dependencies = append(dependencies, Dependency{
-			Name:    formatPNPMLockDependencyName(name, values[name]),
+		d := values[name]
+		dep := Dependency{
+			Raw:     formatPNPMLockDependencyName(name, d),
+			Name:    name,
 			Section: section,
-		})
+		}
+		if d.Version != "" {
+			dep.Version = d.Version
+			if d.Specifier != "" {
+				dep.Extras = map[string]string{"specifier": d.Specifier}
+			}
+		} else if d.Specifier != "" {
+			dep.Constraint = d.Specifier
+		}
+		dependencies = append(dependencies, dep)
 	}
 	return dependencies
 }

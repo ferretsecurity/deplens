@@ -25,7 +25,11 @@ func (m goModMatcher) Match(path string, content []byte) (manifestParserResult, 
 		if req.Indirect {
 			continue
 		}
-		dependencies = append(dependencies, Dependency{Name: req.Mod.Path})
+		dependencies = append(dependencies, Dependency{
+			Raw:     req.Mod.Path,
+			Name:    req.Mod.Path,
+			Version: req.Mod.Version,
+		})
 	}
 
 	hasDependencies := len(dependencies) > 0

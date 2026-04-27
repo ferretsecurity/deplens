@@ -121,11 +121,79 @@ content-hash = "mixed"
 	if !result.Matched {
 		t.Fatalf("expected match")
 	}
-	if want := []string{"requests==2.32.3"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
+	if want := []string{"requests==2.32.3", "internal-lib"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
 	}
 	if result.HasDependencies == nil || !*result.HasDependencies {
 		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	}
+}
+
+func TestPoetryLockParserSetsStructuredFieldsForRegistryDep(t *testing.T) {
+	parser, _ := newPoetryLockParser(poetryLockMatcherConfig{})
+	result, _ := parser.Match("poetry.lock", []byte(`
+[[package]]
+name = "requests"
+version = "2.32.3"
+
+[metadata]
+lock-version = "2.1"
+python-versions = "^3.11"
+content-hash = "x"
+`))
+	if len(result.Dependencies) != 1 {
+		t.Fatalf("expected 1 dep, got %d", len(result.Dependencies))
+	}
+	dep := result.Dependencies[0]
+	if dep.Raw != "requests==2.32.3" {
+		t.Errorf("Raw: got %q", dep.Raw)
+	}
+	if dep.Name != "requests" {
+		t.Errorf("Name: got %q", dep.Name)
+	}
+	if dep.Version != "2.32.3" {
+		t.Errorf("Version: got %q", dep.Version)
+	}
+}
+
+func TestPoetryLockParserEmitsGitDependencies(t *testing.T) {
+	parser, _ := newPoetryLockParser(poetryLockMatcherConfig{})
+	result, _ := parser.Match("poetry.lock", []byte(`
+[[package]]
+name = "mylib"
+version = "0.1.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/org/mylib.git"
+reference = "abc123"
+
+[metadata]
+lock-version = "2.1"
+python-versions = "^3.11"
+content-hash = "x"
+`))
+	if len(result.Dependencies) != 1 {
+		t.Fatalf("expected 1 dep (git), got %d", len(result.Dependencies))
+	}
+	dep := result.Dependencies[0]
+	if dep.Raw != "mylib" {
+		t.Errorf("Raw: got %q", dep.Raw)
+	}
+	if dep.Name != "mylib" {
+		t.Errorf("Name: got %q", dep.Name)
+	}
+	if dep.Version != "" {
+		t.Errorf("Version: expected empty, got %q", dep.Version)
+	}
+	if dep.Source != "git" {
+		t.Errorf("Source: got %q", dep.Source)
+	}
+	if dep.Extras["source_url"] != "https://github.com/org/mylib.git" {
+		t.Errorf("Extras[source_url]: got %q", dep.Extras["source_url"])
+	}
+	if dep.Extras["source_ref"] != "abc123" {
+		t.Errorf("Extras[source_ref]: got %q", dep.Extras["source_ref"])
 	}
 }
 
@@ -196,16 +264,6 @@ func TestPoetryLockParserReturnsConclusiveEmptyAfterFiltering(t *testing.T) {
 	}
 
 	result, err := parser.Match("poetry.lock", []byte(`
-[[package]]
-name = "internal-lib"
-version = "1.4.2"
-groups = ["main"]
-files = []
-
-[package.source]
-type = "git"
-url = "https://github.com/example/internal-lib.git"
-
 [[package]]
 name = "my-app"
 version = "0.1.0"

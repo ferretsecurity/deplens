@@ -5,6 +5,29 @@ import (
 	"testing"
 )
 
+func TestGoModParserSetsStructuredFields(t *testing.T) {
+	matcher, _ := newGoModMatcher(goModMatcherConfig{})
+	result, _ := matcher.Match("go.mod", []byte(`module example.com/app
+
+go 1.21
+
+require github.com/BurntSushi/toml v0.3.1
+`))
+	if len(result.Dependencies) != 1 {
+		t.Fatalf("expected 1 dep, got %d", len(result.Dependencies))
+	}
+	dep := result.Dependencies[0]
+	if dep.Raw != "github.com/BurntSushi/toml" {
+		t.Errorf("Raw: got %q", dep.Raw)
+	}
+	if dep.Name != "github.com/BurntSushi/toml" {
+		t.Errorf("Name: got %q", dep.Name)
+	}
+	if dep.Version != "v0.3.1" {
+		t.Errorf("Version: got %q", dep.Version)
+	}
+}
+
 func TestScanExtractsGoModDependenciesFromFixture(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 

@@ -192,6 +192,59 @@ func TestPackageLockDetectManifestFileRejectsMalformedJSON(t *testing.T) {
 	}
 }
 
+func TestPackageLockV2ParserSetsStructuredFieldsWithSections(t *testing.T) {
+	parser, _ := newPackageLockParser(packageLockMatcherConfig{})
+	result, _ := parser.Match("package-lock.json", []byte(`{
+        "lockfileVersion": 2,
+        "packages": {
+            "": {
+                "dependencies": {"react": "^18"},
+                "devDependencies": {"jest": "^29"},
+                "optionalDependencies": {"fsevents": "^2"}
+            },
+            "node_modules/react": {"version": "18.0.0"},
+            "node_modules/jest": {"version": "29.0.0"},
+            "node_modules/fsevents": {"version": "2.3.3"}
+        }
+    }`))
+	deps := result.Dependencies
+	find := func(name string) *Dependency {
+		for i := range deps {
+			if deps[i].Name == name {
+				return &deps[i]
+			}
+		}
+		return nil
+	}
+	r := find("react")
+	if r == nil {
+		t.Fatal("react not found")
+	}
+	if r.Raw != "react@18.0.0" {
+		t.Errorf("react Raw: got %q", r.Raw)
+	}
+	if r.Version != "18.0.0" {
+		t.Errorf("react Version: got %q", r.Version)
+	}
+	if r.Section != "dependencies" {
+		t.Errorf("react Section: got %q", r.Section)
+	}
+	j := find("jest")
+	if j == nil {
+		t.Fatal("jest not found")
+	}
+	if j.Section != "devDependencies" {
+		t.Errorf("jest Section: got %q", j.Section)
+	}
+	f := find("fsevents")
+	if f == nil {
+		t.Fatal("fsevents not found")
+	}
+	if f.Section != "optionalDependencies" {
+		t.Errorf("fsevents Section: got %q", f.Section)
+	}
+}
+
 func mustLoadPackageLockRules(t *testing.T) Ruleset {
 	t.Helper()
 

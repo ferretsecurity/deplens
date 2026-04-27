@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strings"
 )
 
 type pipfileLockParser struct{}
@@ -71,11 +72,19 @@ func pipfileLockDependencies(groups ...pipfileLockDependencyGroup) []Dependency 
 				continue
 			}
 
-			dependencyName := name
-			if version := group.Packages[name].Version; version != "" {
-				dependencyName += version
+			rawVersion := group.Packages[name].Version
+			raw := name
+			version := ""
+			if rawVersion != "" {
+				raw = name + rawVersion
+				version = strings.TrimPrefix(rawVersion, "==")
 			}
-			values = append(values, Dependency{Name: dependencyName, Section: group.Name})
+			values = append(values, Dependency{
+				Raw:     raw,
+				Name:    name,
+				Version: version,
+				Section: group.Name,
+			})
 		}
 	}
 
@@ -86,9 +95,9 @@ func pipfileLockDependencies(groups ...pipfileLockDependencyGroup) []Dependency 
 	slices.SortFunc(values, func(a, b Dependency) int {
 		if a.Section == b.Section {
 			switch {
-			case a.Name < b.Name:
+			case a.Raw < b.Raw:
 				return -1
-			case a.Name > b.Name:
+			case a.Raw > b.Raw:
 				return 1
 			default:
 				return 0

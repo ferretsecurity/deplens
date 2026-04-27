@@ -7,6 +7,28 @@ import (
 	"testing"
 )
 
+func TestYarnLockClassicParserSetsStructuredFields(t *testing.T) {
+	parser, _ := newYarnLockParser(yarnLockMatcherConfig{})
+	result, _ := parser.Match("yarn.lock", []byte(`# yarn lockfile v1
+
+react@^18.0.0:
+  version "18.0.0"
+`))
+	if len(result.Dependencies) != 1 {
+		t.Fatalf("expected 1 dep, got %d", len(result.Dependencies))
+	}
+	dep := result.Dependencies[0]
+	if dep.Raw != "react@18.0.0" {
+		t.Errorf("Raw: got %q", dep.Raw)
+	}
+	if dep.Name != "react" {
+		t.Errorf("Name: got %q", dep.Name)
+	}
+	if dep.Version != "18.0.0" {
+		t.Errorf("Version: got %q", dep.Version)
+	}
+}
+
 func TestYarnLockDetectManifestFileExtractsClassicEntries(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")

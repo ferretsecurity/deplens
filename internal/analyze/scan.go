@@ -114,8 +114,13 @@ func normalizeRelativePath(relPath string) string {
 }
 
 type Dependency struct {
-	Name    string `json:"name"`
-	Section string `json:"section,omitempty"`
+	Raw        string            `json:"raw"`
+	Name       string            `json:"name,omitempty"`
+	Version    string            `json:"version,omitempty"`
+	Constraint string            `json:"constraint,omitempty"`
+	Section    string            `json:"section,omitempty"`
+	Source     string            `json:"source,omitempty"`
+	Extras     map[string]string `json:"extras,omitempty"`
 }
 
 func dependenciesFromStrings(values []string) []Dependency {
@@ -125,7 +130,7 @@ func dependenciesFromStrings(values []string) []Dependency {
 
 	dependencies := make([]Dependency, 0, len(values))
 	for _, value := range values {
-		dependencies = append(dependencies, Dependency{Name: value})
+		dependencies = append(dependencies, Dependency{Raw: value})
 	}
 	return dependencies
 }

@@ -30,11 +30,65 @@ source = { path = "../my-lib" }
 	if !result.Matched {
 		t.Fatalf("expected match")
 	}
-	if want := []string{"requests==2.32.3", "local-lib==0.1.0"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
+	if want := []string{"requests==2.32.3", "local-lib"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
 	}
 	if result.HasDependencies == nil || !*result.HasDependencies {
 		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	}
+}
+
+func TestUVLockParserSetsStructuredFields(t *testing.T) {
+	parser, _ := newUVLockParser(uvLockMatcherConfig{})
+	result, _ := parser.Match("uv.lock", []byte(`
+version = 1
+
+[[package]]
+name = "requests"
+version = "2.32.3"
+`))
+	if len(result.Dependencies) != 1 {
+		t.Fatalf("expected 1 dep, got %d", len(result.Dependencies))
+	}
+	dep := result.Dependencies[0]
+	if dep.Raw != "requests==2.32.3" {
+		t.Errorf("Raw: got %q", dep.Raw)
+	}
+	if dep.Name != "requests" {
+		t.Errorf("Name: got %q", dep.Name)
+	}
+	if dep.Version != "2.32.3" {
+		t.Errorf("Version: got %q", dep.Version)
+	}
+}
+
+func TestUVLockParserEmitsNonSelfPathDependencies(t *testing.T) {
+	parser, _ := newUVLockParser(uvLockMatcherConfig{})
+	result, _ := parser.Match("uv.lock", []byte(`
+version = 1
+
+[[package]]
+name = "my-lib"
+version = "0.1.0"
+
+[package.source]
+path = "../my-lib"
+`))
+	if len(result.Dependencies) != 1 {
+		t.Fatalf("expected 1 path dep, got %d", len(result.Dependencies))
+	}
+	dep := result.Dependencies[0]
+	if dep.Raw != "my-lib" {
+		t.Errorf("Raw: got %q", dep.Raw)
+	}
+	if dep.Name != "my-lib" {
+		t.Errorf("Name: got %q", dep.Name)
+	}
+	if dep.Source != "path" {
+		t.Errorf("Source: got %q", dep.Source)
+	}
+	if dep.Version != "" {
+		t.Errorf("Version: expected empty, got %q", dep.Version)
 	}
 }
 

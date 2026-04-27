@@ -10,6 +10,22 @@ import (
 	"github.com/ferretsecurity/deplens/internal/analyze"
 )
 
+func displayDependency(d analyze.Dependency) string {
+	if d.Name != "" && d.Version != "" {
+		return d.Name + "@" + d.Version
+	}
+	if d.Name != "" && d.Constraint != "" {
+		return d.Name + d.Constraint
+	}
+	if d.Name != "" {
+		return d.Name
+	}
+	if d.Raw != "" {
+		return d.Raw
+	}
+	return d.Name
+}
+
 type HumanOptions struct {
 	ShowEmpty bool
 }
@@ -151,7 +167,7 @@ func renderDependencies(dependencies []analyze.Dependency) string {
 	if allUnsectioned {
 		var b strings.Builder
 		for _, dependency := range dependencies {
-			b.WriteString(fmt.Sprintf("  - %s\n", dependency.Name))
+			b.WriteString(fmt.Sprintf("  - %s\n", displayDependency(dependency)))
 		}
 		return b.String()
 	}
@@ -166,7 +182,7 @@ func renderDependencies(dependencies []analyze.Dependency) string {
 		if _, exists := grouped[groupName]; !exists {
 			order = append(order, groupName)
 		}
-		grouped[groupName] = append(grouped[groupName], dependency.Name)
+		grouped[groupName] = append(grouped[groupName], displayDependency(dependency))
 	}
 
 	var b strings.Builder

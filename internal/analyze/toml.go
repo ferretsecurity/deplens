@@ -369,7 +369,17 @@ func extractTOMLDependencies(nodes []tomlMatchedValue, query tomlQuery) []Depend
 		switch value := node.value.(type) {
 		case string:
 			if value != "" {
-				dependencies = append(dependencies, Dependency{Name: value, Section: node.section})
+				dep := Dependency{Raw: value, Section: node.section}
+				// PEP 508 lines (e.g. "requests>=2.31") do not use " = " assignment.
+				// Table serialization uses "name = value" and is not PEP 508.
+				if !strings.Contains(value, " = ") {
+					name, rest := parsePEP508Dep(value)
+					if name != "" {
+						dep.Name = name
+						dep.Constraint = rest
+					}
+				}
+				dependencies = append(dependencies, dep)
 			}
 		case map[string]any:
 			if !allowDependencyTables {
@@ -425,7 +435,7 @@ func serializeTOMLDependencyTable(value map[string]any, skipPython bool, section
 			continue
 		}
 		dependencies = append(dependencies, Dependency{
-			Name:    fmt.Sprintf("%s = %s", key, serialized),
+			Raw:     fmt.Sprintf("%s = %s", key, serialized),
 			Section: section,
 		})
 	}
