@@ -26,6 +26,32 @@ require github.com/BurntSushi/toml v0.3.1
 	if dep.Version != "v0.3.1" {
 		t.Errorf("Version: got %q", dep.Version)
 	}
+	if dep.Section != "" {
+		t.Errorf("Section: expected empty for direct require, got %q", dep.Section)
+	}
+}
+
+func TestGoModParserSetsSectionIndirect(t *testing.T) {
+	matcher, _ := newGoModMatcher(goModMatcherConfig{})
+	result, _ := matcher.Match("go.mod", []byte(`module example.com/app
+
+go 1.25
+
+require (
+	github.com/google/uuid v1.6.0
+	golang.org/x/text v0.25.0 // indirect
+)
+`))
+	if len(result.Dependencies) != 2 {
+		t.Fatalf("expected 2 deps, got %d", len(result.Dependencies))
+	}
+	direct, indirect := result.Dependencies[0], result.Dependencies[1]
+	if direct.Name != "github.com/google/uuid" || direct.Section != "" {
+		t.Errorf("direct: got %+v", direct)
+	}
+	if indirect.Name != "golang.org/x/text" || indirect.Section != "indirect" {
+		t.Errorf("indirect: got %+v", indirect)
+	}
 }
 
 func TestScanExtractsGoModDependenciesFromFixture(t *testing.T) {
@@ -102,7 +128,7 @@ func TestScanMarksGoModWithoutRequireAsEmpty(t *testing.T) {
 	}
 }
 
-func TestScanExtractsOnlyDirectGoModRequirements(t *testing.T) {
+func TestScanExtractsAllGoModRequirements(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := filepath.Join("..", "..", "testdata", "go", "mod-direct-only")
 	result, err := Scan(root, nil, ruleset)
@@ -115,9 +141,13 @@ func TestScanExtractsOnlyDirectGoModRequirements(t *testing.T) {
 
 	manifest := result.Manifests[0]
 	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-		t.Fatalf("expected go.mod to report extracted direct dependencies, got %+v", manifest)
+		t.Fatalf("expected go.mod to report extracted dependencies, got %+v", manifest)
 	}
-	if got := dependencyNames(manifest.Dependencies); len(got) != 1 || got[0] != "github.com/google/uuid" {
-		t.Fatalf("unexpected go.mod dependencies: %+v", manifest.Dependencies)
+	want := []Dependency{
+		{Raw: "github.com/google/uuid", Name: "github.com/google/uuid", Version: "v1.6.0"},
+		{Raw: "golang.org/x/text", Name: "golang.org/x/text", Version: "v0.25.0", Section: "indirect"},
+	}
+	if !equalDependencies(manifest.Dependencies, want) {
+		t.Fatalf("unexpected go.mod dependencies: got %+v want %+v", manifest.Dependencies, want)
 	}
 }

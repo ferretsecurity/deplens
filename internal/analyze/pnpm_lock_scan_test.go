@@ -36,6 +36,25 @@ func TestScanPNPMLockExtractsDependencies(t *testing.T) {
 	}
 }
 
+func TestScanPNPMLockWithTransitiveInPackagesFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	result, err := Scan(filepath.Join("..", "..", "testdata", "javascript", "pnpm-lock-with-transitive"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("Scan failed: %v", err)
+	}
+	pnpmLock := mustFindPNPMLockManifest(t, result)
+	if pnpmLock.HasDependencies == nil || !*pnpmLock.HasDependencies {
+		t.Fatalf("expected has_dependencies=true, got %+v", pnpmLock.HasDependencies)
+	}
+	want := []Dependency{
+		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies", Extras: map[string]string{"specifier": "^18.3.1"}},
+		{Raw: "loose-envify@1.4.0", Name: "loose-envify", Version: "1.4.0"},
+	}
+	if !equalDependencies(pnpmLock.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", pnpmLock.Dependencies, want)
+	}
+}
+
 func TestScanPNPMLockExtractsTopLevelDependenciesForOlderLocks(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 

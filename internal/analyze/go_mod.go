@@ -22,14 +22,15 @@ func (m goModMatcher) Match(path string, content []byte) (manifestParserResult, 
 
 	dependencies := make([]Dependency, 0, len(parsed.Require))
 	for _, req := range parsed.Require {
-		if req.Indirect {
-			continue
-		}
-		dependencies = append(dependencies, Dependency{
+		dep := Dependency{
 			Raw:     req.Mod.Path,
 			Name:    req.Mod.Path,
 			Version: req.Mod.Version,
-		})
+		}
+		if req.Indirect {
+			dep.Section = "indirect"
+		}
+		dependencies = append(dependencies, dep)
 	}
 
 	hasDependencies := len(dependencies) > 0
