@@ -4,7 +4,7 @@
 
 The current `Dependency` struct has two fields: `Name` and `Section`. `Name` has no contract — parsers embed package names, version strings, version operators, and sometimes constraint ranges inside it, using ecosystem-specific separators (`@`, `==`, raw PEP 508 lines). This makes the struct hard to consume programmatically.
 
-This design replaces the current struct with a clean, structured shape. All parsers are updated to populate the appropriate fields.
+This design introduces a `Raw` field that takes over the role the current `Name` field plays today — a free-form string with no contract. All parsers are updated to write to `Raw` instead of `Name`. A new `Name` field is introduced with a strict contract: the bare package identifier only.
 
 ## Motivation
 
@@ -19,6 +19,7 @@ Additionally, some parsers silently discard available data:
 
 ## Goals
 
+- Introduce `Raw` as the home for the free-form strings parsers produce today, with no contract
 - Give `Name` a strict, enforceable contract: bare package identifier only
 - Separate version information into dedicated fields
 - Surface source type for git and path dependencies instead of silently dropping them
@@ -33,7 +34,8 @@ Additionally, some parsers silently discard available data:
 
 ```go
 type Dependency struct {
-    Name       string            `json:"name"`
+    Raw        string            `json:"raw"`
+    Name       string            `json:"name,omitempty"`
     Version    string            `json:"version,omitempty"`
     Constraint string            `json:"constraint,omitempty"`
     Section    string            `json:"section,omitempty"`
@@ -43,6 +45,12 @@ type Dependency struct {
 ```
 
 ## Field contracts
+
+### `Raw`
+
+The free-form string the parser produces. No format is guaranteed. This is `name@version` in npm/cargo/composer parsers, `name==version` in Python lockfile parsers, a raw PEP 508 line in `requirements.txt`, and a bare module path in `go-mod`. The value is whatever the underlying file format provides, interpreted as minimally as possible.
+
+This field is always set. It is never empty on an emitted dependency.
 
 ### `Name`
 
@@ -56,7 +64,7 @@ The package identifier as it is known in its registry. No version operators, no 
 
 This field must not contain `@`, `==`, `>=`, `<=`, `>`, `<`, `!=`, `~`, `^`, or spaces unless they are structural parts of the canonical package identifier (e.g. a scoped npm package like `@babel/core` contains `@` as a prefix, which is part of the name).
 
-This field is always set. It is never empty on an emitted dependency.
+Omitted until the parser for this manifest type has been migrated to populate structured fields.
 
 ### `Version`
 
@@ -113,11 +121,14 @@ Known keys by ecosystem:
 
 ## Parser migration table
 
-What each parser emits today in `Name`, and what it should emit after migration:
+Migration happens in two steps for every parser:
+
+1. **Rename**: write the existing string to `Raw` instead of `Name`. No other logic changes. `Raw` value is identical to what `Name` held before.
+2. **Structured**: populate `Name`, `Version` or `Constraint`, and any other applicable fields. Both steps can land in the same change or separately.
 
 ### Lockfile parsers
 
-| Parser | `Name` today | `Name` after | `Version` after |
+| Parser | `Raw` (unchanged value) | `Name` after | `Version` after |
 |---|---|---|---|
 | `cargo-lock` | `serde@1.0.0` | `serde` | `1.0.0` |
 | `poetry-lock` | `requests==2.32.3` | `requests` | `2.32.3` |
@@ -130,12 +141,12 @@ What each parser emits today in `Name`, and what it should emit after migration:
 
 ### Source manifest parsers
 
-| Parser | `Name` today | `Name` after | `Constraint` after |
+| Parser | `Raw` (unchanged value) | `Name` after | `Constraint` after |
 |---|---|---|---|
 | `py-requirements` | `requests>=2.28.0,<3` | `requests` | `>=2.28.0,<3` |
 | `toml` / `pyproject.toml` | `requests>=2.28.0` | `requests` | `>=2.28.0` |
 
-### Parsers with missing data to add
+### Additional data to surface
 
 | Parser | Change |
 |---|---|
@@ -149,10 +160,11 @@ What each parser emits today in `Name`, and what it should emit after migration:
 
 ## Render behavior
 
-The human-readable renderer currently displays `dependency.Name` directly. After migration, it should format `Name` and `Version` together for display when `Version` is set (e.g. `serde@1.0.0`), keeping the visual output consistent with today.
+The human-readable renderer currently displays `dependency.Name` directly. After the rename step it should display `Raw`. After parsers are fully migrated it should prefer `Name` + `Version` for display (e.g. `serde@1.0.0`), falling back to `Raw` for any parser not yet migrated. This keeps visual output consistent across the migration window.
 
 ## Success criteria
 
+- All parsers write to `Raw` instead of `Name`; `Raw` values are identical to the current `Name` values
 - All lockfile parsers set `Name` to the bare package identifier and `Version` to the resolved version string with no operators
 - All source manifest parsers set `Name` to the bare package identifier and `Constraint` to the version range
 - No parser embeds version operators or separators in `Name`
