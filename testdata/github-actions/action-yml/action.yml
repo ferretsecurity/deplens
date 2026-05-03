@@ -1,0 +1,13 @@
+name: 'Setup My Tool'
+description: 'Installs and configures my tool'
+inputs:
+  version:
+    description: 'Version to install'
+    required: false
+    default: 'latest'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install tool
+      run: echo "installing ${{ inputs.version }}"
+      shell: bash

@@ -85,6 +85,15 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "v.mod", want: ManifestType("vlang")},
 		{name: "Brewfile", want: ManifestType("homebrew-brewfile")},
 		{name: ".terraform.lock.hcl", want: ManifestType("terraform-lock")},
+		{name: "Dockerfile", want: ManifestType("docker-dockerfile")},
+		{name: "Dockerfile.dev", want: ManifestType("docker-dockerfile")},
+		{name: "Dockerfile.prod", want: ManifestType("docker-dockerfile")},
+		{name: "docker-compose.yml", want: ManifestType("docker-compose")},
+		{name: "docker-compose.yaml", want: ManifestType("docker-compose")},
+		{name: "compose.yml", want: ManifestType("docker-compose")},
+		{name: "compose.yaml", want: ManifestType("docker-compose")},
+		{name: "action.yml", want: ManifestType("github-actions-action")},
+		{name: "action.yaml", want: ManifestType("github-actions-action")},
 	}
 
 	for _, tc := range testCases {
@@ -166,6 +175,15 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 		"conda-lock.yml.bak",
 		"index.html.bak",
 		"component.jsx",
+		"dockerfile",
+		"DOCKERFILE",
+		"docker-compose.override.yml",
+		"docker-compose.dev.yml",
+		"my-compose.yaml",
+		"docker-compose.yml.bak",
+		"my-action.yml",
+		"action.yml.bak",
+		"action.json",
 	}
 
 	for _, tc := range testCases {
@@ -3657,6 +3675,9 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("jsonnet-bundler"),
 		ManifestType("terraform-lock"),
 		ManifestType("unity-packages-manifest"),
+		ManifestType("docker-dockerfile"),
+		ManifestType("docker-compose"),
+		ManifestType("github-actions-action"),
 		ManifestType("js-banner-block-start"),
 		ManifestType("js-banner-plain-block-start"),
 		ManifestType("js-banner-multiline-preserved"),

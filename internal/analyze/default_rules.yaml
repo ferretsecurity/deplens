@@ -330,6 +330,12 @@ rules:
     json:
       exists-any:
         - dependencies
+  - name: docker-dockerfile
+    filename-regex: '^Dockerfile(\..+)?$'
+  - name: docker-compose
+    filename-regex: '^(docker-compose|compose)\.ya?ml$'
+  - name: github-actions-action
+    filename-regex: '^action\.ya?ml$'
   - name: js-banner-block-start
     filename-regex: '.*\.js$'
     banner-regex: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
