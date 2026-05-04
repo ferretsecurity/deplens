@@ -178,6 +178,10 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "Policyfile.lock.json", want: ManifestType("chef-policyfile-lock")},
 		{name: "jsonnetfile.lock.json", want: ManifestType("jsonnet-lock")},
 		{name: "Cask", want: ManifestType("emacs-cask")},
+		// Group 1m: Game engines
+		{name: "MyGame.uproject", want: ManifestType("unreal-uproject")},
+		{name: "MyPlugin.uplugin", want: ManifestType("unreal-uplugin")},
+		{name: "plugin.cfg", want: ManifestType("godot-plugin-cfg")},
 	}
 
 	for _, tc := range testCases {
@@ -367,6 +371,11 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 		"jsonnetfile.lock.json.bak",
 		"cask",
 		"Cask.lock",
+		// Group 1m negatives
+		"MyGame.uproject.bak",
+		"MyPlugin.uplugin.bak",
+		"plugin.cfg.bak",
+		"PLUGIN.cfg",
 	}
 
 	for _, tc := range testCases {
@@ -3925,6 +3934,9 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("chef-policyfile-lock"),
 		ManifestType("jsonnet-lock"),
 		ManifestType("emacs-cask"),
+		ManifestType("unreal-uproject"),
+		ManifestType("unreal-uplugin"),
+		ManifestType("godot-plugin-cfg"),
 		ManifestType("js-banner-block-start"),
 		ManifestType("js-banner-plain-block-start"),
 		ManifestType("js-banner-multiline-preserved"),

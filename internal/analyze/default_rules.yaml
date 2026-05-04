@@ -464,6 +464,12 @@ rules:
     filename-regex: '^jsonnetfile\.lock\.json$'
   - name: emacs-cask
     filename-regex: '^Cask$'
+  - name: unreal-uproject
+    filename-regex: '.*\.uproject$'
+  - name: unreal-uplugin
+    filename-regex: '.*\.uplugin$'
+  - name: godot-plugin-cfg
+    filename-regex: '^plugin\.cfg$'
   - name: js-banner-block-start
     filename-regex: '.*\.js$'
     banner-regex: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
