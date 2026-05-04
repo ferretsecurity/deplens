@@ -106,6 +106,12 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "turbo.json", want: ManifestType("js-turbo")},
 		{name: "pants.toml", want: ManifestType("pants-config")},
 		{name: ".gitmodules", want: ManifestType("git-submodules")},
+		// Group 1c: JVM ecosystem extensions
+		{name: "build.sbt", want: ManifestType("scala-sbt-build")},
+		{name: "build.sc", want: ManifestType("scala-mill")},
+		{name: "ivy.xml", want: ManifestType("java-ivy")},
+		{name: "ivysettings.xml", want: ManifestType("java-ivy-settings")},
+		{name: "build.xml", want: ManifestType("java-ant-build")},
 	}
 
 	for _, tc := range testCases {
@@ -209,6 +215,14 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 		"gitmodules",
 		".gitmodule",
 		"turbo.json.bak",
+		// Group 1c negatives
+		"build.sbt.bak",
+		"BUILD.sbt",
+		"build.sc.bak",
+		"ivy.xml.bak",
+		"ivysettings.xml.bak",
+		"build.xml.bak",
+		"BUILD.xml",
 	}
 
 	for _, tc := range testCases {
@@ -3643,6 +3657,11 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("java-gradle-kts"),
 		ManifestType("java-gradle-settings"),
 		ManifestType("java-gradle-settings-kts"),
+		ManifestType("scala-sbt-build"),
+		ManifestType("scala-mill"),
+		ManifestType("java-ant-build"),
+		ManifestType("java-ivy"),
+		ManifestType("java-ivy-settings"),
 		ManifestType("ruby-gemfile"),
 		ManifestType("ruby-gemfile-lock"),
 		ManifestType("ruby-gemspec"),
@@ -3703,6 +3722,16 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("docker-dockerfile"),
 		ManifestType("docker-compose"),
 		ManifestType("github-actions-action"),
+		ManifestType("bazel-workspace"),
+		ManifestType("bazel-module"),
+		ManifestType("bazel-module-lock"),
+		ManifestType("bazel-build-file"),
+		ManifestType("js-nx"),
+		ManifestType("js-lerna"),
+		ManifestType("js-rush"),
+		ManifestType("js-turbo"),
+		ManifestType("pants-config"),
+		ManifestType("git-submodules"),
 		ManifestType("js-banner-block-start"),
 		ManifestType("js-banner-plain-block-start"),
 		ManifestType("js-banner-multiline-preserved"),

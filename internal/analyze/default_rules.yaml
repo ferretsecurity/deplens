@@ -132,6 +132,16 @@ rules:
     filename-regex: '^settings\.gradle$'
   - name: java-gradle-settings-kts
     filename-regex: '^settings\.gradle\.kts$'
+  - name: scala-sbt-build
+    filename-regex: '^build\.sbt$'
+  - name: scala-mill
+    filename-regex: '^build\.sc$'
+  - name: java-ant-build
+    filename-regex: '^build\.xml$'
+  - name: java-ivy
+    filename-regex: '^ivy\.xml$'
+  - name: java-ivy-settings
+    filename-regex: '^ivysettings\.xml$'
   - name: ruby-gemfile
     filename-regex: '^Gemfile$'
   - name: ruby-gemfile-lock
