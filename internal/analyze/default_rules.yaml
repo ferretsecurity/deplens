@@ -442,6 +442,28 @@ rules:
     filename-regex: '^flake\.nix$'
   - name: nix-flake-lock
     filename-regex: '^flake\.lock$'
+  - name: helm-chart-lock
+    filename-regex: '^Chart\.lock$'
+  - name: homebrew-brewfile-lock
+    filename-regex: '^Brewfile\.lock\.json$'
+  - name: buf-lock
+    filename-regex: '^buf\.lock$'
+  - name: puppet-puppetfile
+    filename-regex: '^Puppetfile$'
+  - name: chef-berksfile
+    filename-regex: '^Berksfile$'
+  - name: chef-berksfile-lock
+    filename-regex: '^Berksfile\.lock$'
+  - name: chef-metadata
+    filename-regex: '^metadata\.rb$'
+  - name: chef-policyfile
+    filename-regex: '^Policyfile\.rb$'
+  - name: chef-policyfile-lock
+    filename-regex: '^Policyfile\.lock\.json$'
+  - name: jsonnet-lock
+    filename-regex: '^jsonnetfile\.lock\.json$'
+  - name: emacs-cask
+    filename-regex: '^Cask$'
   - name: js-banner-block-start
     filename-regex: '.*\.js$'
     banner-regex: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'

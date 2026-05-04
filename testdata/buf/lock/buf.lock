@@ -1,0 +1,6 @@
+version: v1
+deps:
+  - remote: buf.build
+    owner: googleapis
+    repository: googleapis
+    commit: abc123def456
