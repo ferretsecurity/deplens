@@ -24,6 +24,8 @@ rules:
     yaml:
       exists-any:
         - package
+  - name: python-conda-env-alt
+    filename-regex: '^conda\.ya?ml$'
   - name: python-pyproject
     filename-regex: '^pyproject\.toml$'
     toml:
@@ -75,6 +77,8 @@ rules:
           key: install_requires
         - section: options.extras_require
           key: '*'
+  - name: python-constraints
+    filename-regex: '^constraints\.txt$'
   - name: js
     filename-regex: '^package\.json$'
     json:
@@ -164,6 +168,10 @@ rules:
     filename-regex: '^Podfile$'
   - name: ios-cartfile
     filename-regex: '^Cartfile$'
+  - name: ios-podspec
+    filename-regex: '.*\.podspec$'
+  - name: ios-cartfile-resolved
+    filename-regex: '^Cartfile\.resolved$'
   - name: php-composer
     filename-regex: '^composer\.json$'
     json:
@@ -193,12 +201,16 @@ rules:
     filename-regex: '^deps\.edn$'
   - name: clojure-project-clj
     filename-regex: '^project\.clj$'
+  - name: clojure-boot
+    filename-regex: '^build\.boot$'
   - name: haskell-stack
     filename-regex: '^stack\.yaml$'
   - name: haskell-stack-lock
     filename-regex: '^stack\.yaml\.lock$'
   - name: haskell-cabal-project
     filename-regex: '^cabal\.project$'
+  - name: haskell-cabal-project-freeze
+    filename-regex: '^cabal\.project\.freeze$'
   - name: haskell-cabal
     filename-regex: '.*\.cabal$'
   - name: haskell-package-yaml
@@ -320,22 +332,52 @@ rules:
         - deps
   - name: perl-cpanfile
     filename-regex: '^cpanfile$'
+  - name: perl-cpanfile-snapshot
+    filename-regex: '^cpanfile\.snapshot$'
+  - name: perl-makefile-pl
+    filename-regex: '^Makefile\.PL$'
+  - name: perl-build-pl
+    filename-regex: '^Build\.PL$'
+  - name: perl-meta
+    filename-regex: '^META\.(json|ya?ml)$'
+  - name: perl-dist-ini
+    filename-regex: '^dist\.ini$'
+  - name: raku-meta
+    filename-regex: '^META6\.json$'
+  - name: r-renv-lock
+    filename-regex: '^renv\.lock$'
+  - name: lua-rockspec
+    filename-regex: '.*\.rockspec$'
   - name: zig-build-zon
     filename-regex: '^build\.zig\.zon$'
+  - name: zig-build
+    filename-regex: '^build\.zig$'
   - name: nim-nimble
     filename-regex: '.*\.nimble$'
   - name: ocaml-opam
     filename-regex: '.*\.opam$'
+  - name: ocaml-opam-locked
+    filename-regex: '.*\.opam\.locked$'
+  - name: ocaml-dune-project
+    filename-regex: '^dune-project$'
+  - name: ocaml-esy
+    filename-regex: '^esy\.json$'
   - name: crystal-shard
     filename-regex: '^shard\.yml$'
     yaml:
       exists-any:
         - dependencies
+  - name: crystal-shard-lock
+    filename-regex: '^shard\.lock$'
   - name: gleam
     filename-regex: '^gleam\.toml$'
     toml:
       table-exists-any:
         - dependencies
+  - name: gleam-manifest
+    filename-regex: '^manifest\.toml$'
+  - name: fortran-fpm
+    filename-regex: '^fpm\.toml$'
   - name: vlang
     filename-regex: '^v\.mod$'
   - name: helm-chart

@@ -1,0 +1,7 @@
+[package]
+name = "demo"
+version = "0.1.0"
+license = "MIT"
+
+[dependencies]
+stdlib = {git = "https://github.com/fortran-lang/stdlib.git"}

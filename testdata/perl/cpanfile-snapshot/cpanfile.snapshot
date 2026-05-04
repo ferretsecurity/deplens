@@ -1,0 +1,8 @@
+# carton snapshot format: version 1.0
+CARTON: 1.0.34
+
+DISTRIBUTIONS
+  MIYAGAWA/Plack-1.0050.tar.gz
+    pathname: M/MI/MIYAGAWA/Plack-1.0050.tar.gz
+    provides:
+      Plack 1.0050
