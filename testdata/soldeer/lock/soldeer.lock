@@ -1,0 +1,5 @@
+[[dependencies]]
+name = "forge-std"
+version = "1.7.3"
+git = "https://github.com/foundry-rs/forge-std"
+rev = "abc123def456"

@@ -182,6 +182,10 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "MyGame.uproject", want: ManifestType("unreal-uproject")},
 		{name: "MyPlugin.uplugin", want: ManifestType("unreal-uplugin")},
 		{name: "plugin.cfg", want: ManifestType("godot-plugin-cfg")},
+		// Group 1n: Blockchain / Solidity
+		{name: "foundry.toml", want: ManifestType("foundry-toml")},
+		{name: "remappings.txt", want: ManifestType("foundry-remappings")},
+		{name: "soldeer.lock", want: ManifestType("soldeer-lock")},
 	}
 
 	for _, tc := range testCases {
@@ -376,6 +380,13 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 		"MyPlugin.uplugin.bak",
 		"plugin.cfg.bak",
 		"PLUGIN.cfg",
+		// Group 1n negatives
+		"foundry.toml.bak",
+		"FOUNDRY.toml",
+		"remappings.txt.bak",
+		"my-remappings.txt",
+		"soldeer.lock.bak",
+		"soldeer.toml",
 	}
 
 	for _, tc := range testCases {
@@ -3937,6 +3948,9 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("unreal-uproject"),
 		ManifestType("unreal-uplugin"),
 		ManifestType("godot-plugin-cfg"),
+		ManifestType("foundry-toml"),
+		ManifestType("foundry-remappings"),
+		ManifestType("soldeer-lock"),
 		ManifestType("js-banner-block-start"),
 		ManifestType("js-banner-plain-block-start"),
 		ManifestType("js-banner-multiline-preserved"),

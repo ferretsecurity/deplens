@@ -470,6 +470,12 @@ rules:
     filename-regex: '.*\.uplugin$'
   - name: godot-plugin-cfg
     filename-regex: '^plugin\.cfg$'
+  - name: foundry-toml
+    filename-regex: '^foundry\.toml$'
+  - name: foundry-remappings
+    filename-regex: '^remappings\.txt$'
+  - name: soldeer-lock
+    filename-regex: '^soldeer\.lock$'
   - name: js-banner-block-start
     filename-regex: '.*\.js$'
     banner-regex: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
