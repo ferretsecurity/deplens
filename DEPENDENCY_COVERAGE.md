@@ -196,15 +196,15 @@ Cross-reference of every file format catalogued in `docs/planning/ResearchDeps.m
 | 162 | Gleam | Manifest | `gleam.toml` | Checks for non-empty `[dependencies]` table. | 2 | `toml presence` | [toml.go](internal/analyze/toml.go) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/gleam/project-*](testdata/gleam/) |
 | 163 | Gleam | Lockfile | `manifest.toml` | Gleam lockfile (lowercase). `julia-manifest` matches `^Manifest\.toml$` (capital M) only. Matched by `gleam-manifest`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/gleam/manifest](testdata/gleam/manifest) |
 | 164 | Fortran (fpm) | Manifest | `fpm.toml` | Fortran Package Manager manifest. Matched by `fortran-fpm`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/fortran/fpm](testdata/fortran/fpm) |
-| 165 | Nix | Manifest | `default.nix` / `shell.nix` | No rule. | - | Not implemented | — | — | — |
-| 166 | Nix (Flakes) | Manifest | `flake.nix` | No rule. | - | Not implemented | — | — | — |
-| 167 | Nix (Flakes) | Lockfile | `flake.lock` | No rule. | - | Not implemented | — | — | — |
+| 165 | Nix | Manifest | `default.nix` / `shell.nix` | Matched by `nix-default-shell`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/nix/default-shell](testdata/nix/default-shell) |
+| 166 | Nix (Flakes) | Manifest | `flake.nix` | Matched by `nix-flake`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/nix/flake](testdata/nix/flake) |
+| 167 | Nix (Flakes) | Lockfile | `flake.lock` | Matched by `nix-flake-lock`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/nix/flake-lock](testdata/nix/flake-lock) |
 | 168 | Terraform | Manifest | `*.tf` | Limited: the `terraform.aws_glue_job.python` rule detects `aws_glue_job` resources with `--additional-python-modules`. Does NOT detect general `required_providers { }` blocks. | 2 | `terraform resource check` | [terraform.go](internal/analyze/terraform.go) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/terraform/](testdata/terraform/) |
 | 169 | Terraform | Lockfile | `.terraform.lock.hcl` | Filename matched only. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/terraform/lock/.terraform.lock.hcl](testdata/terraform/lock/.terraform.lock.hcl) |
 | 170 | Ansible | Manifest | `requirements.yml` | Checks for non-empty `roles` or `collections` keys. | 2 | `yaml presence` | [yaml.go](internal/analyze/yaml.go) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/ansible/requirements-*](testdata/ansible/) |
 | 171 | Ansible | Manifest | `collections/requirements.yml` | The `ansible-requirements` rule uses `^requirements\.ya?ml$` and applies recursively, so `collections/requirements.yml` is matched. | 2 | `yaml presence` | [yaml.go](internal/analyze/yaml.go) | — | — |
 | 172 | Helm | Manifest | `Chart.yaml` | Checks for non-empty top-level `dependencies` key. | 2 | `yaml presence` | [yaml.go](internal/analyze/yaml.go) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/helm/chart-*](testdata/helm/) |
-| 173 | Helm | Lockfile | `Chart.lock` | No rule. | - | Not implemented | — | — | — |
+| 173 | Helm | Lockfile | `Chart.lock` | Matched by `helm-chart-lock`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/helm/chart-lock](testdata/helm/chart-lock) |
 | 174 | Helm | Vendored | `charts/` | Vendored chart tarballs. Directory; no rule. | - | Not implemented | — | — | — |
 | 175 | Docker | Manifest-like | `Dockerfile` | `FROM image:tag`. Covers `Dockerfile` and suffixed variants (`Dockerfile.dev`, `Dockerfile.prod`, etc.). | 1 | filename-regex | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/docker/dockerfile](testdata/docker/dockerfile) |
 | 176 | Docker | Config | `docker-compose.yml` / `compose.yaml` | `image:` references. Covers `docker-compose.yml`, `docker-compose.yaml`, `compose.yml`, `compose.yaml`. | 1 | filename-regex | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/docker/compose-v1](testdata/docker/compose-v1), [testdata/docker/compose-v2](testdata/docker/compose-v2) |
@@ -213,11 +213,11 @@ Cross-reference of every file format catalogued in `docs/planning/ResearchDeps.m
 | 179 | Unity | Manifest | `Packages/manifest.json` | Path-glob `Packages/manifest.json`; checks for non-empty `dependencies` key. | 2 | `json presence` (path-glob) | [json.go](internal/analyze/json.go) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/unity/packages-manifest-*](testdata/unity/) |
 | 180 | Unity | Lockfile | `Packages/packages-lock.json` | No rule. | - | Not implemented | — | — | — |
 | 181 | Unity | Vendored | `Assets/Plugins/` | DLL directory. No rule. | - | Not implemented | — | — | — |
-| 182 | Unreal Engine | Manifest | `*.uproject` | No rule. | - | Not implemented | — | — | — |
-| 183 | Unreal Engine | Manifest | `*.uplugin` | No rule. | - | Not implemented | — | — | — |
+| 182 | Unreal Engine | Manifest | `*.uproject` | Matched by `unreal-uproject`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/unreal/uproject](testdata/unreal/uproject) |
+| 183 | Unreal Engine | Manifest | `*.uplugin` | Matched by `unreal-uplugin`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/unreal/uplugin](testdata/unreal/uplugin) |
 | 184 | Unreal Engine | Vendored | `Plugins/` | Directory; no rule. | - | Not implemented | — | — | — |
 | 185 | Godot | Vendored | `addons/` | Directory; no rule. | - | Not implemented | — | — | — |
-| 186 | Godot | Config | `plugin.cfg` | Addon descriptor. No rule. | - | Not implemented | — | — | — |
+| 186 | Godot | Config | `plugin.cfg` | Addon descriptor. Matched by `godot-plugin-cfg`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/godot/plugin-cfg](testdata/godot/plugin-cfg) |
 | 187 | React Native | Manifest | `package.json` | Covered by the standard `js` rule (row 21). | 2 | `json presence` | [json.go](internal/analyze/json.go) | — | — |
 | 188 | React Native | Manifest | `ios/Podfile` | Covered by the `ios-podfile` rule (row 110). | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | — | — |
 | 189 | React Native | Lockfile | `ios/Podfile.lock` | Covered by the `ios-podfile-lock` rule (row 111). | 2 | `yaml presence` | [yaml.go](internal/analyze/yaml.go) | — | — |
@@ -225,11 +225,11 @@ Cross-reference of every file format catalogued in `docs/planning/ResearchDeps.m
 | 191 | React Native | Manifest | `android/app/build.gradle` | Covered by `java-gradle` rule (row 42). | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | — | — |
 | 192 | Android | Manifest | `build.gradle(.kts)` (root + app) | Covered by `java-gradle` / `java-gradle-kts` rules (rows 42–43). | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | — | — |
 | 193 | Android | Manifest | `gradle/libs.versions.toml` | Version catalog. No rule (same gap as row 46). | - | Not implemented | — | — | — |
-| 194 | Solidity (Foundry) | Config | `foundry.toml` | No rule. | - | Not implemented | — | — | — |
+| 194 | Solidity (Foundry) | Config | `foundry.toml` | Matched by `foundry-toml`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/foundry/toml](testdata/foundry/toml) |
 | 195 | Solidity (Foundry) | Vendored | `lib/` | Git submodule deps. Directory; no rule. | - | Not implemented | — | — | — |
-| 196 | Solidity (Foundry) | Config | `remappings.txt` | Import path remappings. No rule. | - | Not implemented | — | — | — |
+| 196 | Solidity (Foundry) | Config | `remappings.txt` | Import path remappings. Matched by `foundry-remappings`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/foundry/remappings](testdata/foundry/remappings) |
 | 197 | Solidity (Hardhat) | Manifest | `package.json` | npm-based; covered by the standard `js` rule (row 21). | 2 | `json presence` | [json.go](internal/analyze/json.go) | — | — |
-| 198 | Solidity (Foundry/Soldeer) | Lockfile | `soldeer.lock` | No rule. | - | Not implemented | — | — | — |
+| 198 | Solidity (Foundry/Soldeer) | Lockfile | `soldeer.lock` | Matched by `soldeer-lock`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/soldeer/lock](testdata/soldeer/lock) |
 | 199 | Bazel | Manifest (legacy) | `WORKSPACE` / `WORKSPACE.bazel` | `http_archive`, `git_repository`, etc. | 1 | filename-regex | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/bazel/workspace](testdata/bazel/workspace), [testdata/bazel/workspace-bazel](testdata/bazel/workspace-bazel) |
 | 200 | Bazel (Bzlmod) | Manifest | `MODULE.bazel` | `bazel_dep()` declarations. | 1 | filename-regex | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/bazel/module](testdata/bazel/module) |
 | 201 | Bazel (Bzlmod) | Lockfile | `MODULE.bazel.lock` | Bzlmod lockfile. | 1 | filename-regex | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/bazel/module-lock](testdata/bazel/module-lock) |
@@ -248,19 +248,19 @@ Cross-reference of every file format catalogued in `docs/planning/ResearchDeps.m
 | 214 | Pants | Manifest | `3rdparty/jvm/BUILD` | No rule. | - | Not implemented | — | — | — |
 | 215 | Git Submodules | Manifest | `.gitmodules` | Submodule declarations. | 1 | filename-regex | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/git/submodules](testdata/git/submodules) |
 | 216 | Homebrew | Manifest | `Brewfile` | Filename matched only. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/homebrew/brewfile/Brewfile](testdata/homebrew/brewfile/Brewfile) |
-| 217 | Homebrew | Lockfile | `Brewfile.lock.json` | No rule. | - | Not implemented | — | — | — |
+| 217 | Homebrew | Lockfile | `Brewfile.lock.json` | Matched by `homebrew-brewfile-lock`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/homebrew/brewfile-lock](testdata/homebrew/brewfile-lock) |
 | 218 | Protocol Buffers (Buf) | Manifest | `buf.yaml` | Checks for non-empty `deps` key. | 2 | `yaml presence` | [yaml.go](internal/analyze/yaml.go) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/buf/module-*](testdata/buf/) |
-| 219 | Protocol Buffers (Buf) | Lockfile | `buf.lock` | No rule. | - | Not implemented | — | — | — |
-| 220 | Puppet | Manifest | `Puppetfile` | No rule. | - | Not implemented | — | — | — |
+| 219 | Protocol Buffers (Buf) | Lockfile | `buf.lock` | Matched by `buf-lock`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/buf/lock](testdata/buf/lock) |
+| 220 | Puppet | Manifest | `Puppetfile` | Matched by `puppet-puppetfile`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/puppet/puppetfile](testdata/puppet/puppetfile) |
 | 221 | Puppet | Manifest | `metadata.json` | No rule. | - | Not implemented | — | — | — |
-| 222 | Chef (Berkshelf) | Manifest | `Berksfile` | No rule. | - | Not implemented | — | — | — |
-| 223 | Chef (Berkshelf) | Lockfile | `Berksfile.lock` | No rule. | - | Not implemented | — | — | — |
-| 224 | Chef | Manifest | `metadata.rb` | No rule. | - | Not implemented | — | — | — |
-| 225 | Chef (Policyfile) | Manifest | `Policyfile.rb` | No rule. | - | Not implemented | — | — | — |
-| 226 | Chef (Policyfile) | Lockfile | `Policyfile.lock.json` | No rule. | - | Not implemented | — | — | — |
+| 222 | Chef (Berkshelf) | Manifest | `Berksfile` | Matched by `chef-berksfile`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/chef/berksfile](testdata/chef/berksfile) |
+| 223 | Chef (Berkshelf) | Lockfile | `Berksfile.lock` | Matched by `chef-berksfile-lock`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/chef/berksfile-lock](testdata/chef/berksfile-lock) |
+| 224 | Chef | Manifest | `metadata.rb` | `.rb` extension limits false positives. Matched by `chef-metadata`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/chef/metadata](testdata/chef/metadata) |
+| 225 | Chef (Policyfile) | Manifest | `Policyfile.rb` | Matched by `chef-policyfile`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/chef/policyfile](testdata/chef/policyfile) |
+| 226 | Chef (Policyfile) | Lockfile | `Policyfile.lock.json` | Matched by `chef-policyfile-lock`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/chef/policyfile-lock](testdata/chef/policyfile-lock) |
 | 227 | Jsonnet | Manifest | `jsonnetfile.json` | Checks for non-empty `dependencies` array. | 2 | `json presence` | [json.go](internal/analyze/json.go) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/jsonnet/bundler-*](testdata/jsonnet/) |
-| 228 | Jsonnet | Lockfile | `jsonnetfile.lock.json` | No rule. | - | Not implemented | — | — | — |
-| 229 | Emacs (Cask) | Manifest | `Cask` | No rule. | - | Not implemented | — | — | — |
+| 228 | Jsonnet | Lockfile | `jsonnetfile.lock.json` | Matched by `jsonnet-lock`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/jsonnet/lock](testdata/jsonnet/lock) |
+| 229 | Emacs (Cask) | Manifest | `Cask` | Matched by `emacs-cask`. | 1 | filename match | [default_rules.yaml](internal/analyze/default_rules.yaml) | [scan_test.go](internal/analyze/scan_test.go) | [testdata/emacs/cask](testdata/emacs/cask) |
 
 ---
 
@@ -272,8 +272,8 @@ Cross-reference of every file format catalogued in `docs/planning/ResearchDeps.m
 |-------|-------|-------|
 | 3 — extracts deps | 22 | Full dep extraction with name, version, section metadata |
 | 2 — presence check | 32 | Confirms dep declarations exist; does not extract names/versions |
-| 1 — detected only | 33 | File identified by filename; no content analysis |
-| - — not implemented | 142 | File type not recognized at all |
+| 1 — detected only | 53 | File identified by filename; no content analysis |
+| - — not implemented | 122 | File type not recognized at all |
 
 **Total catalogued:** 229 rows (some rows share the same rule; e.g. rows 7/8/12/14/15 all hit `pyproject.toml` via the same TOML rule).
 
