@@ -287,3 +287,7 @@ With `--show-empty`, empty lockfiles are rendered explicitly:
 ```text
 cargo-lock-empty/Cargo.lock [no dependencies]
 ```
+
+## Development
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for code structure, core types, parser patterns, testing conventions, and instructions for adding a new detector.
