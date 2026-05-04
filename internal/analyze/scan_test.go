@@ -161,6 +161,11 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "shard.lock", want: ManifestType("crystal-shard-lock")},
 		{name: "manifest.toml", want: ManifestType("gleam-manifest")},
 		{name: "fpm.toml", want: ManifestType("fortran-fpm")},
+		// Group 1k: Nix
+		{name: "default.nix", want: ManifestType("nix-default-shell")},
+		{name: "shell.nix", want: ManifestType("nix-default-shell")},
+		{name: "flake.nix", want: ManifestType("nix-flake")},
+		{name: "flake.lock", want: ManifestType("nix-flake-lock")},
 	}
 
 	for _, tc := range testCases {
@@ -330,6 +335,11 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 		"shard.lock.bak",
 		"manifest.toml.bak",
 		"fpm.toml.bak",
+		// Group 1k negatives
+		"default.nix.bak",
+		"mydefault.nix",
+		"flake.nix.bak",
+		"flake.lock.bak",
 	}
 
 	for _, tc := range testCases {
@@ -3874,6 +3884,9 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("js-turbo"),
 		ManifestType("pants-config"),
 		ManifestType("git-submodules"),
+		ManifestType("nix-default-shell"),
+		ManifestType("nix-flake"),
+		ManifestType("nix-flake-lock"),
 		ManifestType("js-banner-block-start"),
 		ManifestType("js-banner-plain-block-start"),
 		ManifestType("js-banner-multiline-preserved"),
