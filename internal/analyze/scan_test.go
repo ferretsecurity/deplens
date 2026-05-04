@@ -94,6 +94,18 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 		{name: "compose.yaml", want: ManifestType("docker-compose")},
 		{name: "action.yml", want: ManifestType("github-actions-action")},
 		{name: "action.yaml", want: ManifestType("github-actions-action")},
+		// Group 1b: Build systems and monorepo tools
+		{name: "WORKSPACE", want: ManifestType("bazel-workspace")},
+		{name: "WORKSPACE.bazel", want: ManifestType("bazel-workspace")},
+		{name: "MODULE.bazel", want: ManifestType("bazel-module")},
+		{name: "MODULE.bazel.lock", want: ManifestType("bazel-module-lock")},
+		{name: "BUILD.bazel", want: ManifestType("bazel-build-file")},
+		{name: "nx.json", want: ManifestType("js-nx")},
+		{name: "lerna.json", want: ManifestType("js-lerna")},
+		{name: "rush.json", want: ManifestType("js-rush")},
+		{name: "turbo.json", want: ManifestType("js-turbo")},
+		{name: "pants.toml", want: ManifestType("pants-config")},
+		{name: ".gitmodules", want: ManifestType("git-submodules")},
 	}
 
 	for _, tc := range testCases {
@@ -184,6 +196,19 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 		"my-action.yml",
 		"action.yml.bak",
 		"action.json",
+		// Group 1b negatives
+		"workspace",
+		"WORKSPACE.txt",
+		"BUILD",
+		"build.bazel",
+		"module.bazel",
+		"MODULE.BAZEL",
+		"nx.json.bak",
+		"my-nx.json",
+		"pants.toml.bak",
+		"gitmodules",
+		".gitmodule",
+		"turbo.json.bak",
 	}
 
 	for _, tc := range testCases {

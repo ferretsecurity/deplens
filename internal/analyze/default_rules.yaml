@@ -336,6 +336,26 @@ rules:
     filename-regex: '^(docker-compose|compose)\.ya?ml$'
   - name: github-actions-action
     filename-regex: '^action\.ya?ml$'
+  - name: bazel-workspace
+    filename-regex: '^WORKSPACE(\.bazel)?$'
+  - name: bazel-module
+    filename-regex: '^MODULE\.bazel$'
+  - name: bazel-module-lock
+    filename-regex: '^MODULE\.bazel\.lock$'
+  - name: bazel-build-file
+    filename-regex: '^BUILD\.bazel$'
+  - name: js-nx
+    filename-regex: '^nx\.json$'
+  - name: js-lerna
+    filename-regex: '^lerna\.json$'
+  - name: js-rush
+    filename-regex: '^rush\.json$'
+  - name: js-turbo
+    filename-regex: '^turbo\.json$'
+  - name: pants-config
+    filename-regex: '^pants\.toml$'
+  - name: git-submodules
+    filename-regex: '^\.gitmodules$'
   - name: js-banner-block-start
     filename-regex: '.*\.js$'
     banner-regex: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
