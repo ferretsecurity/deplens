@@ -327,6 +327,10 @@ rules:
     path-glob: '**/cmake/*.cmake'
   - name: cpp-meson-wrap
     path-glob: '**/subprojects/*.wrap'
+  # DRAFT: cpp-gclient-deps — root-only path-glob for gclient repos
+  # TODO: upgrade to Level 2 (content check for Python-style 'deps = {' or 'vars = {') to reduce false positives
+  # - name: cpp-gclient-deps
+  #   path-glob: 'DEPS'
   - name: swift-package-resolved
     filename-regex: '^Package\.resolved$'
     json:
@@ -370,6 +374,10 @@ rules:
     filename-regex: '^renv\.lock$'
   - name: r-packrat-lock
     path-glob: '**/packrat/packrat.lock'
+  # DRAFT: r-description — filename-regex for R package manifests (noisy)
+  # TODO: upgrade to Level 2 (content check for DCF 'Package:' header) to reduce false positives
+  # - name: r-description
+  #   filename-regex: '^DESCRIPTION$'
   - name: lua-rockspec
     filename-regex: '.*\.rockspec$'
   - name: zig-build-zon
@@ -386,6 +394,10 @@ rules:
     filename-regex: '^dune-project$'
   - name: ocaml-esy
     filename-regex: '^esy\.json$'
+  # DRAFT: ocaml-dune — filename-regex for OCaml Dune per-directory build files (noisy)
+  # TODO: upgrade to Level 2 (s-expression content check for 'library'/'executable' stanzas) to reduce false positives
+  # - name: ocaml-dune
+  #   filename-regex: '^dune$'
   - name: crystal-shard
     filename-regex: '^shard\.yml$'
     yaml:
@@ -456,6 +468,10 @@ rules:
     path-glob: '**/third_party/*.bzl'
   - name: js-nx
     filename-regex: '^nx\.json$'
+  # DRAFT: js-nx-project — filename-regex for Nx per-project config (noisy)
+  # TODO: upgrade to Level 2 (json exists-any: targets,implicitDependencies) to reduce false positives
+  # - name: js-nx-project
+  #   filename-regex: '^project\.json$'
   - name: js-lerna
     filename-regex: '^lerna\.json$'
   - name: js-rush
@@ -468,6 +484,10 @@ rules:
     filename-regex: '^pants\.toml$'
   - name: pants-jvm-build
     path-glob: '**/3rdparty/jvm/BUILD'
+  # DRAFT: bazel-build-file-bare — filename-regex for bare BUILD files (noisy; both Bazel and Pants)
+  # TODO: upgrade to Level 2 (content check for Bazel/Pants target functions) to reduce false positives
+  # - name: bazel-build-file-bare
+  #   filename-regex: '^BUILD$'
   - name: git-submodules
     filename-regex: '^\.gitmodules$'
   - name: nix-default-shell
@@ -484,6 +504,12 @@ rules:
     filename-regex: '^buf\.lock$'
   - name: puppet-puppetfile
     filename-regex: '^Puppetfile$'
+  # DRAFT: puppet-cookbook-metadata — path-glob for Puppet cookbook layout
+  # Constrained to standard Puppet repo layout; noisier alternative (not active):
+  #   filename-regex: '^metadata\.json$'
+  # TODO: upgrade to Level 2 (json exists-any: dependencies,name with Puppet-specific fields) to reduce false positives
+  # - name: puppet-cookbook-metadata
+  #   path-glob: '**/cookbooks/*/metadata.json'
   - name: chef-berksfile
     filename-regex: '^Berksfile$'
   - name: chef-berksfile-lock

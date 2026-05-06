@@ -1,0 +1,9 @@
+{
+  "name": "mypkg",
+  "version": "1.0.0",
+  "author": "Jane Smith",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "apache2": ">= 1.0.0"
+  }
+}
