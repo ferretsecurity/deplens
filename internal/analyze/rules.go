@@ -197,14 +197,14 @@ func (r Ruleset) detectManifestFile(path string, name string, relPath string) (M
 		if !contentLoaded {
 			data, err := os.ReadFile(path)
 			if err != nil {
-				return "", nil, nil, nil, false, fmt.Errorf("read candidate file %q: %w", path, err)
+				return rule.Type, nil, nil, []string{fmt.Sprintf("read candidate file %q: %v", path, err)}, true, nil
 			}
 			content = data
 			contentLoaded = true
 		}
 		result, err := rule.Parser.Match(path, content)
 		if err != nil {
-			return "", nil, nil, nil, false, err
+			return rule.Type, nil, nil, []string{err.Error()}, true, nil
 		}
 		if result.Matched {
 			return rule.Type, result.Dependencies, result.HasDependencies, result.Warnings, true, nil
