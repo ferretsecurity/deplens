@@ -350,12 +350,18 @@ func TestPNPMLockDetectManifestFileRejectsMalformedYAML(t *testing.T) {
 
 	mustWriteFile(t, filePath, "lockfileVersion: '9.0'\nimporters: [")
 
-	_, _, _, _, _, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
-	if err == nil {
-		t.Fatalf("expected parse error")
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	if err != nil {
+		t.Fatalf("expected warning, got error: %v", err)
 	}
-	if got := err.Error(); !strings.Contains(got, "pnpm-lock.yaml") {
-		t.Fatalf("unexpected error: %v", err)
+	if !ok || got != ManifestType("js-pnpm-lock") {
+		t.Fatalf("expected pnpm lock warning match, got type=%q ok=%v", got, ok)
+	}
+	if deps != nil || hasDependencies != nil {
+		t.Fatalf("expected no dependency result, got deps=%+v hasDependencies=%+v", deps, hasDependencies)
+	}
+	if len(warnings) != 1 || !strings.Contains(warnings[0], "pnpm-lock.yaml") {
+		t.Fatalf("unexpected warnings: %+v", warnings)
 	}
 }
 

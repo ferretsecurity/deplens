@@ -1693,6 +1693,98 @@ python_version = "3.12"
 	}
 }
 
+func TestScanSkipsMalformedPipfileAndContinues(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "Pipfile"), "blarg\n")
+	mustWriteFile(t, filepath.Join(root, "pyproject.toml"), `
+[project]
+dependencies = ["requests>=2.31"]
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 2 {
+		t.Fatalf("expected 2 manifests, got %d", len(result.Manifests))
+	}
+
+	if result.Manifests[0].Type != ManifestType("python-pipfile") || result.Manifests[0].Path != "Pipfile" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	if len(result.Manifests[0].Warnings) != 1 || !strings.Contains(result.Manifests[0].Warnings[0], "parse toml file") {
+		t.Fatalf("expected parse warning on Pipfile, got %+v", result.Manifests[0].Warnings)
+	}
+
+	manifest := result.Manifests[1]
+	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "pyproject.toml" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+}
+
+func TestScanSkipsMalformedPipfileLockAndContinues(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "Pipfile.lock"), "blarg\n")
+	mustWriteFile(t, filepath.Join(root, "pyproject.toml"), `
+[project]
+dependencies = ["requests>=2.31"]
+`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 2 {
+		t.Fatalf("expected 2 manifests, got %d", len(result.Manifests))
+	}
+
+	if result.Manifests[0].Type != ManifestType("python-pipfile-lock") || result.Manifests[0].Path != "Pipfile.lock" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	if len(result.Manifests[0].Warnings) != 1 || !strings.Contains(result.Manifests[0].Warnings[0], "parse json file") {
+		t.Fatalf("expected parse warning on Pipfile.lock, got %+v", result.Manifests[0].Warnings)
+	}
+
+	manifest := result.Manifests[1]
+	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "pyproject.toml" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+}
+
+func TestDefaultRulesSkipMalformedPyprojectAndContinue(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "pyproject.toml"), `
+[project
+dependencies = ["requests>=2.31"]
+`)
+	mustWriteFile(t, filepath.Join(root, "package.json"), `{"dependencies":{"react":"18.3.1"}}`)
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+
+	if len(result.Manifests) != 2 {
+		t.Fatalf("expected 2 manifests, got %d", len(result.Manifests))
+	}
+
+	if result.Manifests[0].Type != ManifestType("js") || result.Manifests[0].Path != "package.json" {
+		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	}
+	manifest := result.Manifests[1]
+	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "pyproject.toml" {
+		t.Fatalf("unexpected manifest: %+v", manifest)
+	}
+	if len(manifest.Warnings) != 1 || !strings.Contains(manifest.Warnings[0], "parse toml file") {
+		t.Fatalf("expected parse warning on pyproject.toml, got %+v", manifest.Warnings)
+	}
+}
+
 func TestScanMatchesPipfileDependenciesFromFixture(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
@@ -4682,7 +4774,7 @@ django = "^5.0"
 	}
 }
 
-func TestScanReturnsTOMLParseErrors(t *testing.T) {
+func TestScanReportsTOMLParseErrorsAsWarnings(t *testing.T) {
 	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project.dependencies[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
@@ -4694,12 +4786,15 @@ func TestScanReturnsTOMLParseErrors(t *testing.T) {
 dependencies = ["requests>=2.31"]
 `)
 
-	_, err = Scan(root, nil, ruleset)
-	if err == nil {
-		t.Fatalf("expected scan to fail")
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("expected scan to continue, got %v", err)
 	}
-	if !strings.Contains(err.Error(), "parse toml file") {
-		t.Fatalf("expected toml parse error, got %v", err)
+	if len(result.Manifests) != 1 {
+		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	}
+	if len(result.Manifests[0].Warnings) != 1 || !strings.Contains(result.Manifests[0].Warnings[0], "parse toml file") {
+		t.Fatalf("expected toml parse warning, got %+v", result.Manifests[0].Warnings)
 	}
 }
 

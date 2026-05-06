@@ -365,15 +365,18 @@ func TestYarnLockDetectManifestFileRejectsMalformedModernYAML(t *testing.T) {
   version: "18.3.1"
 `)
 
-	_, _, _, _, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
-	if err == nil {
-		t.Fatalf("expected error")
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	if err != nil {
+		t.Fatalf("expected warning, got error: %v", err)
 	}
-	if ok {
-		t.Fatalf("expected no match on malformed content")
+	if !ok || got != ManifestType("js-yarn") {
+		t.Fatalf("expected yarn warning match, got type=%q ok=%v", got, ok)
 	}
-	if got := err.Error(); !strings.Contains(got, "yarn.lock") {
-		t.Fatalf("expected error to mention yarn.lock, got %q", got)
+	if deps != nil || hasDependencies != nil {
+		t.Fatalf("expected no dependency result, got deps=%+v hasDependencies=%+v", deps, hasDependencies)
+	}
+	if len(warnings) != 1 || !strings.Contains(warnings[0], "yarn.lock") {
+		t.Fatalf("expected warning to mention yarn.lock, got %+v", warnings)
 	}
 }
 
@@ -388,15 +391,18 @@ func TestYarnLockDetectManifestFileRejectsStructurallyInvalidModernEntry(t *test
 "react@npm:^18.3.1": oops
 `)
 
-	_, _, _, _, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
-	if err == nil {
-		t.Fatalf("expected error")
+	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	if err != nil {
+		t.Fatalf("expected warning, got error: %v", err)
 	}
-	if ok {
-		t.Fatalf("expected no match on malformed content")
+	if !ok || got != ManifestType("js-yarn") {
+		t.Fatalf("expected yarn warning match, got type=%q ok=%v", got, ok)
 	}
-	if got := err.Error(); !strings.Contains(got, "yarn.lock") {
-		t.Fatalf("expected error to mention yarn.lock, got %q", got)
+	if deps != nil || hasDependencies != nil {
+		t.Fatalf("expected no dependency result, got deps=%+v hasDependencies=%+v", deps, hasDependencies)
+	}
+	if len(warnings) != 1 || !strings.Contains(warnings[0], "yarn.lock") {
+		t.Fatalf("expected warning to mention yarn.lock, got %+v", warnings)
 	}
 }
 
