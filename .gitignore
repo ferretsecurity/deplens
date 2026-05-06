@@ -1,0 +1,22 @@
+# Security review runtime artifacts
+.security-review/
+raw-tool-output/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local planning artifacts
+plan.md
+
+# Language caches
+*.pyc
+__pycache__/
+venv/
+node_modules/
