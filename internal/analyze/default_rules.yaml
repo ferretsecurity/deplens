@@ -146,8 +146,18 @@ rules:
     filename-regex: '^settings\.gradle$'
   - name: java-gradle-settings-kts
     filename-regex: '^settings\.gradle\.kts$'
+  - name: java-gradle-version-catalog
+    path-glob: '**/gradle/libs.versions.toml'
+  - name: java-gradle-wrapper
+    path-glob: '**/gradle/wrapper/gradle-wrapper.properties'
   - name: scala-sbt-build
     filename-regex: '^build\.sbt$'
+  - name: scala-sbt-plugins
+    path-glob: '**/project/plugins.sbt'
+  - name: scala-sbt-dependencies
+    path-glob: '**/project/Dependencies.scala'
+  - name: scala-sbt-build-props
+    path-glob: '**/project/build.properties'
   - name: scala-mill
     filename-regex: '^build\.sc$'
   - name: java-ant-build
@@ -162,6 +172,8 @@ rules:
     filename-regex: '^Gemfile\.lock$'
   - name: ruby-gemspec
     filename-regex: '.*\.gemspec$'
+  - name: ruby-appraisal
+    path-glob: '**/gemfiles/*.gemfile'
   - name: swift-package
     filename-regex: '^Package\.swift$'
   - name: ios-podfile
@@ -245,6 +257,8 @@ rules:
     filename-regex: '^Directory\.Build\.(props|targets)$'
   - name: dotnet-paket-references
     filename-regex: '^paket\.references$'
+  - name: dotnet-tools-manifest
+    path-glob: '**/.config/dotnet-tools.json'
   - name: go-mod
     filename-regex: '^go\.mod$'
     go-mod: {}
@@ -260,6 +274,8 @@ rules:
       exists-any:
         - import
         - testImport
+  - name: go-godep
+    path-glob: '**/Godeps/Godeps.json'
   - name: rust-cargo
     filename-regex: '^Cargo\.toml$'
     toml:
@@ -274,6 +290,8 @@ rules:
   - name: rust-cargo-lock
     filename-regex: '^Cargo\.lock$'
     cargo-lock: {}
+  - name: rust-cargo-config
+    path-glob: '**/.cargo/config.toml'
   - name: go-gopkg-lock
     filename-regex: '^Gopkg\.lock$'
     toml:
@@ -305,6 +323,10 @@ rules:
     filename-regex: '^meson\.build$'
   - name: cpp-autotools
     filename-regex: '^configure\.(ac|in)$'
+  - name: cpp-cmake-modules
+    path-glob: '**/cmake/*.cmake'
+  - name: cpp-meson-wrap
+    path-glob: '**/subprojects/*.wrap'
   - name: swift-package-resolved
     filename-regex: '^Package\.resolved$'
     json:
@@ -346,6 +368,8 @@ rules:
     filename-regex: '^META6\.json$'
   - name: r-renv-lock
     filename-regex: '^renv\.lock$'
+  - name: r-packrat-lock
+    path-glob: '**/packrat/packrat.lock'
   - name: lua-rockspec
     filename-regex: '.*\.rockspec$'
   - name: zig-build-zon
@@ -410,12 +434,16 @@ rules:
     json:
       exists-any:
         - dependencies
+  - name: unity-packages-lock
+    path-glob: 'Packages/packages-lock.json'
   - name: docker-dockerfile
     filename-regex: '^Dockerfile(\..+)?$'
   - name: docker-compose
     filename-regex: '^(docker-compose|compose)\.ya?ml$'
   - name: github-actions-action
     filename-regex: '^action\.ya?ml$'
+  - name: github-actions-workflow
+    path-glob: '**/.github/workflows/*.yml'
   - name: bazel-workspace
     filename-regex: '^WORKSPACE(\.bazel)?$'
   - name: bazel-module
@@ -424,16 +452,22 @@ rules:
     filename-regex: '^MODULE\.bazel\.lock$'
   - name: bazel-build-file
     filename-regex: '^BUILD\.bazel$'
+  - name: bazel-third-party-bzl
+    path-glob: '**/third_party/*.bzl'
   - name: js-nx
     filename-regex: '^nx\.json$'
   - name: js-lerna
     filename-regex: '^lerna\.json$'
   - name: js-rush
     filename-regex: '^rush\.json$'
+  - name: rush-common-versions
+    path-glob: '**/common/config/rush/common-versions.json'
   - name: js-turbo
     filename-regex: '^turbo\.json$'
   - name: pants-config
     filename-regex: '^pants\.toml$'
+  - name: pants-jvm-build
+    path-glob: '**/3rdparty/jvm/BUILD'
   - name: git-submodules
     filename-regex: '^\.gitmodules$'
   - name: nix-default-shell

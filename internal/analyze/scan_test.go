@@ -3828,7 +3828,12 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("java-gradle-kts"),
 		ManifestType("java-gradle-settings"),
 		ManifestType("java-gradle-settings-kts"),
+		ManifestType("java-gradle-version-catalog"),
+		ManifestType("java-gradle-wrapper"),
 		ManifestType("scala-sbt-build"),
+		ManifestType("scala-sbt-plugins"),
+		ManifestType("scala-sbt-dependencies"),
+		ManifestType("scala-sbt-build-props"),
 		ManifestType("scala-mill"),
 		ManifestType("java-ant-build"),
 		ManifestType("java-ivy"),
@@ -3836,6 +3841,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("ruby-gemfile"),
 		ManifestType("ruby-gemfile-lock"),
 		ManifestType("ruby-gemspec"),
+		ManifestType("ruby-appraisal"),
 		ManifestType("swift-package"),
 		ManifestType("ios-podfile"),
 		ManifestType("ios-cartfile"),
@@ -3865,13 +3871,16 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("dotnet-vbproj"),
 		ManifestType("dotnet-directory-build"),
 		ManifestType("dotnet-paket-references"),
+		ManifestType("dotnet-tools-manifest"),
 		ManifestType("go-mod"),
 		ManifestType("go-sum"),
 		ManifestType("go-work"),
 		ManifestType("go-gopkg-toml"),
 		ManifestType("go-glide-yaml"),
+		ManifestType("go-godep"),
 		ManifestType("rust-cargo"),
 		ManifestType("rust-cargo-lock"),
+		ManifestType("rust-cargo-config"),
 		ManifestType("go-gopkg-lock"),
 		ManifestType("go-glide-lock"),
 		ManifestType("dotnet-csproj"),
@@ -3883,6 +3892,8 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("cpp-vcpkg-config"),
 		ManifestType("cpp-meson"),
 		ManifestType("cpp-autotools"),
+		ManifestType("cpp-cmake-modules"),
+		ManifestType("cpp-meson-wrap"),
 		ManifestType("swift-package-resolved"),
 		ManifestType("ios-podfile-lock"),
 		ManifestType("elixir-mix"),
@@ -3897,6 +3908,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("perl-dist-ini"),
 		ManifestType("raku-meta"),
 		ManifestType("r-renv-lock"),
+		ManifestType("r-packrat-lock"),
 		ManifestType("lua-rockspec"),
 		ManifestType("zig-build-zon"),
 		ManifestType("zig-build"),
@@ -3918,18 +3930,23 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		ManifestType("jsonnet-bundler"),
 		ManifestType("terraform-lock"),
 		ManifestType("unity-packages-manifest"),
+		ManifestType("unity-packages-lock"),
 		ManifestType("docker-dockerfile"),
 		ManifestType("docker-compose"),
 		ManifestType("github-actions-action"),
+		ManifestType("github-actions-workflow"),
 		ManifestType("bazel-workspace"),
 		ManifestType("bazel-module"),
 		ManifestType("bazel-module-lock"),
 		ManifestType("bazel-build-file"),
+		ManifestType("bazel-third-party-bzl"),
 		ManifestType("js-nx"),
 		ManifestType("js-lerna"),
 		ManifestType("js-rush"),
+		ManifestType("rush-common-versions"),
 		ManifestType("js-turbo"),
 		ManifestType("pants-config"),
+		ManifestType("pants-jvm-build"),
 		ManifestType("git-submodules"),
 		ManifestType("nix-default-shell"),
 		ManifestType("nix-flake"),
@@ -5043,6 +5060,58 @@ func mustLoadDefaultRules(t *testing.T) Ruleset {
 		t.Fatalf("load default rules failed: %v", err)
 	}
 	return ruleset
+}
+
+func TestScanDefaultRulesDetectsPathGlobManifests(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	testCases := []struct {
+		name string
+		path string
+		typ  ManifestType
+	}{
+		// Group 2a: JVM ecosystem
+		{name: "gradle version catalog", path: "gradle/libs.versions.toml", typ: "java-gradle-version-catalog"},
+		{name: "gradle wrapper properties", path: "gradle/wrapper/gradle-wrapper.properties", typ: "java-gradle-wrapper"},
+		{name: "sbt plugins", path: "project/plugins.sbt", typ: "scala-sbt-plugins"},
+		{name: "sbt dependencies object", path: "project/Dependencies.scala", typ: "scala-sbt-dependencies"},
+		{name: "sbt build properties", path: "project/build.properties", typ: "scala-sbt-build-props"},
+		// Group 2b: Ruby / Go / Rust / .NET
+		{name: "ruby appraisal gemfile", path: "gemfiles/rails_60.gemfile", typ: "ruby-appraisal"},
+		{name: "go godep", path: "Godeps/Godeps.json", typ: "go-godep"},
+		{name: "rust cargo config", path: ".cargo/config.toml", typ: "rust-cargo-config"},
+		{name: "dotnet tools manifest", path: ".config/dotnet-tools.json", typ: "dotnet-tools-manifest"},
+		// Group 2c: C++ / R / GitHub / Unity
+		{name: "cmake module", path: "cmake/FindMyLib.cmake", typ: "cpp-cmake-modules"},
+		{name: "meson wrap", path: "subprojects/zlib.wrap", typ: "cpp-meson-wrap"},
+		{name: "r packrat lock", path: "packrat/packrat.lock", typ: "r-packrat-lock"},
+		{name: "github actions workflow", path: ".github/workflows/ci.yml", typ: "github-actions-workflow"},
+		{name: "unity packages lock", path: "Packages/packages-lock.json", typ: "unity-packages-lock"},
+		// Group 2d: Bazel / Rush / Pants
+		{name: "bazel third party bzl", path: "third_party/deps.bzl", typ: "bazel-third-party-bzl"},
+		{name: "rush common versions", path: "common/config/rush/common-versions.json", typ: "rush-common-versions"},
+		{name: "pants jvm build", path: "3rdparty/jvm/BUILD", typ: "pants-jvm-build"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			root := t.TempDir()
+			mustWriteFile(t, filepath.Join(root, filepath.FromSlash(tc.path)), "")
+			result, err := Scan(root, nil, ruleset)
+			if err != nil {
+				t.Fatalf("scan failed: %v", err)
+			}
+			if len(result.Manifests) != 1 {
+				t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+			}
+			if result.Manifests[0].Type != tc.typ {
+				t.Fatalf("expected type %q, got %q", tc.typ, result.Manifests[0].Type)
+			}
+			if result.Manifests[0].Path != tc.path {
+				t.Fatalf("expected path %q, got %q", tc.path, result.Manifests[0].Path)
+			}
+		})
+	}
 }
 
 func mustWriteFile(t *testing.T, path string, content string) {
