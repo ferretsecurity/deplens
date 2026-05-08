@@ -105,10 +105,44 @@ Rules are defined in YAML. Each rule has:
 
 `default_rules.yaml` is embedded in the binary via `//go:embed`. Users can supply an
 alternative file with `--rules`; there is no rule merging - one replaces the other entirely.
+Parser keys configured as `{}` in YAML (e.g. `go-mod: {}`, `package-lock: {}`) take no
+configuration - the config struct is empty and the behavior is entirely hardcoded in Go.
 
 `parser_factory.go` reads the parser key from a rule config and constructs the right struct.
 Every parser key maps to a `new<Parser>` constructor that returns `(manifestParser, error)`.
 The factory enforces that at most one parser key is set per rule.
+
+### File selectors
+
+Each rule has at least one selector. When both are present they are AND-ed: the file must
+satisfy both before the rule fires.
+
+**`filename-regex`** matches the **base filename only** (`d.Name()` from `filepath.WalkDir`),
+never the directory path. The regex is compiled at rule load time and applied with
+`regexp.MatchString`.
+
+**`path-glob`** matches the **full relative path from the scan root**, normalized to forward
+slashes by `normalizeRelativePath` in `scan.go` before comparison. The path glob
+implementation is a custom segment-by-segment recursive matcher - it does not use
+`filepath.Glob` or any OS glob API.
+
+How the path glob algorithm works:
+- Both the pattern and the path are split on `/` into segments.
+- `**` matches **zero or more** adjacent path segments via backtracking recursion. It tries
+  matching zero segments first, then one, two, etc. until the rest of the pattern either
+  matches or exhausts the path.
+- Non-`**` segments are matched using stdlib `path.Match`, which handles `*` (any characters
+  within a single segment), `?` (single character), and `[range]` character classes.
+- A match requires both the pattern segment sequence and the path segment sequence to be
+  fully consumed at the same time.
+- `**` embedded inside a segment (e.g. `fo**bar`) is rejected at rule load time.
+
+Example: pattern `**/requirements/*.txt` splits to `["**", "requirements", "*.txt"]`.
+- Matches `foo/bar/requirements/dev.txt` - `**` covers `foo/bar`, literal `requirements`
+  matches the directory, `*.txt` matches `dev.txt`.
+- Does NOT match `foo/requirements.txt` - after `**` consumes `foo`, the next pattern
+  segment is literal `requirements` which would need to match the filename `requirements.txt`,
+  but the `*.txt` segment would then have nothing left to match.
 
 Supported parser keys:
 
@@ -132,8 +166,61 @@ Supported parser keys:
 | `yaml` | `yamlQueryParser` | field-path queries from rule config |
 | `json` | `jsonQueryParser` | field-path queries from rule config |
 | `xml` | `xmlQueryParser` | field-path queries from rule config |
-| `ini` | `iniQueryParser` | section/key queries from rule config |
-| `banner-regex` | `bannerRegexParser` | regex over first 4096 bytes of content |
+| `ini` | `iniQueryParser` | section + key queries; key `*` matches all keys in the section; values extracted as multi-line nested lists; inline `#`/`;` comments stripped; `file:` and `%(` markers skipped; returns `Matched: false` if no queried section exists |
+| `banner-regex` | `bannerRegexParser` | regex over first 4096 bytes; requires exactly 2 capture groups (validated at load time): group 1 = package name, group 2 = version; emits `name@version` as raw dep string; returns `Matched: false` if the regex does not match or either group is empty |
+
+## Rule matching semantics and rule ordering
+
+Rules are evaluated in YAML declaration order for every file. The loop exits as soon as any
+rule claims the file. A file is always reported under exactly one manifest type.
+
+**Three ways a rule claims a file:**
+
+1. The rule has no parser (`Parser == nil`). File presence is sufficient - the loop returns
+   immediately without reading content. `HasDependencies` is `nil` (unknown).
+2. The rule has a parser and `parser.Match()` returns `Matched: true`. The loop returns with
+   whatever the parser extracted.
+3. The rule has a parser and `parser.Match()` returns an error. The error propagates and the
+   scan stops.
+
+**`Matched: false`** means the parser ran but declined the file. The loop continues to the
+next rule. This is the only way a file can be tested against more than one parser.
+
+**Which parsers can return `Matched: false`:**
+
+| Parser | Can return `Matched: false`? | When |
+|---|---|---|
+| `py-requirements` | No | Always claims the file - all three return paths set `Matched: true` |
+| `go-mod` | No | Always claims the file |
+| `json: exists-any` | No | Once JSON parses successfully, always claims the file |
+| `package-lock` | Yes | When `lockfileVersion` is not 1, 2, or 3 |
+| `banner-regex` | Yes | When the regex does not match the first 4096 bytes |
+| `yaml: exists` / `exists-any` | Yes | When the required key is absent |
+| `toml: exists-any` / `table-exists-any` | Yes | When none of the queried keys are present |
+| `ini` | Yes | When no queried section exists in the file |
+| `cargo-lock`, `yarn-lock`, `pnpm-lock`, etc. | Yes | On format mismatch or unrecognized header |
+
+**Silent rule shadowing.** When two rules have overlapping selectors and the first rule's
+parser cannot return `Matched: false`, the second rule is unreachable for any file that both
+selectors match. There is no error or warning at load time or scan time.
+
+```yaml
+# rule-b is dead for any file named setup.txt:
+- name: rule-a
+  filename-regex: '^setup\.txt$'
+  py-requirements: {}        # always Matched: true - claims every file it selects
+
+- name: rule-b
+  filename-regex: '^setup\.txt$'
+  banner-regex: '(tool)@(1\.0)'   # never reached
+```
+
+To avoid this: ensure that rules with overlapping selectors are ordered so that the more
+specific or conditional parser (one that can return `Matched: false`) comes first. Rules that
+always claim their files should come last among any group with shared selector patterns.
+
+**Content is loaded at most once per file.** Even if multiple rules match the same filename,
+the file bytes are read from disk once and reused across all parser calls for that file.
 
 ## Two parser categories
 
@@ -149,6 +236,27 @@ Query parsers support three modes (mutually exclusive per rule):
 - `query` / `queries` - extract string values at path as dependencies
 - `exists` - match if path exists (level 1.5, no extraction)
 - `exists-any` - match if any of the given paths has a non-empty value (level 2)
+
+**Notes on query parser behavior:**
+
+**`json: exists-any`** - for each listed key, the parser decodes the top-level value and
+tests it in order: non-empty object, non-empty array, non-empty string, then skips `null`,
+then `true` boolean (treated as has-deps), `false` (skipped), then any number. If no listed
+key produces a non-empty result, the file is still claimed (`Matched: true`) and reported as
+`HasDependencies: false`. The JSON parser never returns `Matched: false` once the file parses
+successfully.
+
+**`yaml: exists`** (single required key) vs **`yaml: exists-any`** (any of a list) - `exists`
+requires that exact top-level key to be present; `exists-any` matches if at least one of the
+listed keys is present and non-empty. Both return `Matched: false` if the YAML fails to parse
+or the required key(s) are absent, which allows a subsequent rule to attempt the same file.
+
+**`toml: table-exists-any`** vs **`toml: exists-any`** - `table-exists-any` checks that at
+least one of the listed key paths resolves to a TOML table (object), while `exists-any`
+checks for any non-empty value at the path. Key path segments in `table-exists-any` can use
+`*` as a single-level wildcard - e.g. `target.*.dependencies` matches any table under
+`target` that has a `dependencies` sub-table, which is how Cargo platform-specific deps
+(`[target.'cfg(unix)'.dependencies]`) are detected.
 
 ## Common patterns across dedicated parsers
 
