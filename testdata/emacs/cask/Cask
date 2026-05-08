@@ -1,0 +1,5 @@
+(source melpa)
+(source gnu)
+
+(depends-on "magit")
+(depends-on "company")

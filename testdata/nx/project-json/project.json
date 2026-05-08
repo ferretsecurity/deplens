@@ -1,0 +1,9 @@
+{
+  "name": "my-app",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack"
+    }
+  }
+}

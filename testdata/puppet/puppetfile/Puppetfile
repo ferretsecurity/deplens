@@ -1,0 +1,4 @@
+forge 'https://forgehub.puppet.com'
+
+mod 'puppetlabs-stdlib', '9.0.0'
+mod 'puppetlabs-apache', '11.0.0'

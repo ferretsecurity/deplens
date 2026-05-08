@@ -1,0 +1,1 @@
+{"name":"Demo","version":"1.0","abstract":"A demo module","author":["A. N. Author"],"prereqs":{"runtime":{"requires":{"perl":"5.010000"}}}}

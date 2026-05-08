@@ -1,0 +1,11 @@
+services:
+  app:
+    image: my-app:latest
+    ports:
+      - "8080:8080"
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password

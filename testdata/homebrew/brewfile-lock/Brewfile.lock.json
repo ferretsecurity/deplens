@@ -1,0 +1,12 @@
+{
+  "entries": [
+    {
+      "name": "git",
+      "type": "brew",
+      "version": "2.43.0"
+    }
+  ],
+  "homebrew": {
+    "version": "4.0.0"
+  }
+}

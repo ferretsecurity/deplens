@@ -1,0 +1,7 @@
+name: 'Test Action'
+description: 'A minimal GitHub Action for testing'
+runs:
+  using: 'composite'
+  steps:
+    - run: echo "hello"
+      shell: bash

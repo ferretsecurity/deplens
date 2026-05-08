@@ -1,5 +1,43 @@
-my-rules.yaml
-.gocache/
+# Go binaries and build artifacts
 deplens
+/dist/
+.gocache/
+
+# Test and coverage
+*.test
+*.out
+c.out
+coverage.html
+coverage.txt
+
+# Profiling
+*.prof
+cpu.out
+mem.out
+
+# Local config overrides
+my-rules.yaml
+*.local.yaml
+
+# VS Code (includes launch.json, tasks.json, debug configs)
+.vscode/
+
+# Other editors
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# AI and agent tools
 .codex
+.claude/
+.cursor/
+.aider*
+.continue/
 docs/superpowers/
+docs/planning/

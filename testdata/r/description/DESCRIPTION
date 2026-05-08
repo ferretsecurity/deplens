@@ -1,0 +1,7 @@
+Package: mypkg
+Version: 1.0.0
+Title: My Package
+Description: A sample R package.
+Imports:
+    ggplot2,
+    dplyr

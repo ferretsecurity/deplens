@@ -1,0 +1,1 @@
+{"name":"demo","version":"1.0.0","esy":{"build":"dune build"},"dependencies":{"@opam/dune":"^3.0.0","ocaml":"^5.0.0"}}

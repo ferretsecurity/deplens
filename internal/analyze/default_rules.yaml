@@ -24,6 +24,8 @@ rules:
     yaml:
       exists-any:
         - package
+  - name: python-conda-env-alt
+    filename-regex: '^conda\.ya?ml$'
   - name: python-pyproject
     filename-regex: '^pyproject\.toml$'
     toml:
@@ -75,6 +77,8 @@ rules:
           key: install_requires
         - section: options.extras_require
           key: '*'
+  - name: python-constraints
+    filename-regex: '^constraints\.txt$'
   - name: js
     filename-regex: '^package\.json$'
     json:
@@ -117,6 +121,16 @@ rules:
     json:
       exists-any:
         - imports
+  - name: js-pnp
+    filename-regex: '^\.pnp\.(cjs|loader\.mjs)$'
+  - name: js-pnpm-workspace
+    filename-regex: '^pnpm-workspace\.ya?ml$'
+  - name: js-npmrc
+    filename-regex: '^\.npmrc$'
+  - name: js-yarnrc
+    filename-regex: '^\.yarnrc\.yml$'
+  - name: js-importmap
+    filename-regex: '^importmap\.json$'
   - name: java
     filename-regex: '^pom\.xml$'
     xml:
@@ -132,18 +146,44 @@ rules:
     filename-regex: '^settings\.gradle$'
   - name: java-gradle-settings-kts
     filename-regex: '^settings\.gradle\.kts$'
+  - name: java-gradle-version-catalog
+    path-glob: '**/gradle/libs.versions.toml'
+  - name: java-gradle-wrapper
+    path-glob: '**/gradle/wrapper/gradle-wrapper.properties'
+  - name: scala-sbt-build
+    filename-regex: '^build\.sbt$'
+  - name: scala-sbt-plugins
+    path-glob: '**/project/plugins.sbt'
+  - name: scala-sbt-dependencies
+    path-glob: '**/project/Dependencies.scala'
+  - name: scala-sbt-build-props
+    path-glob: '**/project/build.properties'
+  - name: scala-mill
+    filename-regex: '^build\.sc$'
+  - name: java-ant-build
+    filename-regex: '^build\.xml$'
+  - name: java-ivy
+    filename-regex: '^ivy\.xml$'
+  - name: java-ivy-settings
+    filename-regex: '^ivysettings\.xml$'
   - name: ruby-gemfile
     filename-regex: '^Gemfile$'
   - name: ruby-gemfile-lock
     filename-regex: '^Gemfile\.lock$'
   - name: ruby-gemspec
     filename-regex: '.*\.gemspec$'
+  - name: ruby-appraisal
+    path-glob: '**/gemfiles/*.gemfile'
   - name: swift-package
     filename-regex: '^Package\.swift$'
   - name: ios-podfile
     filename-regex: '^Podfile$'
   - name: ios-cartfile
     filename-regex: '^Cartfile$'
+  - name: ios-podspec
+    filename-regex: '.*\.podspec$'
+  - name: ios-cartfile-resolved
+    filename-regex: '^Cartfile\.resolved$'
   - name: php-composer
     filename-regex: '^composer\.json$'
     json:
@@ -173,12 +213,16 @@ rules:
     filename-regex: '^deps\.edn$'
   - name: clojure-project-clj
     filename-regex: '^project\.clj$'
+  - name: clojure-boot
+    filename-regex: '^build\.boot$'
   - name: haskell-stack
     filename-regex: '^stack\.yaml$'
   - name: haskell-stack-lock
     filename-regex: '^stack\.yaml\.lock$'
   - name: haskell-cabal-project
     filename-regex: '^cabal\.project$'
+  - name: haskell-cabal-project-freeze
+    filename-regex: '^cabal\.project\.freeze$'
   - name: haskell-cabal
     filename-regex: '.*\.cabal$'
   - name: haskell-package-yaml
@@ -205,6 +249,16 @@ rules:
     filename-regex: '^paket\.dependencies$'
   - name: dotnet-paket-lock
     filename-regex: '^paket\.lock$'
+  - name: dotnet-fsproj
+    filename-regex: '.*\.fsproj$'
+  - name: dotnet-vbproj
+    filename-regex: '.*\.vbproj$'
+  - name: dotnet-directory-build
+    filename-regex: '^Directory\.Build\.(props|targets)$'
+  - name: dotnet-paket-references
+    filename-regex: '^paket\.references$'
+  - name: dotnet-tools-manifest
+    path-glob: '**/.config/dotnet-tools.json'
   - name: go-mod
     filename-regex: '^go\.mod$'
     go-mod: {}
@@ -220,6 +274,8 @@ rules:
       exists-any:
         - import
         - testImport
+  - name: go-godep
+    path-glob: '**/Godeps/Godeps.json'
   - name: rust-cargo
     filename-regex: '^Cargo\.toml$'
     toml:
@@ -234,6 +290,8 @@ rules:
   - name: rust-cargo-lock
     filename-regex: '^Cargo\.lock$'
     cargo-lock: {}
+  - name: rust-cargo-config
+    path-glob: '**/.cargo/config.toml'
   - name: go-gopkg-lock
     filename-regex: '^Gopkg\.lock$'
     toml:
@@ -255,6 +313,24 @@ rules:
     json:
       exists-any:
         - dependencies
+  - name: cpp-cmake
+    filename-regex: '^CMakeLists\.txt$'
+  - name: cpp-conanfile-py
+    filename-regex: '^conanfile\.py$'
+  - name: cpp-vcpkg-config
+    filename-regex: '^vcpkg-configuration\.json$'
+  - name: cpp-meson
+    filename-regex: '^meson\.build$'
+  - name: cpp-autotools
+    filename-regex: '^configure\.(ac|in)$'
+  - name: cpp-cmake-modules
+    path-glob: '**/cmake/*.cmake'
+  - name: cpp-meson-wrap
+    path-glob: '**/subprojects/*.wrap'
+  # DRAFT: cpp-gclient-deps — root-only path-glob for gclient repos
+  # TODO: upgrade to Level 2 (content check for Python-style 'deps = {' or 'vars = {') to reduce false positives
+  # - name: cpp-gclient-deps
+  #   path-glob: 'DEPS'
   - name: swift-package-resolved
     filename-regex: '^Package\.resolved$'
     json:
@@ -282,22 +358,62 @@ rules:
         - deps
   - name: perl-cpanfile
     filename-regex: '^cpanfile$'
+  - name: perl-cpanfile-snapshot
+    filename-regex: '^cpanfile\.snapshot$'
+  - name: perl-makefile-pl
+    filename-regex: '^Makefile\.PL$'
+  - name: perl-build-pl
+    filename-regex: '^Build\.PL$'
+  - name: perl-meta
+    filename-regex: '^META\.(json|ya?ml)$'
+  - name: perl-dist-ini
+    filename-regex: '^dist\.ini$'
+  - name: raku-meta
+    filename-regex: '^META6\.json$'
+  - name: r-renv-lock
+    filename-regex: '^renv\.lock$'
+  - name: r-packrat-lock
+    path-glob: '**/packrat/packrat.lock'
+  # DRAFT: r-description — filename-regex for R package manifests (noisy)
+  # TODO: upgrade to Level 2 (content check for DCF 'Package:' header) to reduce false positives
+  # - name: r-description
+  #   filename-regex: '^DESCRIPTION$'
+  - name: lua-rockspec
+    filename-regex: '.*\.rockspec$'
   - name: zig-build-zon
     filename-regex: '^build\.zig\.zon$'
+  - name: zig-build
+    filename-regex: '^build\.zig$'
   - name: nim-nimble
     filename-regex: '.*\.nimble$'
   - name: ocaml-opam
     filename-regex: '.*\.opam$'
+  - name: ocaml-opam-locked
+    filename-regex: '.*\.opam\.locked$'
+  - name: ocaml-dune-project
+    filename-regex: '^dune-project$'
+  - name: ocaml-esy
+    filename-regex: '^esy\.json$'
+  # DRAFT: ocaml-dune — filename-regex for OCaml Dune per-directory build files (noisy)
+  # TODO: upgrade to Level 2 (s-expression content check for 'library'/'executable' stanzas) to reduce false positives
+  # - name: ocaml-dune
+  #   filename-regex: '^dune$'
   - name: crystal-shard
     filename-regex: '^shard\.yml$'
     yaml:
       exists-any:
         - dependencies
+  - name: crystal-shard-lock
+    filename-regex: '^shard\.lock$'
   - name: gleam
     filename-regex: '^gleam\.toml$'
     toml:
       table-exists-any:
         - dependencies
+  - name: gleam-manifest
+    filename-regex: '^manifest\.toml$'
+  - name: fortran-fpm
+    filename-regex: '^fpm\.toml$'
   - name: vlang
     filename-regex: '^v\.mod$'
   - name: helm-chart
@@ -330,6 +446,96 @@ rules:
     json:
       exists-any:
         - dependencies
+  - name: unity-packages-lock
+    path-glob: 'Packages/packages-lock.json'
+  - name: docker-dockerfile
+    filename-regex: '^Dockerfile(\..+)?$'
+  - name: docker-compose
+    filename-regex: '^(docker-compose|compose)\.ya?ml$'
+  - name: github-actions-action
+    filename-regex: '^action\.ya?ml$'
+  - name: github-actions-workflow
+    path-glob: '**/.github/workflows/*.yml'
+  - name: bazel-workspace
+    filename-regex: '^WORKSPACE(\.bazel)?$'
+  - name: bazel-module
+    filename-regex: '^MODULE\.bazel$'
+  - name: bazel-module-lock
+    filename-regex: '^MODULE\.bazel\.lock$'
+  - name: bazel-build-file
+    filename-regex: '^BUILD\.bazel$'
+  - name: bazel-third-party-bzl
+    path-glob: '**/third_party/*.bzl'
+  - name: js-nx
+    filename-regex: '^nx\.json$'
+  # DRAFT: js-nx-project — filename-regex for Nx per-project config (noisy)
+  # TODO: upgrade to Level 2 (json exists-any: targets,implicitDependencies) to reduce false positives
+  # - name: js-nx-project
+  #   filename-regex: '^project\.json$'
+  - name: js-lerna
+    filename-regex: '^lerna\.json$'
+  - name: js-rush
+    filename-regex: '^rush\.json$'
+  - name: rush-common-versions
+    path-glob: '**/common/config/rush/common-versions.json'
+  - name: js-turbo
+    filename-regex: '^turbo\.json$'
+  - name: pants-config
+    filename-regex: '^pants\.toml$'
+  - name: pants-jvm-build
+    path-glob: '**/3rdparty/jvm/BUILD'
+  # DRAFT: bazel-build-file-bare — filename-regex for bare BUILD files (noisy; both Bazel and Pants)
+  # TODO: upgrade to Level 2 (content check for Bazel/Pants target functions) to reduce false positives
+  # - name: bazel-build-file-bare
+  #   filename-regex: '^BUILD$'
+  - name: git-submodules
+    filename-regex: '^\.gitmodules$'
+  - name: nix-default-shell
+    filename-regex: '^(default|shell)\.nix$'
+  - name: nix-flake
+    filename-regex: '^flake\.nix$'
+  - name: nix-flake-lock
+    filename-regex: '^flake\.lock$'
+  - name: helm-chart-lock
+    filename-regex: '^Chart\.lock$'
+  - name: homebrew-brewfile-lock
+    filename-regex: '^Brewfile\.lock\.json$'
+  - name: buf-lock
+    filename-regex: '^buf\.lock$'
+  - name: puppet-puppetfile
+    filename-regex: '^Puppetfile$'
+  # DRAFT: puppet-cookbook-metadata — path-glob for Puppet cookbook layout
+  # Constrained to standard Puppet repo layout; noisier alternative (not active):
+  #   filename-regex: '^metadata\.json$'
+  # TODO: upgrade to Level 2 (json exists-any: dependencies,name with Puppet-specific fields) to reduce false positives
+  # - name: puppet-cookbook-metadata
+  #   path-glob: '**/cookbooks/*/metadata.json'
+  - name: chef-berksfile
+    filename-regex: '^Berksfile$'
+  - name: chef-berksfile-lock
+    filename-regex: '^Berksfile\.lock$'
+  - name: chef-metadata
+    filename-regex: '^metadata\.rb$'
+  - name: chef-policyfile
+    filename-regex: '^Policyfile\.rb$'
+  - name: chef-policyfile-lock
+    filename-regex: '^Policyfile\.lock\.json$'
+  - name: jsonnet-lock
+    filename-regex: '^jsonnetfile\.lock\.json$'
+  - name: emacs-cask
+    filename-regex: '^Cask$'
+  - name: unreal-uproject
+    filename-regex: '.*\.uproject$'
+  - name: unreal-uplugin
+    filename-regex: '.*\.uplugin$'
+  - name: godot-plugin-cfg
+    filename-regex: '^plugin\.cfg$'
+  - name: foundry-toml
+    filename-regex: '^foundry\.toml$'
+  - name: foundry-remappings
+    filename-regex: '^remappings\.txt$'
+  - name: soldeer-lock
+    filename-regex: '^soldeer\.lock$'
   - name: js-banner-block-start
     filename-regex: '.*\.js$'
     banner-regex: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'

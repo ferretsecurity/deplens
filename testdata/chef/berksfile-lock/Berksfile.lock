@@ -1,0 +1,5 @@
+DEPENDENCIES
+  nginx (>= 0.0.0)
+
+GRAPH
+  nginx (3.0.0)

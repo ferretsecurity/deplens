@@ -1,0 +1,11 @@
+{
+  "revision_id": "abc123def456",
+  "name": "myapp",
+  "run_list": ["recipe[apt]", "recipe[nginx]"],
+  "cookbook_locks": {
+    "apt": {
+      "version": "7.4.0",
+      "identifier": "abc123"
+    }
+  }
+}
