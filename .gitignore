@@ -13,10 +13,20 @@ Thumbs.db
 *~
 
 # Local planning artifacts
-plan.md
+PLAN.md
+ARCHITECTURE.md
 
 # Language caches
 *.pyc
 __pycache__/
 venv/
 node_modules/
+
+# Worktrees
+.worktrees/
+
+# Temp
+temp*
+ai-security-review-research
+audit-project-contex-research
+discover_stage_prompt.md
