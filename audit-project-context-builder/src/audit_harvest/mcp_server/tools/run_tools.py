@@ -62,14 +62,25 @@ def harvest_run_cve_overlay(repo_path: str) -> dict:
 
 @mcp.tool()
 def harvest_run_repo_profile(repo_path: str) -> dict:
-    """Run A1: produce repo_profile. Requires A5 SBOM."""
+    """Run A1: produce repo_profile. Always writes an artifact; degraded if tools or SBOM missing."""
     from audit_harvest.producers.repo_profile import produce_repo_profile
     store, repo = _get_store(repo_path)
+    reason: str | None = None
+
     sbom_record = store.get("sbom")
     if sbom_record is None:
-        return {"status": "error", "message": "Run harvest_run_sbom first (A5 required for A1)"}
-    record = produce_repo_profile(repo, store, Path(sbom_record.path))
-    return {"status": "ok", "artifact": asdict(record)}
+        reason = "A5 SBOM not found -- run harvest_run_sbom first"
+    else:
+        try:
+            record = produce_repo_profile(repo, store, Path(sbom_record.path))
+            return {"status": "ok", "artifact": asdict(record)}
+        except Exception as e:
+            reason = str(e)
+
+    content = f"# Repository Profile\n\nGeneration failed: {reason}\n"
+    src_hash = hashlib.sha256(reason.encode()).hexdigest()
+    record = store.write("repo_profile", content.encode(), source_hash=src_hash)
+    return {"status": "degraded", "artifact": asdict(record), "reason": reason}
 
 
 @mcp.tool()
