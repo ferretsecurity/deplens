@@ -69,6 +69,11 @@ class ArtifactStore:
                     tmp_link.unlink()
                 except FileNotFoundError:
                     pass  # another process unlinked it — retry
+        else:
+            raise RuntimeError(
+                f"Failed to create symlink for {name} after 10 attempts — "
+                "possible concurrent write storm"
+            )
         os.replace(str(tmp_link), str(current))
 
     def get(self, name: str) -> Optional[ArtifactRecord]:

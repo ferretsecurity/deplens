@@ -96,3 +96,34 @@ def test_concurrent_writes_do_not_corrupt(tmp_path):
     record = store.get("repo_profile")
     assert record is not None
     assert Path(record.path).exists()
+
+
+from unittest.mock import patch
+
+
+def test_update_current_raises_after_exhausting_retries(tmp_path):
+    store = ArtifactStore(tmp_path)
+    # Ensure the name directory exists
+    (tmp_path / "repo_profile").mkdir()
+
+    with patch("os.symlink", side_effect=FileExistsError("always fails")):
+        with pytest.raises(RuntimeError, match="Failed to create symlink"):
+            store._update_current("repo_profile", tmp_path / "repo_profile" / "somehash")
+
+
+def test_concurrent_writes_content_consistent(tmp_path):
+    args = [
+        (str(tmp_path), f"content_{i}", f"hash_{i}")
+        for i in range(4)
+    ]
+    with multiprocessing.Pool(4) as pool:
+        pool.map(_write_worker, args)
+
+    store = ArtifactStore(tmp_path)
+    record = store.get("repo_profile")
+    assert record is not None
+    # Content must be one of the written payloads
+    content = Path(record.path).read_bytes()
+    assert content in {f"content_{i}".encode() for i in range(4)}
+    # source_hash must match one of the written hashes
+    assert record.source_hash in {f"hash_{i}" for i in range(4)}
