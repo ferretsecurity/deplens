@@ -1,16 +1,13 @@
 import json
 from pathlib import Path
 
-import pytest
-
 from audit_harvest.storage import ArtifactStore
 from audit_harvest.producers.repomap.producer import produce_repomap, _source_hash
 
 
-FIXTURE_PYTHON_FLASK = Path("tests/fixtures/python_flask")
+FIXTURE_PYTHON_FLASK = Path(__file__).parent.parent / "fixtures" / "python_flask"
 
 
-@pytest.mark.integration
 def test_produce_repomap_returns_record(tmp_path):
     store = ArtifactStore(tmp_path / "store")
     record = produce_repomap(FIXTURE_PYTHON_FLASK, store)
@@ -22,7 +19,6 @@ def test_produce_repomap_returns_record(tmp_path):
     assert len(data["repo_map"]) > 0
 
 
-@pytest.mark.integration
 def test_produce_repomap_budget_respected(tmp_path):
     store = ArtifactStore(tmp_path / "store")
     record = produce_repomap(FIXTURE_PYTHON_FLASK, store, budget_tokens=200)
@@ -34,7 +30,6 @@ def test_produce_repomap_budget_respected(tmp_path):
     assert len(repo_map.split()) < 600
 
 
-@pytest.mark.integration
 def test_produce_repomap_cache_hit(tmp_path):
     store = ArtifactStore(tmp_path / "store")
 

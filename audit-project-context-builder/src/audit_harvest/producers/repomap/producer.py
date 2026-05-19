@@ -2,9 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import warnings
 from pathlib import Path
 
+import tiktoken
+
 from audit_harvest.storage import ArtifactRecord, ArtifactStore
+
+_enc = tiktoken.get_encoding("cl100k_base")
 
 
 EXCLUDE_DIRS = {"vendor", "node_modules", ".git", "testdata", "__pycache__", ".venv"}
@@ -46,22 +51,24 @@ def produce_repomap(
     ]
 
     from audit_harvest.producers.repomap.vendor.repomap import RepoMap
-    rm = RepoMap(
-        map_tokens=budget_tokens,
-        root=str(repo_path),
-        main_model=None,
-    )
+    error_msg = None
     try:
+        rm = RepoMap(map_tokens=budget_tokens, root=str(repo_path), main_model=None)
         repo_map_text = rm.get_repo_map(chat_files=[], other_files=all_files)
-    except Exception:
+    except Exception as exc:
         repo_map_text = None
+        error_msg = str(exc)
+        warnings.warn(f"RepoMap failed: {exc}")
 
+    meta: dict = {
+        "repo_path": str(repo_path),
+        "budget_tokens": budget_tokens,
+        "actual_tokens": len(_enc.encode(repo_map_text)) if repo_map_text else 0,
+    }
+    if error_msg is not None:
+        meta["error"] = error_msg
     output = {
-        "meta": {
-            "repo_path": str(repo_path),
-            "budget_tokens": budget_tokens,
-            "actual_tokens": len(repo_map_text.split()) if repo_map_text else 0,
-        },
+        "meta": meta,
         "repo_map": repo_map_text or "",
     }
     return store.write("repomap", json.dumps(output).encode(), source_hash=src_hash)

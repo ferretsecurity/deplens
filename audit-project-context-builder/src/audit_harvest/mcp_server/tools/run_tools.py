@@ -75,11 +75,11 @@ def harvest_run_repo_profile(repo_path: str) -> dict:
 
 
 @mcp.tool()
-def harvest_run_repomap(repo_path: str) -> dict:
+def harvest_run_repomap(repo_path: str, budget_tokens: int = 8000) -> dict:
     """Run A7: extract symbol map via tree-sitter."""
     from audit_harvest.producers.repomap.producer import produce_repomap
     store, repo = _get_store(repo_path)
-    record = produce_repomap(repo, store)
+    record = produce_repomap(repo, store, budget_tokens=budget_tokens)
     return {"status": "ok", "artifact": asdict(record)}
 
 
