@@ -61,11 +61,16 @@ def test_full_mcp_tool_pipeline(fixture, tmp_path, monkeypatch):
         result = harvest_run_cve_overlay(repo)
         assert result["status"] == "ok", result
 
-    # Step 3 — A1 repo profile (requires A5 + Bucket A tools enry/scc)
-    if sbom_produced and bucket_a_ok:
-        result = harvest_run_repo_profile(repo)
-        assert result["status"] == "ok", result
-        assert "artifact" in result
+    # Step 3 — A1 repo profile (always written; degraded if tools or SBOM missing)
+    result = harvest_run_repo_profile(repo)
+    assert result["status"] in ("ok", "degraded"), result
+    assert "artifact" in result
+    if result["status"] == "ok":
+        assert Path(result["artifact"]["path"]).exists()
+    else:
+        assert result["reason"]
+        content = Path(result["artifact"]["path"]).read_text()
+        assert "Generation failed:" in content
 
     # Step 4 — A7 repomap (independent)
     result = harvest_run_repomap(repo)
