@@ -1,0 +1,35 @@
+# purl_type/namespace_and_name: {label, category}
+# Strip version from purl before matching. Lowercase both key and registry entry.
+golang/github.com/gin-gonic/gin:           {label: Gin,          category: web}
+golang/github.com/labstack/echo/v4:        {label: Echo,         category: web}
+golang/github.com/gofiber/fiber/v2:        {label: Fiber,        category: web}
+golang/github.com/gorilla/mux:             {label: Gorilla Mux,  category: web}
+golang/github.com/go-chi/chi:              {label: Chi,          category: web}
+golang/github.com/beego/beego/v2:          {label: Beego,        category: web}
+golang/github.com/cloudwego/hertz:         {label: Hertz,        category: web}
+golang/google.golang.org/grpc:             {label: gRPC,         category: rpc}
+pypi/django:                               {label: Django,       category: web}
+pypi/flask:                                {label: Flask,        category: web}
+pypi/fastapi:                              {label: FastAPI,      category: web}
+pypi/starlette:                            {label: Starlette,    category: asgi}
+pypi/tornado:                              {label: Tornado,      category: web}
+pypi/aiohttp:                              {label: aiohttp,      category: web}
+pypi/sanic:                                {label: Sanic,        category: web}
+pypi/celery:                               {label: Celery,       category: task-queue}
+npm/express:                               {label: Express,      category: web}
+npm/fastify:                               {label: Fastify,      category: web}
+npm/koa:                                   {label: Koa,          category: web}
+npm/@nestjs/core:                          {label: NestJS,       category: web}
+npm/next:                                  {label: Next.js,      category: web}
+npm/nuxt:                                  {label: Nuxt,         category: web}
+npm/@hapi/hapi:                            {label: Hapi,         category: web}
+maven/org.springframework.boot/spring-boot-starter-web: {label: Spring Boot, category: web}
+maven/org.springframework/spring-webflux:  {label: Spring WebFlux, category: web-reactive}
+maven/io.quarkus/quarkus-core:             {label: Quarkus,      category: web}
+maven/io.micronaut/micronaut-core:         {label: Micronaut,    category: web}
+maven/io.vertx/vertx-core:                {label: Vert.x,       category: web}
+cargo/actix-web:                           {label: Actix-web,    category: web}
+cargo/axum:                                {label: Axum,         category: web}
+cargo/rocket:                              {label: Rocket,       category: web}
+cargo/warp:                                {label: Warp,         category: web}
+cargo/tokio:                               {label: Tokio,        category: runtime}
