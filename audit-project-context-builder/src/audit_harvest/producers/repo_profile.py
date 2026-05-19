@@ -9,7 +9,7 @@ from urllib.parse import unquote
 import yaml
 
 from audit_harvest.storage import ArtifactRecord, ArtifactStore
-from audit_harvest.subprocess_utils import run_tool, _resolver, ToolNotFound
+from audit_harvest.subprocess_utils import run_tool, _resolver, ToolError, ToolNotFound
 
 
 MANIFEST_NAMES = [
@@ -151,36 +151,38 @@ def _detect_monorepo(repo_path: Path) -> list[dict]:
     return results
 
 
+def _rg_files(repo_path: Path, glob: str, pattern: str) -> list[str]:
+    """Return relative paths of files matching pattern. Returns [] if rg absent or finds nothing."""
+    try:
+        result = run_tool(
+            [_resolver.resolve("rg"), "--files-with-matches", "--glob", glob, pattern, str(repo_path)],
+            cwd=repo_path,
+            timeout_sec=30,
+        )
+        return [
+            str(Path(line).relative_to(repo_path))
+            for line in result.stdout.splitlines()
+            if line.strip()
+        ]
+    except (ToolNotFound, ToolError):
+        return []
+
+
 def _detect_entry_binaries(repo_path: Path) -> list[dict]:
     results: list[dict] = []
 
-    # Go: cmd/*/main.go
+    # Go: cmd/*/main.go and root main.go
     for go_main in repo_path.glob("cmd/*/main.go"):
         results.append({"file": str(go_main.relative_to(repo_path)), "language": "Go"})
-    root_main = repo_path / "main.go"
-    if root_main.exists():
+    if (repo_path / "main.go").exists():
         results.append({"file": "main.go", "language": "Go"})
 
     # Python: rg for __main__
     if len(results) < 10:
-        try:
-            rg_result = run_tool(
-                ["rg", "--files-with-matches", "--glob", "*.py",
-                 r"if __name__ == ['\"]__main__['\"]"],
-                cwd=repo_path,
-                timeout_sec=30,
-            )
-            for line in rg_result.stdout.splitlines():
-                if line.strip():
-                    try:
-                        rel = Path(line.strip()).relative_to(repo_path)
-                    except ValueError:
-                        rel = Path(line.strip())
-                    results.append({"file": str(rel), "language": "Python"})
-                    if len(results) >= 10:
-                        break
-        except ToolNotFound:
-            pass
+        for path in _rg_files(repo_path, "*.py", r"if __name__ == ['\"]__main__['\"]"):
+            results.append({"file": path, "language": "Python"})
+            if len(results) >= 10:
+                break
 
     # JS/TS: package.json main/bin
     pkg_json = repo_path / "package.json"
@@ -199,24 +201,10 @@ def _detect_entry_binaries(repo_path: Path) -> list[dict]:
 
     # Java: rg for main method
     if len(results) < 10:
-        try:
-            rg_result = run_tool(
-                ["rg", "--files-with-matches", "--glob", "*.java",
-                 "public static void main"],
-                cwd=repo_path,
-                timeout_sec=30,
-            )
-            for line in rg_result.stdout.splitlines():
-                if line.strip():
-                    try:
-                        rel = Path(line.strip()).relative_to(repo_path)
-                    except ValueError:
-                        rel = Path(line.strip())
-                    results.append({"file": str(rel), "language": "Java"})
-                    if len(results) >= 10:
-                        break
-        except ToolNotFound:
-            pass
+        for path in _rg_files(repo_path, "*.java", "public static void main"):
+            results.append({"file": path, "language": "Java"})
+            if len(results) >= 10:
+                break
 
     return results[:10]
 
@@ -246,7 +234,6 @@ def _scan_secrets(repo_path: Path) -> list[dict]:
         # rg exits non-zero when no matches found; handle gracefully
         return []
 
-    pattern_labels = [label for _, label in _SECRET_PATTERNS]
     hits: list[dict] = []
     for raw_line in output.splitlines():
         if not raw_line.strip():
@@ -260,7 +247,6 @@ def _scan_secrets(repo_path: Path) -> list[dict]:
         data = obj.get("data", {})
         file_path = data.get("path", {}).get("text", "")
         line_num = data.get("line_number", 0)
-        # Determine which pattern matched by checking submatches
         matched_text = data.get("lines", {}).get("text", "")
         label = "credential-pattern"
         if re.search(r"AKIA[0-9A-Z]{16}", matched_text):

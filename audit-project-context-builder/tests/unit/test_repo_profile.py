@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from audit_harvest.storage import ArtifactStore
-from audit_harvest.subprocess_utils import ToolResult, ToolNotFound
+from audit_harvest.subprocess_utils import ToolResult, ToolError, ToolNotFound
 from audit_harvest.producers.repo_profile import (
     produce_repo_profile,
     _parse_purl,
@@ -166,3 +166,19 @@ def test_scan_secrets_rg_not_found_returns_empty(tmp_path):
     with patch("audit_harvest.producers.repo_profile.run_tool", side_effect=ToolNotFound("rg not found")):
         results = _scan_secrets(tmp_path)
     assert results == []
+
+
+def test_detect_entry_binaries_rg_no_matches(tmp_path):
+    # Create a Go entry so we can verify it is still found via glob (no rg needed)
+    cmd_server = tmp_path / "cmd" / "server"
+    cmd_server.mkdir(parents=True)
+    (cmd_server / "main.go").write_text("package main\nfunc main() {}\n")
+
+    no_match_result = ToolResult(cmd=[], returncode=1, stdout="", stderr="", wall_time_sec=0.0)
+
+    with patch("audit_harvest.producers.repo_profile.run_tool", side_effect=ToolError("no matches", no_match_result)):
+        results = _detect_entry_binaries(tmp_path)
+
+    assert isinstance(results, list)
+    files = [r["file"] for r in results]
+    assert any("cmd/server/main.go" in f for f in files)
