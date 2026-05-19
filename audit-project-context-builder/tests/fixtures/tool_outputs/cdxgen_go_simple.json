@@ -1,0 +1,14 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "components": [
+    {
+      "type": "library",
+      "name": "gin",
+      "version": "v1.9.1",
+      "purl": "pkg:golang/github.com/gin-gonic-gin@v1.9.1",
+      "scope": "required"
+    }
+  ],
+  "services": []
+}
