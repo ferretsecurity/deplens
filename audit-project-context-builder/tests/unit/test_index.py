@@ -16,6 +16,7 @@ def test_index_lists_all_artifacts(tmp_path):
     result = produce_index(store, max_age_days=7)
     names = {a["name"] for a in result["artifacts"]}
     assert names == {"repo_profile", "entry_points"}
+    assert len(result["artifacts"]) == 2
 
 
 def test_stale_artifact_is_flagged(tmp_path):
