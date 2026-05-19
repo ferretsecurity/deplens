@@ -59,9 +59,16 @@ class ArtifactStore:
         name_dir = self.root / name
         current = name_dir / "current"
         tmp_link = name_dir / "current.new"
-        if tmp_link.exists() or tmp_link.is_symlink():
-            tmp_link.unlink()
-        os.symlink(str(target_dir), str(tmp_link))
+
+        for _ in range(10):
+            try:
+                os.symlink(str(target_dir), str(tmp_link))
+                break
+            except FileExistsError:
+                try:
+                    tmp_link.unlink()
+                except FileNotFoundError:
+                    pass  # another process unlinked it — retry
         os.replace(str(tmp_link), str(current))
 
     def get(self, name: str) -> Optional[ArtifactRecord]:
