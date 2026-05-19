@@ -13,7 +13,7 @@ from audit_harvest.subprocess_utils import ToolPathResolver
 
 _resolver = ToolPathResolver()
 
-_BUCKET_A_TOOLS = ["git", "enry", "scc", "semgrep", "ripgrep"]
+_BUCKET_A_TOOLS = ["git", "enry", "scc"]
 _BUCKET_B_TOOLS = ["cdxgen", "osv-scanner"]
 
 
@@ -98,12 +98,18 @@ def harvest_run_gate_matrix(repo_path: str) -> dict:
     ep_record = store.get("entry_points")
     entry_points: dict = {"entry_points": []}
     if ep_record:
-        entry_points = json.loads(Path(ep_record.path).read_text())
+        try:
+            entry_points = json.loads(Path(ep_record.path).read_text())
+        except (json.JSONDecodeError, OSError):
+            entry_points = {"entry_points": []}
     sbom_record = store.get("sbom")
     sbom_components: list = []
     if sbom_record:
-        sbom_data = json.loads(Path(sbom_record.path).read_text())
-        sbom_components = sbom_data.get("components", [])
+        try:
+            sbom_data = json.loads(Path(sbom_record.path).read_text())
+            sbom_components = sbom_data.get("components", [])
+        except (json.JSONDecodeError, OSError):
+            sbom_components = []
     result = produce_gate_matrix(repo, entry_points, sbom_components)
     src_hash = hashlib.sha256(str(repo).encode()).hexdigest()
     record = store.write("gate_matrix", json.dumps(result, indent=2).encode(), source_hash=src_hash)

@@ -17,13 +17,13 @@ def harvest_index_list(store_root: str, max_age_days: int = 7) -> dict:
 
 
 @mcp.tool()
-def harvest_index_get(store_root: str, artifact_name: str) -> str:
+def harvest_index_get(store_root: str, artifact_name: str) -> dict:
     """Read the content of a specific Stage 1 artifact by name."""
     store = ArtifactStore(Path(store_root))
     record = store.get(artifact_name)
     if record is None:
-        return json.dumps({"error": f"artifact '{artifact_name}' not found"})
+        return {"error": f"artifact '{artifact_name}' not found"}
     artifact_path = Path(record.path)
     if not artifact_path.exists():
-        return json.dumps({"error": "artifact file missing"})
-    return artifact_path.read_text(errors="replace")
+        return {"error": "artifact file missing"}
+    return {"content": artifact_path.read_text(errors="replace")}

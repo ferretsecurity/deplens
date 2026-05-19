@@ -9,7 +9,7 @@ from audit_harvest.storage import ArtifactStore
 
 
 @mcp.tool()
-def harvest_repomap_query(store_root: str, repo_path: str) -> dict:
+def harvest_repomap_query(store_root: str) -> dict:
     """Query the repomap artifact. Returns the symbol index from the stored A7 artifact."""
     store = ArtifactStore(Path(store_root))
     record = store.get("repomap")
@@ -18,4 +18,7 @@ def harvest_repomap_query(store_root: str, repo_path: str) -> dict:
     artifact_path = Path(record.path)
     if not artifact_path.exists():
         return {"error": "repomap artifact file missing"}
-    return json.loads(artifact_path.read_text(errors="replace"))
+    try:
+        return json.loads(artifact_path.read_text(errors="replace"))
+    except json.JSONDecodeError:
+        return {"error": "repomap artifact is not valid JSON"}
