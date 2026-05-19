@@ -56,25 +56,19 @@ class ArtifactStore:
         return record
 
     def _update_current(self, name: str, target_dir: Path) -> None:
+        import uuid
         name_dir = self.root / name
         current = name_dir / "current"
-        tmp_link = name_dir / "current.new"
-
-        for _ in range(10):
+        tmp_link = name_dir / f"current.new.{uuid.uuid4().hex}"
+        try:
+            os.symlink(str(target_dir), str(tmp_link))
+            os.replace(str(tmp_link), str(current))
+        except Exception:
             try:
-                os.symlink(str(target_dir), str(tmp_link))
-                break
-            except FileExistsError:
-                try:
-                    tmp_link.unlink()
-                except FileNotFoundError:
-                    pass  # another process unlinked it — retry
-        else:
-            raise RuntimeError(
-                f"Failed to create symlink for {name} after 10 attempts — "
-                "possible concurrent write storm"
-            )
-        os.replace(str(tmp_link), str(current))
+                tmp_link.unlink()
+            except FileNotFoundError:
+                pass
+            raise
 
     def get(self, name: str) -> Optional[ArtifactRecord]:
         current = self.root / name / "current"

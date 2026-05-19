@@ -1,10 +1,6 @@
 import hashlib
-import json
 import multiprocessing
-import time
 from pathlib import Path
-
-import pytest
 
 from audit_harvest.storage import ArtifactRecord, ArtifactStore
 
@@ -96,19 +92,6 @@ def test_concurrent_writes_do_not_corrupt(tmp_path):
     record = store.get("repo_profile")
     assert record is not None
     assert Path(record.path).exists()
-
-
-from unittest.mock import patch
-
-
-def test_update_current_raises_after_exhausting_retries(tmp_path):
-    store = ArtifactStore(tmp_path)
-    # Ensure the name directory exists
-    (tmp_path / "repo_profile").mkdir()
-
-    with patch("os.symlink", side_effect=FileExistsError("always fails")):
-        with pytest.raises(RuntimeError, match="Failed to create symlink"):
-            store._update_current("repo_profile", tmp_path / "repo_profile" / "somehash")
 
 
 def test_concurrent_writes_content_consistent(tmp_path):
