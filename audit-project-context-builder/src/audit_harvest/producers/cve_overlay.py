@@ -1,15 +1,15 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import time
 from pathlib import Path
 
 from audit_harvest.storage import ArtifactRecord, ArtifactStore
-from audit_harvest.subprocess_utils import ToolError, _resolver, run_tool
+from audit_harvest.subprocess_utils import ToolError, ToolNotFound, ToolTimeout, _resolver, run_tool
 
 
 def _load_reachable_purls(sbom_appsec_path: Path) -> set[str] | None:
-    """Return set of reachable purls from an appsec SBOM, or None if unavailable."""
     if not sbom_appsec_path.exists():
         return None
     try:
@@ -26,12 +26,6 @@ def _load_reachable_purls(sbom_appsec_path: Path) -> set[str] | None:
             if purl:
                 reachable.add(purl)
 
-    for composition in data.get("compositions", []):
-        if composition.get("aggregate") == "complete":
-            for purl in composition.get("assemblies", []):
-                if purl:
-                    reachable.add(purl)
-
     return reachable
 
 
@@ -41,6 +35,8 @@ def produce_cve_overlay(
     sbom_path: Path,
     sbom_appsec_path: Path | None = None,
 ) -> ArtifactRecord:
+    src_hash = hashlib.sha256(sbom_path.read_bytes()).hexdigest()
+
     try:
         result = run_tool(
             [
@@ -55,6 +51,10 @@ def produce_cve_overlay(
     except ToolError as e:
         # osv-scanner exits 1 when vulnerabilities are found — stdout still has valid JSON
         raw = json.loads(e.result.stdout) if e.result.stdout else {"results": []}
+    except ToolNotFound:
+        raw = {"results": []}
+    except ToolTimeout as e:
+        raise RuntimeError(f"osv-scanner timed out: {e}") from e
 
     reachable_purls: set[str] | None = None
     if sbom_appsec_path is not None:
@@ -67,7 +67,7 @@ def produce_cve_overlay(
             "artifact_id": "cve_overlay",
             "built_at": time.time(),
             "producer_version": "0.1.0",
-            "source_hash": str(sbom_path),
+            "source_hash": src_hash,
         },
         "findings": findings,
     }
@@ -75,7 +75,7 @@ def produce_cve_overlay(
     return store.write(
         "cve_overlay",
         json.dumps(overlay).encode(),
-        source_hash=str(sbom_path),
+        source_hash=src_hash,
     )
 
 

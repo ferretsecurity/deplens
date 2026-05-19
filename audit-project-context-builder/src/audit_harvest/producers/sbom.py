@@ -79,5 +79,5 @@ def _run_appsec_pass(
             timeout_sec=300,
         )
         store.write("sbom_appsec", appsec_path.read_bytes(), source_hash=src_hash)
-    except (ToolError, OSError, Exception) as exc:
+    except Exception as exc:
         log.warning("appsec SBOM pass failed (non-fatal): %s", exc)

@@ -8,7 +8,7 @@ import pytest
 
 from audit_harvest.producers.cve_overlay import produce_cve_overlay, _load_reachable_purls
 from audit_harvest.storage import ArtifactStore
-from audit_harvest.subprocess_utils import ToolResult
+from audit_harvest.subprocess_utils import ToolNotFound, ToolResult
 
 
 def _fake_result(stdout: str = "", returncode: int = 0) -> ToolResult:
@@ -138,3 +138,39 @@ def test_reachability_null_when_file_missing(tmp_path):
     content = json.loads(Path(record.path).read_bytes())
     for finding in content["findings"]:
         assert finding["reachable"] is None
+
+
+def test_produce_cve_overlay_tool_not_found(tmp_path):
+    store = ArtifactStore(tmp_path / "store")
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    sbom_path = tmp_path / "sbom.cdx.json"
+    sbom_path.write_bytes(b"{}")
+
+    with patch("audit_harvest.producers.cve_overlay.run_tool") as mock_run:
+        mock_run.side_effect = ToolNotFound("osv-scanner not on PATH")
+        record = produce_cve_overlay(repo, store, sbom_path)
+
+    content = json.loads(Path(record.path).read_bytes())
+    assert content["findings"] == []
+
+
+def test_load_reachable_purls_compositions_not_used(tmp_path):
+    appsec_path = tmp_path / "sbom_appsec.cdx.json"
+    appsec_data = {
+        "bomFormat": "CycloneDX",
+        "specVersion": "1.5",
+        "components": [],
+        "compositions": [
+            {
+                "aggregate": "complete",
+                "assemblies": ["pkg:npm/express@4.17.1", "pkg:npm/lodash@4.17.20"],
+            }
+        ],
+    }
+    appsec_path.write_text(json.dumps(appsec_data))
+
+    result = _load_reachable_purls(appsec_path)
+
+    assert result == set()
