@@ -56,7 +56,9 @@ def harvest_run_cve_overlay(repo_path: str) -> dict:
     sbom_record = store.get("sbom")
     if sbom_record is None:
         return {"status": "error", "message": "Run harvest_run_sbom first (A5 required)"}
-    record = produce_cve_overlay(repo, store, Path(sbom_record.path))
+    sbom_appsec_record = store.get("sbom_appsec")
+    sbom_appsec_path = Path(sbom_appsec_record.path) if sbom_appsec_record else None
+    record = produce_cve_overlay(repo, store, Path(sbom_record.path), sbom_appsec_path=sbom_appsec_path)
     return {"status": "ok", "artifact": asdict(record)}
 
 

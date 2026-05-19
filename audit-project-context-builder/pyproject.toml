@@ -31,3 +31,8 @@ audit-harvest-mcp = "audit_harvest.mcp_server.server:main"
 asyncio_mode = "auto"
 testpaths = ["tests"]
 markers = ["integration: marks tests requiring real external tools (deselect with -m 'not integration')"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
