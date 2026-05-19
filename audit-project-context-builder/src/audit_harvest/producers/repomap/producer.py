@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 from typing import Optional
 
@@ -38,7 +40,7 @@ def _get_parser(lang: str):
     return Parser(Language(lang_map[lang]))
 
 
-def _extract_go(source: bytes) -> list[str]:
+def _extract_go(source: bytes) -> list[dict]:
     parser = _get_parser("go")
     if parser is None:
         return []
@@ -48,59 +50,70 @@ def _extract_go(source: bytes) -> list[str]:
         if node.type == "function_declaration":
             name = node.child_by_field_name("name")
             if name:
-                symbols.append(f"func {name.text.decode()}")
+                symbols.append({"name": name.text.decode(), "line": node.start_point[0] + 1, "kind": "function"})
         elif node.type == "method_declaration":
             name = node.child_by_field_name("name")
             if name:
-                symbols.append(f"func (receiver) {name.text.decode()}")
+                symbols.append({"name": name.text.decode(), "line": node.start_point[0] + 1, "kind": "method"})
     return symbols
 
 
-def _extract_python(source: bytes) -> list[str]:
+def _extract_python(source: bytes) -> list[dict]:
     parser = _get_parser("python")
     if parser is None:
         return []
     tree = parser.parse(source)
-    symbols = []
-    for node in tree.root_node.children:
+    symbols: list[dict] = []
+
+    def _walk(node) -> None:
         if node.type == "function_definition":
-            name = node.child_by_field_name("name")
-            if name:
-                symbols.append(f"def {name.text.decode()}")
-        elif node.type == "class_definition":
-            name = node.child_by_field_name("name")
-            if name:
-                symbols.append(f"class {name.text.decode()}")
-        elif node.type == "decorated_definition":
-            # Decorated functions/classes at module level
-            inner = node.child_by_field_name("definition")
-            if inner and inner.type == "function_definition":
-                name = inner.child_by_field_name("name")
-                if name:
-                    symbols.append(f"def {name.text.decode()}")
-            elif inner and inner.type == "class_definition":
-                name = inner.child_by_field_name("name")
-                if name:
-                    symbols.append(f"class {name.text.decode()}")
+            name_node = node.child_by_field_name("name")
+            if name_node:
+                symbols.append({
+                    "name": name_node.text.decode(),
+                    "line": node.start_point[0] + 1,
+                    "kind": "function",
+                })
+            # don't recurse into function bodies (nested defs are noise for repomap)
+            return
+        if node.type == "class_definition":
+            name_node = node.child_by_field_name("name")
+            if name_node:
+                symbols.append({
+                    "name": name_node.text.decode(),
+                    "line": node.start_point[0] + 1,
+                    "kind": "class",
+                })
+            # recurse into class body to capture methods
+            body = node.child_by_field_name("body")
+            if body:
+                for child in body.children:
+                    _walk(child)
+            return
+        for child in node.children:
+            _walk(child)
+
+    for child in tree.root_node.children:
+        _walk(child)
     return symbols
 
 
-def _extract_java(source: bytes) -> list[str]:
+def _extract_java(source: bytes) -> list[dict]:
     parser = _get_parser("java")
     if parser is None:
         return []
     tree = parser.parse(source)
-    symbols: list[str] = []
+    symbols: list[dict] = []
 
     def walk(node) -> None:
         if node.type in ("class_declaration", "interface_declaration", "enum_declaration"):
             name = node.child_by_field_name("name")
             if name:
-                symbols.append(f"class {name.text.decode()}")
+                symbols.append({"name": name.text.decode(), "line": node.start_point[0] + 1, "kind": "class"})
         elif node.type == "method_declaration":
             name = node.child_by_field_name("name")
             if name:
-                symbols.append(f"method {name.text.decode()}")
+                symbols.append({"name": name.text.decode(), "line": node.start_point[0] + 1, "kind": "method"})
         for child in node.children:
             walk(child)
 
@@ -108,22 +121,22 @@ def _extract_java(source: bytes) -> list[str]:
     return symbols
 
 
-def _extract_js(source: bytes, lang: str = "javascript") -> list[str]:
+def _extract_js(source: bytes, lang: str = "javascript") -> list[dict]:
     parser = _get_parser(lang)
     if parser is None:
         return []
     tree = parser.parse(source)
-    symbols: list[str] = []
+    symbols: list[dict] = []
 
     def walk(node) -> None:
         if node.type == "function_declaration":
             name = node.child_by_field_name("name")
             if name:
-                symbols.append(f"function {name.text.decode()}")
+                symbols.append({"name": name.text.decode(), "line": node.start_point[0] + 1, "kind": "function"})
         elif node.type == "class_declaration":
             name = node.child_by_field_name("name")
             if name:
-                symbols.append(f"class {name.text.decode()}")
+                symbols.append({"name": name.text.decode(), "line": node.start_point[0] + 1, "kind": "class"})
         for child in node.children:
             walk(child)
 
@@ -148,8 +161,8 @@ def _get_lang(path: Path) -> Optional[str]:
     return None
 
 
-def _collect_symbols(repo_path: Path, max_files: int = 500) -> dict[str, list[str]]:
-    file_symbols: dict[str, list[str]] = {}
+def _collect_symbols(repo_path: Path, max_files: int = 500) -> list[dict]:
+    symbols: list[dict] = []
     count = 0
     for path in sorted(repo_path.rglob("*")):
         if count >= max_files:
@@ -169,34 +182,38 @@ def _collect_symbols(repo_path: Path, max_files: int = 500) -> dict[str, list[st
             syms = fn(source)  # type: ignore[operator]
         except Exception:
             syms = []
-        if syms:
-            rel = str(path.relative_to(repo_path))
-            file_symbols[rel] = syms
+        rel = str(path.relative_to(repo_path))
+        for sym in syms:
+            symbols.append({"file": rel, "line": sym["line"], "name": sym["name"], "kind": sym["kind"]})
         count += 1
-    return file_symbols
+    return symbols
 
 
-def _build_repomap_md(file_symbols: dict[str, list[str]]) -> str:
-    total = sum(len(v) for v in file_symbols.values())
-    lines = [
-        "# Repository Symbol Map",
-        "",
-        f"*{total} symbols across {len(file_symbols)} files*",
-    ]
-    for file_path, symbols in sorted(file_symbols.items()):
-        lines.append("")
-        lines.append(f"## `{file_path}`")
-        for sym in symbols[:20]:  # cap per file
-            lines.append(f"- {sym}")
-    return "\n".join(lines)
+def _source_hash(repo_path: Path) -> str:
+    all_exts = {ext for exts in LANG_EXTENSIONS.values() for ext in exts}
+    parts = []
+    for p in sorted(repo_path.rglob("*")):
+        if not p.is_file():
+            continue
+        if any(part in EXCLUDE_DIRS for part in p.parts):
+            continue
+        if p.suffix not in all_exts:
+            continue
+        stat = p.stat()
+        parts.append(f"{p}:{stat.st_mtime}:{stat.st_size}")
+    return hashlib.sha256("\n".join(parts).encode()).hexdigest()
 
 
 def produce_repomap(
     repo_path: Path,
     store: ArtifactStore,
 ) -> ArtifactRecord:
-    file_symbols = _collect_symbols(repo_path)
-    markdown = _build_repomap_md(file_symbols)
-    # Source hash is the symbol count — changes whenever code is added or removed.
-    src_hash = str(sum(len(v) for v in file_symbols.values()))
-    return store.write("repomap", markdown.encode(), source_hash=src_hash)
+    src_hash = _source_hash(repo_path)
+    if store.is_fresh("repomap", src_hash):
+        return store.get("repomap")  # type: ignore[return-value]
+    symbols = _collect_symbols(repo_path)
+    output = {
+        "meta": {"repo_path": str(repo_path), "total_symbols": len(symbols)},
+        "symbols": symbols,
+    }
+    return store.write("repomap", json.dumps(output).encode(), source_hash=src_hash)

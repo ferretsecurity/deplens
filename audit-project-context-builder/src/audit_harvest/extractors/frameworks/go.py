@@ -22,8 +22,6 @@ def extract_go_routes(repo_path: Path) -> list[dict]:
             continue
         for match in _ROUTE_PATTERN.finditer(source):
             method = match.group(1).upper()
-            if method == "ANY":
-                method = "ANY"
             path = match.group(2)
             handler = match.group(3)
             routes.append({
@@ -33,6 +31,6 @@ def extract_go_routes(repo_path: Path) -> list[dict]:
                 "handler": handler,
                 "file": str(go_file.relative_to(repo_path)),
                 "line": source[:match.start()].count("\n") + 1,
-                "framework": "gin",
+                "framework": "go-http",
             })
     return routes

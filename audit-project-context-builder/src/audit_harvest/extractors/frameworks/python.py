@@ -6,16 +6,16 @@ from pathlib import Path
 
 # Flask: @app.route("/path", methods=["GET", "POST"])
 _FLASK_ROUTE_WITH_METHODS = re.compile(
-    r'@\w+\.route\(\s*"([^"]+)"[^)]*methods\s*=\s*\[([^\]]+)\]',
+    r'@(?:app|blueprint|bp)\.route\(\s*[\'"]([^\'"]+)[\'"]\s*,\s*methods=\[([^\]]+)\]',
     re.IGNORECASE,
 )
 # Flask: @app.route("/path") with no methods keyword (defaults to GET)
 _FLASK_ROUTE_NO_METHOD = re.compile(
-    r'@\w+\.route\(\s*"([^"]+)"\s*\)',
+    r'@\w+\.route\(\s*[\'"]([^\'"]+)[\'"]\s*\)',
 )
 # FastAPI: @router.get("/path") or @app.post("/path")
 _FASTAPI_ROUTE = re.compile(
-    r'@\w+\.(get|post|put|delete|patch|head|options)\s*\(\s*"([^"]+)"',
+    r'@\w+\.(get|post|put|delete|patch|head|options)\s*\(\s*[\'"]([^\'"]+)[\'"]',
     re.IGNORECASE,
 )
 

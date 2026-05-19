@@ -6,8 +6,7 @@ from pathlib import Path
 
 # Method-level mapping annotations with optional path argument
 _MAPPING_PATTERN = re.compile(
-    r'@(GetMapping|PostMapping|PutMapping|DeleteMapping|PatchMapping|RequestMapping)'
-    r'\s*(?:\(\s*(?:value\s*=\s*)?[\'"]([^\'"]+)[\'"])?',
+    r'@(Get|Post|Put|Delete|Patch|Request)Mapping\s*\(\s*(?:(?:value|path)\s*=\s*)?[\'"]([^\'"]+)[\'"]'
 )
 # Class-level base path from @RequestMapping("/base")
 _CLASS_MAPPING = re.compile(
@@ -16,12 +15,12 @@ _CLASS_MAPPING = re.compile(
 _METHOD_NAME = re.compile(r'(?:public|protected|private)\s+\S+\s+(\w+)\s*\(')
 
 _HTTP_METHOD_MAP = {
-    "GetMapping": "GET",
-    "PostMapping": "POST",
-    "PutMapping": "PUT",
-    "DeleteMapping": "DELETE",
-    "PatchMapping": "PATCH",
-    "RequestMapping": "ANY",
+    "Get": "GET",
+    "Post": "POST",
+    "Put": "PUT",
+    "Delete": "DELETE",
+    "Patch": "PATCH",
+    "Request": "ANY",
 }
 
 

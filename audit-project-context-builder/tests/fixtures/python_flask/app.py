@@ -15,5 +15,9 @@ def create_user():
 def get_user(user_id):
     return jsonify({"id": user_id})
 
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    return '', 204
+
 if __name__ == "__main__":
     app.run()
