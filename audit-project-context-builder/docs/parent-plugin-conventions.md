@@ -41,7 +41,7 @@ audit-stage<N>-<name>/
 Artifacts are stored **inside the audited repo**, gitignored, under:
 ```
 <repo>/.audit/
-  stage1/
+  harvest/
     <git-sha>/         ← 8-char short SHA of the audited repo's HEAD
       <artifact files>
       index.json       ← manifest: built_from_commit, built_at, artifact hashes, stale flags
@@ -115,9 +115,9 @@ context window. The parent sees only the hand-off: artifact paths + always-on bu
 
 ## 5. Always-on bundle and startup sequence (every stage)
 
-**Stage 1 produces an always-on bundle** at `<repo>/.audit/stage1/current/always-on-bundle.md`
+**Stage 1 produces an always-on bundle** at `<repo>/.audit/harvest/current/always-on-bundle.md`
 (≤5k tokens). It contains:
-- A1 `repo_profile.md` (full, ≤2k tokens)
+- A1 `repo_profile.md` (full; target ≤2k tokens, may extend to ~3k for large/polyglot repos)
 - A4 gate matrix summary (top applicable CWE classes, ~200 tokens)
 - Top-10 entry points from A2 (~300 tokens)
 - Top-20 SBOM components with critical CVEs from A5/A6 (~500 tokens)
@@ -131,7 +131,7 @@ content — they consume the pre-assembled bundle.
 
 **Every stage sub-agent's startup sequence:**
 ```
-Verify <repo>/.audit/stage1/current/index.json exists and is not stale.
+Verify <repo>/.audit/harvest/current/index.json exists and is not stale.
 → If missing: halt. Tell user to run Stage 1 first.
 → If stale: halt. Tell user to re-run Stage 1.
 [If not Stage 2] Verify prior stage's current/index.json exists and is not stale.
@@ -201,3 +201,40 @@ Current cross-stage decisions:
 - D5: Grounding discipline on all LLM-produced artifacts — see §7 above.
 - D6: Always-on bundle assembled by parent; sub-agents consume bundle, not raw artifacts.
 - D7: Serena optional, never bundled, graceful fallback required — see §8 above.
+
+## 11. A1 sub-artifact conventions (cross-stage reference)
+
+A1 (`repo_profile.md`) ships with companion sub-artifacts in the same SHA directory. These
+are referenced in `index.json` as `type: "sub-artifact"` and are never injected into the
+always-on bundle. Downstream stages read them on demand.
+
+| File | Contents |
+|---|---|
+| `repo_profile_scc.json` | Raw `scc --format json` — per-language LOC/comment/blank/complexity |
+| `repo_profile_frameworks.json` | Full purl-matched framework list with versions and SBOM source |
+| `repo_profile_languages.json` | Raw `enry --json --breakdown` — per-file language classification |
+
+Stage plans that need granular language or framework data should read these files directly
+rather than re-running enry or scc.
+
+## 12. Tool detection strategy conventions (Stage 1 specific; reference for Stage 2+)
+
+Stage 1 uses a three-layer detection strategy for A1. Stage 2+ should follow the same
+layering principle when adding new detection capabilities:
+
+1. **SBOM-first.** If the cdxgen SBOM (A5) already contains the signal, derive from it
+   rather than adding a new tool. Framework detection, test-framework detection, and
+   secret-manager posture all use SBOM purl match as the primary signal.
+
+2. **Ripgrep for confirmation.** When a SBOM match is ambiguous (a package is present but
+   might not be used for the relevant purpose), one targeted ripgrep invocation confirms
+   import presence. No rule authoring, no AST analysis — just line-level text search.
+
+3. **Specialist tool as subprocess (Phase 2).** For capabilities that require structured
+   AST/semantic analysis that neither SBOM nor ripgrep can provide, add a specialist tool
+   as a budget-bounded subprocess. Noir (HTTP route enumeration), enry (language
+   classification), scc (LOC/complexity) are the Stage 1 examples of this layer.
+
+The rule: **do not add a specialist tool for a job that SBOM + ripgrep can do well enough.**
+The threshold for "well enough" is whether the A1/A2 summary downstream agents actually
+need more precision than SBOM purl matching provides.
