@@ -99,7 +99,7 @@ def _evaluate_rule(
 
     if cwe == "CWE-611":
         if _XML_SIGS.search(src_text):
-            return _rule(cwe, name, "needs_verification", ["XML library detected"], "medium")
+            return _rule(cwe, name, "needs_verification", ["XML library detected"], "high")
         return _rule(cwe, name, False, ["no XML library detected", "no XML imports found"], "high")
 
     if cwe == "CWE-502":
@@ -134,7 +134,7 @@ def _read_all_source(repo_path: Path) -> str:
     for p in sorted(repo_path.rglob("*")):
         if not p.is_file():
             continue
-        if any(part in _IGNORE_DIRS for part in p.parts):
+        if any(part in _IGNORE_DIRS for part in p.relative_to(repo_path).parts):
             continue
         if p.suffix not in _SOURCE_EXTS:
             continue
