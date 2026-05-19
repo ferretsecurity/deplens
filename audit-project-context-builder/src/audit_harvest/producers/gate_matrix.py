@@ -85,7 +85,7 @@ def _evaluate_rule(
     if cwe == "CWE-78":
         if _OS_CMD_SIGS.search(src_text):
             return _rule(cwe, name, True, ["OS execution functions detected"], "high")
-        return _rule(cwe, name, "needs_verification", ["no explicit exec calls; dynamic dispatch possible"], "low")
+        return _rule(cwe, name, "needs_verification", ["no explicit exec calls found", "dynamic dispatch or indirect invocation still possible"], "low")
 
     if cwe == "CWE-94":
         if _EVAL_SIGS.search(src_text):
@@ -95,7 +95,7 @@ def _evaluate_rule(
     if cwe == "CWE-434":
         if _UPLOAD_SIGS.search(src_text):
             return _rule(cwe, name, True, ["multipart/file upload patterns detected"], "high")
-        return _rule(cwe, name, "needs_verification", ["no explicit upload patterns found"], "low")
+        return _rule(cwe, name, "needs_verification", ["no explicit multipart/file upload patterns found", "indirect upload via proxied requests still possible"], "low")
 
     if cwe == "CWE-611":
         if _XML_SIGS.search(src_text):
@@ -105,17 +105,17 @@ def _evaluate_rule(
     if cwe == "CWE-502":
         if _DESERIALIZE_SIGS.search(src_text):
             return _rule(cwe, name, True, ["unsafe deserialization pattern detected"], "high")
-        return _rule(cwe, name, "needs_verification", ["no explicit deserialization patterns found"], "low")
+        return _rule(cwe, name, "needs_verification", ["no explicit deserialization patterns found", "JSON/YAML unmarshaling of untrusted input still possible"], "low")
 
     if cwe == "CWE-918":
         if _SSRF_SIGS.search(src_text) and has_web:
-            return _rule(cwe, name, "needs_verification", ["HTTP client calls detected in web app"], "medium")
-        return _rule(cwe, name, "needs_verification", ["unable to determine SSRF surface statically"], "low")
+            return _rule(cwe, name, "needs_verification", ["HTTP client calls detected in web app", "user-controlled URL parameters require manual verification"], "medium")
+        return _rule(cwe, name, "needs_verification", ["unable to determine SSRF surface statically", "any HTTP client call taking user input is a candidate"], "low")
 
     if cwe == "CWE-798":
         if _HARDCODED_SIGS.search(src_text):
             return _rule(cwe, name, True, ["hardcoded credential pattern detected"], "high")
-        return _rule(cwe, name, "needs_verification", ["no obvious hardcoded credentials; env vars may still be misused"], "low")
+        return _rule(cwe, name, "needs_verification", ["no obvious hardcoded credential patterns found", "environment variables or config files may still be misused"], "low")
 
     if cwe in ("CWE-22", "CWE-200", "CWE-287", "CWE-352"):
         if has_web:
