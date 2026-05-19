@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Optional
 from urllib.parse import unquote
@@ -8,7 +9,7 @@ from urllib.parse import unquote
 import yaml
 
 from audit_harvest.storage import ArtifactRecord, ArtifactStore
-from audit_harvest.subprocess_utils import run_tool, _resolver
+from audit_harvest.subprocess_utils import run_tool, _resolver, ToolNotFound
 
 
 MANIFEST_NAMES = [
@@ -98,6 +99,181 @@ def _find_manifests(repo_path: Path) -> list[str]:
     return found
 
 
+_BUILD_FILES = [
+    ("Makefile", "make"),
+    ("justfile", "just"),
+    ("Taskfile.yaml", "task"),
+    ("Jenkinsfile", "jenkins"),
+    (".gitlab-ci.yml", "gitlab-ci"),
+]
+_MAKEFILE_TARGET_RE = re.compile(r"^([a-zA-Z_][a-zA-Z0-9_-]*):")
+
+
+def _detect_build_system(repo_path: Path) -> list[dict]:
+    results: list[dict] = []
+    for filename, tool_name in _BUILD_FILES:
+        path = repo_path / filename
+        if not path.exists():
+            continue
+        if tool_name == "make":
+            targets: list[str] = []
+            for line in path.read_text(errors="replace").splitlines():
+                if line.startswith(".PHONY"):
+                    continue
+                m = _MAKEFILE_TARGET_RE.match(line)
+                if m:
+                    targets.append(m.group(1))
+            results.append({"tool": tool_name, "targets": targets[:20]})
+        else:
+            results.append({"tool": tool_name})
+    workflows_dir = repo_path / ".github" / "workflows"
+    if workflows_dir.is_dir():
+        results.append({"tool": "github-actions"})
+    return results
+
+
+_MONOREPO_MANIFESTS = {"go.mod", "package.json", "pom.xml", "pyproject.toml", "Cargo.toml"}
+_MONOREPO_EXCLUDES = {"node_modules", "vendor", ".git", "testdata", ".venv"}
+
+
+def _detect_monorepo(repo_path: Path) -> list[dict]:
+    results: list[dict] = []
+    for manifest_name in _MONOREPO_MANIFESTS:
+        for found in repo_path.rglob(manifest_name):
+            if found.parent == repo_path:
+                continue
+            if any(part in _MONOREPO_EXCLUDES for part in found.parts):
+                continue
+            rel = found.relative_to(repo_path)
+            results.append({"path": str(rel), "type": manifest_name})
+            if len(results) >= 20:
+                return results
+    return results
+
+
+def _detect_entry_binaries(repo_path: Path) -> list[dict]:
+    results: list[dict] = []
+
+    # Go: cmd/*/main.go
+    for go_main in repo_path.glob("cmd/*/main.go"):
+        results.append({"file": str(go_main.relative_to(repo_path)), "language": "Go"})
+    root_main = repo_path / "main.go"
+    if root_main.exists():
+        results.append({"file": "main.go", "language": "Go"})
+
+    # Python: rg for __main__
+    if len(results) < 10:
+        try:
+            rg_result = run_tool(
+                ["rg", "--files-with-matches", "--glob", "*.py",
+                 r"if __name__ == ['\"]__main__['\"]"],
+                cwd=repo_path,
+                timeout_sec=30,
+            )
+            for line in rg_result.stdout.splitlines():
+                if line.strip():
+                    try:
+                        rel = Path(line.strip()).relative_to(repo_path)
+                    except ValueError:
+                        rel = Path(line.strip())
+                    results.append({"file": str(rel), "language": "Python"})
+                    if len(results) >= 10:
+                        break
+        except ToolNotFound:
+            pass
+
+    # JS/TS: package.json main/bin
+    pkg_json = repo_path / "package.json"
+    if pkg_json.exists() and len(results) < 10:
+        try:
+            pkg = json.loads(pkg_json.read_text())
+            if "main" in pkg:
+                results.append({"file": pkg["main"], "language": "JavaScript"})
+            if "bin" in pkg and isinstance(pkg["bin"], dict):
+                for _name, bin_path in pkg["bin"].items():
+                    results.append({"file": bin_path, "language": "JavaScript"})
+                    if len(results) >= 10:
+                        break
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # Java: rg for main method
+    if len(results) < 10:
+        try:
+            rg_result = run_tool(
+                ["rg", "--files-with-matches", "--glob", "*.java",
+                 "public static void main"],
+                cwd=repo_path,
+                timeout_sec=30,
+            )
+            for line in rg_result.stdout.splitlines():
+                if line.strip():
+                    try:
+                        rel = Path(line.strip()).relative_to(repo_path)
+                    except ValueError:
+                        rel = Path(line.strip())
+                    results.append({"file": str(rel), "language": "Java"})
+                    if len(results) >= 10:
+                        break
+        except ToolNotFound:
+            pass
+
+    return results[:10]
+
+
+_SECRET_PATTERNS = [
+    (r"""(?i)(password|passwd|secret|api_key|apikey|token|private_key)\s*[:=]\s*["'][^"']{8,}""",
+     "credential-pattern"),
+    (r"AKIA[0-9A-Z]{16}", "aws-key"),
+    (r"-----BEGIN (RSA|EC|OPENSSH) PRIVATE KEY-----", "private-key"),
+]
+_SECRET_EXCLUDES = ["!.git", "!vendor", "!node_modules", "!*.lock", "!testdata"]
+
+
+def _scan_secrets(repo_path: Path) -> list[dict]:
+    cmd = ["rg", "--json"]
+    for pattern, _ in _SECRET_PATTERNS:
+        cmd += ["-e", pattern]
+    for exc in _SECRET_EXCLUDES:
+        cmd += ["--glob", exc]
+
+    try:
+        result = run_tool(cmd, cwd=repo_path, timeout_sec=60)
+        output = result.stdout
+    except ToolNotFound:
+        return []
+    except Exception:
+        # rg exits non-zero when no matches found; handle gracefully
+        return []
+
+    pattern_labels = [label for _, label in _SECRET_PATTERNS]
+    hits: list[dict] = []
+    for raw_line in output.splitlines():
+        if not raw_line.strip():
+            continue
+        try:
+            obj = json.loads(raw_line)
+        except json.JSONDecodeError:
+            continue
+        if obj.get("type") != "match":
+            continue
+        data = obj.get("data", {})
+        file_path = data.get("path", {}).get("text", "")
+        line_num = data.get("line_number", 0)
+        # Determine which pattern matched by checking submatches
+        matched_text = data.get("lines", {}).get("text", "")
+        label = "credential-pattern"
+        if re.search(r"AKIA[0-9A-Z]{16}", matched_text):
+            label = "aws-key"
+        elif re.search(r"-----BEGIN (RSA|EC|OPENSSH) PRIVATE KEY-----", matched_text):
+            label = "private-key"
+        hits.append({"file": file_path, "line": line_num, "pattern": label})
+        if len(hits) >= 10:
+            break
+
+    return hits
+
+
 def _build_markdown(
     languages: dict,
     scc_data: list,
@@ -105,6 +281,10 @@ def _build_markdown(
     manifests: list[str],
     services: list,
     secret_posture: Optional[dict],
+    build_system: list[dict] | None = None,
+    monorepo: list[dict] | None = None,
+    entry_binaries: list[dict] | None = None,
+    secret_leaks: list[dict] | None = None,
 ) -> str:
     lines = ["# Repository Profile\n"]
 
@@ -147,6 +327,37 @@ def _build_markdown(
         lines.append(f"- **{secret_posture['manager']}** (source: {secret_posture['source']})")
         lines.append("")
 
+    if build_system:
+        lines.append("## Build / Test\n")
+        for entry in build_system:
+            tool = entry["tool"]
+            if "targets" in entry:
+                targets_str = ", ".join(entry["targets"])
+                lines.append(f"- **{tool}**: targets: {targets_str}")
+            else:
+                lines.append(f"- **{tool}**")
+        lines.append("")
+
+    if monorepo:
+        lines.append("## Monorepo Layout\n")
+        for mod in monorepo:
+            lines.append(f"- `{mod['path']}` ({mod['type']})")
+        lines.append("")
+
+    if entry_binaries:
+        lines.append("## Entry Binaries\n")
+        for eb in entry_binaries:
+            lines.append(f"- `{eb['file']}` ({eb['language']})")
+        lines.append("")
+
+    lines.append("## Potential Secret Leaks\n")
+    if secret_leaks:
+        for hit in secret_leaks:
+            lines.append(f"- `{hit['file']}:{hit['line']}` ({hit['pattern']})")
+    else:
+        lines.append("- None detected")
+    lines.append("")
+
     return "\n".join(lines)
 
 
@@ -178,8 +389,18 @@ def produce_repo_profile(
     secret_posture = _detect_secret_manager(sbom)
     manifests = _find_manifests(repo_path)
     services = sbom.get("services", [])
+    build_system = _detect_build_system(repo_path)
+    monorepo = _detect_monorepo(repo_path)
+    entry_binaries = _detect_entry_binaries(repo_path)
+    secret_leaks = _scan_secrets(repo_path)
 
-    markdown = _build_markdown(languages, scc_data, frameworks, manifests, services, secret_posture)
+    markdown = _build_markdown(
+        languages, scc_data, frameworks, manifests, services, secret_posture,
+        build_system=build_system,
+        monorepo=monorepo,
+        entry_binaries=entry_binaries,
+        secret_leaks=secret_leaks,
+    )
 
     src_hash = sbom_path.stat().st_mtime_ns.to_bytes(8, "big").hex()
 

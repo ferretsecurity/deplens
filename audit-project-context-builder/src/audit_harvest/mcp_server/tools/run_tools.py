@@ -13,7 +13,7 @@ from audit_harvest.subprocess_utils import ToolPathResolver
 
 _resolver = ToolPathResolver()
 
-_BUCKET_A_TOOLS = ["git", "enry", "scc"]
+_BUCKET_A_TOOLS = ["git", "enry", "scc", "rg"]
 _BUCKET_B_TOOLS = ["cdxgen", "osv-scanner"]
 
 
