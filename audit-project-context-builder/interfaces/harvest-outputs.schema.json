@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12",
+  "$id": "https://audit-harvest/harvest-outputs.schema.json",
+  "title": "Audit Harvest Phase 1 Output Schemas",
+  "description": "JSON Schema definitions for all artifacts produced by the audit-project-context-builder Stage 1 plugin.",
+  "$defs": {
+    "ArtifactMeta": {
+      "type": "object",
+      "required": ["artifact_id", "built_at", "producer_version", "source_hash"],
+      "properties": {
+        "artifact_id": {"type": "string"},
+        "built_at": {"type": "number", "description": "Unix timestamp"},
+        "producer_version": {"type": "string"},
+        "source_hash": {"type": "string"}
+      }
+    },
+    "EntryPoint": {
+      "type": "object",
+      "required": ["kind", "method", "path", "handler", "file", "line"],
+      "properties": {
+        "kind": {"type": "string", "enum": ["http", "cli", "grpc", "worker", "cron"]},
+        "method": {"type": "string", "description": "HTTP method or empty string"},
+        "path": {"type": "string", "description": "HTTP path or command name"},
+        "handler": {"type": "string", "description": "Function/class name"},
+        "file": {"type": "string"},
+        "line": {"type": "integer", "minimum": 1},
+        "framework": {"type": "string"}
+      }
+    },
+    "GateCWE": {
+      "type": "object",
+      "required": ["cwe_id", "applicable", "confidence", "evidence"],
+      "properties": {
+        "cwe_id": {"type": "string", "pattern": "^CWE-[0-9]+$"},
+        "applicable": {"type": "boolean"},
+        "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
+        "evidence": {"type": "string"},
+        "rule": {"type": "string", "description": "Deterministic rule that set this, if any"}
+      }
+    },
+    "SBOMComponent": {
+      "type": "object",
+      "required": ["name", "version", "purl"],
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"},
+        "purl": {"type": "string"},
+        "scope": {"type": "string"},
+        "type": {"type": "string"}
+      }
+    },
+    "CVEFinding": {
+      "type": "object",
+      "required": ["package_name", "package_version", "vulnerability_id", "severity"],
+      "properties": {
+        "package_name": {"type": "string"},
+        "package_version": {"type": "string"},
+        "vulnerability_id": {"type": "string"},
+        "severity": {"type": "string", "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"]},
+        "aliases": {"type": "array", "items": {"type": "string"}},
+        "purl": {"type": "string"}
+      }
+    },
+    "ArtifactIndex": {
+      "type": "object",
+      "required": ["built_from_commit", "built_at", "artifacts"],
+      "properties": {
+        "built_from_commit": {"type": "string"},
+        "built_at": {"type": "number"},
+        "is_dirty": {"type": "boolean"},
+        "artifacts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["path", "content_hash", "source_hash"],
+            "properties": {
+              "path": {"type": "string"},
+              "content_hash": {"type": "string"},
+              "source_hash": {"type": "string"},
+              "type": {"type": "string", "enum": ["artifact", "sub-artifact"]}
+            }
+          }
+        },
+        "coverage_gaps": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    }
+  },
+  "schemas": {
+    "entry_points": {
+      "type": "object",
+      "required": ["meta", "entry_points"],
+      "properties": {
+        "meta": {"$ref": "#/$defs/ArtifactMeta"},
+        "entry_points": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/EntryPoint"}
+        }
+      }
+    },
+    "gate_matrix": {
+      "type": "object",
+      "required": ["meta", "gates"],
+      "properties": {
+        "meta": {"$ref": "#/$defs/ArtifactMeta"},
+        "gates": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/GateCWE"}
+        }
+      }
+    },
+    "sbom": {
+      "description": "CycloneDX SBOM — validated by cdxgen, stored as-is",
+      "type": "object"
+    },
+    "cve_overlay": {
+      "type": "object",
+      "required": ["meta", "findings"],
+      "properties": {
+        "meta": {"$ref": "#/$defs/ArtifactMeta"},
+        "findings": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/CVEFinding"}
+        }
+      }
+    },
+    "index": {
+      "$ref": "#/$defs/ArtifactIndex"
+    }
+  }
+}
