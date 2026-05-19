@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "audit-harvest": {
+      "command": "uv",
+      "args": ["run", "--project", "${PLUGIN_DIR}/src", "audit-harvest-mcp"],
+      "env": {}
+    }
+  }
+}

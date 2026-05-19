@@ -1,0 +1,7 @@
+{
+  "name": "audit-project-context-builder",
+  "version": "0.1.0",
+  "description": "Stage 1 of the white-box security audit pipeline. Profiles a repo and produces 7 hash-tracked artifacts consumed by downstream audit stages.",
+  "agents": ["agents/harvest-agent.md"],
+  "commands": ["commands/audit-discover.md"]
+}
