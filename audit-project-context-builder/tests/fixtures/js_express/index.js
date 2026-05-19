@@ -14,4 +14,8 @@ app.get('/users/:id', (req, res) => {
   res.json({ id: req.params.id });
 });
 
+function getUserById(id) {
+  return { id };
+}
+
 app.listen(3000);
