@@ -9,8 +9,12 @@ from audit_harvest.storage import ArtifactStore
 
 
 @mcp.tool()
-def harvest_repomap_query(store_root: str) -> dict:
-    """Query the repomap artifact. Returns the symbol index from the stored A7 artifact."""
+def harvest_repomap_query(store_root: str, budget_tokens: int = 8000) -> dict:
+    """Query the repomap artifact. Returns the A7 repo map from the stored artifact.
+
+    If the artifact has not been produced yet, returns an error message.
+    Pass budget_tokens to control the token budget when regenerating.
+    """
     store = ArtifactStore(Path(store_root))
     record = store.get("repomap")
     if record is None:
