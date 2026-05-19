@@ -4,7 +4,7 @@
 
 **Goal:** Build a Claude Code plugin containing 7 artifact producers (A1, A2, A4, A5, A6, A7, A14), an MCP server exposing them as tools, and a sub-agent orchestrator that deterministically profiles any repo and hands off a hash-tracked artifact bundle to downstream audit stages.
 
-**Architecture:** Python 3.11+ producer library backed by a content-hash artifact store. Producers are called via MCP tool invocations by the sub-agent. Artifacts land in `~/.cache/audit-agent/<repo-hash>/stage1/` (overridable via `AUDIT_STAGE1_DIR`). Read-side MCP tools (`index.list`, `repomap.query`) plus producer MCP tools (`stage1.run_*`) are served by a single `audit-stage1-mcp` server declared in `.mcp.json`.
+**Architecture:** Python 3.11+ producer library backed by a content-hash artifact store. Producers are called via MCP tool invocations by the sub-agent. Artifacts land in `<repo>/.audit/harvest/<git-sha>/` (overridable via `AUDIT_HARVEST_DIR`). Read-side MCP tools (`index.list`, `repomap.query`) plus producer MCP tools (`harvest.run_*`) are served by a single `audit-harvest-mcp` server declared in `.mcp.json`.
 
 **Tech Stack:** Python 3.11+, `mcp` SDK (Anthropic), `tree-sitter` + language grammars, `tiktoken`, `jsonschema`, `pytest`; external tools shelled out: `cdxgen` (Node), `osv-scanner` (Go binary); Aider `repomap.py` vendored (Apache-2.0).
 
@@ -31,44 +31,44 @@ All paths relative to `skills/audit-project-context-builder/`.
 ```
 .claude-plugin/plugin.json
 .mcp.json
-agents/stage1-discoverer.md
+agents/harvest-agent.md
 commands/audit-discover.md
 docs/parent-plugin-conventions.md
 docs/decisions/implementation-language.md
 docs/decisions/storage-location.md
 docs/decisions/producer-surfaces.md
 docs/decisions/target-languages.md
-interfaces/stage1-outputs.schema.json
+interfaces/harvest-outputs.schema.json
 pyproject.toml
-src/audit_stage1/__init__.py
-src/audit_stage1/storage.py
-src/audit_stage1/subprocess_utils.py
-src/audit_stage1/llm/__init__.py
-src/audit_stage1/llm/client.py
-src/audit_stage1/producers/__init__.py
-src/audit_stage1/producers/repo_profile.py        # A1
-src/audit_stage1/producers/entry_points.py        # A2
-src/audit_stage1/producers/gate_matrix.py         # A4
-src/audit_stage1/producers/sbom.py                # A5
-src/audit_stage1/producers/cve_overlay.py         # A6
-src/audit_stage1/producers/repomap/__init__.py    # A7
-src/audit_stage1/producers/repomap/repomap.py     # vendored from Aider
-src/audit_stage1/producers/repomap/special.py     # vendored from Aider
-src/audit_stage1/producers/repomap/queries/       # vendored tags.scm files
-src/audit_stage1/producers/index.py               # A14
-src/audit_stage1/extractors/__init__.py
-src/audit_stage1/extractors/frameworks/__init__.py
-src/audit_stage1/extractors/frameworks/go.py
-src/audit_stage1/extractors/frameworks/python.py
-src/audit_stage1/extractors/frameworks/javascript.py
-src/audit_stage1/extractors/frameworks/java.py
-src/audit_stage1/extractors/sbom_runners.py
-src/audit_stage1/mcp_server/__init__.py
-src/audit_stage1/mcp_server/server.py
-src/audit_stage1/mcp_server/tools/__init__.py
-src/audit_stage1/mcp_server/tools/index_tools.py
-src/audit_stage1/mcp_server/tools/repomap_tools.py
-src/audit_stage1/mcp_server/tools/run_tools.py
+src/audit_harvest/__init__.py
+src/audit_harvest/storage.py
+src/audit_harvest/subprocess_utils.py
+src/audit_harvest/llm/__init__.py
+src/audit_harvest/llm/client.py
+src/audit_harvest/producers/__init__.py
+src/audit_harvest/producers/repo_profile.py        # A1
+src/audit_harvest/producers/entry_points.py        # A2
+src/audit_harvest/producers/gate_matrix.py         # A4
+src/audit_harvest/producers/sbom.py                # A5
+src/audit_harvest/producers/cve_overlay.py         # A6
+src/audit_harvest/producers/repomap/__init__.py    # A7
+src/audit_harvest/producers/repomap/repomap.py     # vendored from Aider
+src/audit_harvest/producers/repomap/special.py     # vendored from Aider
+src/audit_harvest/producers/repomap/queries/       # vendored tags.scm files
+src/audit_harvest/producers/index.py               # A14
+src/audit_harvest/extractors/__init__.py
+src/audit_harvest/extractors/frameworks/__init__.py
+src/audit_harvest/extractors/frameworks/go.py
+src/audit_harvest/extractors/frameworks/python.py
+src/audit_harvest/extractors/frameworks/javascript.py
+src/audit_harvest/extractors/frameworks/java.py
+src/audit_harvest/extractors/sbom_runners.py
+src/audit_harvest/mcp_server/__init__.py
+src/audit_harvest/mcp_server/server.py
+src/audit_harvest/mcp_server/tools/__init__.py
+src/audit_harvest/mcp_server/tools/index_tools.py
+src/audit_harvest/mcp_server/tools/repomap_tools.py
+src/audit_harvest/mcp_server/tools/run_tools.py
 tests/__init__.py
 tests/fixtures/go_simple/go.mod
 tests/fixtures/go_simple/main.go
@@ -126,17 +126,14 @@ Go would require porting Aider repomap or subprocess calls; TypeScript adds same
 ```markdown
 # Decision: Artifact Storage Location
 
-**Choice:** External by default — `~/.cache/audit-agent/<repo-content-hash>/stage1/`
+**Choice:** In-repo — `<repo>/.audit/harvest/<git-sha>/`
 
-Override via env var: `AUDIT_STAGE1_DIR=<path>`
+Override via env var: `AUDIT_HARVEST_DIR=<path>`
 
 **Rationale:**
-- Does not pollute the audited repo's working tree.
-- Portable: path is keyed on repo content hash, not repo path.
-- In-repo override (set `AUDIT_STAGE1_DIR=<repo>/.audit/stage1`) supported for self-audits and CI.
-
-**Repo content hash:** SHA-256 of sorted output of `git ls-files --cached` paths+hashes,
-or fallback to directory mtime hash if not a git repo.
+- Does not require a separate cache directory; artifacts travel with the repo.
+- Path is keyed on the git SHA, making the cache naturally content-addressed.
+- Dirty working tree uses `dirty-<unix-timestamp>` and does NOT update the `current` symlink.
 ```
 
 - [ ] **Step 3: Write producer-surfaces.md**
@@ -144,7 +141,7 @@ or fallback to directory mtime hash if not a git repo.
 ```markdown
 # Decision: Producer Invocation Surface
 
-**Choice:** MCP tools as default. Each producer exposed as `stage1.run_<name>`.
+**Choice:** MCP tools as default. Each producer exposed as `harvest.run_<name>`.
 
 **Rationale:**
 - Consistent surface with read-side tools (all MCP).
@@ -154,13 +151,13 @@ or fallback to directory mtime hash if not a git repo.
 **Per-producer record:**
 | Producer | Surface | Notes |
 |---|---|---|
-| A1 repo_profile | MCP tool: stage1.run_repo_profile | |
-| A2 entry_points | MCP tool: stage1.run_entry_points | |
-| A4 gate_matrix | MCP tool: stage1.run_gate_matrix | Depends on A2+A5 |
-| A5 sbom | MCP tool: stage1.run_sbom | Shells to cdxgen |
-| A6 cve_overlay | MCP tool: stage1.run_cve_overlay | Shells to osv-scanner |
-| A7 repomap | MCP tool: stage1.run_repomap | |
-| A14 index | MCP tool: stage1.run_index | Must run last |
+| A1 repo_profile | MCP tool: harvest.run_repo_profile | |
+| A2 entry_points | MCP tool: harvest.run_entry_points | |
+| A4 gate_matrix | MCP tool: harvest.run_gate_matrix | Depends on A2+A5 |
+| A5 sbom | MCP tool: harvest.run_sbom | Shells to cdxgen |
+| A6 cve_overlay | MCP tool: harvest.run_cve_overlay | Shells to osv-scanner |
+| A7 repomap | MCP tool: harvest.run_repomap | |
+| A14 index | MCP tool: harvest.run_index | Must run last |
 ```
 
 - [ ] **Step 4: Write target-languages.md**
@@ -192,7 +189,7 @@ Established by Stage 1; all subsequent stages follow this shape.
    The parent invokes sub-agents with repo path + prior stages' artifact paths.
 3. **All MCP servers declared in the stage's `.mcp.json`**. A parent plugin composes them
    by referencing each stage's `.mcp.json` entries.
-4. **Artifacts on disk at `~/.cache/audit-agent/<repo-hash>/stage<N>/`** (or `AUDIT_STAGEN_DIR`).
+4. **Artifacts on disk at `<repo>/.audit/harvest/<git-sha>/`** (or `AUDIT_HARVEST_DIR`).
    Disk files are the durable handoff contract between stages.
 5. **MCP is for queryable surfaces** (repomap, CPG). Disk JSON/Markdown for staged handoff.
 6. **The parent agent prompt is pure orchestration** — invoke Stage 1, verify index hash,
@@ -216,7 +213,7 @@ git commit -m "docs: add decisions and parent-plugin-conventions for Stage 1 MVP
 - Create: `pyproject.toml`
 - Create: `.claude-plugin/plugin.json`
 - Create: `.mcp.json`
-- Create: `src/audit_stage1/__init__.py`
+- Create: `src/audit_harvest/__init__.py`
 
 - [ ] **Step 1: Write pyproject.toml**
 
@@ -226,7 +223,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "audit-stage1"
+name = "audit-harvest"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
@@ -246,7 +243,7 @@ dependencies = [
 dev = ["pytest>=8.0", "pytest-asyncio>=0.24.0"]
 
 [project.scripts]
-audit-stage1-mcp = "audit_stage1.mcp_server.server:main"
+audit-harvest-mcp = "audit_harvest.mcp_server.server:main"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -260,7 +257,7 @@ testpaths = ["tests"]
   "name": "audit-project-context-builder",
   "version": "0.1.0",
   "description": "Stage 1 of the white-box security audit pipeline. Profiles a repo and produces 7 hash-tracked artifacts consumed by downstream audit stages.",
-  "agents": ["agents/stage1-discoverer.md"],
+  "agents": ["agents/harvest-agent.md"],
   "commands": ["commands/audit-discover.md"],
   "mcpServers": [".mcp.json"]
 }
@@ -271,16 +268,16 @@ testpaths = ["tests"]
 ```json
 {
   "mcpServers": {
-    "audit-stage1": {
-      "command": "python",
-      "args": ["-m", "audit_stage1.mcp_server.server"],
+    "audit-harvest": {
+      "command": "uv",
+      "args": ["run", "--project", "src/", "audit-harvest-mcp"],
       "env": {}
     }
   }
 }
 ```
 
-- [ ] **Step 4: Write src/audit_stage1/__init__.py**
+- [ ] **Step 4: Write src/audit_harvest/__init__.py**
 
 ```python
 __version__ = "0.1.0"
@@ -289,12 +286,12 @@ __version__ = "0.1.0"
 - [ ] **Step 5: Create remaining empty `__init__.py` files**
 
 ```bash
-touch src/audit_stage1/llm/__init__.py
-touch src/audit_stage1/producers/__init__.py
-touch src/audit_stage1/extractors/__init__.py
-touch src/audit_stage1/extractors/frameworks/__init__.py
-touch src/audit_stage1/mcp_server/__init__.py
-touch src/audit_stage1/mcp_server/tools/__init__.py
+touch src/audit_harvest/llm/__init__.py
+touch src/audit_harvest/producers/__init__.py
+touch src/audit_harvest/extractors/__init__.py
+touch src/audit_harvest/extractors/frameworks/__init__.py
+touch src/audit_harvest/mcp_server/__init__.py
+touch src/audit_harvest/mcp_server/tools/__init__.py
 touch tests/__init__.py
 touch tests/unit/__init__.py
 touch tests/integration/__init__.py
@@ -305,7 +302,7 @@ touch tests/integration/__init__.py
 ```bash
 cd skills/audit-project-context-builder
 pip install -e ".[dev]"
-python -c "import audit_stage1; print(audit_stage1.__version__)"
+python -c "import audit_harvest; print(audit_harvest.__version__)"
 ```
 
 Expected: `0.1.0`
@@ -500,7 +497,7 @@ git commit -m "test: add language fixtures for Go/Flask/Express/Spring"
 ## Task 4: Storage layer
 
 **Files:**
-- Create: `src/audit_stage1/storage.py`
+- Create: `src/audit_harvest/storage.py`
 - Create: `tests/unit/test_storage.py`
 
 - [ ] **Step 1: Write the failing tests first**
@@ -514,7 +511,7 @@ from pathlib import Path
 
 import pytest
 
-from audit_stage1.storage import ArtifactRecord, ArtifactStore
+from audit_harvest.storage import ArtifactRecord, ArtifactStore
 
 
 def test_write_and_read_roundtrip(tmp_path):
@@ -591,7 +588,7 @@ Expected: `ModuleNotFoundError` or similar — `storage` not implemented yet.
 
 - [ ] **Step 3: Implement storage.py**
 
-`src/audit_stage1/storage.py`:
+`src/audit_harvest/storage.py`:
 ```python
 import hashlib
 import json
@@ -694,7 +691,7 @@ Expected: all 8 tests pass.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/audit_stage1/storage.py tests/unit/test_storage.py
+git add src/audit_harvest/storage.py tests/unit/test_storage.py
 git commit -m "feat: add ArtifactStore with content-hash tracking and atomic writes"
 ```
 
@@ -703,7 +700,7 @@ git commit -m "feat: add ArtifactStore with content-hash tracking and atomic wri
 ## Task 5: Subprocess utilities
 
 **Files:**
-- Create: `src/audit_stage1/subprocess_utils.py`
+- Create: `src/audit_harvest/subprocess_utils.py`
 - Create: `tests/unit/test_subprocess_utils.py`
 
 - [ ] **Step 1: Write failing tests**
@@ -715,7 +712,7 @@ from pathlib import Path
 
 import pytest
 
-from audit_stage1.subprocess_utils import (
+from audit_harvest.subprocess_utils import (
     ToolError,
     ToolNotFound,
     ToolResult,
@@ -782,7 +779,7 @@ Expected: `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement subprocess_utils.py**
 
-`src/audit_stage1/subprocess_utils.py`:
+`src/audit_harvest/subprocess_utils.py`:
 ```python
 import json
 import shutil
@@ -879,7 +876,7 @@ Expected: all 7 tests pass.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/audit_stage1/subprocess_utils.py tests/unit/test_subprocess_utils.py
+git add src/audit_harvest/subprocess_utils.py tests/unit/test_subprocess_utils.py
 git commit -m "feat: add subprocess utility with typed errors and invocation log"
 ```
 
@@ -888,7 +885,7 @@ git commit -m "feat: add subprocess utility with typed errors and invocation log
 ## Task 6: LLM client with grounding enforcement
 
 **Files:**
-- Create: `src/audit_stage1/llm/client.py`
+- Create: `src/audit_harvest/llm/client.py`
 - Create: `tests/unit/test_llm_client.py`
 
 - [ ] **Step 1: Write failing tests**
@@ -900,7 +897,7 @@ from unittest.mock import patch
 
 import pytest
 
-from audit_stage1.llm.client import GroundedOutput, LLMClient, drop_unverified_claims
+from audit_harvest.llm.client import GroundedOutput, LLMClient, drop_unverified_claims
 
 
 def test_verified_claim_is_kept(tmp_path):
@@ -984,7 +981,7 @@ Expected: `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement llm/client.py**
 
-`src/audit_stage1/llm/client.py`:
+`src/audit_harvest/llm/client.py`:
 ```python
 from __future__ import annotations
 
@@ -1084,7 +1081,7 @@ Expected: all 4 tests pass.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/audit_stage1/llm/client.py tests/unit/test_llm_client.py
+git add src/audit_harvest/llm/client.py tests/unit/test_llm_client.py
 git commit -m "feat: add LLM client with cite-or-omit grounding enforcement"
 ```
 
@@ -1093,15 +1090,15 @@ git commit -m "feat: add LLM client with cite-or-omit grounding enforcement"
 ## Task 6b: JSON Schema registry
 
 **Files:**
-- Create: `interfaces/stage1-outputs.schema.json`
+- Create: `interfaces/harvest-outputs.schema.json`
 
 - [ ] **Step 1: Write the schema**
 
-`interfaces/stage1-outputs.schema.json`:
+`interfaces/harvest-outputs.schema.json`:
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://audit-stage1/interfaces/stage1-outputs",
+  "$id": "https://audit-harvest/interfaces/stage1-outputs",
   "title": "Stage 1 Artifact Schemas",
   "definitions": {
     "entry_point": {
@@ -1184,7 +1181,7 @@ git commit -m "feat: add LLM client with cite-or-omit grounding enforcement"
 - [ ] **Step 2: Verify schema is valid JSON**
 
 ```bash
-python -c "import json; json.load(open('interfaces/stage1-outputs.schema.json')); print('OK')"
+python -c "import json; json.load(open('interfaces/harvest-outputs.schema.json')); print('OK')"
 ```
 
 Expected: `OK`
@@ -1192,7 +1189,7 @@ Expected: `OK`
 - [ ] **Step 3: Commit**
 
 ```bash
-git add interfaces/stage1-outputs.schema.json
+git add interfaces/harvest-outputs.schema.json
 git commit -m "feat: add JSON Schema registry for Stage 1 artifact contracts"
 ```
 
@@ -1208,7 +1205,7 @@ git commit -m "feat: add JSON Schema registry for Stage 1 artifact contracts"
 ## Task 7: A1 — repo_profile producer
 
 **Files:**
-- Create: `src/audit_stage1/producers/repo_profile.py`
+- Create: `src/audit_harvest/producers/repo_profile.py`
 - Create: `tests/unit/test_repo_profile.py`
 
 - [ ] **Step 1: Write failing tests**
@@ -1217,7 +1214,7 @@ git commit -m "feat: add JSON Schema registry for Stage 1 artifact contracts"
 ```python
 from pathlib import Path
 import pytest
-from audit_stage1.producers.repo_profile import produce_repo_profile
+from audit_harvest.producers.repo_profile import produce_repo_profile
 
 FIXTURE_GO = Path("tests/fixtures/go_simple")
 FIXTURE_PY = Path("tests/fixtures/python_flask")
@@ -1272,7 +1269,7 @@ pytest tests/unit/test_repo_profile.py -v
 
 - [ ] **Step 3: Implement repo_profile.py**
 
-`src/audit_stage1/producers/repo_profile.py`:
+`src/audit_harvest/producers/repo_profile.py`:
 ```python
 """A1: repo_profile.md — deterministic repo profile, max 2k tokens."""
 from __future__ import annotations
@@ -1435,7 +1432,7 @@ Expected: all 7 tests pass.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/audit_stage1/producers/repo_profile.py tests/unit/test_repo_profile.py
+git add src/audit_harvest/producers/repo_profile.py tests/unit/test_repo_profile.py
 git commit -m "feat: implement A1 repo_profile producer with 2k token cap"
 ```
 
@@ -1444,9 +1441,9 @@ git commit -m "feat: implement A1 repo_profile producer with 2k token cap"
 ## Task 8: A5 + A6 — SBOM and CVE overlay producers
 
 **Files:**
-- Create: `src/audit_stage1/extractors/sbom_runners.py`
-- Create: `src/audit_stage1/producers/sbom.py`
-- Create: `src/audit_stage1/producers/cve_overlay.py`
+- Create: `src/audit_harvest/extractors/sbom_runners.py`
+- Create: `src/audit_harvest/producers/sbom.py`
+- Create: `src/audit_harvest/producers/cve_overlay.py`
 - Create: `tests/unit/test_sbom.py`
 
 - [ ] **Step 1: Write failing tests**
@@ -1459,23 +1456,23 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from audit_stage1.producers.sbom import produce_sbom
-from audit_stage1.producers.cve_overlay import produce_cve_overlay
-from audit_stage1.subprocess_utils import ToolNotFound
+from audit_harvest.producers.sbom import produce_sbom
+from audit_harvest.producers.cve_overlay import produce_cve_overlay
+from audit_harvest.subprocess_utils import ToolNotFound
 
 FIXTURE_GO = Path("tests/fixtures/go_simple")
 
 
 def test_produce_sbom_returns_path(tmp_path):
     fake_sbom = json.dumps({"bomFormat": "CycloneDX", "components": []})
-    with patch("audit_stage1.producers.sbom.run_tool") as mock_run:
+    with patch("audit_harvest.producers.sbom.run_tool") as mock_run:
         mock_run.return_value = MagicMock(stdout=fake_sbom)
         result = produce_sbom(FIXTURE_GO, output_dir=tmp_path)
     assert result.exists()
 
 
 def test_produce_sbom_skips_if_cdxgen_missing(tmp_path):
-    with patch("audit_stage1.producers.sbom.run_tool", side_effect=ToolNotFound("cdxgen")):
+    with patch("audit_harvest.producers.sbom.run_tool", side_effect=ToolNotFound("cdxgen")):
         result = produce_sbom(FIXTURE_GO, output_dir=tmp_path)
     assert result is None
 
@@ -1485,7 +1482,7 @@ def test_produce_cve_overlay_returns_list(tmp_path):
     sbom_file.write_text(json.dumps({"bomFormat": "CycloneDX", "components": []}))
 
     fake_osv = json.dumps({"results": []})
-    with patch("audit_stage1.producers.cve_overlay.run_tool") as mock_run:
+    with patch("audit_harvest.producers.cve_overlay.run_tool") as mock_run:
         mock_run.return_value = MagicMock(stdout=fake_osv)
         result = produce_cve_overlay(sbom_file, output_dir=tmp_path)
     assert isinstance(result, list)
@@ -1504,13 +1501,13 @@ pytest tests/unit/test_sbom.py -v
 
 - [ ] **Step 3: Implement sbom_runners.py**
 
-`src/audit_stage1/extractors/sbom_runners.py`:
+`src/audit_harvest/extractors/sbom_runners.py`:
 ```python
 """Subprocess wrappers for cdxgen and osv-scanner."""
 from pathlib import Path
 from typing import Optional
 
-from audit_stage1.subprocess_utils import ToolNotFound, run_tool, ToolResult
+from audit_harvest.subprocess_utils import ToolNotFound, run_tool, ToolResult
 
 
 def run_cdxgen(repo_path: Path, output_file: Path, timeout_sec: int = 300) -> Optional[ToolResult]:
@@ -1537,7 +1534,7 @@ def run_osv_scanner(sbom_file: Path, timeout_sec: int = 120) -> Optional[ToolRes
 
 - [ ] **Step 4: Implement sbom.py**
 
-`src/audit_stage1/producers/sbom.py`:
+`src/audit_harvest/producers/sbom.py`:
 ```python
 """A5: SBOM producer using cdxgen."""
 from __future__ import annotations
@@ -1546,7 +1543,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from audit_stage1.subprocess_utils import run_tool, ToolNotFound, ToolError
+from audit_harvest.subprocess_utils import run_tool, ToolNotFound, ToolError
 
 
 def produce_sbom(repo_path: Path, output_dir: Path) -> Optional[Path]:
@@ -1571,7 +1568,7 @@ def produce_sbom(repo_path: Path, output_dir: Path) -> Optional[Path]:
 
 - [ ] **Step 5: Implement cve_overlay.py**
 
-`src/audit_stage1/producers/cve_overlay.py`:
+`src/audit_harvest/producers/cve_overlay.py`:
 ```python
 """A6: CVE overlay using osv-scanner over the SBOM."""
 from __future__ import annotations
@@ -1579,7 +1576,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from audit_stage1.subprocess_utils import run_tool, ToolNotFound, ToolError
+from audit_harvest.subprocess_utils import run_tool, ToolNotFound, ToolError
 
 
 def produce_cve_overlay(sbom_file: Path, output_dir: Path) -> list[dict]:
@@ -1614,9 +1611,9 @@ pytest tests/unit/test_sbom.py -v
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/audit_stage1/extractors/sbom_runners.py \
-        src/audit_stage1/producers/sbom.py \
-        src/audit_stage1/producers/cve_overlay.py \
+git add src/audit_harvest/extractors/sbom_runners.py \
+        src/audit_harvest/producers/sbom.py \
+        src/audit_harvest/producers/cve_overlay.py \
         tests/unit/test_sbom.py
 git commit -m "feat: implement A5 SBOM and A6 CVE overlay producers"
 ```
@@ -1626,10 +1623,10 @@ git commit -m "feat: implement A5 SBOM and A6 CVE overlay producers"
 ## Task 9: A7 — Repomap producer (vendor Aider)
 
 **Files:**
-- Create: `src/audit_stage1/producers/repomap/repomap.py` (vendored)
-- Create: `src/audit_stage1/producers/repomap/special.py` (vendored)
-- Create: `src/audit_stage1/producers/repomap/queries/` (vendored tags.scm files)
-- Create: `src/audit_stage1/producers/repomap/__init__.py`
+- Create: `src/audit_harvest/producers/repomap/repomap.py` (vendored)
+- Create: `src/audit_harvest/producers/repomap/special.py` (vendored)
+- Create: `src/audit_harvest/producers/repomap/queries/` (vendored tags.scm files)
+- Create: `src/audit_harvest/producers/repomap/__init__.py`
 
 - [ ] **Step 1: Vendor Aider repomap files**
 
@@ -1642,14 +1639,14 @@ echo "Vendoring from commit: $AIDER_COMMIT"
 git clone --depth 1 https://github.com/Aider-AI/aider /tmp/aider-vendor
 
 # Copy the relevant files
-cp /tmp/aider-vendor/aider/repomap.py src/audit_stage1/producers/repomap/repomap.py
-cp /tmp/aider-vendor/aider/special.py src/audit_stage1/producers/repomap/special.py
-mkdir -p src/audit_stage1/producers/repomap/queries
-cp /tmp/aider-vendor/aider/queries/*.scm src/audit_stage1/producers/repomap/queries/
+cp /tmp/aider-vendor/aider/repomap.py src/audit_harvest/producers/repomap/repomap.py
+cp /tmp/aider-vendor/aider/special.py src/audit_harvest/producers/repomap/special.py
+mkdir -p src/audit_harvest/producers/repomap/queries
+cp /tmp/aider-vendor/aider/queries/*.scm src/audit_harvest/producers/repomap/queries/
 
 # Record the commit
-echo "$AIDER_COMMIT" > src/audit_stage1/producers/repomap/AIDER_COMMIT
-cp /tmp/aider-vendor/LICENSE src/audit_stage1/producers/repomap/LICENSE
+echo "$AIDER_COMMIT" > src/audit_harvest/producers/repomap/AIDER_COMMIT
+cp /tmp/aider-vendor/LICENSE src/audit_harvest/producers/repomap/LICENSE
 ```
 
 - [ ] **Step 2: Create THIRD_PARTY_LICENSES.md**
@@ -1661,19 +1658,19 @@ cat > THIRD_PARTY_LICENSES.md << 'EOF'
 ## Aider (repomap)
 
 Vendored from: https://github.com/Aider-AI/aider
-Commit: (see src/audit_stage1/producers/repomap/AIDER_COMMIT)
+Commit: (see src/audit_harvest/producers/repomap/AIDER_COMMIT)
 License: Apache-2.0
 
 Files:
-- src/audit_stage1/producers/repomap/repomap.py
-- src/audit_stage1/producers/repomap/special.py
-- src/audit_stage1/producers/repomap/queries/*.scm
+- src/audit_harvest/producers/repomap/repomap.py
+- src/audit_harvest/producers/repomap/special.py
+- src/audit_harvest/producers/repomap/queries/*.scm
 EOF
 ```
 
 - [ ] **Step 3: Write the adapter __init__.py**
 
-`src/audit_stage1/producers/repomap/__init__.py`:
+`src/audit_harvest/producers/repomap/__init__.py`:
 ```python
 """A7: Symbol graph using Aider's PageRank repomap (vendored)."""
 from __future__ import annotations
@@ -1714,7 +1711,7 @@ def produce_repomap(
 ```bash
 python -c "
 from pathlib import Path
-from audit_stage1.producers.repomap import produce_repomap
+from audit_harvest.producers.repomap import produce_repomap
 result = produce_repomap(Path('tests/fixtures/go_simple'), budget_tokens=1024)
 print(repr(result[:200]))
 "
@@ -1728,7 +1725,7 @@ Add to a new file `tests/unit/test_repomap.py`:
 ```python
 from pathlib import Path
 import pytest
-from audit_stage1.producers.repomap import produce_repomap
+from audit_harvest.producers.repomap import produce_repomap
 
 FIXTURE_GO = Path("tests/fixtures/go_simple")
 
@@ -1760,7 +1757,7 @@ Expected: all 3 pass.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/audit_stage1/producers/repomap/ THIRD_PARTY_LICENSES.md tests/unit/test_repomap.py
+git add src/audit_harvest/producers/repomap/ THIRD_PARTY_LICENSES.md tests/unit/test_repomap.py
 git commit -m "feat: vendor Aider repomap.py for A7 symbol graph with PageRank"
 ```
 
@@ -1769,11 +1766,11 @@ git commit -m "feat: vendor Aider repomap.py for A7 symbol graph with PageRank"
 ## Task 10: A2 — Entry points producer
 
 **Files:**
-- Create: `src/audit_stage1/producers/entry_points.py`
-- Create: `src/audit_stage1/extractors/frameworks/go.py`
-- Create: `src/audit_stage1/extractors/frameworks/python.py`
-- Create: `src/audit_stage1/extractors/frameworks/javascript.py`
-- Create: `src/audit_stage1/extractors/frameworks/java.py`
+- Create: `src/audit_harvest/producers/entry_points.py`
+- Create: `src/audit_harvest/extractors/frameworks/go.py`
+- Create: `src/audit_harvest/extractors/frameworks/python.py`
+- Create: `src/audit_harvest/extractors/frameworks/javascript.py`
+- Create: `src/audit_harvest/extractors/frameworks/java.py`
 - Create: `tests/unit/test_entry_points.py`
 
 - [ ] **Step 1: Write failing tests**
@@ -1782,7 +1779,7 @@ git commit -m "feat: vendor Aider repomap.py for A7 symbol graph with PageRank"
 ```python
 from pathlib import Path
 import pytest
-from audit_stage1.producers.entry_points import produce_entry_points
+from audit_harvest.producers.entry_points import produce_entry_points
 
 FIXTURE_GO = Path("tests/fixtures/go_simple")
 FIXTURE_PY = Path("tests/fixtures/python_flask")
@@ -1838,7 +1835,7 @@ def test_unresolvable_handler_is_null_not_omitted():
 
 def test_output_is_schema_valid():
     import jsonschema, json
-    schema = json.load(open("interfaces/stage1-outputs.schema.json"))
+    schema = json.load(open("interfaces/harvest-outputs.schema.json"))
     entry_schema = schema["definitions"]["entry_points_artifact"]
     entry_schema["definitions"] = schema["definitions"]
     result = produce_entry_points(FIXTURE_GO)
@@ -1853,7 +1850,7 @@ pytest tests/unit/test_entry_points.py -v
 
 - [ ] **Step 3: Implement Go framework extractor**
 
-`src/audit_stage1/extractors/frameworks/go.py`:
+`src/audit_harvest/extractors/frameworks/go.py`:
 ```python
 """Extract HTTP entry points from Go source using regex patterns."""
 from __future__ import annotations
@@ -1913,7 +1910,7 @@ def extract_go_entry_points(repo_path: Path) -> list[dict]:
 
 - [ ] **Step 4: Implement Python framework extractor**
 
-`src/audit_stage1/extractors/frameworks/python.py`:
+`src/audit_harvest/extractors/frameworks/python.py`:
 ```python
 """Extract HTTP entry points from Python source (Flask, FastAPI, Django)."""
 from __future__ import annotations
@@ -1990,7 +1987,7 @@ def _next_def(lines: list[str], decorator_line: int) -> str | None:
 
 - [ ] **Step 5: Implement JavaScript framework extractor**
 
-`src/audit_stage1/extractors/frameworks/javascript.py`:
+`src/audit_harvest/extractors/frameworks/javascript.py`:
 ```python
 """Extract HTTP entry points from JavaScript/TypeScript source (Express)."""
 from __future__ import annotations
@@ -2034,7 +2031,7 @@ def extract_js_entry_points(repo_path: Path) -> list[dict]:
 
 - [ ] **Step 6: Implement Java framework extractor**
 
-`src/audit_stage1/extractors/frameworks/java.py`:
+`src/audit_harvest/extractors/frameworks/java.py`:
 ```python
 """Extract HTTP entry points from Java source (Spring)."""
 from __future__ import annotations
@@ -2101,16 +2098,16 @@ def extract_java_entry_points(repo_path: Path) -> list[dict]:
 
 - [ ] **Step 7: Implement entry_points.py orchestrator**
 
-`src/audit_stage1/producers/entry_points.py`:
+`src/audit_harvest/producers/entry_points.py`:
 ```python
 """A2: Entry points producer — aggregates all framework extractors."""
 from __future__ import annotations
 from pathlib import Path
 
-from audit_stage1.extractors.frameworks.go import extract_go_entry_points
-from audit_stage1.extractors.frameworks.python import extract_python_entry_points
-from audit_stage1.extractors.frameworks.javascript import extract_js_entry_points
-from audit_stage1.extractors.frameworks.java import extract_java_entry_points
+from audit_harvest.extractors.frameworks.go import extract_go_entry_points
+from audit_harvest.extractors.frameworks.python import extract_python_entry_points
+from audit_harvest.extractors.frameworks.javascript import extract_js_entry_points
+from audit_harvest.extractors.frameworks.java import extract_java_entry_points
 
 
 def produce_entry_points(repo_path: Path) -> dict:
@@ -2134,8 +2131,8 @@ Expected: all 8 tests pass.
 - [ ] **Step 9: Commit**
 
 ```bash
-git add src/audit_stage1/producers/entry_points.py \
-        src/audit_stage1/extractors/frameworks/ \
+git add src/audit_harvest/producers/entry_points.py \
+        src/audit_harvest/extractors/frameworks/ \
         tests/unit/test_entry_points.py
 git commit -m "feat: implement A2 entry points producer for Go/Python/JS/Java"
 ```
@@ -2145,7 +2142,7 @@ git commit -m "feat: implement A2 entry points producer for Go/Python/JS/Java"
 ## Task 11: A4 — Gate matrix producer
 
 **Files:**
-- Create: `src/audit_stage1/producers/gate_matrix.py`
+- Create: `src/audit_harvest/producers/gate_matrix.py`
 - Create: `tests/unit/test_gate_matrix.py`
 
 - [ ] **Step 1: Write failing tests**
@@ -2155,7 +2152,7 @@ git commit -m "feat: implement A2 entry points producer for Go/Python/JS/Java"
 import json
 from pathlib import Path
 import pytest
-from audit_stage1.producers.gate_matrix import produce_gate_matrix
+from audit_harvest.producers.gate_matrix import produce_gate_matrix
 
 FIXTURE_GO = Path("tests/fixtures/go_simple")
 FIXTURE_PY = Path("tests/fixtures/python_flask")
@@ -2188,14 +2185,14 @@ def test_sqli_needs_verification_with_driver_no_raw_sql():
 
 def test_llm_not_invoked_for_deterministic_rules():
     from unittest.mock import patch
-    with patch("audit_stage1.producers.gate_matrix.LLMClient") as mock_llm:
+    with patch("audit_harvest.producers.gate_matrix.LLMClient") as mock_llm:
         produce_gate_matrix(FIXTURE_GO, {"entry_points": []}, [])
     mock_llm.assert_not_called()
 
 
 def test_output_is_schema_valid():
     import jsonschema
-    schema = json.load(open("interfaces/stage1-outputs.schema.json"))
+    schema = json.load(open("interfaces/harvest-outputs.schema.json"))
     gate_schema = schema["definitions"]["gate_matrix_artifact"]
     gate_schema["definitions"] = schema["definitions"]
     result = produce_gate_matrix(FIXTURE_GO, {"entry_points": []}, [])
@@ -2210,7 +2207,7 @@ pytest tests/unit/test_gate_matrix.py -v
 
 - [ ] **Step 3: Implement gate_matrix.py**
 
-`src/audit_stage1/producers/gate_matrix.py`:
+`src/audit_harvest/producers/gate_matrix.py`:
 ```python
 """A4: Gate matrix — CWE applicability filter."""
 from __future__ import annotations
@@ -2361,7 +2358,7 @@ Expected: all 5 tests pass.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/audit_stage1/producers/gate_matrix.py tests/unit/test_gate_matrix.py
+git add src/audit_harvest/producers/gate_matrix.py tests/unit/test_gate_matrix.py
 git commit -m "feat: implement A4 gate matrix with 13 CWE classes, deterministic evaluation"
 ```
 
@@ -2370,7 +2367,7 @@ git commit -m "feat: implement A4 gate matrix with 13 CWE classes, deterministic
 ## Task 12: A14 — Index producer
 
 **Files:**
-- Create: `src/audit_stage1/producers/index.py`
+- Create: `src/audit_harvest/producers/index.py`
 - Create: `tests/unit/test_index.py`
 
 - [ ] **Step 1: Write failing tests**
@@ -2383,8 +2380,8 @@ from pathlib import Path
 
 import pytest
 
-from audit_stage1.storage import ArtifactStore
-from audit_stage1.producers.index import produce_index
+from audit_harvest.storage import ArtifactStore
+from audit_harvest.producers.index import produce_index
 
 
 def test_index_lists_all_artifacts(tmp_path):
@@ -2402,7 +2399,7 @@ def test_stale_artifact_is_flagged(tmp_path):
     record = store.write("repo_profile", b"old", source_hash="h1")
 
     # Backdate the record by patching last_built_at
-    import audit_stage1.storage as storage_mod
+    import audit_harvest.storage as storage_mod
     from dataclasses import asdict
     meta_path = Path(record.path).parent / "meta.json"
     data = json.loads(meta_path.read_text())
@@ -2424,7 +2421,7 @@ def test_fresh_artifact_is_not_stale(tmp_path):
 
 def test_index_output_is_schema_valid(tmp_path):
     import jsonschema
-    schema = json.load(open("interfaces/stage1-outputs.schema.json"))
+    schema = json.load(open("interfaces/harvest-outputs.schema.json"))
     index_schema = schema["definitions"]["index_artifact"]
     index_schema["definitions"] = schema["definitions"]
 
@@ -2442,7 +2439,7 @@ pytest tests/unit/test_index.py -v
 
 - [ ] **Step 3: Implement index.py**
 
-`src/audit_stage1/producers/index.py`:
+`src/audit_harvest/producers/index.py`:
 ```python
 """A14: Index artifact — hash-tracked summary of all Stage 1 artifacts."""
 from __future__ import annotations
@@ -2450,7 +2447,7 @@ from __future__ import annotations
 import time
 from dataclasses import asdict
 
-from audit_stage1.storage import ArtifactStore
+from audit_harvest.storage import ArtifactStore
 
 
 def produce_index(store: ArtifactStore, max_age_days: int = 7) -> dict:
@@ -2502,7 +2499,7 @@ Expected: all unit tests pass.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/audit_stage1/producers/index.py tests/unit/test_index.py
+git add src/audit_harvest/producers/index.py tests/unit/test_index.py
 git commit -m "feat: implement A14 index producer with staleness detection"
 ```
 
@@ -2512,8 +2509,8 @@ git commit -m "feat: implement A14 index producer with staleness detection"
 > pytest tests/unit/ -v
 > python -c "
 > from pathlib import Path
-> from audit_stage1.producers.repo_profile import produce_repo_profile
-> from audit_stage1.producers.entry_points import produce_entry_points
+> from audit_harvest.producers.repo_profile import produce_repo_profile
+> from audit_harvest.producers.entry_points import produce_entry_points
 > print(produce_repo_profile(Path('tests/fixtures/python_flask')))
 > import json; print(json.dumps(produce_entry_points(Path('tests/fixtures/python_flask')), indent=2))
 > "
@@ -2524,21 +2521,21 @@ git commit -m "feat: implement A14 index producer with staleness detection"
 ## Task 13: MCP server — read-side tools
 
 **Files:**
-- Create: `src/audit_stage1/mcp_server/tools/index_tools.py`
-- Create: `src/audit_stage1/mcp_server/tools/repomap_tools.py`
-- Create: `src/audit_stage1/mcp_server/tools/run_tools.py`
-- Create: `src/audit_stage1/mcp_server/server.py`
+- Create: `src/audit_harvest/mcp_server/tools/index_tools.py`
+- Create: `src/audit_harvest/mcp_server/tools/repomap_tools.py`
+- Create: `src/audit_harvest/mcp_server/tools/run_tools.py`
+- Create: `src/audit_harvest/mcp_server/server.py`
 
 - [ ] **Step 1: Implement index_tools.py**
 
-`src/audit_stage1/mcp_server/tools/index_tools.py`:
+`src/audit_harvest/mcp_server/tools/index_tools.py`:
 ```python
 """MCP tools: index.list, index.get"""
 from __future__ import annotations
 import json
 from pathlib import Path
-from audit_stage1.storage import ArtifactStore
-from audit_stage1.producers.index import produce_index, produce_index_markdown
+from audit_harvest.storage import ArtifactStore
+from audit_harvest.producers.index import produce_index, produce_index_markdown
 
 
 def get_store(store_root: str) -> ArtifactStore:
@@ -2563,12 +2560,12 @@ def tool_index_get(store_root: str, artifact_name: str) -> str:
 
 - [ ] **Step 2: Implement repomap_tools.py**
 
-`src/audit_stage1/mcp_server/tools/repomap_tools.py`:
+`src/audit_harvest/mcp_server/tools/repomap_tools.py`:
 ```python
 """MCP tool: repomap.query"""
 from __future__ import annotations
 from pathlib import Path
-from audit_stage1.producers.repomap import produce_repomap
+from audit_harvest.producers.repomap import produce_repomap
 
 
 def tool_repomap_query(
@@ -2581,34 +2578,29 @@ def tool_repomap_query(
 
 - [ ] **Step 3: Implement run_tools.py (producer MCP tools)**
 
-`src/audit_stage1/mcp_server/tools/run_tools.py`:
+`src/audit_harvest/mcp_server/tools/run_tools.py`:
 ```python
-"""MCP tools: stage1.run_* — invoke each producer via the MCP surface."""
+"""MCP tools: harvest.run_* — invoke each producer via the MCP surface."""
 from __future__ import annotations
 import json
 import os
 from pathlib import Path
 
-from audit_stage1.storage import ArtifactStore
-from audit_stage1.producers.repo_profile import produce_repo_profile
-from audit_stage1.producers.entry_points import produce_entry_points
-from audit_stage1.producers.gate_matrix import produce_gate_matrix
-from audit_stage1.producers.sbom import produce_sbom
-from audit_stage1.producers.cve_overlay import produce_cve_overlay
-from audit_stage1.producers.index import produce_index_markdown, produce_index
+from audit_harvest.storage import ArtifactStore
+from audit_harvest.producers.repo_profile import produce_repo_profile
+from audit_harvest.producers.entry_points import produce_entry_points
+from audit_harvest.producers.gate_matrix import produce_gate_matrix
+from audit_harvest.producers.sbom import produce_sbom
+from audit_harvest.producers.cve_overlay import produce_cve_overlay
+from audit_harvest.producers.index import produce_index_markdown, produce_index
 
 
 def _get_store(repo_path: str) -> tuple[ArtifactStore, Path]:
     repo = Path(repo_path).resolve()
-    store_root = os.environ.get("AUDIT_STAGE1_DIR") or (
-        Path.home() / ".cache" / "audit-agent" / _repo_hash(repo) / "stage1"
+    store_root = os.environ.get("AUDIT_HARVEST_DIR") or (
+        repo / ".audit" / "harvest"
     )
     return ArtifactStore(Path(store_root)), repo
-
-
-def _repo_hash(repo: Path) -> str:
-    import hashlib
-    return hashlib.sha256(str(repo).encode()).hexdigest()[:16]
 
 
 def tool_run_repo_profile(repo_path: str) -> str:
@@ -2641,7 +2633,7 @@ def tool_run_cve_overlay(repo_path: str) -> str:
     store, repo = _get_store(repo_path)
     record = store.get("sbom")
     if record is None:
-        return json.dumps({"error": "run stage1.run_sbom first"})
+        return json.dumps({"error": "run harvest.run_sbom first"})
     sbom_path = Path(record.path)
     tmp_dir = Path("/tmp") / f"cve-{_repo_hash(repo)}"
     vulns = produce_cve_overlay(sbom_path, output_dir=tmp_dir)
@@ -2651,7 +2643,7 @@ def tool_run_cve_overlay(repo_path: str) -> str:
 
 
 def tool_run_repomap(repo_path: str, budget_tokens: int = 4096) -> str:
-    from audit_stage1.producers.repomap import produce_repomap
+    from audit_harvest.producers.repomap import produce_repomap
     store, repo = _get_store(repo_path)
     result = produce_repomap(repo, budget_tokens=budget_tokens)
     store.write("repomap", result.encode(), source_hash=_repo_hash(repo))
@@ -2686,9 +2678,9 @@ def tool_run_index(repo_path: str, max_age_days: int = 7) -> str:
 
 - [ ] **Step 4: Implement server.py**
 
-`src/audit_stage1/mcp_server/server.py`:
+`src/audit_harvest/mcp_server/server.py`:
 ```python
-"""audit-stage1-mcp: MCP server exposing read-side and producer tools."""
+"""audit-harvest-mcp: MCP server exposing read-side and producer tools."""
 from __future__ import annotations
 
 import asyncio
@@ -2696,9 +2688,9 @@ from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp import types
 
-from audit_stage1.mcp_server.tools.index_tools import tool_index_list, tool_index_get
-from audit_stage1.mcp_server.tools.repomap_tools import tool_repomap_query
-from audit_stage1.mcp_server.tools.run_tools import (
+from audit_harvest.mcp_server.tools.index_tools import tool_index_list, tool_index_get
+from audit_harvest.mcp_server.tools.repomap_tools import tool_repomap_query
+from audit_harvest.mcp_server.tools.run_tools import (
     tool_run_repo_profile,
     tool_run_entry_points,
     tool_run_sbom,
@@ -2708,7 +2700,7 @@ from audit_stage1.mcp_server.tools.run_tools import (
     tool_run_index,
 )
 
-app = Server("audit-stage1")
+app = Server("audit-harvest")
 
 _TOOLS = [
     types.Tool(
@@ -2748,13 +2740,13 @@ _TOOLS = [
             },
         },
     ),
-    types.Tool(name="stage1.run_repo_profile", description="Run A1: produce repo_profile.md", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}}}),
-    types.Tool(name="stage1.run_entry_points", description="Run A2: extract all HTTP/CLI entry points", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}}}),
-    types.Tool(name="stage1.run_sbom", description="Run A5: generate SBOM via cdxgen", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}}}),
-    types.Tool(name="stage1.run_cve_overlay", description="Run A6: CVE overlay via osv-scanner (requires A5)", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}}}),
-    types.Tool(name="stage1.run_repomap", description="Run A7: PageRank symbol graph", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}, "budget_tokens": {"type": "integer", "default": 4096}}}),
-    types.Tool(name="stage1.run_gate_matrix", description="Run A4: CWE gate matrix (requires A2+A5)", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}}}),
-    types.Tool(name="stage1.run_index", description="Run A14: build artifact index", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}, "max_age_days": {"type": "integer", "default": 7}}}),
+    types.Tool(name="harvest.run_repo_profile", description="Run A1: produce repo_profile.md", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}}}),
+    types.Tool(name="harvest.run_entry_points", description="Run A2: extract all HTTP/CLI entry points", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}}}),
+    types.Tool(name="harvest.run_sbom", description="Run A5: generate SBOM via cdxgen", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}}}),
+    types.Tool(name="harvest.run_cve_overlay", description="Run A6: CVE overlay via osv-scanner (requires A5)", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}}}),
+    types.Tool(name="harvest.run_repomap", description="Run A7: PageRank symbol graph", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}, "budget_tokens": {"type": "integer", "default": 4096}}}),
+    types.Tool(name="harvest.run_gate_matrix", description="Run A4: CWE gate matrix (requires A2+A5)", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}}}),
+    types.Tool(name="harvest.run_index", description="Run A14: build artifact index", inputSchema={"type": "object", "required": ["repo_path"], "properties": {"repo_path": {"type": "string"}, "max_age_days": {"type": "integer", "default": 7}}}),
 ]
 
 
@@ -2769,13 +2761,13 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
         "index.list": lambda a: tool_index_list(a["store_root"], a.get("max_age_days", 7)),
         "index.get": lambda a: tool_index_get(a["store_root"], a["artifact_name"]),
         "repomap.query": lambda a: tool_repomap_query(a["repo_path"], a.get("budget_tokens", 4096), a.get("chat_files")),
-        "stage1.run_repo_profile": lambda a: tool_run_repo_profile(a["repo_path"]),
-        "stage1.run_entry_points": lambda a: tool_run_entry_points(a["repo_path"]),
-        "stage1.run_sbom": lambda a: tool_run_sbom(a["repo_path"]),
-        "stage1.run_cve_overlay": lambda a: tool_run_cve_overlay(a["repo_path"]),
-        "stage1.run_repomap": lambda a: tool_run_repomap(a["repo_path"], a.get("budget_tokens", 4096)),
-        "stage1.run_gate_matrix": lambda a: tool_run_gate_matrix(a["repo_path"]),
-        "stage1.run_index": lambda a: tool_run_index(a["repo_path"], a.get("max_age_days", 7)),
+        "harvest.run_repo_profile": lambda a: tool_run_repo_profile(a["repo_path"]),
+        "harvest.run_entry_points": lambda a: tool_run_entry_points(a["repo_path"]),
+        "harvest.run_sbom": lambda a: tool_run_sbom(a["repo_path"]),
+        "harvest.run_cve_overlay": lambda a: tool_run_cve_overlay(a["repo_path"]),
+        "harvest.run_repomap": lambda a: tool_run_repomap(a["repo_path"], a.get("budget_tokens", 4096)),
+        "harvest.run_gate_matrix": lambda a: tool_run_gate_matrix(a["repo_path"]),
+        "harvest.run_index": lambda a: tool_run_index(a["repo_path"], a.get("max_age_days", 7)),
     }
     if name not in dispatch:
         return [types.TextContent(type="text", text=f"Unknown tool: {name}")]
@@ -2799,7 +2791,7 @@ if __name__ == "__main__":
 - [ ] **Step 5: Test MCP server starts without errors**
 
 ```bash
-python -c "from audit_stage1.mcp_server.server import app; print('MCP server imports OK')"
+uv run --project src/ python -c "from audit_harvest.mcp_server.server import app; print('MCP server imports OK')"
 ```
 
 Expected: `MCP server imports OK`
@@ -2807,7 +2799,7 @@ Expected: `MCP server imports OK`
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/audit_stage1/mcp_server/
+git add src/audit_harvest/mcp_server/
 git commit -m "feat: implement MCP server with read-side and producer tools"
 ```
 
@@ -2816,14 +2808,14 @@ git commit -m "feat: implement MCP server with read-side and producer tools"
 ## Task 14: Sub-agent prompt
 
 **Files:**
-- Create: `agents/stage1-discoverer.md`
+- Create: `agents/harvest-agent.md`
 
 - [ ] **Step 1: Write the sub-agent prompt**
 
-`agents/stage1-discoverer.md`:
+`agents/harvest-agent.md`:
 ```markdown
 ---
-name: stage1-discoverer
+name: harvest-agent
 description: Stage 1 orchestrator for the white-box security audit pipeline. Profiles a repo and produces 7 hash-tracked artifacts (A1-A2, A4-A7, A14) consumed by downstream audit stages.
 ---
 
@@ -2836,13 +2828,13 @@ Your job is to profile a repo deterministically and produce 7 artifacts. You do 
 
 | Artifact | Tool | Depends on |
 |---|---|---|
-| A1: repo_profile.md | stage1.run_repo_profile | — |
-| A2: entry_points.json | stage1.run_entry_points | — |
-| A5: sbom.cdx.json | stage1.run_sbom | — |
-| A6: cve_overlay.json | stage1.run_cve_overlay | A5 |
-| A7: repomap/ | stage1.run_repomap | — |
-| A4: gate_matrix.json | stage1.run_gate_matrix | A2, A5 |
-| A14: index | stage1.run_index | all above |
+| A1: repo_profile.md | harvest.run_repo_profile | — |
+| A2: entry_points.json | harvest.run_entry_points | — |
+| A5: sbom.cdx.json | harvest.run_sbom | — |
+| A6: cve_overlay.json | harvest.run_cve_overlay | A5 |
+| A7: repomap/ | harvest.run_repomap | — |
+| A4: gate_matrix.json | harvest.run_gate_matrix | A2, A5 |
+| A14: index | harvest.run_index | all above |
 
 ## How to invoke
 
@@ -2858,19 +2850,19 @@ Run Stage 1 on repo_path=/path/to/repo
    - If any artifact is stale or missing, proceed.
 
 2. **Run A1, A2, A5, A7 in any order** (no dependencies between them):
-   - `stage1.run_repo_profile(repo_path)`
-   - `stage1.run_entry_points(repo_path)`
-   - `stage1.run_sbom(repo_path)` — if cdxgen is not on PATH, note the gap in your final report
-   - `stage1.run_repomap(repo_path, budget_tokens=4096)` — adjust budget per strategy table below
+   - `harvest.run_repo_profile(repo_path)`
+   - `harvest.run_entry_points(repo_path)`
+   - `harvest.run_sbom(repo_path)` — if cdxgen is not on PATH, note the gap in your final report
+   - `harvest.run_repomap(repo_path, budget_tokens=4096)` — adjust budget per strategy table below
 
 3. **Run A6 after A5:**
-   - `stage1.run_cve_overlay(repo_path)`
+   - `harvest.run_cve_overlay(repo_path)`
 
 4. **Run A4 after A2 and A5:**
-   - `stage1.run_gate_matrix(repo_path)`
+   - `harvest.run_gate_matrix(repo_path)`
 
 5. **Run A14 last:**
-   - `stage1.run_index(repo_path)`
+   - `harvest.run_index(repo_path)`
 
 ## Strategy: repomap token budget
 
@@ -2921,8 +2913,8 @@ Do not describe the repo based on your training knowledge. If a tool returned em
 - [ ] **Step 2: Commit**
 
 ```bash
-git add agents/stage1-discoverer.md
-git commit -m "feat: add stage1-discoverer sub-agent prompt"
+git add agents/harvest-agent.md
+git commit -m "feat: add harvest-agent sub-agent prompt"
 ```
 
 ---
@@ -2942,12 +2934,12 @@ name: audit-discover
 description: Run Stage 1 discovery on a repo. Usage: /audit-discover <repo-path>
 ---
 
-Run the `stage1-discoverer` sub-agent on the provided repo path.
+Run the `harvest-agent` sub-agent on the provided repo path.
 
 Arguments:
 - First argument: path to the repo to audit
 
-Invoke the stage1-discoverer agent with `repo_path` set to the provided path.
+Invoke the harvest-agent agent with `repo_path` set to the provided path.
 ```
 
 - [ ] **Step 2: Write end-to-end integration test**
@@ -2961,11 +2953,11 @@ from pathlib import Path
 
 import pytest
 
-from audit_stage1.storage import ArtifactStore
-from audit_stage1.producers.repo_profile import produce_repo_profile
-from audit_stage1.producers.entry_points import produce_entry_points
-from audit_stage1.producers.gate_matrix import produce_gate_matrix
-from audit_stage1.producers.index import produce_index
+from audit_harvest.storage import ArtifactStore
+from audit_harvest.producers.repo_profile import produce_repo_profile
+from audit_harvest.producers.entry_points import produce_entry_points
+from audit_harvest.producers.gate_matrix import produce_gate_matrix
+from audit_harvest.producers.index import produce_index
 
 FIXTURES = [
     Path("tests/fixtures/go_simple"),
@@ -3029,7 +3021,7 @@ Expected: all tests pass across all 4 fixtures.
 ```bash
 python -c "
 import asyncio
-from audit_stage1.mcp_server.server import app
+from audit_harvest.mcp_server.server import app
 # Just verify all tool names are registered
 import inspect
 print('Tools registered, server OK')
@@ -3073,11 +3065,11 @@ git commit -m "feat: add audit-discover command, end-to-end integration tests pa
 - [ ] `produce_gate_matrix` returns 13 CWE rules, LLM never invoked for deterministic cases
 - [ ] `produce_index` marks artifacts stale after `max_age_days`
 - [ ] MCP server starts and tool catalog is correct
-- [ ] `agents/stage1-discoverer.md` present with strategy table, failure protocol, handoff format
+- [ ] `agents/harvest-agent.md` present with strategy table, failure protocol, handoff format
 - [ ] `docs/parent-plugin-conventions.md` written
 - [ ] All `docs/decisions/` files present
 - [ ] `THIRD_PARTY_LICENSES.md` has Aider attribution
-- [ ] `interfaces/stage1-outputs.schema.json` validates all producer outputs
+- [ ] `interfaces/harvest-outputs.schema.json` validates all producer outputs
 
 ---
 
