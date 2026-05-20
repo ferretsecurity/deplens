@@ -22,7 +22,8 @@ audit-stage<N>-<name>/
 │   └── audit-<name>.md      # optional: /<cmd> for direct human invocation
 ├── README.md
 ├── docs/
-│   ├── PLAN.md              # this stage's implementation plan
+│   ├── ARCHITECTURE.md      # permanent architectural reference (see §13)
+│   ├── PLAN.md              # future sprint tasks (Phase 2 and beyond)
 │   ├── decisions/           # one .md per resolved [DECISION NEEDED]
 │   └── research-notes/      # findings from [RESEARCH NEEDED] tasks
 ├── interfaces/
@@ -238,3 +239,17 @@ layering principle when adding new detection capabilities:
 The rule: **do not add a specialist tool for a job that SBOM + ripgrep can do well enough.**
 The threshold for "well enough" is whether the A1/A2 summary downstream agents actually
 need more precision than SBOM purl matching provides.
+
+## 13. Architecture documentation convention
+
+Stage 1 establishes a two-file documentation convention for each stage. `ARCHITECTURE.md`
+captures permanent knowledge: shape decisions, infrastructure specs, producer schemas,
+registries, and failure-mode handling. `PLAN.md` contains only future sprint tasks and
+open questions.
+
+When Stage 1's MVP shipped, `ARCHITECTURE.md` was created by extracting the completed design
+from `PLAN.md`. Each subsequent stage should follow the same pattern: write `ARCHITECTURE.md`
+when the first sprint completes. The content comes from trimming `PLAN.md`, not from a
+separate drafting effort.
+
+See `audit-project-context-builder/ARCHITECTURE.md` as the reference example.
