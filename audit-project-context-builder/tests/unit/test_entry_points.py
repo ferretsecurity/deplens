@@ -90,3 +90,20 @@ def test_produce_entry_points_empty_repo(tmp_path):
     record = produce_entry_points(tmp_path, store)
     data = json.loads(Path(record.path).read_text())
     assert data["entry_points"] == []
+
+
+def test_go_routes_variable_name_agnostic(tmp_path):
+    """Tree-sitter extractor must find routes regardless of router variable name."""
+    (tmp_path / "main.go").write_text(
+        'package main\n'
+        'import "github.com/gorilla/mux"\n'
+        'func main() {\n'
+        '    myrouter := mux.NewRouter()\n'
+        '    myrouter.HandleFunc("/api/items", ListItems)\n'
+        '    myrouter.HandleFunc("/api/orders", ListOrders)\n'
+        '}\n'
+    )
+    routes = extract_go_routes(tmp_path)
+    paths = [r["path"] for r in routes]
+    assert "/api/items" in paths
+    assert "/api/orders" in paths
