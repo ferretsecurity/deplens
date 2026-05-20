@@ -13,7 +13,7 @@ from audit_harvest.subprocess_utils import ToolPathResolver
 
 _resolver = ToolPathResolver()
 
-_BUCKET_A_TOOLS = ["git", "enry", "scc"]
+_BUCKET_A_TOOLS = ["git", "enry", "scc", "rg"]
 _BUCKET_B_TOOLS = ["cdxgen", "osv-scanner"]
 
 
@@ -56,7 +56,9 @@ def harvest_run_cve_overlay(repo_path: str) -> dict:
     sbom_record = store.get("sbom")
     if sbom_record is None:
         return {"status": "error", "message": "Run harvest_run_sbom first (A5 required)"}
-    record = produce_cve_overlay(repo, store, Path(sbom_record.path))
+    sbom_appsec_record = store.get("sbom_appsec")
+    sbom_appsec_path = Path(sbom_appsec_record.path) if sbom_appsec_record else None
+    record = produce_cve_overlay(repo, store, Path(sbom_record.path), sbom_appsec_path=sbom_appsec_path)
     return {"status": "ok", "artifact": asdict(record)}
 
 
@@ -84,11 +86,11 @@ def harvest_run_repo_profile(repo_path: str) -> dict:
 
 
 @mcp.tool()
-def harvest_run_repomap(repo_path: str) -> dict:
+def harvest_run_repomap(repo_path: str, budget_tokens: int = 8000) -> dict:
     """Run A7: extract symbol map via tree-sitter."""
     from audit_harvest.producers.repomap.producer import produce_repomap
     store, repo = _get_store(repo_path)
-    record = produce_repomap(repo, store)
+    record = produce_repomap(repo, store, budget_tokens=budget_tokens)
     return {"status": "ok", "artifact": asdict(record)}
 
 
