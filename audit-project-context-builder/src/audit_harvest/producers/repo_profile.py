@@ -89,22 +89,17 @@ def _find_manifests(repo_path: Path) -> list[str]:
     return found
 
 
-_BUILD_FILES = [
-    ("Makefile", "make"),
-    ("justfile", "just"),
-    ("Taskfile.yaml", "task"),
-    ("Jenkinsfile", "jenkins"),
-    (".gitlab-ci.yml", "gitlab-ci"),
-]
 _MAKEFILE_TARGET_RE = re.compile(r"^([a-zA-Z_][a-zA-Z0-9_-]*):")
 
 
 def _detect_build_system(repo_path: Path) -> list[dict]:
+    registry = _load_registry("build_systems.yaml")
     results: list[dict] = []
-    for filename, tool_name in _BUILD_FILES:
+    for filename, entry in registry.get("files", {}).items():
         path = repo_path / filename
         if not path.exists():
             continue
+        tool_name = entry["tool"]
         if tool_name == "make":
             targets: list[str] = []
             for line in path.read_text(errors="replace").splitlines():
@@ -116,8 +111,7 @@ def _detect_build_system(repo_path: Path) -> list[dict]:
             results.append({"tool": tool_name, "targets": targets[:20]})
         else:
             results.append({"tool": tool_name})
-    workflows_dir = repo_path / ".github" / "workflows"
-    if workflows_dir.is_dir():
+    if (repo_path / ".github" / "workflows").is_dir():
         results.append({"tool": "github-actions"})
     return results
 

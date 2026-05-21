@@ -1,0 +1,24 @@
+# Build system and CI detection registry for A1 repo_profile.
+# Each entry maps a filename to a tool name.
+# Add new entries here; no code changes required.
+# ci_provider: true marks CI/CD systems (rendered separately in A1).
+
+# GitHub Actions: detected via .github/workflows/ directory presence.
+# Not listed here because detection is directory-based, not file-based.
+
+files:
+  Makefile:
+    tool: make
+    ci_provider: false
+  justfile:
+    tool: just
+    ci_provider: false
+  Taskfile.yaml:
+    tool: task
+    ci_provider: false
+  Jenkinsfile:
+    tool: jenkins
+    ci_provider: true
+  .gitlab-ci.yml:
+    tool: gitlab-ci
+    ci_provider: true
