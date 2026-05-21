@@ -9,7 +9,6 @@ from audit_harvest.llm.client import LLMClient  # imported for future LLM-ambigu
 from audit_harvest.producers.registry.cwe_loader import CweRule, load_cwe_rules
 
 _IGNORE_DIRS = {".git", "node_modules", "vendor", "__pycache__", ".venv"}
-_SOURCE_EXTS = {".go", ".py", ".js", ".ts", ".java", ".txt", ".xml", ".json", ".toml", ".mod"}
 
 
 def produce_gate_matrix(
@@ -118,33 +117,16 @@ def _rg_match(
             return True, lines[:3]
         return False, []
     except (FileNotFoundError, OSError):
-        return _rg_match_fallback(repo_path, pattern)
+        import logging
+        logging.getLogger(__name__).warning(
+            "ripgrep not found or failed for pattern %r — "
+            "rg is a Bucket A tool, install it to enable CWE pattern matching",
+            pattern,
+        )
+        return False, []
     except subprocess.TimeoutExpired:
         return False, []
 
 
-def _rg_match_fallback(repo_path: Path, pattern: str) -> tuple[bool, list[str]]:
-    src_text = _read_all_source(repo_path)
-    if re.search(pattern, src_text, re.IGNORECASE):
-        return True, ["pattern match found (regex fallback)"]
-    return False, []
-
-
 def _rule(cwe: str, name: str, applicable: Any, evidence: list[str], confidence: str) -> dict:
     return {"cwe": cwe, "name": name, "applicable": applicable, "evidence": evidence, "confidence": confidence}
-
-
-def _read_all_source(repo_path: Path) -> str:
-    parts = []
-    for p in sorted(repo_path.rglob("*")):
-        if not p.is_file():
-            continue
-        if any(part in _IGNORE_DIRS for part in p.relative_to(repo_path).parts):
-            continue
-        if p.suffix not in _SOURCE_EXTS:
-            continue
-        try:
-            parts.append(p.read_text(errors="replace")[:10_000])
-        except OSError:
-            pass
-    return "\n".join(parts)

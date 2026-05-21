@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 import pytest
 import jsonschema
 from audit_harvest.producers.gate_matrix import produce_gate_matrix
@@ -48,22 +48,30 @@ def test_output_matches_schema():
 
 
 def test_os_cmd_injection_applicable_with_exec_command(tmp_path):
-    """CWE-78 is applicable when exec.Command is found in source."""
+    """CWE-78 is applicable when rg finds exec.Command in source."""
     (tmp_path / "main.go").write_text(
         'package main\nimport "os/exec"\nfunc run() { exec.Command("sh", "-c", cmd) }\n'
     )
-    result = produce_gate_matrix(tmp_path, {"entry_points": []}, [])
+    fake_run = MagicMock()
+    fake_run.return_value.returncode = 0
+    fake_run.return_value.stdout = 'main.go:3:exec.Command("sh", "-c", cmd)'
+    with patch("audit_harvest.producers.gate_matrix.subprocess.run", fake_run):
+        result = produce_gate_matrix(tmp_path, {"entry_points": []}, [])
     cwe78 = next(r for r in result["rules"] if r["cwe"] == "CWE-78")
     assert cwe78["applicable"] is True
 
 
 def test_sqli_applicable_with_raw_sql_string(tmp_path):
-    """CWE-89 is applicable when SQL driver present and raw SQL formatting found."""
+    """CWE-89 is applicable when SQL driver present and rg finds raw SQL formatting."""
     (tmp_path / "db.py").write_text(
         'query = f"SELECT * FROM users WHERE id = {user_id}"\n'
     )
     sbom = [{"name": "sqlalchemy"}]
-    result = produce_gate_matrix(tmp_path, {"entry_points": []}, sbom)
+    fake_run = MagicMock()
+    fake_run.return_value.returncode = 0
+    fake_run.return_value.stdout = 'db.py:1:query = f"SELECT * FROM users WHERE id = {user_id}"'
+    with patch("audit_harvest.producers.gate_matrix.subprocess.run", fake_run):
+        result = produce_gate_matrix(tmp_path, {"entry_points": []}, sbom)
     sqli = next(r for r in result["rules"] if r["cwe"] == "CWE-89")
     assert sqli["applicable"] is True
 
