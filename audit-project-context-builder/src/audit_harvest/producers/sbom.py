@@ -5,6 +5,7 @@ import logging
 import tempfile
 from pathlib import Path
 
+from audit_harvest.constants import MANIFEST_NAMES
 from audit_harvest.storage import ArtifactRecord, ArtifactStore
 from audit_harvest.subprocess_utils import ToolError, _resolver, run_tool
 
@@ -12,15 +13,8 @@ log = logging.getLogger(__name__)
 
 
 def _source_hash(repo_path: Path) -> str:
-    manifest_files = [
-        "go.mod", "go.sum",
-        "package.json", "package-lock.json",
-        "requirements.txt",
-        "pom.xml", "build.gradle",
-        "Cargo.toml",
-    ]
     h = hashlib.sha256()
-    for name in manifest_files:
+    for name in MANIFEST_NAMES:
         p = repo_path / name
         if p.exists():
             h.update(p.read_bytes())

@@ -3,23 +3,13 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Optional
 from urllib.parse import unquote
 
 import yaml
 
+from audit_harvest.constants import MANIFEST_NAMES
 from audit_harvest.storage import ArtifactRecord, ArtifactStore
 from audit_harvest.subprocess_utils import run_tool, _resolver, ToolError, ToolNotFound
-
-
-MANIFEST_NAMES = [
-    "go.mod", "go.sum", "package.json", "package-lock.json",
-    "yarn.lock", "pnpm-lock.yaml", "requirements.txt", "setup.py",
-    "setup.cfg", "pyproject.toml", "Pipfile", "pom.xml",
-    "build.gradle", "build.gradle.kts", "settings.gradle",
-    "Cargo.toml", "Cargo.lock", "Gemfile", "Gemfile.lock",
-    "composer.json", "go.work",
-]
 
 _REGISTRY_DIR = Path(__file__).parent / "registry"
 
@@ -75,7 +65,7 @@ def _detect_frameworks(sbom: dict) -> list[dict]:
     return detected
 
 
-def _detect_secret_manager(sbom: dict) -> Optional[dict]:
+def _detect_secret_manager(sbom: dict) -> dict | None:
     registry = _load_registry("secret_managers.yaml")
     for component in sbom.get("components", []):
         purl = component.get("purl", "")
@@ -266,7 +256,7 @@ def _build_markdown(
     frameworks: list[dict],
     manifests: list[str],
     services: list,
-    secret_posture: Optional[dict],
+    secret_posture: dict | None,
     build_system: list[dict] | None = None,
     monorepo: list[dict] | None = None,
     entry_binaries: list[dict] | None = None,
