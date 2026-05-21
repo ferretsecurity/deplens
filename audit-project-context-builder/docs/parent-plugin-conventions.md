@@ -72,11 +72,9 @@ Each stage has one MCP server (`audit-stage<N>-mcp`) declared in `.mcp.json`:
 
 ```json
 {
-  "mcpServers": {
-    "audit-stage<N>": {
-      "command": "uv",
-      "args": ["run", "--project", "${PLUGIN_DIR}/src", "audit-stage<N>-mcp"]
-    }
+  "audit-stage<N>": {
+    "command": "uv",
+    "args": ["run", "--project", "${CLAUDE_PLUGIN_ROOT}", "audit-stage<N>-mcp"]
   }
 }
 ```

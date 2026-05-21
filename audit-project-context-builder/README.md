@@ -12,11 +12,9 @@ For enhanced code navigation, you can add a Serena entry to your Claude Code set
 
 ```json
 {
-  "mcpServers": {
-    "serena": {
-      "command": "serena",
-      "args": ["--language-server"]
-    }
+  "serena": {
+    "command": "serena",
+    "args": ["--language-server"]
   }
 }
 ```

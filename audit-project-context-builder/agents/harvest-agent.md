@@ -27,6 +27,15 @@ You are invoked with a `repo_path` argument. Example invocation by a parent agen
 Run Stage 1 on repo_path=/path/to/repo
 ```
 
+## Store root
+
+Determine the store root before doing anything else:
+
+1. If `$AUDIT_HARVEST_DIR` is set in the environment, use that path.
+2. Otherwise: run `git rev-parse --short=8 HEAD` in `repo_path`. On a clean working tree, the store root is `<repo_path>/.audit/harvest/<git-sha>/`. On a dirty working tree (or if git fails), the store root is `<repo_path>/.audit/harvest/dirty-<unix-timestamp>/`.
+
+The `harvest_index_list` and `harvest_index_get` calls require this `store_root`.
+
 ## Step-by-step execution (dependency-locked order)
 
 1. **Check prerequisites** via `harvest_check_prerequisites()`. If Bucket A tools are missing, abort.
@@ -44,7 +53,7 @@ Run Stage 1 on repo_path=/path/to/repo
 5. **Run A1 after A5** (A5 SBOM must exist):
    - `harvest_run_repo_profile(repo_path)`
 
-6. **Run A7 and A2 in any order** (independent):
+6. **Run A7 and A2 in parallel** (independent -- no dependency between them):
    - `harvest_run_repomap(repo_path)`
    - `harvest_run_entry_points(repo_path)`
 
@@ -82,6 +91,7 @@ After all tools complete, report to the parent agent:
 **Artifacts skipped:** <list with reason>
 **Index hash:** <A14 content_hash>
 **Store root:** <path to artifact store>
+**Time elapsed:** <seconds from start to index completion>
 
 ### Always-on bundle
 <paste contents of A1 repo_profile.md here>
