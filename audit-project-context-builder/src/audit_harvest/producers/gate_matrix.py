@@ -1,47 +1,12 @@
 """A4: Gate matrix -- CWE applicability filter."""
 from __future__ import annotations
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
 from audit_harvest.llm.client import LLMClient  # imported for future LLM-ambiguous rules; not called in Phase 1
-
-_CWE_RULES = [
-    ("CWE-22", "Path Traversal"),
-    ("CWE-78", "OS Command Injection"),
-    ("CWE-79", "Cross-Site Scripting"),
-    ("CWE-89", "SQL Injection"),
-    ("CWE-94", "Code Injection"),
-    ("CWE-200", "Information Disclosure"),
-    ("CWE-287", "Improper Authentication"),
-    ("CWE-352", "CSRF"),
-    ("CWE-434", "Unrestricted File Upload"),
-    ("CWE-502", "Insecure Deserialization"),
-    ("CWE-611", "XML External Entity"),
-    ("CWE-798", "Hard-coded Credentials"),
-    ("CWE-918", "SSRF"),
-]
-
-_WEB_FRAMEWORK_SIGS = re.compile(
-    r"gin|chi|flask|fastapi|django|express|nestjs|spring|next\.js",
-    re.IGNORECASE,
-)
-_SQL_DRIVER_NAMES = {
-    "sqlalchemy", "psycopg2", "mysql-connector", "pg", "mysql2",
-    "jdbc", "hibernate", "jpa", "database/sql", "gorm",
-}
-_UPLOAD_SIGS = re.compile(r"multipart|file\.upload|FormFile|request\.files", re.IGNORECASE)
-_XML_SIGS = re.compile(r"xml|etree|lxml|xerces|jaxp", re.IGNORECASE)
-_DESERIALIZE_SIGS = re.compile(r"pickle|yaml\.load|ObjectInputStream|unserialize", re.IGNORECASE)
-_SSRF_SIGS = re.compile(r"http\.Get|requests\.get|fetch\(|HttpClient|URL\(", re.IGNORECASE)
-_HARDCODED_SIGS = re.compile(
-    r'(?:password|secret|api_key|token)\s*=\s*["\'][^"\']{6,}["\']', re.IGNORECASE
-)
-_RAW_SQL_SIGS = re.compile(
-    r'(?:fmt\.Sprintf|%s|%d|f"|f\').*(?:SELECT|INSERT|UPDATE|DELETE)', re.IGNORECASE
-)
-_OS_CMD_SIGS = re.compile(r'exec\.Command|os\.system|subprocess\.run|Runtime\.exec', re.IGNORECASE)
-_EVAL_SIGS = re.compile(r'\beval\s*\(|\bexec\s*\(', re.IGNORECASE)
+from audit_harvest.producers.registry.cwe_loader import CweRule, load_cwe_rules
 
 _IGNORE_DIRS = {".git", "node_modules", "vendor", "__pycache__", ".venv"}
 _SOURCE_EXTS = {".go", ".py", ".js", ".ts", ".java", ".txt", ".xml", ".json", ".toml", ".mod"}
@@ -53,76 +18,116 @@ def produce_gate_matrix(
     sbom_components: list[dict],
 ) -> dict:
     repo_path = Path(repo_path)
-    src_text = _read_all_source(repo_path)
-    has_web = bool(_WEB_FRAMEWORK_SIGS.search(src_text)) or bool(entry_points.get("entry_points"))
-    sql_drivers = {c["name"].lower() for c in sbom_components if "name" in c} & _SQL_DRIVER_NAMES
-    has_sql_driver = bool(sql_drivers)
-    has_raw_sql = bool(_RAW_SQL_SIGS.search(src_text))
-
-    rules = [
-        _evaluate_rule(cwe, name, src_text, has_web, has_sql_driver, has_raw_sql)
-        for cwe, name in _CWE_RULES
-    ]
-    return {"rules": rules}
+    has_web = bool(entry_points.get("entry_points")) or _sbom_has_purl_matching(
+        sbom_components,
+        "gin", "chi", "echo", "fiber", "flask", "fastapi", "django",
+        "express", "nestjs", "next", "spring-web", "spring-boot",
+    )
+    rules = load_cwe_rules()
+    return {
+        "rules": [
+            _evaluate_rule(rule, repo_path, sbom_components, has_web)
+            for rule in rules
+        ]
+    }
 
 
 def _evaluate_rule(
-    cwe: str, name: str, src_text: str,
-    has_web: bool, has_sql_driver: bool, has_raw_sql: bool,
+    rule: CweRule,
+    repo_path: Path,
+    sbom_components: list[dict],
+    has_web: bool,
 ) -> dict:
-    if cwe == "CWE-79":
-        if not has_web:
-            return _rule(cwe, name, False, ["no web framework detected", "no HTTP routes found"], "high")
-        return _rule(cwe, name, True, ["web framework detected"], "high")
+    if rule.no_web_means_false and not has_web:
+        return _rule(rule.id, rule.name, False,
+                     ["no web framework detected", "no HTTP routes found"], "high")
 
-    if cwe == "CWE-89":
-        if not has_sql_driver:
-            return _rule(cwe, name, False, ["no SQL driver in SBOM", "no SQL imports found"], "high")
-        if has_raw_sql:
-            return _rule(cwe, name, True, ["SQL driver detected", "raw SQL string patterns found"], "high")
-        return _rule(cwe, name, "needs_verification", ["SQL driver detected", "no raw SQL strings found yet"], "medium")
+    sbom_hit = bool(rule.sbom_signals) and _sbom_has_purl_matching(
+        sbom_components, *rule.sbom_signals
+    )
 
-    if cwe == "CWE-78":
-        if _OS_CMD_SIGS.search(src_text):
-            return _rule(cwe, name, True, ["OS execution functions detected"], "high")
-        return _rule(cwe, name, "needs_verification", ["no explicit exec calls found", "dynamic dispatch or indirect invocation still possible"], "low")
+    rg_hit, rg_samples = False, []
+    if rule.rg_pattern:
+        rg_hit, rg_samples = _rg_match(
+            repo_path,
+            rule.rg_pattern,
+            file_types=list(rule.rg_file_types) if rule.rg_file_types else None,
+        )
 
-    if cwe == "CWE-94":
-        if _EVAL_SIGS.search(src_text):
-            return _rule(cwe, name, True, ["eval/exec pattern detected"], "high")
-        return _rule(cwe, name, False, ["no eval/exec patterns found", "no code-gen libraries detected"], "medium")
+    # KNOWN GAP: CWE-89 requires BOTH SBOM signal AND rg confirmation to conclude
+    # applicable=True. SBOM-alone -> needs_verification. The generic "any positive
+    # signal = True" logic cannot express this "requires-both-for-positive" contract.
+    if rule.id == "CWE-89" and sbom_hit and not rg_hit:
+        return _rule(rule.id, rule.name, "needs_verification",
+                     ["SQL driver detected", "no raw SQL string patterns found yet"], "medium")
 
-    if cwe == "CWE-434":
-        if _UPLOAD_SIGS.search(src_text):
-            return _rule(cwe, name, True, ["multipart/file upload patterns detected"], "high")
-        return _rule(cwe, name, "needs_verification", ["no explicit multipart/file upload patterns found", "indirect upload via proxied requests still possible"], "low")
+    has_any_positive = sbom_hit or rg_hit
 
-    if cwe == "CWE-611":
-        if _XML_SIGS.search(src_text):
-            return _rule(cwe, name, "needs_verification", ["XML library detected"], "high")
-        return _rule(cwe, name, False, ["no XML library detected", "no XML imports found"], "high")
+    if has_any_positive:
+        evidence: list[str] = []
+        if sbom_hit:
+            evidence.append(f"SBOM component matches {rule.id} signal")
+        if rg_samples:
+            evidence += rg_samples[:2]
+        elif rg_hit:
+            evidence.append("pattern match found")
+        confidence = "high" if (sbom_hit and rg_hit) else "medium"
+        return _rule(rule.id, rule.name, True, evidence, confidence)
 
-    if cwe == "CWE-502":
-        if _DESERIALIZE_SIGS.search(src_text):
-            return _rule(cwe, name, True, ["unsafe deserialization pattern detected"], "high")
-        return _rule(cwe, name, "needs_verification", ["no explicit deserialization patterns found", "JSON/YAML unmarshaling of untrusted input still possible"], "low")
+    negative_evidence: list[str] = []
+    if rule.sbom_signals:
+        negative_evidence.append(f"no {rule.id}-related component in SBOM")
+    if rule.rg_pattern:
+        negative_evidence.append("no matching pattern found in source")
 
-    if cwe == "CWE-918":
-        if _SSRF_SIGS.search(src_text) and has_web:
-            return _rule(cwe, name, "needs_verification", ["HTTP client calls detected in web app", "user-controlled URL parameters require manual verification"], "medium")
-        return _rule(cwe, name, "needs_verification", ["unable to determine SSRF surface statically", "any HTTP client call taking user input is a candidate"], "low")
+    if rule.negative_requires_two:
+        if len(negative_evidence) >= 2:
+            return _rule(rule.id, rule.name, False, negative_evidence, "high")
+        return _rule(rule.id, rule.name, "needs_verification",
+                     negative_evidence or ["insufficient evidence"], "low")
 
-    if cwe == "CWE-798":
-        if _HARDCODED_SIGS.search(src_text):
-            return _rule(cwe, name, True, ["hardcoded credential pattern detected"], "high")
-        return _rule(cwe, name, "needs_verification", ["no obvious hardcoded credential patterns found", "environment variables or config files may still be misused"], "low")
+    if negative_evidence:
+        confidence = "medium" if len(negative_evidence) == 1 else "high"
+        return _rule(rule.id, rule.name, False, negative_evidence, confidence)
+    return _rule(rule.id, rule.name, "needs_verification",
+                 ["insufficient deterministic evidence"], "low")
 
-    if cwe in ("CWE-22", "CWE-200", "CWE-287", "CWE-352"):
-        if has_web:
-            return _rule(cwe, name, "needs_verification", ["web framework present; requires route-level analysis"], "medium")
-        return _rule(cwe, name, False, ["no web framework detected", "no HTTP routes found"], "high")
 
-    return _rule(cwe, name, "needs_verification", ["insufficient deterministic evidence"], "low")
+def _sbom_has_purl_matching(components: list[dict], *substrings: str) -> bool:
+    for c in components:
+        combined = ((c.get("purl") or "") + " " + (c.get("name") or "")).lower()
+        if any(s in combined for s in substrings):
+            return True
+    return False
+
+
+def _rg_match(
+    repo_path: Path,
+    pattern: str,
+    file_types: list[str] | None = None,
+) -> tuple[bool, list[str]]:
+    cmd = ["rg", "--no-heading", "-m", "5"]
+    if file_types:
+        for ft in file_types:
+            cmd.extend(["--type", ft])
+    cmd.extend([pattern, str(repo_path)])
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        if result.returncode == 0 and result.stdout.strip():
+            lines = [ln.strip() for ln in result.stdout.strip().split("\n") if ln.strip()]
+            return True, lines[:3]
+        return False, []
+    except (FileNotFoundError, OSError):
+        return _rg_match_fallback(repo_path, pattern)
+    except subprocess.TimeoutExpired:
+        return False, []
+
+
+def _rg_match_fallback(repo_path: Path, pattern: str) -> tuple[bool, list[str]]:
+    src_text = _read_all_source(repo_path)
+    if re.search(pattern, src_text, re.IGNORECASE):
+        return True, ["pattern match found (regex fallback)"]
+    return False, []
 
 
 def _rule(cwe: str, name: str, applicable: Any, evidence: list[str], confidence: str) -> dict:
