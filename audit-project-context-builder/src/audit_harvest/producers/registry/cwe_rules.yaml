@@ -1,0 +1,163 @@
+# CWE applicability rules for A4 gate matrix.
+# Detection strategy: SBOM-first, ripgrep for confirmation.
+# See ARCHITECTURE.md §7.7 and §12 for detection strategy rationale.
+#
+# To add a new CWE class:
+#   1. Add an entry here with appropriate signals.
+#   2. No code changes required.
+# To change detection signals for an existing class:
+#   1. Edit sbom_signals or rg_pattern here.
+#   2. No code changes required.
+# These 13 classes are the Phase 1 mandatory set per ARCHITECTURE.md §7.7.
+
+rules:
+  - id: CWE-79
+    name: Cross-Site Scripting
+    sbom_signals:
+      - gin
+      - chi
+      - echo
+      - fiber
+      - flask
+      - fastapi
+      - django
+      - express
+      - nestjs
+      - next
+      - spring-web
+      - spring-boot
+    rg_pattern: null
+    rg_file_types: null
+    negative_requires_two: false
+    no_web_means_false: true
+
+  - id: CWE-89
+    name: SQL Injection
+    # KNOWN GAP: The generic loop treats any positive signal (SBOM OR rg) as True.
+    # For SQL Injection the original contract requires BOTH driver SBOM signal AND a raw
+    # SQL rg match to conclude True; SBOM-only -> needs_verification. This
+    # "requires-both-for-positive" semantic has no YAML field. Inline branch preserved
+    # in _evaluate_rule().
+    sbom_signals:
+      - sqlalchemy
+      - psycopg
+      - mysql
+      - sqlite
+      - database/sql
+      - gorm
+      - hibernate
+      - jpa
+      - pg
+    rg_pattern: '(?:fmt\.Sprintf|%s|f"|f'').*(?:SELECT|INSERT|UPDATE|DELETE)'
+    rg_file_types: [go, py, java, js, ts]
+    negative_requires_two: true
+    no_web_means_false: false
+
+  - id: CWE-78
+    name: OS Command Injection
+    sbom_signals: []
+    rg_pattern: 'exec\.Command|os\.system|subprocess\.run|Runtime\.exec'
+    rg_file_types: [go, py, java, js]
+    negative_requires_two: false
+    no_web_means_false: false
+
+  - id: CWE-94
+    name: Code Injection
+    sbom_signals: []
+    rg_pattern: '\beval\s*\(|\bexec\s*\('
+    rg_file_types: [py, js, ts]
+    negative_requires_two: true
+    no_web_means_false: false
+
+  - id: CWE-434
+    name: Unrestricted File Upload
+    sbom_signals: []
+    rg_pattern: 'multipart|FormFile|request\.files|upload'
+    rg_file_types: [go, py, java, js, ts]
+    negative_requires_two: false
+    no_web_means_false: false
+
+  - id: CWE-611
+    name: XML External Entity
+    # KNOWN GAP: Old code returned needs_verification when an XML library appeared in
+    # source, because XXE exploitability depends on parser configuration, not library
+    # presence. New model returns True (medium) when an XML library is in the SBOM --
+    # a conservative upgrade. No test covers this rule so the behavioral shift is
+    # intentional and acceptable.
+    sbom_signals:
+      - lxml
+      - xml
+      - xerces
+      - jaxp
+      - etree
+    rg_pattern: null
+    rg_file_types: null
+    negative_requires_two: true
+    no_web_means_false: false
+
+  - id: CWE-502
+    name: Insecure Deserialization
+    sbom_signals:
+      - pyyaml
+      - pickle
+      - marshal
+    rg_pattern: 'pickle\.loads|yaml\.load\s*\(|ObjectInputStream|unserialize\s*\('
+    rg_file_types: [py, java, php]
+    negative_requires_two: false
+    no_web_means_false: false
+
+  - id: CWE-918
+    name: SSRF
+    sbom_signals:
+      - requests
+      - httpx
+      - aiohttp
+      - urllib
+      - axios
+      - node-fetch
+      - got
+      - net/http
+    rg_pattern: 'requests\.get|httpx\.|fetch\s*\(|http\.Get\s*\('
+    rg_file_types: null
+    negative_requires_two: false
+    no_web_means_false: true
+
+  - id: CWE-798
+    name: Hardcoded Credentials
+    sbom_signals: []
+    rg_pattern: '(?:password|secret|api_key|token)\s*=\s*["''][^"'']{6,}["'']'
+    rg_file_types: null
+    negative_requires_two: false
+    no_web_means_false: false
+
+  - id: CWE-22
+    name: Path Traversal
+    sbom_signals: []
+    rg_pattern: null
+    rg_file_types: null
+    negative_requires_two: false
+    no_web_means_false: true
+
+  - id: CWE-200
+    name: Information Disclosure
+    sbom_signals: []
+    rg_pattern: null
+    rg_file_types: null
+    negative_requires_two: false
+    no_web_means_false: true
+
+  - id: CWE-287
+    name: Improper Authentication
+    sbom_signals: []
+    rg_pattern: null
+    rg_file_types: null
+    negative_requires_two: false
+    no_web_means_false: true
+
+  - id: CWE-352
+    name: CSRF
+    sbom_signals: []
+    rg_pattern: null
+    rg_file_types: null
+    negative_requires_two: false
+    no_web_means_false: true
