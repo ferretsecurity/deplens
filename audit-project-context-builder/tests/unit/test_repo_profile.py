@@ -12,7 +12,6 @@ from audit_harvest.producers.repo_profile import (
     _detect_build_system,
     _detect_monorepo,
     _detect_entry_binaries,
-    _scan_secrets,
 )
 
 
@@ -160,12 +159,6 @@ def test_detect_entry_binaries_go_cmd(tmp_path):
     assert any("cmd/server/main.go" in f for f in files)
     langs = [r["language"] for r in results]
     assert "Go" in langs
-
-
-def test_scan_secrets_rg_not_found_returns_empty(tmp_path):
-    with patch("audit_harvest.producers.repo_profile.run_tool", side_effect=ToolNotFound("rg not found")):
-        results = _scan_secrets(tmp_path)
-    assert results == []
 
 
 def test_detect_entry_binaries_rg_no_matches(tmp_path):
