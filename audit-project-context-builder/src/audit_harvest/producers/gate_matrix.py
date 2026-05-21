@@ -5,10 +5,9 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from audit_harvest.constants import SKIP_DIRS
 from audit_harvest.llm.client import LLMClient  # imported for future LLM-ambiguous rules; not called in Phase 1
 from audit_harvest.producers.registry.cwe_loader import CweRule, load_cwe_rules
-
-_IGNORE_DIRS = {".git", "node_modules", "vendor", "__pycache__", ".venv"}
 
 
 def produce_gate_matrix(

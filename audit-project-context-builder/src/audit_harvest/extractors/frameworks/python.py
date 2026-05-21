@@ -6,12 +6,13 @@ Variable-name-agnostic: any object name works as the decorator receiver.
 from __future__ import annotations
 from pathlib import Path
 from tree_sitter import Node
+from audit_harvest.constants import SKIP_DIRS
 from audit_harvest.extractors.ts_utils import parse_file, node_text, line_of, walk, unquote
 
 _HTTP_METHOD_ATTRS = frozenset(
     "get post put delete patch head options".split()
 )
-_SKIP_DIRS = frozenset(("__pycache__", ".venv", "site-packages", "node_modules"))
+_SKIP_DIRS = SKIP_DIRS | frozenset({"site-packages"})
 
 
 def _first_string_arg(args_node: Node, source: bytes) -> str | None:

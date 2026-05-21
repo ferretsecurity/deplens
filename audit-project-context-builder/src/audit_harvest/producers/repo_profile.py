@@ -7,7 +7,7 @@ from urllib.parse import unquote
 
 import yaml
 
-from audit_harvest.constants import MANIFEST_NAMES, MONOREPO_MANIFEST_NAMES
+from audit_harvest.constants import MANIFEST_NAMES, MONOREPO_MANIFEST_NAMES, SKIP_DIRS
 from audit_harvest.storage import ArtifactRecord, ArtifactStore
 from audit_harvest.subprocess_utils import run_tool, _resolver, ToolError, ToolNotFound
 
@@ -116,16 +116,13 @@ def _detect_build_system(repo_path: Path) -> list[dict]:
     return results
 
 
-_MONOREPO_EXCLUDES = {"node_modules", "vendor", ".git", "testdata", ".venv"}
-
-
 def _detect_monorepo(repo_path: Path) -> list[dict]:
     results: list[dict] = []
     for manifest_name in MONOREPO_MANIFEST_NAMES:
         for found in repo_path.rglob(manifest_name):
             if found.parent == repo_path:
                 continue
-            if any(part in _MONOREPO_EXCLUDES for part in found.parts):
+            if any(part in SKIP_DIRS for part in found.parts):
                 continue
             rel = found.relative_to(repo_path)
             results.append({"path": str(rel), "type": manifest_name})

@@ -6,11 +6,12 @@ NestJS HTTP decorators.
 from __future__ import annotations
 from pathlib import Path
 from tree_sitter import Node
+from audit_harvest.constants import SKIP_DIRS
 from audit_harvest.extractors.ts_utils import parse_file, node_text, line_of, walk, unquote
 
 _EXPRESS_METHODS = frozenset("get post put delete patch head options all".split())
 _NESTJS_METHODS = frozenset("Get Post Put Delete Patch Head Options".split())
-_SKIP_DIRS = frozenset(("node_modules", ".next", "dist", "build", ".nuxt"))
+_SKIP_DIRS = SKIP_DIRS | frozenset({".next", ".nuxt"})
 _JS_EXTS = frozenset((".js", ".mjs", ".cjs", ".ts", ".tsx"))
 
 

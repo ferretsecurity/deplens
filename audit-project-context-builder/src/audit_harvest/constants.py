@@ -34,3 +34,18 @@ MONOREPO_MANIFEST_NAMES: frozenset[str] = frozenset({
     "pyproject.toml",
     "Cargo.toml",
 })
+
+# Directories to exclude from all in-process repo walks.
+# Used by producers, extractors, and any rglob-based scan.
+SKIP_DIRS: frozenset[str] = frozenset({
+    ".git", "node_modules", "vendor", "__pycache__",
+    ".venv", "testdata", "site-packages", "target", "build",
+    "dist", ".next", ".nuxt", ".cache",
+})
+
+# ripgrep --glob exclusion patterns equivalent to SKIP_DIRS.
+# Pass as: for g in SKIP_GLOBS: cmd += ["--glob", g]
+SKIP_GLOBS: tuple[str, ...] = (
+    "!.git", "!vendor", "!node_modules", "!testdata",
+    "!*.lock",
+)
