@@ -79,9 +79,12 @@ audit-project-context-builder/
 │   │   ├── index.py                    # A14
 │   │   └── registry/
 │   │       ├── frameworks.yaml
-│   │       └── secret_managers.yaml
+│   │       ├── secret_managers.yaml
+│   │       ├── cwe_rules.yaml              # CWE applicability signal definitions (A4)
+│   │       └── cwe_loader.py               # loads cwe_rules.yaml into frozen CweRule dataclasses
 │   ├── extractors/
 │   │   ├── frameworks/                 # per-framework route extractors (A2)
+│   │   ├── ts_utils.py                 # shared tree-sitter helpers used by all A2 extractors
 │   │   ├── sbom_runners.py             # cdxgen/syft subprocess wrappers
 │   │   └── git.py                      # git log parsing
 │   ├── mcp_server/
@@ -551,9 +554,27 @@ Output JSON schema:
 }
 ```
 
-Two-step mechanism:
-1. Deterministic preconditions: check A2 entry point kinds and A5 SBOM component types.
-2. LLM judgment (via `call_with_grounding`): used only for ambiguous cases where determinism is insufficient.
+Detection mechanism:
+
+CWE applicability rules live in `registry/cwe_rules.yaml`. Each entry defines:
+- `sbom_signals`: SBOM component substrings to match (e.g., `pg`, `psycopg2`).
+- `rg_pattern` / `rg_file_types`: optional ripgrep pattern and file-type filters for source confirmation.
+- `no_web_means_false`: when true, the CWE is inapplicable if no web framework was detected in A1.
+- `negative_requires_two`: when true, two independent negative signals are required before marking `applicable: false`.
+
+`cwe_loader.py` loads the YAML once at startup (`@lru_cache`) and returns a tuple of immutable `CweRule` dataclasses. The producer iterates all rules through a single generic `_evaluate_rule()` function — no per-CWE branches in the producer code.
+
+`_evaluate_rule()` logic:
+1. If `no_web_means_false` and no web framework detected: return `applicable: false`.
+2. Check SBOM signals via `_sbom_has_purl_matching()`.
+3. If `rg_pattern` defined, confirm via `_rg_match()` (ripgrep with Python fallback).
+4. Combine signal evidence into applicability and confidence.
+
+Special cases encoded in the YAML data:
+- **CWE-89 (SQL Injection):** SBOM driver match alone returns `needs_verification`; requires both SBOM match AND ripgrep SQL-pattern match for `applicable: true`.
+- **CWE-611 (XXE):** no `rg_pattern`; XML library presence alone sets `applicable: true` with MEDIUM confidence.
+
+LLM judgment (via `call_with_grounding`) is used only for cases the deterministic signals cannot resolve.
 
 Thirteen mandatory CWE classes (all must appear in every gate matrix output):
 - CWE-22 (Path Traversal)
@@ -704,3 +725,13 @@ Maintenance rules:
 - File locations: `src/audit_harvest/producers/registry/frameworks.yaml` (framework), `src/audit_harvest/producers/registry/secret_managers.yaml` (secret managers).
 - Curation policy: human-only; never LLM-generated. Every entry must have a verified purl and at least one real-world usage example.
 - Pull request requirement: registry updates require a brief description of the framework/tool and a link to its package registry entry.
+
+### CWE rules registry (`registry/cwe_rules.yaml`)
+
+Same curation discipline as the framework and secret-manager registries:
+- Human-curated only; never LLM-generated.
+- Review trigger: when an audit surfaces a CWE not covered, or when signal quality (false-positive rate on SBOM or ripgrep patterns) warrants tuning.
+- Modifying `sbom_signals` or `rg_pattern` for an existing entry is non-breaking.
+- Adding or removing CWE IDs affects what downstream stages see in the always-on bundle — coordinate with Stage 2 owners before removing an entry.
+- Boolean flags (`no_web_means_false`, `negative_requires_two`) require a security engineer sign-off before changing; they encode confidence semantics, not just detection logic.
+- New entries must document signal quality evidence (true-positive rate on at least one real fixture).
