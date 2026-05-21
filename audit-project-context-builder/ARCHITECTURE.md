@@ -388,7 +388,7 @@ Eight sections with their sources:
 
 2. **Frameworks** — web framework(s), task queues, gRPC/RPC layer. Source: SBOM purl registry lookup over the cdxgen SBOM (A5). If A5 is not yet available, fall back to file-existence + import-pattern detection. Sub-artifact: `repo_profile_frameworks.json`.
 
-3. **Build / test tooling** — build tool and test framework(s). Source: file-existence check + cdxgen `type` field + SBOM purl name match against known test-framework registry. Manifest files checked: Makefile, package.json scripts, pyproject.toml, pom.xml, build.gradle, Cargo.toml.
+3. **Build / test tooling** — build tool and test framework(s). Source: file-existence check driven by `registry/build_systems.yaml` (Makefile, justfile, Taskfile.yaml, Jenkinsfile, .gitlab-ci.yml) plus directory-based detection for GitHub Actions (.github/workflows/). Add new build tools to the YAML; no code changes required.
 
 4. **Infrastructure** — databases, caches, message brokers. Source: cdxgen `services[]` field populated from docker-compose/k8s/Skaffold manifests. If `services[]` is empty, omit this section.
 
@@ -567,7 +567,7 @@ CWE applicability rules live in `registry/cwe_rules.yaml`. Each entry defines:
 `_evaluate_rule()` logic:
 1. If `no_web_means_false` and no web framework detected: return `applicable: false`.
 2. Check SBOM signals via `_sbom_has_purl_matching()`.
-3. If `rg_pattern` defined, confirm via `_rg_match()` (ripgrep with Python fallback).
+3. If `rg_pattern` defined, confirm via `_rg_match()`. ripgrep is a Bucket A tool — if absent, the pattern returns `(False, [])` with a warning; there is no in-process fallback.
 4. Combine signal evidence into applicability and confidence.
 
 Special cases encoded in the YAML data:
