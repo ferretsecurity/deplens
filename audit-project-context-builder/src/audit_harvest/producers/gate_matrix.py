@@ -16,12 +16,13 @@ def produce_gate_matrix(
     sbom_components: list[dict],
 ) -> dict:
     repo_path = Path(repo_path)
-    has_web = bool(entry_points.get("entry_points")) or _sbom_has_purl_matching(
-        sbom_components,
-        "gin", "chi", "echo", "fiber", "flask", "fastapi", "django",
-        "express", "nestjs", "next", "spring-web", "spring-boot",
-    )
     rules = load_cwe_rules()
+    _cwe79 = next((r for r in rules if r.id == "CWE-79"), None)
+    has_web = bool(entry_points.get("entry_points")) or (
+        _cwe79 is not None and _sbom_has_purl_matching(
+            sbom_components, *_cwe79.sbom_signals
+        )
+    )
     return {
         "rules": [
             _evaluate_rule(rule, repo_path, sbom_components, has_web)
