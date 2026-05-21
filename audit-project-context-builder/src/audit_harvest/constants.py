@@ -22,3 +22,15 @@ MANIFEST_NAMES: tuple[str, ...] = (
     # PHP
     "composer.json", "composer.lock",
 )
+
+# Subset of MANIFEST_NAMES that indicates a sub-package root when
+# found in a non-root directory. Used by monorepo detection in A1.
+# If a manifest type is added to MANIFEST_NAMES and should also
+# trigger monorepo detection, add it here too.
+MONOREPO_MANIFEST_NAMES: frozenset[str] = frozenset({
+    "go.mod",
+    "package.json",
+    "pom.xml",
+    "pyproject.toml",
+    "Cargo.toml",
+})
