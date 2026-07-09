@@ -240,6 +240,8 @@ func applyDependencyType(dependencies []Dependency, dependencyType PackageType) 
 	}
 }
 
+// Source of truth: https://raw.githubusercontent.com/package-url/purl-spec/main/purl-types-index.json
+// This local snapshot is advisory only; unknown values are preserved and logged.
 func isKnownPackageType(dependencyType PackageType) bool {
 	switch dependencyType {
 	case "alpm",
