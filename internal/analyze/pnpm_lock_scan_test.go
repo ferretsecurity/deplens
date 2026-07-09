@@ -28,8 +28,8 @@ func TestScanPNPMLockExtractsDependencies(t *testing.T) {
 	}
 
 	want := []Dependency{
-		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies", Extras: map[string]string{"specifier": "^18.3.1"}},
-		{Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies", Extras: map[string]string{"specifier": "^20.12.7"}},
+		{Type: PackageType("npm"), Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies", Extras: map[string]string{"specifier": "^18.3.1"}},
+		{Type: PackageType("npm"), Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies", Extras: map[string]string{"specifier": "^20.12.7"}},
 	}
 	if !equalDependencies(pnpmLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", pnpmLock.Dependencies, want)
@@ -47,8 +47,8 @@ func TestScanPNPMLockWithTransitiveInPackagesFixture(t *testing.T) {
 		t.Fatalf("expected has_dependencies=true, got %+v", pnpmLock.HasDependencies)
 	}
 	want := []Dependency{
-		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies", Extras: map[string]string{"specifier": "^18.3.1"}},
-		{Raw: "loose-envify@1.4.0", Name: "loose-envify", Version: "1.4.0"},
+		{Type: PackageType("npm"), Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies", Extras: map[string]string{"specifier": "^18.3.1"}},
+		{Type: PackageType("npm"), Raw: "loose-envify@1.4.0", Name: "loose-envify", Version: "1.4.0"},
 	}
 	if !equalDependencies(pnpmLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", pnpmLock.Dependencies, want)
@@ -69,9 +69,9 @@ func TestScanPNPMLockExtractsTopLevelDependenciesForOlderLocks(t *testing.T) {
 	}
 
 	want := []Dependency{
-		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"},
-		{Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies"},
-		{Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", Section: "optionalDependencies"},
+		{Type: PackageType("npm"), Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"},
+		{Type: PackageType("npm"), Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies"},
+		{Type: PackageType("npm"), Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", Section: "optionalDependencies"},
 	}
 	if !equalDependencies(pnpmLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", pnpmLock.Dependencies, want)
@@ -92,8 +92,8 @@ func TestScanPNPMLockWorkspaceExtractsOnlyRootImporterDependencies(t *testing.T)
 	}
 
 	want := []Dependency{
-		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"},
-		{Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies"},
+		{Type: PackageType("npm"), Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"},
+		{Type: PackageType("npm"), Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies"},
 	}
 	if !equalDependencies(pnpmLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", pnpmLock.Dependencies, want)

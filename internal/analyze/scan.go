@@ -113,7 +113,10 @@ func normalizeRelativePath(relPath string) string {
 	return strings.ReplaceAll(filepath.ToSlash(relPath), "\\", "/")
 }
 
+type PackageType string
+
 type Dependency struct {
+	Type       PackageType       `json:"type,omitempty"`
 	Raw        string            `json:"raw"`
 	Name       string            `json:"name,omitempty"`
 	Version    string            `json:"version,omitempty"`

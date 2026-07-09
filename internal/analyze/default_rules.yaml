@@ -1,17 +1,22 @@
 rules:
   - name: python-requirements
+    dependency-type: pypi
     filename-regex: '(^|.*[^A-Za-z])requirements([^A-Za-z].*)?\.(txt|in)$'
     py-requirements: {}
   - name: python-requirements-dir
+    dependency-type: pypi
     path-glob: '**/requirements/*.txt'
     py-requirements: {}
   - name: python-uv
+    dependency-type: pypi
     filename-regex: '^uv\.lock$'
     uv-lock: {}
   - name: python-poetry-lock
+    dependency-type: pypi
     filename-regex: '^poetry\.lock$'
     poetry-lock: {}
   - name: python-pipfile-lock
+    dependency-type: pypi
     filename-regex: '^Pipfile\.lock$'
     pipfile-lock: {}
   - name: python-pdm-lock
@@ -27,6 +32,7 @@ rules:
   - name: python-conda-env-alt
     filename-regex: '^conda\.ya?ml$'
   - name: python-pyproject
+    dependency-type: pypi
     filename-regex: '^pyproject\.toml$'
     toml:
       queries:
@@ -41,6 +47,7 @@ rules:
     yaml:
       exists: dependencies
   - name: python-pipfile
+    dependency-type: pypi
     filename-regex: '^Pipfile$'
     toml:
       table-queries:
@@ -51,6 +58,7 @@ rules:
         - scripts
         - pipenv
   - name: python-setup-py
+    dependency-type: pypi
     filename-regex: '^setup\.py$'
     python:
       call:
@@ -68,6 +76,7 @@ rules:
           - keyword: extras_require
             literal: dict_string_lists
   - name: python-setup-cfg
+    dependency-type: pypi
     filename-regex: '^setup\.cfg$'
     ini:
       queries:
@@ -94,15 +103,19 @@ rules:
         - dependencies
         - devDependencies
   - name: js-npm-shrinkwrap
+    dependency-type: npm
     filename-regex: '^npm-shrinkwrap\.json$'
     package-lock: {}
   - name: js-npm-lock
+    dependency-type: npm
     filename-regex: '^package-lock\.json$'
     package-lock: {}
   - name: js-yarn
+    dependency-type: npm
     filename-regex: '^yarn\.lock$'
     yarn-lock: {}
   - name: js-pnpm-lock
+    dependency-type: npm
     filename-regex: '^pnpm-lock\.yaml$'
     pnpm-lock: {}
   - name: js-bun-lock
@@ -191,6 +204,7 @@ rules:
         - require
         - require-dev
   - name: php-composer-lock
+    dependency-type: composer
     filename-regex: '^composer\.lock$'
     composer-lock: {}
   - name: dart-pubspec
@@ -260,6 +274,7 @@ rules:
   - name: dotnet-tools-manifest
     path-glob: '**/.config/dotnet-tools.json'
   - name: go-mod
+    dependency-type: golang
     filename-regex: '^go\.mod$'
     go-mod: {}
   - name: go-sum
@@ -288,6 +303,7 @@ rules:
         - target.*.dev-dependencies
         - target.*.build-dependencies
   - name: rust-cargo-lock
+    dependency-type: cargo
     filename-regex: '^Cargo\.lock$'
     cargo-lock: {}
   - name: rust-cargo-config
@@ -537,18 +553,23 @@ rules:
   - name: soldeer-lock
     filename-regex: '^soldeer\.lock$'
   - name: js-banner-block-start
+    dependency-type: npm
     filename-regex: '.*\.js$'
     banner-regex: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
   - name: js-banner-plain-block-start
+    dependency-type: npm
     filename-regex: '.*\.js$'
     banner-regex: '(?i)^\s*/\*\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
   - name: js-banner-multiline-preserved
+    dependency-type: npm
     filename-regex: '.*\.js$'
     banner-regex: '(?is)^\s*/\*![\s*]*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*)).*?\*/'
   - name: js-banner-line-comment
+    dependency-type: npm
     filename-regex: '.*\.js$'
     banner-regex: '(?im)^\s*//[!/]\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))\b'
   - name: js-banner-version-tagged
+    dependency-type: npm
     filename-regex: '.*\.js$'
     banner-regex: '(?is)^\s*/\*![^*]*package:\s*([A-Za-z0-9@._/-]+)[^*]*version:\s*v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^*]*\*/'
   - name: html-external-scripts
@@ -556,6 +577,7 @@ rules:
     html:
       external_scripts: true
   - name: terraform.aws_glue_job.python
+    dependency-type: pypi
     filename-regex: '.*\.tf$'
     terraform:
       resource_type: aws_glue_job
@@ -565,6 +587,7 @@ rules:
         - path: default_arguments.--additional-python-modules
           present: true
   - name: typescript.cdk.aws_glue_job.python
+    dependency-type: pypi
     filename-regex: '.*\.ts$'
     typescript:
       cdk_construct:
@@ -582,6 +605,7 @@ rules:
           key: --additional-python-modules
           split: comma
   - name: python.cdk.aws_glue_job.python
+    dependency-type: pypi
     filename-regex: '.*\.py$'
     python:
       cdk_construct:

@@ -3,6 +3,7 @@ package analyze
 import (
 	_ "embed"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"regexp"
@@ -22,6 +23,7 @@ type ManifestType string
 
 type manifestRule struct {
 	Type           ManifestType
+	DependencyType PackageType
 	FilenameRegexp *regexp.Regexp
 	PathGlob       string
 	Parser         manifestParser
@@ -38,6 +40,7 @@ type rulesFile struct {
 
 type ruleConfig struct {
 	Name           string                       `yaml:"name"`
+	DependencyType string                       `yaml:"dependency-type"`
 	FilenameRegex  string                       `yaml:"filename-regex"`
 	PathGlob       string                       `yaml:"path-glob"`
 	BannerRegex    string                       `yaml:"banner-regex"`
@@ -141,6 +144,7 @@ func loadRules(source string, data []byte) (Ruleset, error) {
 
 		rules = append(rules, manifestRule{
 			Type:           ManifestType(rawRule.Name),
+			DependencyType: dependencyTypeFromRule(rawRule),
 			FilenameRegexp: compiled,
 			PathGlob:       rawRule.PathGlob,
 			Parser:         parser,
@@ -207,10 +211,83 @@ func (r Ruleset) detectManifestFile(path string, name string, relPath string) (M
 			return rule.Type, nil, nil, []string{err.Error()}, true, nil
 		}
 		if result.Matched {
+			applyDependencyType(result.Dependencies, rule.DependencyType)
 			return rule.Type, result.Dependencies, result.HasDependencies, result.Warnings, true, nil
 		}
 	}
 	return "", nil, nil, nil, false, nil
+}
+
+func dependencyTypeFromRule(rawRule ruleConfig) PackageType {
+	if rawRule.DependencyType == "" {
+		return ""
+	}
+	dependencyType := PackageType(rawRule.DependencyType)
+	if !isKnownPackageType(dependencyType) {
+		log.Printf("warning: rule %q uses unknown dependency-type %q; preserving value", rawRule.Name, rawRule.DependencyType)
+	}
+	return dependencyType
+}
+
+func applyDependencyType(dependencies []Dependency, dependencyType PackageType) {
+	if dependencyType == "" {
+		return
+	}
+	for idx := range dependencies {
+		if dependencies[idx].Type == "" {
+			dependencies[idx].Type = dependencyType
+		}
+	}
+}
+
+// Source of truth: https://raw.githubusercontent.com/package-url/purl-spec/main/purl-types-index.json
+// This local snapshot is advisory only; unknown values are preserved and logged.
+func isKnownPackageType(dependencyType PackageType) bool {
+	switch dependencyType {
+	case "alpm",
+		"apk",
+		"bazel",
+		"bitbucket",
+		"bitnami",
+		"cargo",
+		"chrome-extension",
+		"cocoapods",
+		"composer",
+		"conan",
+		"conda",
+		"cpan",
+		"cran",
+		"deb",
+		"docker",
+		"gem",
+		"generic",
+		"github",
+		"golang",
+		"hackage",
+		"hex",
+		"huggingface",
+		"julia",
+		"luarocks",
+		"maven",
+		"mlflow",
+		"npm",
+		"nuget",
+		"oci",
+		"opam",
+		"otp",
+		"pub",
+		"pypi",
+		"qpkg",
+		"rpm",
+		"swid",
+		"swift",
+		"vcpkg",
+		"vscode-extension",
+		"yocto":
+		return true
+	default:
+		return false
+	}
 }
 
 func (r manifestRule) matches(name string, relPath string) bool {
