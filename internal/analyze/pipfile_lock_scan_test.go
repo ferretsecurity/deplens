@@ -31,8 +31,8 @@ func TestScanPipfileLockExtractsDependencies(t *testing.T) {
 	}
 
 	want := []Dependency{
-		{Raw: "requests==2.32.3", Name: "requests", Version: "2.32.3", Section: "default"},
-		{Raw: "pytest==8.3.3", Name: "pytest", Version: "8.3.3", Section: "develop"},
+		{Type: PackageType("pypi"), Raw: "requests==2.32.3", Name: "requests", Version: "2.32.3", Section: "default"},
+		{Type: PackageType("pypi"), Raw: "pytest==8.3.3", Name: "pytest", Version: "8.3.3", Section: "develop"},
 	}
 	if !equalDependencies(pipfileLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", pipfileLock.Dependencies, want)

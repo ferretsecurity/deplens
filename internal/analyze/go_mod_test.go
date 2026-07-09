@@ -144,8 +144,8 @@ func TestScanExtractsAllGoModRequirements(t *testing.T) {
 		t.Fatalf("expected go.mod to report extracted dependencies, got %+v", manifest)
 	}
 	want := []Dependency{
-		{Raw: "github.com/google/uuid", Name: "github.com/google/uuid", Version: "v1.6.0"},
-		{Raw: "golang.org/x/text", Name: "golang.org/x/text", Version: "v0.25.0", Section: "indirect"},
+		{Type: PackageType("golang"), Raw: "github.com/google/uuid", Name: "github.com/google/uuid", Version: "v1.6.0"},
+		{Type: PackageType("golang"), Raw: "golang.org/x/text", Name: "golang.org/x/text", Version: "v0.25.0", Section: "indirect"},
 	}
 	if !equalDependencies(manifest.Dependencies, want) {
 		t.Fatalf("unexpected go.mod dependencies: got %+v want %+v", manifest.Dependencies, want)

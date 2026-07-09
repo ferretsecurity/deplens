@@ -26,6 +26,12 @@ An extracted dependency is a dependency name reported by the scanner for a match
 ### Section
 A section is a named group of extracted dependencies, such as `project.dependencies` or `extras_require.dev`. It preserves source structure when the underlying format provides that structure. When no section is available, dependencies may be shown without one.
 
+### Manifest Type
+Manifest type is the `type` field on a JSON manifest entry. It identifies the `deplens` detector or rule that matched the file, such as `python-requirements` or `js-npm-lock`.
+
+### Dependency Type
+Dependency type is the `type` field on a JSON dependency entry. It identifies the package ecosystem using a PURL/VERS-compatible package type such as `pypi`, `npm`, `docker`, or `golang`. It is distinct from manifest type.
+
 ## Detection and Extraction
 
 ### Dependency Status
@@ -61,6 +67,9 @@ Root is the directory that `deplens` scanned. In JSON output, it is the top-leve
 `has_dependencies` is a JSON field on each manifest entry. It is `true` when extraction confirmed at least one dependency, `false` when a detector or extractor conclusively found none, and `null` when dependency presence is unknown. The field summarizes dependency presence without requiring a user to inspect the extracted list.
 
 ## Configuration Terms
+
+### `dependency-type`
+`dependency-type` is an optional rule field that supplies the default PURL/VERS-compatible package type for dependencies emitted by that rule. Unknown values are preserved and produce a warning instead of preventing the ruleset from loading.
 
 ### `--show-empty`
 `--show-empty` is a CLI flag that includes known-empty manifests in the detailed human-readable output. It does not change whether they are counted in the summary. The flag only affects visibility of empty matches in the text view.
