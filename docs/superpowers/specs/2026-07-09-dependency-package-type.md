@@ -131,15 +131,17 @@ This flow allows most rules to be configured declaratively while preserving an e
 
 ## Validation
 
-Validation should reject invalid configured values at rule-load time. A bad `dependency-type` in a default or custom rules file should fail fast with a clear error.
+Validation should not reject unknown configured values. PURL and VERS package type registries may grow over time, and custom rules should be able to use newly registered or organization-specific values without requiring a `deplens` release first.
 
-Accepted values should be an internal allowlist based on registered PURL types, with `generic` included. The initial allowlist should include at least the PURL types relevant to existing `deplens` rules:
+Rule loading should perform an advisory compatibility check against an internal known-type set based on registered PURL types, with `generic` included. The initial known-type set should include at least the PURL types relevant to existing `deplens` rules:
 
 ```text
 cargo, cocoapods, composer, conan, conda, cpan, cran, docker, gem,
 generic, golang, hackage, hex, julia, luarocks, maven, npm, nuget,
 opam, pub, pypi, swift, vcpkg
 ```
+
+When `dependency-type` is not in the known-type set, rule loading should keep the value and emit a warning log message that names the rule and unknown type. The warning should not affect scanning, output, or process exit status.
 
 If a rule covers a manifest format whose dependencies are not clearly a package registry ecosystem, leave `dependency-type` unset rather than using a nearby language name. Examples include workspace/configuration files that indicate dependency presence but do not extract package records.
 
@@ -245,7 +247,8 @@ Because this changes user-visible JSON behavior, any PR for the implementation s
 Add unit tests for:
 
 - Rule loading accepts known PURL-compatible `dependency-type` values.
-- Rule loading rejects unknown values with a clear error.
+- Rule loading accepts unknown `dependency-type` values.
+- Rule loading emits a warning for unknown `dependency-type` values.
 - Rule-level `dependency-type` is copied onto extracted dependencies.
 - A parser-supplied dependency type is not overwritten by the rule default.
 - JSON golden output includes dependency `type` for at least one Python and one npm fixture.
@@ -255,6 +258,6 @@ Add unit tests for:
 
 - Extracted dependencies from configured rules include `dependencies[].type` in JSON.
 - Values use PURL/VERS-compatible tokens such as `pypi`, `npm`, `docker`, and `golang`.
-- Invalid configured package types fail during ruleset loading.
+- Unknown configured package types are preserved and produce warning log messages instead of load failures.
 - Existing parsers do not need broad rewrites to participate.
 - Existing human-readable CLI output stays stable.
