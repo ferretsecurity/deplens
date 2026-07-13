@@ -30,11 +30,12 @@ func (m pyRequirementsMatcher) Match(path string, content []byte) (manifestParse
 	if len(rawDeps) > 0 {
 		deps := make([]Dependency, 0, len(rawDeps))
 		for _, spec := range rawDeps {
-			name, rest := parsePEP508Dep(spec)
+			parsed := parsePEP508Dep(spec)
 			dep := Dependency{Raw: spec}
-			if name != "" {
-				dep.Name = name
-				dep.Constraint = rest
+			if parsed.name != "" {
+				dep.Name = parsed.name
+				dep.Constraint = parsed.constraint
+				dep.Extras = parsed.extras
 			}
 			deps = append(deps, dep)
 		}

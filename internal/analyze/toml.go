@@ -373,10 +373,11 @@ func extractTOMLDependencies(nodes []tomlMatchedValue, query tomlQuery) []Depend
 				// PEP 508 lines (e.g. "requests>=2.31") do not use " = " assignment.
 				// Table serialization uses "name = value" and is not PEP 508.
 				if !strings.Contains(value, " = ") {
-					name, rest := parsePEP508Dep(value)
-					if name != "" {
-						dep.Name = name
-						dep.Constraint = rest
+					parsed := parsePEP508Dep(value)
+					if parsed.name != "" {
+						dep.Name = parsed.name
+						dep.Constraint = parsed.constraint
+						dep.Extras = parsed.extras
 					}
 				}
 				dependencies = append(dependencies, dep)

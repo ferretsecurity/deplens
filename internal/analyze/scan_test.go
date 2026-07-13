@@ -1838,7 +1838,7 @@ func TestScanMatchesPyprojectDependenciesFromFixture(t *testing.T) {
 		{Type: PackageType("pypi"), Raw: "scikit-build-core>=0.10", Name: "scikit-build-core", Constraint: ">=0.10", Section: "build-system.requires"},
 		{Type: PackageType("pypi"), Raw: "pybind11>=2.12.0", Name: "pybind11", Constraint: ">=2.12.0", Section: "build-system.requires"},
 		{Type: PackageType("pypi"), Raw: "requests>=2.31", Name: "requests", Constraint: ">=2.31", Section: "project.dependencies"},
-		{Type: PackageType("pypi"), Raw: "fastapi[all]>=0.110; python_version >= '3.10'", Name: "fastapi", Constraint: "[all]>=0.110; python_version >= '3.10'", Section: "project.dependencies"},
+		{Type: PackageType("pypi"), Raw: "fastapi[all]>=0.110; python_version >= '3.10'", Name: "fastapi", Constraint: ">=0.110", Section: "project.dependencies", Extras: map[string]string{"extras": "all", "marker": "python_version >= '3.10'"}},
 		{Type: PackageType("pypi"), Raw: "pytest>=8", Name: "pytest", Constraint: ">=8", Section: "project.optional-dependencies.dev"},
 		{Type: PackageType("pypi"), Raw: "ruff==0.4.8", Name: "ruff", Constraint: "==0.4.8", Section: "project.optional-dependencies.dev"},
 		{Type: PackageType("pypi"), Raw: "mypy>=1.10", Name: "mypy", Constraint: ">=1.10", Section: "dependency-groups.lint"},
