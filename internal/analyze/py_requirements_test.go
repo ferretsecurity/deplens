@@ -1,6 +1,7 @@
 package analyze
 
 import (
+	"maps"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -8,13 +9,15 @@ import (
 
 func TestPyRequirementsParserSetsStructuredFields(t *testing.T) {
 	parser, _ := newPyRequirementsMatcher(pyRequirementsMatcherConfig{})
-	result, _ := parser.Match("requirements.txt", []byte("requests>=2.28.0,<3\nflask==3.0.0\npytest\n"))
+	result, _ := parser.Match("requirements.txt", []byte("requests>=2.28.0,<3\nflask==3.0.0\npytest\nfastapi[all]>=0.110; python_version >= '3.10'\n"))
 	cases := []struct {
 		raw, wantName, wantConstraint string
+		wantExtras                    map[string]string
 	}{
-		{"requests>=2.28.0,<3", "requests", ">=2.28.0,<3"},
-		{"flask==3.0.0", "flask", "==3.0.0"},
-		{"pytest", "pytest", ""},
+		{"requests>=2.28.0,<3", "requests", ">=2.28.0,<3", nil},
+		{"flask==3.0.0", "flask", "==3.0.0", nil},
+		{"pytest", "pytest", "", nil},
+		{"fastapi[all]>=0.110; python_version >= '3.10'", "fastapi", ">=0.110", map[string]string{"extras": "all", "marker": "python_version >= '3.10'"}},
 	}
 	for i, tc := range cases {
 		if i >= len(result.Dependencies) {
@@ -29,6 +32,9 @@ func TestPyRequirementsParserSetsStructuredFields(t *testing.T) {
 		}
 		if dep.Constraint != tc.wantConstraint {
 			t.Errorf("[%d] Constraint: got %q want %q", i, dep.Constraint, tc.wantConstraint)
+		}
+		if !maps.Equal(dep.Extras, tc.wantExtras) {
+			t.Errorf("[%d] Extras: got %#v want %#v", i, dep.Extras, tc.wantExtras)
 		}
 	}
 }
