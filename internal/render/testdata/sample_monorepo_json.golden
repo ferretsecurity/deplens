@@ -9,13 +9,15 @@
           "type": "pypi",
           "raw": "requests==2.32.3",
           "name": "requests",
-          "constraint": "==2.32.3"
+          "constraint": "==2.32.3",
+          "vers": "vers:pypi/%3D2.32.3"
         },
         {
           "type": "pypi",
           "raw": "pydantic==2.9.2",
           "name": "pydantic",
-          "constraint": "==2.9.2"
+          "constraint": "==2.9.2",
+          "vers": "vers:pypi/%3D2.9.2"
         }
       ],
       "has_dependencies": true
@@ -224,7 +226,8 @@
           "type": "pypi",
           "raw": "PyQt6==6.7.0",
           "name": "PyQt6",
-          "constraint": "==6.7.0"
+          "constraint": "==6.7.0",
+          "vers": "vers:pypi/%3D6.7.0"
         }
       ],
       "has_dependencies": true
@@ -237,7 +240,8 @@
           "type": "pypi",
           "raw": "requests==2.32.0",
           "name": "requests",
-          "constraint": "==2.32.0"
+          "constraint": "==2.32.0",
+          "vers": "vers:pypi/%3D2.32.0"
         }
       ],
       "has_dependencies": true

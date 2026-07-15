@@ -212,6 +212,7 @@ func (r Ruleset) detectManifestFile(path string, name string, relPath string) (M
 		}
 		if result.Matched {
 			applyDependencyType(result.Dependencies, rule.DependencyType)
+			applyDependencyVERS(result.Dependencies)
 			return rule.Type, result.Dependencies, result.HasDependencies, result.Warnings, true, nil
 		}
 	}

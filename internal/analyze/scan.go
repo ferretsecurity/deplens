@@ -121,6 +121,7 @@ type Dependency struct {
 	Name       string            `json:"name,omitempty"`
 	Version    string            `json:"version,omitempty"`
 	Constraint string            `json:"constraint,omitempty"`
+	VERS       string            `json:"vers,omitempty"`
 	Section    string            `json:"section,omitempty"`
 	Source     string            `json:"source,omitempty"`
 	Extras     map[string]string `json:"extras,omitempty"`
