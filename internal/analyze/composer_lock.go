@@ -19,18 +19,18 @@ type composerLockPackage struct {
 	Type    string `json:"type"`
 }
 
-func newComposerLockParser(raw composerLockMatcherConfig) (manifestParser, error) {
+func newComposerLockParser(raw composerLockMatcherConfig) (sourceAnalyzer, error) {
 	return composerLockParser{}, nil
 }
 
-func (p composerLockParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p composerLockParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	var file composerLockFile
 	if err := json.Unmarshal(content, &file); err != nil {
-		return manifestParserResult{}, fmt.Errorf("parse json file %q: %w", path, err)
+		return sourceAnalyzerResult{}, fmt.Errorf("parse json file %q: %w", path, err)
 	}
 
 	if file.Packages == nil && file.PackagesDev == nil {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
 	dependencies := composerLockDependencies(
@@ -38,16 +38,16 @@ func (p composerLockParser) Match(path string, content []byte) (manifestParserRe
 		composerLockDependencyGroup{Name: "packages-dev", Packages: file.PackagesDev},
 	)
 	if len(dependencies) == 0 {
-		return manifestParserResult{
-			Matched:         true,
-			HasDependencies: boolPtr(false),
+		return sourceAnalyzerResult{
+			Recognized: true,
+			Analysis:   SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete},
 		}, nil
 	}
 
-	return manifestParserResult{
-		Dependencies:    dependencies,
-		Matched:         true,
-		HasDependencies: boolPtr(true),
+	return sourceAnalyzerResult{
+		Dependencies: dependencies,
+		Recognized:   true,
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 	}, nil
 }
 
@@ -56,12 +56,12 @@ type composerLockDependencyGroup struct {
 	Packages []composerLockPackage
 }
 
-func composerLockDependencies(groups ...composerLockDependencyGroup) []Dependency {
+func composerLockDependencies(groups ...composerLockDependencyGroup) []DependencyReference {
 	if len(groups) == 0 {
 		return nil
 	}
 
-	values := make([]Dependency, 0)
+	values := make([]DependencyReference, 0)
 	for _, group := range groups {
 		if group.Name == "" {
 			continue
@@ -81,14 +81,14 @@ func composerLockDependencies(groups ...composerLockDependencyGroup) []Dependenc
 				continue
 			}
 			seen[raw] = struct{}{}
-			dep := Dependency{
-				Raw:     raw,
-				Name:    pkg.Name,
-				Version: pkg.Version,
-				Section: group.Name,
+			dep := DependencyReference{
+				Raw:         raw,
+				Name:        pkg.Name,
+				Version:     pkg.Version,
+				SourceGroup: group.Name,
 			}
 			if pkg.Type != "" {
-				dep.Extras = map[string]string{"package_type": pkg.Type}
+				dep.Attributes = map[string]string{"package_type": pkg.Type}
 			}
 			values = append(values, dep)
 		}
@@ -98,8 +98,8 @@ func composerLockDependencies(groups ...composerLockDependencyGroup) []Dependenc
 		return nil
 	}
 
-	slices.SortFunc(values, func(a, b Dependency) int {
-		if a.Section == b.Section {
+	slices.SortFunc(values, func(a, b DependencyReference) int {
+		if a.SourceGroup == b.SourceGroup {
 			switch {
 			case a.Raw < b.Raw:
 				return -1
@@ -109,7 +109,7 @@ func composerLockDependencies(groups ...composerLockDependencyGroup) []Dependenc
 				return 0
 			}
 		}
-		if a.Section < b.Section {
+		if a.SourceGroup < b.SourceGroup {
 			return -1
 		}
 		return 1

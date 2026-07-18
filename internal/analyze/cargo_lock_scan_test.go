@@ -13,22 +13,22 @@ func TestScanCargoLockExtractsDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(result.Manifests) != 2 {
-		t.Fatalf("expected 2 manifests, got %d", len(result.Manifests))
+	if len(result.Sources) != 2 {
+		t.Fatalf("expected 2 dependency sources, got %d", len(result.Sources))
 	}
 
-	var cargoLock *ManifestMatch
-	for i := range result.Manifests {
-		if result.Manifests[i].Type == ManifestType("rust-cargo-lock") {
-			cargoLock = &result.Manifests[i]
+	var cargoLock *DependencySourceResult
+	for i := range result.Sources {
+		if result.Sources[i].Detector == DetectorID("rust-cargo-lock") {
+			cargoLock = &result.Sources[i]
 			break
 		}
 	}
 	if cargoLock == nil {
-		t.Fatalf("expected rust-cargo-lock manifest, got %+v", result.Manifests)
+		t.Fatalf("expected rust-cargo-lock dependency source, got %+v", result.Sources)
 	}
-	if cargoLock.HasDependencies == nil || !*cargoLock.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", cargoLock.HasDependencies)
+	if cargoLock.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", cargoLock.Analysis)
 	}
 
 	got := dependencyNames(cargoLock.Dependencies)

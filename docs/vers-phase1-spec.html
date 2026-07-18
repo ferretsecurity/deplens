@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>deplens VERS Constraint Output Spec</title>
+  <title>deplens VERS VersionConstraint Output Spec</title>
   <style>
     :root {
       color-scheme: light;
@@ -433,7 +433,7 @@
     <aside>
       <div class="brand">
         <p class="eyebrow">deplens spec</p>
-        <strong>VERS Constraint Output</strong>
+        <strong>VERS VersionConstraint Output</strong>
       </div>
       <nav aria-label="Spec sections">
         <a href="#summary">Summary</a>
@@ -456,14 +456,14 @@
       <h1>Library-backed VERS constraint output for dependency ranges</h1>
       <p class="lead">
         Add optional VERS output to dependency JSON by deriving a canonical range
-        string from existing dependency type and native constraint fields, while
+        string from existing package type and native constraint fields, while
         preserving current source-faithful output.
       </p>
       <div class="meta">
-        <span class="pill">Status: proposed</span>
+        <span class="pill">Status: implemented</span>
         <span class="pill">Audience: maintainers</span>
         <span class="pill">Scope: JSON output</span>
-        <span class="pill">Compatibility: additive</span>
+        <span class="pill">Contract: integrated</span>
       </div>
 
       <section id="summary">
@@ -487,7 +487,7 @@
         <h2>Goals</h2>
         <ul>
           <li>Expose a complete VERS range string for supported dependency constraints.</li>
-          <li>Keep <code>raw</code> and <code>constraint</code> unchanged as source-faithful fields.</li>
+          <li>Keep <code>raw</code> and <code>version_constraint</code> unchanged as source-faithful fields.</li>
           <li>Centralize conversion in shared analyzer code rather than detector-specific parsers.</li>
           <li>Use an existing VERS implementation for ecosystem-specific range semantics.</li>
           <li>Make support incremental by whitelisting ecosystems and test cases.</li>
@@ -503,29 +503,29 @@
       <section id="contract">
         <h2>JSON Contract</h2>
         <p>
-          Add one optional field to <code>Dependency</code>. The field value is a complete
+          Add one optional field to <code>DependencyReference</code>. The field value is a complete
           VERS URI string, including the <code>vers:</code> scheme and VERS type.
           The value is not just the constraint body.
         </p>
 
         <div class="example">
           <header><span>Go type</span><span>internal/analyze/scan.go</span></header>
-          <pre><code>type Dependency struct {
-    Type           PackageType       `json:"type,omitempty"`
+          <pre><code>type DependencyReference struct {
+    PackageType       PackageType       `json:"package_type,omitempty"`
     Raw            string            `json:"raw"`
     Name           string            `json:"name,omitempty"`
     Version        string            `json:"version,omitempty"`
-    Constraint     string            `json:"constraint,omitempty"`
+    VersionConstraint     string            `json:"version_constraint,omitempty"`
     VERS           string            `json:"vers,omitempty"`
-    Section        string            `json:"section,omitempty"`
-    Source         string            `json:"source,omitempty"`
-    Extras         map[string]string `json:"extras,omitempty"`
+    SourceGroup        string            `json:"source_group,omitempty"`
+    OriginKind        OriginKind        `json:"origin_kind,omitempty"`
+    Attributes         map[string]string `json:"attributes,omitempty"`
 }</code></pre>
         </div>
 
         <p>
-          <code>vers</code> must not replace <code>constraint</code>. Consumers
-          that need the original manifest syntax should continue using <code>constraint</code>.
+          <code>vers</code> must not replace <code>version_constraint</code>. Consumers
+          that need the original manifest syntax should continue using <code>version_constraint</code>.
           Consumers that need normalized range semantics can use <code>vers</code>
           when present.
         </p>
@@ -536,8 +536,8 @@
         <p>
           Detectors continue to extract source data only. For example,
           <code>requirements.txt</code> extraction sets <code>raw</code>, <code>name</code>,
-          and <code>constraint</code>. The shared rule result post-processing layer applies
-          dependency type and then derives VERS.
+          and <code>version_constraint</code>. The shared rule result post-processing layer applies
+          package type and then derives VERS.
         </p>
 
         <div class="flow" aria-label="Normalization flow">
@@ -547,7 +547,7 @@
           </div>
           <div>
             <strong>2. Rule metadata</strong>
-            <span>Applies <code>dependency-type</code> such as <code>pypi</code>.</span>
+            <span>Applies <code>package-type</code> such as <code>pypi</code>.</span>
           </div>
           <div>
             <strong>3. VERS adapter</strong>
@@ -561,7 +561,7 @@
 
         <div class="example">
           <header><span>Shared normalizer</span><span>proposed</span></header>
-          <pre><code>func normalizeDependencies(dependencies []Dependency, dependencyType PackageType) {
+          <pre><code>func normalizeDependencies(dependencies []DependencyReference, dependencyType PackageType) {
     applyDependencyType(dependencies, dependencyType)
     applyVERS(dependencies)
 }</code></pre>
@@ -583,13 +583,13 @@
 
         <div class="example">
           <header><span>Public analyzer helper</span><span>internal/analyze/vers.go</span></header>
-          <pre><code>func ConstraintToVERS(packageType PackageType, constraint string) (string, bool) {
+          <pre><code>func ConstraintToVERS(packageType PackageType, versionConstraint string) (string, bool) {
     scheme, ok := versSchemeForPackageType(packageType)
     if !ok {
         return "", false
     }
 
-    normalized, ok := normalizeNativeConstraintInput(packageType, constraint)
+    normalized, ok := normalizeNativeConstraintInput(packageType, versionConstraint)
     if !ok {
         return "", false
     }
@@ -610,8 +610,8 @@
         <h3>Omission Rules</h3>
         <p>Omit <code>vers</code> when any of these conditions are true:</p>
         <ul>
-          <li><code>Dependency.Type</code> is empty or not whitelisted.</li>
-          <li><code>Dependency.Constraint</code> is empty.</li>
+          <li><code>DependencyReference.Type</code> is empty or not whitelisted.</li>
+          <li><code>DependencyReference.VersionConstraint</code> is empty.</li>
           <li>The dependency has a resolved <code>version</code> but no source range.</li>
           <li>The candidate value is a full dependency requirement rather than an isolated range expression.</li>
           <li>The native constraint includes non-version semantics that are not separated yet.</li>
@@ -620,7 +620,7 @@
 
         <div class="callout warning">
           Python requirements need particular care. A constraint such as
-          <code>[all]&gt;=0.110; python_version &gt;= '3.10'</code> contains extras and an
+          <code>[all]&gt;=0.110; python_version &gt;= '3.10'</code> contains attributes and an
           environment marker. Phase 1 should omit VERS for that dependency unless those
           pieces are parsed into separate fields first.
         </div>
@@ -641,7 +641,7 @@
         </p>
 
         <div class="decision">
-          <p class="decision-title">Dependency decision</p>
+          <p class="decision-title">DependencyReference decision</p>
           <p>
             Pin the dependency version in <code>go.mod</code> and raise this repository's
             <code>go</code> directive to <code>1.25.6</code>. At the time this spec was
@@ -666,7 +666,7 @@
           <li>Reject package types not explicitly enabled by <code>deplens</code>.</li>
           <li>Perform safe input normalization, such as trimming whitespace.</li>
           <li>Reject full requirement strings that still contain the package name.</li>
-          <li>Reject constraints that mix range syntax with markers, extras, source URLs, or paths.</li>
+          <li>Reject constraints that mix range syntax with markers, attributes, source URLs, or paths.</li>
           <li>Validate generated output before writing <code>VERS</code>.</li>
         </ul>
 
@@ -696,12 +696,12 @@
               <tr>
                 <td><code>fastapi[all]&gt;=0.110</code></td>
                 <td><code>vers:pypi/fastapi[all]%3E%3D0.110</code></td>
-                <td>Reject until extras are parsed separately.</td>
+                <td>Reject until attributes are parsed separately.</td>
               </tr>
               <tr>
                 <td><code>fastapi[all]&gt;=0.110; python_version &gt;= "3.10"</code></td>
                 <td><code>vers:pypi/fastapi[all]%3E%3D0.110;%20python_version%20%3E%3D%20"3.10"</code></td>
-                <td>Reject until extras and markers are parsed separately.</td>
+                <td>Reject until attributes and markers are parsed separately.</td>
               </tr>
               <tr>
                 <td><code>==2.32.3</code></td>
@@ -837,23 +837,28 @@ fastapi[all]&gt;=0.110; python_version &gt;= "3.10"</code></pre>
         <div class="example">
           <header><span>JSON output</span><span>expected shape</span></header>
           <pre><code>{
-  "type": "pypi",
+  "package_type": "pypi",
   "raw": "requests&gt;=2.31,&lt;3",
   "name": "requests",
-  "constraint": "&gt;=2.31,&lt;3",
+  "version_constraint": "&gt;=2.31,&lt;3",
   "vers": "vers:pypi/&gt;=2.31|&lt;3"
 }
 {
-  "type": "pypi",
+  "package_type": "pypi",
   "raw": "fastapi[all]&gt;=0.110; python_version &gt;= \"3.10\"",
   "name": "fastapi",
-  "constraint": "[all]&gt;=0.110; python_version &gt;= \"3.10\""
+  "version_constraint": "&gt;=0.110",
+  "vers": "vers:pypi/&gt;=0.110",
+  "attributes": {
+    "extras": "all",
+    "marker": "python_version &gt;= &apos;3.10&apos;"
+  }
 }</code></pre>
         </div>
 
         <p>
-          The second dependency deliberately omits <code>vers</code> because
-          the current Python parser keeps extras and markers inside <code>constraint</code>.
+          Extras and environment markers remain source-faithful attributes while
+          <code>version_constraint</code> contains only the native range used to derive <code>vers</code>.
         </p>
 
         <h3>Lockfiles</h3>
@@ -897,8 +902,8 @@ none  &gt;=1             -&gt; omitted</code></pre>
         <div class="example">
           <header><span>README wording</span><span>draft</span></header>
           <pre><code>Each dependency may include vers, a normalized VERS
-version range derived from constraint when the dependency type and
-native range syntax are supported. The original constraint field is
+version range derived from version_constraint when the package type and
+native range syntax are supported. The original version_constraint field is
 preserved unchanged.</code></pre>
         </div>
       </section>
@@ -907,9 +912,9 @@ preserved unchanged.</code></pre>
         <h2>Non-Goals</h2>
         <ul>
           <li>Do not add full PURL output in this phase.</li>
-          <li>Do not replace or reinterpret the existing <code>constraint</code> field.</li>
-          <li>Do not evaluate whether a resolved version satisfies a range.</li>
-          <li>Do not parse Python markers or extras into new structured fields.</li>
+          <li>Do not replace or reinterpret the existing <code>version_constraint</code> field.</li>
+          <li>Do not evaluate whether a selected version satisfies a range.</li>
+          <li>Do not parse Python markers or attributes into new structured fields.</li>
           <li>Do not claim support for every ecosystem implemented by the library.</li>
           <li>Do not change human-readable CLI output.</li>
         </ul>
@@ -918,13 +923,13 @@ preserved unchanged.</code></pre>
       <section id="acceptance">
         <h2>Acceptance Criteria</h2>
         <ol>
-          <li><code>Dependency</code> JSON includes optional <code>vers</code>.</li>
+          <li><code>DependencyReference</code> JSON includes optional <code>vers</code>.</li>
           <li><code>go.mod</code> raises the repository Go directive to <code>1.25.6</code>.</li>
           <li>VERS conversion is implemented in shared analyzer code, not in individual detectors.</li>
           <li>The VERS library is imported only through a local adapter.</li>
           <li>Whitelisted ecosystems have explicit unit tests with exact expected VERS strings.</li>
           <li>Unsupported or mixed semantic constraints omit <code>vers</code>.</li>
-          <li>Existing JSON consumers remain compatible because the new field is additive.</li>
+          <li>The VERS field is part of the sole current dependency-reference contract.</li>
           <li><code>README.md</code> documents the new field with a concrete output example.</li>
         </ol>
       </section>

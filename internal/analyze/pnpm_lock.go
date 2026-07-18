@@ -46,20 +46,20 @@ func (d *pnpmLockDependency) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-func newPNPMLockParser(raw pnpmLockMatcherConfig) (manifestParser, error) {
+func newPNPMLockParser(raw pnpmLockMatcherConfig) (sourceAnalyzer, error) {
 	return pnpmLockParser{}, nil
 }
 
-func (p pnpmLockParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p pnpmLockParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	var file pnpmLockFile
 	if err := yaml.Unmarshal(content, &file); err != nil {
-		return manifestParserResult{}, fmt.Errorf("parse yaml file %q: %w", path, err)
+		return sourceAnalyzerResult{}, fmt.Errorf("parse yaml file %q: %w", path, err)
 	}
 	if file.LockfileVersion == "" {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
-	dependencies := make([]Dependency, 0)
+	dependencies := make([]DependencyReference, 0)
 	seen := make(map[string]struct{})
 
 	if importer, ok := file.Importers["."]; ok {
@@ -75,20 +75,20 @@ func (p pnpmLockParser) Match(path string, content []byte) (manifestParserResult
 	dependencies = appendPNPMLockTransitiveFromPackages(dependencies, seen, file.Packages)
 
 	if len(dependencies) == 0 {
-		return manifestParserResult{
-			Matched:         true,
-			HasDependencies: boolPtr(false),
+		return sourceAnalyzerResult{
+			Recognized: true,
+			Analysis:   SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete},
 		}, nil
 	}
 
-	return manifestParserResult{
-		Dependencies:    dependencies,
-		Matched:         true,
-		HasDependencies: boolPtr(true),
+	return sourceAnalyzerResult{
+		Dependencies: dependencies,
+		Recognized:   true,
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 	}, nil
 }
 
-func appendPNPMLockTransitiveFromPackages(dependencies []Dependency, seen map[string]struct{}, packages map[string]yaml.Node) []Dependency {
+func appendPNPMLockTransitiveFromPackages(dependencies []DependencyReference, seen map[string]struct{}, packages map[string]yaml.Node) []DependencyReference {
 	if len(packages) == 0 {
 		return dependencies
 	}
@@ -112,7 +112,7 @@ func appendPNPMLockTransitiveFromPackages(dependencies []Dependency, seen map[st
 			continue
 		}
 		seen[raw] = struct{}{}
-		dep := Dependency{Raw: raw, Name: name}
+		dep := DependencyReference{Raw: raw, Name: name}
 		if version != "" {
 			dep.Version = version
 		}
@@ -171,21 +171,21 @@ func pnpmLockPackageKeyNameVersionV9(key string) (name, version string) {
 	return key[:i], key[i+1:]
 }
 
-func appendPNPMLockDependencies(dependencies []Dependency, seen map[string]struct{}, section string, values map[string]pnpmLockDependency) []Dependency {
+func appendPNPMLockDependencies(dependencies []DependencyReference, seen map[string]struct{}, sourceGroup string, values map[string]pnpmLockDependency) []DependencyReference {
 	for _, name := range sortedPNPMLockDependencyNames(values) {
 		d := values[name]
-		dep := Dependency{
-			Raw:     formatPNPMLockDependencyName(name, d),
-			Name:    name,
-			Section: section,
+		dep := DependencyReference{
+			Raw:         formatPNPMLockDependencyName(name, d),
+			Name:        name,
+			SourceGroup: sourceGroup,
 		}
 		if d.Version != "" {
 			dep.Version = d.Version
 			if d.Specifier != "" {
-				dep.Extras = map[string]string{"specifier": d.Specifier}
+				dep.Attributes = map[string]string{"specifier": d.Specifier}
 			}
 		} else if d.Specifier != "" {
-			dep.Constraint = d.Specifier
+			dep.VersionConstraint = d.Specifier
 		}
 		seen[dep.Raw] = struct{}{}
 		dependencies = append(dependencies, dep)

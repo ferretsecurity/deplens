@@ -11,7 +11,7 @@ func TestUVLockParserExtractsRegistryAndPathDependencies(t *testing.T) {
 		t.Fatalf("newUVLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("uv.lock", []byte(`
+	result, err := parser.Analyze("uv.lock", []byte(`
 version = 1
 
 [[package]]
@@ -27,20 +27,20 @@ source = { path = "../my-lib" }
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if !result.Matched {
+	if !result.Recognized {
 		t.Fatalf("expected match")
 	}
 	if want := []string{"requests==2.32.3", "local-lib"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
 	}
-	if result.HasDependencies == nil || !*result.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Analysis)
 	}
 }
 
 func TestUVLockParserSetsStructuredFields(t *testing.T) {
 	parser, _ := newUVLockParser(uvLockMatcherConfig{})
-	result, _ := parser.Match("uv.lock", []byte(`
+	result, _ := parser.Analyze("uv.lock", []byte(`
 version = 1
 
 [[package]]
@@ -64,7 +64,7 @@ version = "2.32.3"
 
 func TestUVLockParserEmitsNonSelfPathDependencies(t *testing.T) {
 	parser, _ := newUVLockParser(uvLockMatcherConfig{})
-	result, _ := parser.Match("uv.lock", []byte(`
+	result, _ := parser.Analyze("uv.lock", []byte(`
 version = 1
 
 [[package]]
@@ -84,8 +84,8 @@ path = "../my-lib"
 	if dep.Name != "my-lib" {
 		t.Errorf("Name: got %q", dep.Name)
 	}
-	if dep.Source != "path" {
-		t.Errorf("Source: got %q", dep.Source)
+	if dep.OriginKind != "path" {
+		t.Errorf("Source: got %q", dep.OriginKind)
 	}
 	if dep.Version != "" {
 		t.Errorf("Version: expected empty, got %q", dep.Version)
@@ -98,18 +98,18 @@ func TestUVLockParserReturnsConclusiveEmptyForVersionOnlyFiles(t *testing.T) {
 		t.Fatalf("newUVLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("uv.lock", []byte("version = 1\n"))
+	result, err := parser.Analyze("uv.lock", []byte("version = 1\n"))
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if !result.Matched {
+	if !result.Recognized {
 		t.Fatalf("expected match")
 	}
 	if result.Dependencies != nil {
 		t.Fatalf("expected no dependencies, got %+v", result.Dependencies)
 	}
-	if result.HasDependencies == nil || *result.HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Analysis)
 	}
 }
 
@@ -119,7 +119,7 @@ func TestUVLockParserRetainsEditableDependenciesAndIgnoresSelfStyleSources(t *te
 		t.Fatalf("newUVLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("uv.lock", []byte(`
+	result, err := parser.Analyze("uv.lock", []byte(`
 version = 1
 
 [[package]]
@@ -145,14 +145,14 @@ source = { registry = "https://pypi.org/simple" }
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if !result.Matched {
+	if !result.Recognized {
 		t.Fatalf("expected match")
 	}
 	if want := []string{"foo==0.1.0", "requests==2.32.3"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
 	}
-	if result.HasDependencies == nil || !*result.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Analysis)
 	}
 }
 
@@ -162,7 +162,7 @@ func TestUVLockParserIgnoresSelfStyleEditableEntries(t *testing.T) {
 		t.Fatalf("newUVLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("uv.lock", []byte(`
+	result, err := parser.Analyze("uv.lock", []byte(`
 version = 1
 
 [[package]]
@@ -183,14 +183,14 @@ source = { registry = "https://pypi.org/simple" }
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if !result.Matched {
+	if !result.Recognized {
 		t.Fatalf("expected match")
 	}
 	if want := []string{"requests==2.32.3"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
 	}
-	if result.HasDependencies == nil || !*result.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Analysis)
 	}
 }
 
@@ -200,7 +200,7 @@ func TestUVLockParserReturnsConclusiveEmptyAfterFilteringIgnoredEntries(t *testi
 		t.Fatalf("newUVLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("uv.lock", []byte(`
+	result, err := parser.Analyze("uv.lock", []byte(`
 version = 1
 
 [[package]]
@@ -221,14 +221,14 @@ source = { virtual = "." }
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if !result.Matched {
+	if !result.Recognized {
 		t.Fatalf("expected match")
 	}
 	if result.Dependencies != nil {
 		t.Fatalf("expected no dependencies, got %+v", result.Dependencies)
 	}
-	if result.HasDependencies == nil || *result.HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Analysis)
 	}
 }
 
@@ -238,7 +238,7 @@ func TestUVLockParserIgnoresVirtualSelfEntries(t *testing.T) {
 		t.Fatalf("newUVLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("uv.lock", []byte(`
+	result, err := parser.Analyze("uv.lock", []byte(`
 version = 1
 
 [[package]]
@@ -254,14 +254,14 @@ source = { registry = "https://pypi.org/simple" }
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if !result.Matched {
+	if !result.Recognized {
 		t.Fatalf("expected match")
 	}
 	if want := []string{"requests==2.32.3"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
 	}
-	if result.HasDependencies == nil || !*result.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Analysis)
 	}
 }
 
@@ -271,7 +271,7 @@ func TestUVLockParserReturnsNoMatchWithoutTopLevelVersion(t *testing.T) {
 		t.Fatalf("newUVLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("uv.lock", []byte(`
+	result, err := parser.Analyze("uv.lock", []byte(`
 [[package]]
 name = "requests"
 version = "2.32.3"
@@ -280,14 +280,14 @@ source = { registry = "https://pypi.org/simple" }
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if result.Matched {
+	if result.Recognized {
 		t.Fatalf("expected no match, got %+v", result)
 	}
 	if result.Dependencies != nil {
 		t.Fatalf("expected no dependencies, got %+v", result.Dependencies)
 	}
-	if result.HasDependencies != nil {
-		t.Fatalf("expected unknown has_dependencies, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != "" && result.Analysis.Presence != PresenceUnknown {
+		t.Fatalf("expected unknown presence, got %+v", result.Analysis)
 	}
 }
 
@@ -297,7 +297,7 @@ func TestUVLockParserRejectsInvalidTOML(t *testing.T) {
 		t.Fatalf("newUVLockParser failed: %v", err)
 	}
 
-	_, err = parser.Match("uv.lock", []byte("version = 1\n[[package]]\nname = \"requests\"\nversion = "))
+	_, err = parser.Analyze("uv.lock", []byte("version = 1\n[[package]]\nname = \"requests\"\nversion = "))
 	if err == nil {
 		t.Fatalf("expected parse error")
 	}

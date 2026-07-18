@@ -33,7 +33,7 @@ type terraformMatcherConfig struct {
 	Conditions   []terraformConditionConfig `yaml:"conditions"`
 }
 
-func newTerraformResourceParser(raw terraformMatcherConfig) (manifestParser, error) {
+func newTerraformResourceParser(raw terraformMatcherConfig) (sourceAnalyzer, error) {
 	if raw.ResourceType == "" {
 		return nil, fmt.Errorf("terraform.resource_type: required")
 	}
@@ -63,16 +63,16 @@ func newTerraformResourceParser(raw terraformMatcherConfig) (manifestParser, err
 	}, nil
 }
 
-func (m terraformResourceParserMatcher) Match(path string, content []byte) (manifestParserResult, error) {
+func (m terraformResourceParserMatcher) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	parser := hclparse.NewParser()
 	file, diags := parser.ParseHCL(content, path)
 	if diags.HasErrors() {
-		return manifestParserResult{}, fmt.Errorf("parse terraform file %q: %s", path, diags.Error())
+		return sourceAnalyzerResult{}, fmt.Errorf("parse terraform file %q: %s", path, diags.Error())
 	}
 
 	body, ok := file.Body.(*hclsyntax.Body)
 	if !ok {
-		return manifestParserResult{}, fmt.Errorf("parse terraform file %q: unexpected body type %T", path, file.Body)
+		return sourceAnalyzerResult{}, fmt.Errorf("parse terraform file %q: unexpected body type %T", path, file.Body)
 	}
 
 	for _, block := range body.Blocks {
@@ -81,14 +81,14 @@ func (m terraformResourceParserMatcher) Match(path string, content []byte) (mani
 		}
 		matched, err := m.matchBlock(block.Body)
 		if err != nil {
-			return manifestParserResult{}, fmt.Errorf("match terraform resource %q in %q: %w", m.resourceType, path, err)
+			return sourceAnalyzerResult{}, fmt.Errorf("match terraform resource %q in %q: %w", m.resourceType, path, err)
 		}
 		if matched {
-			return manifestParserResult{Matched: true}, nil
+			return sourceAnalyzerResult{Recognized: true, Analysis: identifiedAnalysis()}, nil
 		}
 	}
 
-	return manifestParserResult{}, nil
+	return sourceAnalyzerResult{}, nil
 }
 
 func (m terraformResourceParserMatcher) matchBlock(body *hclsyntax.Body) (bool, error) {

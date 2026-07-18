@@ -21,77 +21,77 @@ type cargoLockPackage struct {
 	Checksum *string `toml:"checksum"`
 }
 
-func newCargoLockParser(raw cargoLockMatcherConfig) (manifestParser, error) {
+func newCargoLockParser(raw cargoLockMatcherConfig) (sourceAnalyzer, error) {
 	return cargoLockParser{}, nil
 }
 
-func (p cargoLockParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p cargoLockParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	var file cargoLockFile
 	if err := toml.Unmarshal(content, &file); err != nil {
-		return manifestParserResult{}, fmt.Errorf("parse toml file %q: %w", path, err)
+		return sourceAnalyzerResult{}, fmt.Errorf("parse toml file %q: %w", path, err)
 	}
 	if file.Version == nil {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
-	dependencies := make([]Dependency, 0, len(file.Packages))
+	dependencies := make([]DependencyReference, 0, len(file.Packages))
 	for _, pkg := range file.Packages {
 		if pkg.Name == "" || pkg.Version == "" {
 			continue
 		}
-		dep := Dependency{
+		dep := DependencyReference{
 			Raw:     pkg.Name + "@" + pkg.Version,
 			Name:    pkg.Name,
 			Version: pkg.Version,
 		}
 		if pkg.Source != nil && *pkg.Source != "" {
-			sourceType, extras := parseCargoLockSource(*pkg.Source, nil)
-			dep.Source = sourceType
-			dep.Extras = extras
+			originKind, attributes := parseCargoLockOrigin(*pkg.Source, nil)
+			dep.OriginKind = originKind
+			dep.Attributes = attributes
 		}
 		if pkg.Checksum != nil && *pkg.Checksum != "" {
-			if dep.Extras == nil {
-				dep.Extras = make(map[string]string)
+			if dep.Attributes == nil {
+				dep.Attributes = make(map[string]string)
 			}
-			dep.Extras["checksum"] = *pkg.Checksum
+			dep.Attributes["checksum"] = *pkg.Checksum
 		}
 		dependencies = append(dependencies, dep)
 	}
 
 	if len(dependencies) == 0 {
-		return manifestParserResult{
-			Matched:         true,
-			HasDependencies: boolPtr(false),
+		return sourceAnalyzerResult{
+			Recognized: true,
+			Analysis:   SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete},
 		}, nil
 	}
 
-	return manifestParserResult{
-		Dependencies:    dependencies,
-		Matched:         true,
-		HasDependencies: boolPtr(true),
+	return sourceAnalyzerResult{
+		Dependencies: dependencies,
+		Recognized:   true,
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 	}, nil
 }
 
-func parseCargoLockSource(source string, extras map[string]string) (sourceType string, updatedExtras map[string]string) {
-	if extras == nil {
-		extras = make(map[string]string)
+func parseCargoLockOrigin(source string, attributes map[string]string) (OriginKind, map[string]string) {
+	if attributes == nil {
+		attributes = make(map[string]string)
 	}
 	switch {
 	case strings.HasPrefix(source, "registry+"):
 		url := strings.TrimPrefix(source, "registry+")
-		extras["source_url"] = url
-		return "registry", extras
+		attributes["source_url"] = url
+		return OriginRegistry, attributes
 	case strings.HasPrefix(source, "git+"):
 		raw := strings.TrimPrefix(source, "git+")
 		if idx := strings.LastIndex(raw, "#"); idx >= 0 {
-			extras["source_url"] = raw[:idx]
-			extras["source_ref"] = raw[idx+1:]
+			attributes["source_url"] = raw[:idx]
+			attributes["source_ref"] = raw[idx+1:]
 		} else {
-			extras["source_url"] = raw
+			attributes["source_url"] = raw
 		}
-		return "git", extras
+		return OriginGit, attributes
 	default:
-		extras["source_url"] = source
-		return "url", extras
+		attributes["source_url"] = source
+		return OriginURL, attributes
 	}
 }

@@ -8,10 +8,10 @@ import (
 
 func TestDependencyVERSConvertsThirtyNativeConstraints(t *testing.T) {
 	testCases := []struct {
-		name        string
-		packageType PackageType
-		constraint  string
-		want        string
+		name              string
+		packageType       PackageType
+		versionConstraint string
+		want              string
 	}{
 		// PyPI
 		{"pypi exact", "pypi", "==1.2.3", "vers:pypi/%3D1.2.3"},
@@ -57,9 +57,9 @@ func TestDependencyVERSConvertsThirtyNativeConstraints(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := dependencyVERS(tc.packageType, tc.constraint)
+			got := dependencyVERS(tc.packageType, tc.versionConstraint)
 			if got != tc.want {
-				t.Fatalf("dependencyVERS(%q, %q) = %q, want %q", tc.packageType, tc.constraint, got, tc.want)
+				t.Fatalf("dependencyVERS(%q, %q) = %q, want %q", tc.packageType, tc.versionConstraint, got, tc.want)
 			}
 			if _, err := vers.Parse(got); err != nil {
 				t.Fatalf("generated VERS %q does not parse: %v", got, err)
@@ -70,10 +70,10 @@ func TestDependencyVERSConvertsThirtyNativeConstraints(t *testing.T) {
 
 func TestDependencyVERSRoundTripsRepresentativeRanges(t *testing.T) {
 	testCases := []struct {
-		packageType PackageType
-		constraint  string
-		included    string
-		excluded    string
+		packageType       PackageType
+		versionConstraint string
+		included          string
+		excluded          string
 	}{
 		{"pypi", ">=1.0,<2.0", "1.5", "2.0"},
 		{"golang", "v1.2.3", "v1.2.3", "v2.0.0"},
@@ -85,7 +85,7 @@ func TestDependencyVERSRoundTripsRepresentativeRanges(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(string(tc.packageType), func(t *testing.T) {
-			got := dependencyVERS(tc.packageType, tc.constraint)
+			got := dependencyVERS(tc.packageType, tc.versionConstraint)
 			parsed, err := vers.Parse(got)
 			if err != nil {
 				t.Fatalf("Parse(%q): %v", got, err)
@@ -102,24 +102,24 @@ func TestDependencyVERSRoundTripsRepresentativeRanges(t *testing.T) {
 
 func TestDependencyVERSOmitsUnsupportedAndInvalidConstraints(t *testing.T) {
 	for _, tc := range []struct {
-		packageType PackageType
-		constraint  string
+		packageType       PackageType
+		versionConstraint string
 	}{
-		{packageType: "npm", constraint: "^"},
-		{packageType: "composer", constraint: "^1.2.3"},
-		{packageType: "docker", constraint: "^1.2.3"},
-		{packageType: "npm", constraint: ""},
+		{packageType: "npm", versionConstraint: "^"},
+		{packageType: "composer", versionConstraint: "^1.2.3"},
+		{packageType: "docker", versionConstraint: "^1.2.3"},
+		{packageType: "npm", versionConstraint: ""},
 	} {
-		if got := dependencyVERS(tc.packageType, tc.constraint); got != "" {
-			t.Errorf("dependencyVERS(%q, %q) = %q, want empty", tc.packageType, tc.constraint, got)
+		if got := dependencyVERS(tc.packageType, tc.versionConstraint); got != "" {
+			t.Errorf("dependencyVERS(%q, %q) = %q, want empty", tc.packageType, tc.versionConstraint, got)
 		}
 	}
 }
 
 func TestApplyDependencyVERS(t *testing.T) {
-	dependencies := []Dependency{
-		{Type: "pypi", Constraint: ">=2.31"},
-		{Type: "npm", Version: "18.3.1"},
+	dependencies := []DependencyReference{
+		{PackageType: "pypi", VersionConstraint: ">=2.31"},
+		{PackageType: "npm", Version: "18.3.1"},
 	}
 
 	applyDependencyVERS(dependencies)

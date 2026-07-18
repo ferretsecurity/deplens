@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this project does
 
-`deplens` is a Go CLI that walks a directory tree, identifies dependency manifest files (60+ formats across 23+ ecosystems), extracts structured dependency data from them, and prints results. It makes no network calls and does no vulnerability scanning.
+`deplens` is a Go CLI that walks a directory tree, identifies dependency sources across many ecosystems, analyzes dependency presence, extracts structured dependency references where supported, and prints results. It makes no network calls and does no vulnerability scanning.
 
 ## Commands
 
@@ -25,11 +25,10 @@ For architecture, data flow, core types, parser patterns, and testing convention
 
 1. If the format is TOML/YAML/JSON/XML/INI: add a rule to `default_rules.yaml` only (no Go needed)
 2. For custom extraction logic:
-   a. Create `internal/analyze/<name>.go` implementing `manifestParser`
-   b. Add `<name>MatcherConfig`, parser struct, `new<Name>` constructor
-   c. Register in `parser_factory.go` (nil-check + constructor call; increment `parserCount`)
-   d. Add config field to `ruleConfig` in `rules.go`
-   e. Add rule to `default_rules.yaml`
+   a. Create `internal/analyze/<name>.go` implementing `sourceAnalyzer`
+   b. Add a configuration type, analyzer struct, and constructor
+   c. Register its nested `analyzer.type` in `compileSourceAnalyzer`
+   d. Add a rule with explicit `id`, `form`, and `roles` to `default_rules.yaml`
 3. Add fixture files under `testdata/<ecosystem>/`
 4. Add unit tests in `<name>_test.go` and scan integration tests in `<name>_scan_test.go`
 5. Update `README.md` with detector info (required per `AGENTS.md`)

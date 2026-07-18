@@ -1,131 +1,94 @@
 package analyze
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
 
-func compileManifestParser(raw ruleConfig) (manifestParser, error) {
-	parserCount := 0
-	if raw.BannerRegex != "" {
-		parserCount++
+	"gopkg.in/yaml.v3"
+)
+
+type bannerRegexAnalyzerConfig struct {
+	Pattern string `yaml:"pattern"`
+}
+
+func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
+	if raw.Analyzer == nil {
+		return nil, nil
 	}
-	if raw.Terraform != nil {
-		parserCount++
+	if raw.Analyzer.Type == "" {
+		return nil, fmt.Errorf("type: required")
 	}
-	if raw.INI != nil {
-		parserCount++
+
+	switch raw.Analyzer.Type {
+	case "banner-regex":
+		var config bannerRegexAnalyzerConfig
+		if err := raw.Analyzer.decodeStrict(&config); err != nil {
+			return nil, err
+		}
+		if config.Pattern == "" {
+			return nil, fmt.Errorf("pattern: required")
+		}
+		return newBannerRegexParser(config.Pattern)
+	case "terraform":
+		return decodeAndCreate(raw.Analyzer, newTerraformResourceParser)
+	case "ini":
+		return decodeAndCreate(raw.Analyzer, newINIQueryParser)
+	case "typescript":
+		return decodeAndCreate(raw.Analyzer, newTypeScriptMatcher)
+	case "python":
+		return decodeAndCreate(raw.Analyzer, newPythonMatcher)
+	case "py-requirements":
+		return decodeAndCreate(raw.Analyzer, newPyRequirementsMatcher)
+	case "pipfile-lock":
+		return decodeAndCreate(raw.Analyzer, newPipfileLockParser)
+	case "poetry-lock":
+		return decodeAndCreate(raw.Analyzer, newPoetryLockParser)
+	case "uv-lock":
+		return decodeAndCreate(raw.Analyzer, newUVLockParser)
+	case "go-mod":
+		return decodeAndCreate(raw.Analyzer, newGoModMatcher)
+	case "package-lock":
+		return decodeAndCreate(raw.Analyzer, newPackageLockParser)
+	case "pnpm-lock":
+		return decodeAndCreate(raw.Analyzer, newPNPMLockParser)
+	case "composer-lock":
+		return decodeAndCreate(raw.Analyzer, newComposerLockParser)
+	case "cargo-lock":
+		return decodeAndCreate(raw.Analyzer, newCargoLockParser)
+	case "yarn-lock":
+		return decodeAndCreate(raw.Analyzer, newYarnLockParser)
+	case "yaml":
+		return decodeAndCreate(raw.Analyzer, newYAMLQueryParser)
+	case "toml":
+		return decodeAndCreate(raw.Analyzer, newTOMLQueryParser)
+	case "json":
+		return decodeAndCreate(raw.Analyzer, newJSONMatcher)
+	case "xml":
+		return decodeAndCreate(raw.Analyzer, newXMLMatcher)
+	case "html":
+		return decodeAndCreate(raw.Analyzer, newHTMLMatcher)
+	default:
+		return nil, fmt.Errorf("type: unsupported value %q", raw.Analyzer.Type)
 	}
-	if raw.TypeScript != nil {
-		parserCount++
+}
+
+func (c analyzerConfig) decodeStrict(target any) error {
+	data, err := yaml.Marshal(&c.config)
+	if err != nil {
+		return fmt.Errorf("encode configuration: %w", err)
 	}
-	if raw.Python != nil {
-		parserCount++
+	decoder := yaml.NewDecoder(bytes.NewReader(data))
+	decoder.KnownFields(true)
+	if err := decoder.Decode(target); err != nil {
+		return fmt.Errorf("%s configuration: %w", c.Type, err)
 	}
-	if raw.PyRequirements != nil {
-		parserCount++
+	return nil
+}
+
+func decodeAndCreate[T any](config *analyzerConfig, create func(T) (sourceAnalyzer, error)) (sourceAnalyzer, error) {
+	var value T
+	if err := config.decodeStrict(&value); err != nil {
+		return nil, err
 	}
-	if raw.PipfileLock != nil {
-		parserCount++
-	}
-	if raw.PoetryLock != nil {
-		parserCount++
-	}
-	if raw.UVLock != nil {
-		parserCount++
-	}
-	if raw.GoMod != nil {
-		parserCount++
-	}
-	if raw.PackageLock != nil {
-		parserCount++
-	}
-	if raw.PNPMLock != nil {
-		parserCount++
-	}
-	if raw.ComposerLock != nil {
-		parserCount++
-	}
-	if raw.CargoLock != nil {
-		parserCount++
-	}
-	if raw.YarnLock != nil {
-		parserCount++
-	}
-	if raw.YAML != nil {
-		parserCount++
-	}
-	if raw.TOML != nil {
-		parserCount++
-	}
-	if raw.JSON != nil {
-		parserCount++
-	}
-	if raw.XML != nil {
-		parserCount++
-	}
-	if raw.HTML != nil {
-		parserCount++
-	}
-	if parserCount > 1 {
-		return nil, fmt.Errorf("exactly one parser type may be configured")
-	}
-	if raw.BannerRegex != "" {
-		return newBannerRegexParser(raw.BannerRegex)
-	}
-	if raw.Terraform != nil {
-		return newTerraformResourceParser(*raw.Terraform)
-	}
-	if raw.INI != nil {
-		return newINIQueryParser(*raw.INI)
-	}
-	if raw.TypeScript != nil {
-		return newTypeScriptMatcher(*raw.TypeScript)
-	}
-	if raw.Python != nil {
-		return newPythonMatcher(*raw.Python)
-	}
-	if raw.PyRequirements != nil {
-		return newPyRequirementsMatcher(*raw.PyRequirements)
-	}
-	if raw.PipfileLock != nil {
-		return newPipfileLockParser(*raw.PipfileLock)
-	}
-	if raw.PoetryLock != nil {
-		return newPoetryLockParser(*raw.PoetryLock)
-	}
-	if raw.UVLock != nil {
-		return newUVLockParser(*raw.UVLock)
-	}
-	if raw.GoMod != nil {
-		return newGoModMatcher(*raw.GoMod)
-	}
-	if raw.PackageLock != nil {
-		return newPackageLockParser(*raw.PackageLock)
-	}
-	if raw.PNPMLock != nil {
-		return newPNPMLockParser(*raw.PNPMLock)
-	}
-	if raw.ComposerLock != nil {
-		return newComposerLockParser(*raw.ComposerLock)
-	}
-	if raw.CargoLock != nil {
-		return newCargoLockParser(*raw.CargoLock)
-	}
-	if raw.YarnLock != nil {
-		return newYarnLockParser(*raw.YarnLock)
-	}
-	if raw.YAML != nil {
-		return newYAMLQueryParser(*raw.YAML)
-	}
-	if raw.TOML != nil {
-		return newTOMLQueryParser(*raw.TOML)
-	}
-	if raw.JSON != nil {
-		return newJSONMatcher(*raw.JSON)
-	}
-	if raw.XML != nil {
-		return newXMLMatcher(*raw.XML)
-	}
-	if raw.HTML != nil {
-		return newHTMLMatcher(*raw.HTML)
-	}
-	return nil, nil
+	return create(value)
 }

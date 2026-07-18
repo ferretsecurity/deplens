@@ -19,18 +19,18 @@ type pipfileLockDependency struct {
 	Version string `json:"version"`
 }
 
-func newPipfileLockParser(raw pipfileLockMatcherConfig) (manifestParser, error) {
+func newPipfileLockParser(raw pipfileLockMatcherConfig) (sourceAnalyzer, error) {
 	return pipfileLockParser{}, nil
 }
 
-func (p pipfileLockParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p pipfileLockParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	var file pipfileLockFile
 	if err := json.Unmarshal(content, &file); err != nil {
-		return manifestParserResult{}, fmt.Errorf("parse json file %q: %w", path, err)
+		return sourceAnalyzerResult{}, fmt.Errorf("parse json file %q: %w", path, err)
 	}
 
 	if file.Meta == nil && file.Default == nil && file.Develop == nil {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
 	dependencies := pipfileLockDependencies(
@@ -38,16 +38,16 @@ func (p pipfileLockParser) Match(path string, content []byte) (manifestParserRes
 		pipfileLockDependencyGroup{Name: "develop", Packages: file.Develop},
 	)
 	if len(dependencies) == 0 {
-		return manifestParserResult{
-			Matched:         true,
-			HasDependencies: boolPtr(false),
+		return sourceAnalyzerResult{
+			Recognized: true,
+			Analysis:   SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete},
 		}, nil
 	}
 
-	return manifestParserResult{
-		Dependencies:    dependencies,
-		Matched:         true,
-		HasDependencies: boolPtr(true),
+	return sourceAnalyzerResult{
+		Dependencies: dependencies,
+		Recognized:   true,
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 	}, nil
 }
 
@@ -56,12 +56,12 @@ type pipfileLockDependencyGroup struct {
 	Packages map[string]pipfileLockDependency
 }
 
-func pipfileLockDependencies(groups ...pipfileLockDependencyGroup) []Dependency {
+func pipfileLockDependencies(groups ...pipfileLockDependencyGroup) []DependencyReference {
 	if len(groups) == 0 {
 		return nil
 	}
 
-	values := make([]Dependency, 0)
+	values := make([]DependencyReference, 0)
 	for _, group := range groups {
 		if group.Name == "" || len(group.Packages) == 0 {
 			continue
@@ -79,11 +79,11 @@ func pipfileLockDependencies(groups ...pipfileLockDependencyGroup) []Dependency 
 				raw = name + rawVersion
 				version = strings.TrimPrefix(rawVersion, "==")
 			}
-			values = append(values, Dependency{
-				Raw:     raw,
-				Name:    name,
-				Version: version,
-				Section: group.Name,
+			values = append(values, DependencyReference{
+				Raw:         raw,
+				Name:        name,
+				Version:     version,
+				SourceGroup: group.Name,
 			})
 		}
 	}
@@ -92,8 +92,8 @@ func pipfileLockDependencies(groups ...pipfileLockDependencyGroup) []Dependency 
 		return nil
 	}
 
-	slices.SortFunc(values, func(a, b Dependency) int {
-		if a.Section == b.Section {
+	slices.SortFunc(values, func(a, b DependencyReference) int {
+		if a.SourceGroup == b.SourceGroup {
 			switch {
 			case a.Raw < b.Raw:
 				return -1
@@ -103,7 +103,7 @@ func pipfileLockDependencies(groups ...pipfileLockDependencyGroup) []Dependency 
 				return 0
 			}
 		}
-		if a.Section < b.Section {
+		if a.SourceGroup < b.SourceGroup {
 			return -1
 		}
 		return 1

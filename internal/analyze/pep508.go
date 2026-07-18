@@ -3,14 +3,14 @@ package analyze
 import "strings"
 
 type pep508Dependency struct {
-	name       string
-	constraint string
-	extras     map[string]string
+	name              string
+	versionConstraint string
+	attributes        map[string]string
 }
 
 // parsePEP508Dep extracts the name, version constraint, extras, and marker
 // from a PEP 508 dependency specifier. Raw input remains available separately
-// on Dependency.Raw.
+// on DependencyReference.Raw.
 func parsePEP508Dep(spec string) pep508Dependency {
 	if idx := strings.Index(spec, " #"); idx >= 0 {
 		spec = strings.TrimSpace(spec[:idx])
@@ -32,19 +32,19 @@ func parsePEP508Dep(spec string) pep508Dependency {
 	rest := strings.TrimSpace(spec[end:])
 	if strings.HasPrefix(rest, "[") {
 		if close := strings.IndexByte(rest, ']'); close >= 0 {
-			if extras := normalizePEP508Extras(rest[1:close]); extras != "" {
-				dep.extras = map[string]string{"extras": extras}
+			if attributes := normalizePEP508Extras(rest[1:close]); attributes != "" {
+				dep.attributes = map[string]string{"extras": attributes}
 			}
 			rest = strings.TrimSpace(rest[close+1:])
 		}
 	}
 
-	dep.constraint, rest = splitPEP508Marker(rest)
+	dep.versionConstraint, rest = splitPEP508Marker(rest)
 	if rest != "" {
-		if dep.extras == nil {
-			dep.extras = make(map[string]string)
+		if dep.attributes == nil {
+			dep.attributes = make(map[string]string)
 		}
-		dep.extras["marker"] = rest
+		dep.attributes["marker"] = rest
 	}
 	return dep
 }
@@ -57,7 +57,7 @@ func normalizePEP508Extras(value string) string {
 	return strings.Join(parts, ",")
 }
 
-func splitPEP508Marker(value string) (constraint, marker string) {
+func splitPEP508Marker(value string) (versionConstraint, marker string) {
 	var quote byte
 	for i := 0; i < len(value); i++ {
 		switch value[i] {

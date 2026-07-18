@@ -13,7 +13,7 @@ type jsonMatcher struct {
 	keys []string
 }
 
-func newJSONMatcher(raw jsonMatcherConfig) (manifestParser, error) {
+func newJSONMatcher(raw jsonMatcherConfig) (sourceAnalyzer, error) {
 	if len(raw.ExistsAny) == 0 {
 		return nil, fmt.Errorf("json.exists-any: must contain at least one entry")
 	}
@@ -34,10 +34,10 @@ func newJSONMatcher(raw jsonMatcherConfig) (manifestParser, error) {
 	return jsonMatcher{keys: keys}, nil
 }
 
-func (m jsonMatcher) Match(path string, content []byte) (manifestParserResult, error) {
+func (m jsonMatcher) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	var root map[string]json.RawMessage
 	if err := json.Unmarshal(content, &root); err != nil {
-		return manifestParserResult{}, fmt.Errorf("parse json file %q: %w", path, err)
+		return sourceAnalyzerResult{}, fmt.Errorf("parse json file %q: %w", path, err)
 	}
 
 	for _, key := range m.keys {
@@ -48,7 +48,7 @@ func (m jsonMatcher) Match(path string, content []byte) (manifestParserResult, e
 		var objectValues map[string]json.RawMessage
 		if err := json.Unmarshal(rawValue, &objectValues); err == nil {
 			if len(objectValues) > 0 {
-				return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+				return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}, nil
 			}
 			continue
 		}
@@ -56,7 +56,7 @@ func (m jsonMatcher) Match(path string, content []byte) (manifestParserResult, e
 		var arrayValues []json.RawMessage
 		if err := json.Unmarshal(rawValue, &arrayValues); err == nil {
 			if len(arrayValues) > 0 {
-				return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+				return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}, nil
 			}
 			continue
 		}
@@ -64,7 +64,7 @@ func (m jsonMatcher) Match(path string, content []byte) (manifestParserResult, e
 		var stringValue string
 		if err := json.Unmarshal(rawValue, &stringValue); err == nil {
 			if stringValue != "" {
-				return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+				return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}, nil
 			}
 			continue
 		}
@@ -76,16 +76,16 @@ func (m jsonMatcher) Match(path string, content []byte) (manifestParserResult, e
 		var boolValue bool
 		if err := json.Unmarshal(rawValue, &boolValue); err == nil {
 			if boolValue {
-				return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+				return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}, nil
 			}
 			continue
 		}
 
 		var numberValue float64
 		if err := json.Unmarshal(rawValue, &numberValue); err == nil {
-			return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+			return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}, nil
 		}
 	}
 
-	return manifestParserResult{HasDependencies: boolPtr(false), Matched: true}, nil
+	return sourceAnalyzerResult{Analysis: presenceAnalysis(false), Recognized: true}, nil
 }

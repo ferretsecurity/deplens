@@ -1,40 +1,66 @@
 rules:
-  - name: python-requirements
-    dependency-type: pypi
+  - id: python-requirements
+    form: requirements
+    roles: [declaration, constraint]
+    package-type: pypi
     filename-regex: '(^|.*[^A-Za-z])requirements([^A-Za-z].*)?\.(txt|in)$'
-    py-requirements: {}
-  - name: python-requirements-dir
-    dependency-type: pypi
+    analyzer:
+      type: py-requirements
+  - id: python-requirements-dir
+    form: requirements
+    roles: [declaration, constraint]
+    package-type: pypi
     path-glob: '**/requirements/*.txt'
-    py-requirements: {}
-  - name: python-uv
-    dependency-type: pypi
+    analyzer:
+      type: py-requirements
+  - id: python-uv
+    form: lockfile
+    roles: [resolution, integrity]
+    package-type: pypi
     filename-regex: '^uv\.lock$'
-    uv-lock: {}
-  - name: python-poetry-lock
-    dependency-type: pypi
+    analyzer:
+      type: uv-lock
+  - id: python-poetry-lock
+    form: lockfile
+    roles: [resolution, integrity]
+    package-type: pypi
     filename-regex: '^poetry\.lock$'
-    poetry-lock: {}
-  - name: python-pipfile-lock
-    dependency-type: pypi
+    analyzer:
+      type: poetry-lock
+  - id: python-pipfile-lock
+    form: lockfile
+    roles: [resolution, integrity]
+    package-type: pypi
     filename-regex: '^Pipfile\.lock$'
-    pipfile-lock: {}
-  - name: python-pdm-lock
+    analyzer:
+      type: pipfile-lock
+  - id: python-pdm-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^pdm\.lock$'
-    toml:
+    analyzer:
+      type: toml
       exists-any:
         - package
-  - name: python-conda-lock
+  - id: python-conda-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^conda-lock\.yml$'
-    yaml:
+    analyzer:
+      type: yaml
       exists-any:
         - package
-  - name: python-conda-env-alt
+  - id: python-conda-env-alt
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^conda\.ya?ml$'
-  - name: python-pyproject
-    dependency-type: pypi
+  - id: python-pyproject
+    form: manifest
+    roles: [declaration, constraint]
+    package-type: pypi
     filename-regex: '^pyproject\.toml$'
-    toml:
+    analyzer:
+      type: toml
       queries:
         - build-system.requires[]
         - project.dependencies[]
@@ -42,14 +68,20 @@ rules:
         - dependency-groups.*[]
         - tool.poetry.dependencies
         - tool.poetry.group.*.dependencies
-  - name: python-conda-environment
+  - id: python-conda-environment
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^environment\.ya?ml$'
-    yaml:
+    analyzer:
+      type: yaml
       exists: dependencies
-  - name: python-pipfile
-    dependency-type: pypi
+  - id: python-pipfile
+    form: manifest
+    roles: [declaration, constraint]
+    package-type: pypi
     filename-regex: '^Pipfile$'
-    toml:
+    analyzer:
+      type: toml
       table-queries:
         - '*'
       exclude-keys:
@@ -57,10 +89,13 @@ rules:
         - requires
         - scripts
         - pipenv
-  - name: python-setup-py
-    dependency-type: pypi
+  - id: python-setup-py
+    form: manifest
+    roles: [declaration, constraint]
+    package-type: pypi
     filename-regex: '^setup\.py$'
-    python:
+    analyzer:
+      type: python
       call:
         module: setuptools
         function: setup
@@ -75,10 +110,13 @@ rules:
             literal: string_list
           - keyword: extras_require
             literal: dict_string_lists
-  - name: python-setup-cfg
-    dependency-type: pypi
+  - id: python-setup-cfg
+    form: manifest
+    roles: [declaration, constraint]
+    package-type: pypi
     filename-regex: '^setup\.cfg$'
-    ini:
+    analyzer:
+      type: ini
       queries:
         - section: options
           key: setup_requires
@@ -86,214 +124,382 @@ rules:
           key: install_requires
         - section: options.extras_require
           key: '*'
-  - name: python-constraints
+  - id: python-constraints
+    form: constraint-file
+    roles: [constraint]
     filename-regex: '^constraints\.txt$'
-  - name: js
+  - id: js
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^package\.json$'
-    json:
+    analyzer:
+      type: json
       exists-any:
         - dependencies
         - devDependencies
         - peerDependencies
         - optionalDependencies
-  - name: js-bower
+  - id: js-bower
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^bower\.json$'
-    json:
+    analyzer:
+      type: json
       exists-any:
         - dependencies
         - devDependencies
-  - name: js-npm-shrinkwrap
-    dependency-type: npm
+  - id: js-npm-shrinkwrap
+    form: lockfile
+    roles: [resolution, integrity]
+    package-type: npm
     filename-regex: '^npm-shrinkwrap\.json$'
-    package-lock: {}
-  - name: js-npm-lock
-    dependency-type: npm
+    analyzer:
+      type: package-lock
+  - id: js-npm-lock
+    form: lockfile
+    roles: [resolution, integrity]
+    package-type: npm
     filename-regex: '^package-lock\.json$'
-    package-lock: {}
-  - name: js-yarn
-    dependency-type: npm
+    analyzer:
+      type: package-lock
+  - id: js-yarn
+    form: lockfile
+    roles: [resolution, integrity]
+    package-type: npm
     filename-regex: '^yarn\.lock$'
-    yarn-lock: {}
-  - name: js-pnpm-lock
-    dependency-type: npm
+    analyzer:
+      type: yarn-lock
+  - id: js-pnpm-lock
+    form: lockfile
+    roles: [resolution, integrity]
+    package-type: npm
     filename-regex: '^pnpm-lock\.yaml$'
-    pnpm-lock: {}
-  - name: js-bun-lock
+    analyzer:
+      type: pnpm-lock
+  - id: js-bun-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^bun\.lock$'
-  - name: js-bun-lockb
+  - id: js-bun-lockb
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^bun\.lockb$'
-  - name: deno-lock
+  - id: deno-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^deno\.lock$'
-  - name: deno-json
+  - id: deno-json
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^deno\.json$'
-    json:
+    analyzer:
+      type: json
       exists-any:
         - imports
-  - name: deno-jsonc
+  - id: deno-jsonc
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^deno\.jsonc$'
-    json:
+    analyzer:
+      type: json
       exists-any:
         - imports
-  - name: js-pnp
+  - id: js-pnp
+    form: vendored-file
+    roles: [inventory, resolution]
     filename-regex: '^\.pnp\.(cjs|loader\.mjs)$'
-  - name: js-pnpm-workspace
+  - id: js-pnpm-workspace
+    form: workspace-definition
+    roles: [workspace, configuration]
     filename-regex: '^pnpm-workspace\.ya?ml$'
-  - name: js-npmrc
+  - id: js-npmrc
+    form: tool-config
+    roles: [configuration]
     filename-regex: '^\.npmrc$'
-  - name: js-yarnrc
+  - id: js-yarnrc
+    form: tool-config
+    roles: [configuration]
     filename-regex: '^\.yarnrc\.yml$'
-  - name: js-importmap
+  - id: js-importmap
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^importmap\.json$'
-  - name: java
+  - id: java
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^pom\.xml$'
-    xml:
+    analyzer:
+      type: xml
       exists-any:
         - project.dependencies.dependency
-  - name: java-gradle-lockfile
+  - id: java-gradle-lockfile
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^gradle\.lockfile$'
-  - name: java-gradle
+  - id: java-gradle
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^build\.gradle$'
-  - name: java-gradle-kts
+  - id: java-gradle-kts
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^build\.gradle\.kts$'
-  - name: java-gradle-settings
+  - id: java-gradle-settings
+    form: workspace-definition
+    roles: [workspace, configuration]
     filename-regex: '^settings\.gradle$'
-  - name: java-gradle-settings-kts
+  - id: java-gradle-settings-kts
+    form: workspace-definition
+    roles: [workspace, configuration]
     filename-regex: '^settings\.gradle\.kts$'
-  - name: java-gradle-version-catalog
+  - id: java-gradle-version-catalog
+    form: version-catalog
+    roles: [declaration, constraint]
     path-glob: '**/gradle/libs.versions.toml'
-  - name: java-gradle-wrapper
+  - id: java-gradle-wrapper
+    form: tool-config
+    roles: [configuration]
     path-glob: '**/gradle/wrapper/gradle-wrapper.properties'
-  - name: scala-sbt-build
+  - id: scala-sbt-build
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^build\.sbt$'
-  - name: scala-sbt-plugins
+  - id: scala-sbt-plugins
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     path-glob: '**/project/plugins.sbt'
-  - name: scala-sbt-dependencies
+  - id: scala-sbt-dependencies
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     path-glob: '**/project/Dependencies.scala'
-  - name: scala-sbt-build-props
+  - id: scala-sbt-build-props
+    form: tool-config
+    roles: [configuration]
     path-glob: '**/project/build.properties'
-  - name: scala-mill
+  - id: scala-mill
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^build\.sc$'
-  - name: java-ant-build
+  - id: java-ant-build
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^build\.xml$'
-  - name: java-ivy
+  - id: java-ivy
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^ivy\.xml$'
-  - name: java-ivy-settings
+  - id: java-ivy-settings
+    form: tool-config
+    roles: [configuration]
     filename-regex: '^ivysettings\.xml$'
-  - name: ruby-gemfile
+  - id: ruby-gemfile
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^Gemfile$'
-  - name: ruby-gemfile-lock
+  - id: ruby-gemfile-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^Gemfile\.lock$'
-  - name: ruby-gemspec
+  - id: ruby-gemspec
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '.*\.gemspec$'
-  - name: ruby-appraisal
+  - id: ruby-appraisal
+    form: manifest
+    roles: [declaration, constraint]
     path-glob: '**/gemfiles/*.gemfile'
-  - name: swift-package
+  - id: swift-package
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^Package\.swift$'
-  - name: ios-podfile
+  - id: ios-podfile
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^Podfile$'
-  - name: ios-cartfile
+  - id: ios-cartfile
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^Cartfile$'
-  - name: ios-podspec
+  - id: ios-podspec
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '.*\.podspec$'
-  - name: ios-cartfile-resolved
+  - id: ios-cartfile-resolved
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^Cartfile\.resolved$'
-  - name: php-composer
+  - id: php-composer
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^composer\.json$'
-    json:
+    analyzer:
+      type: json
       exists-any:
         - require
         - require-dev
-  - name: php-composer-lock
-    dependency-type: composer
+  - id: php-composer-lock
+    form: lockfile
+    roles: [resolution, integrity]
+    package-type: composer
     filename-regex: '^composer\.lock$'
-    composer-lock: {}
-  - name: dart-pubspec
+    analyzer:
+      type: composer-lock
+  - id: dart-pubspec
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^pubspec\.yaml$'
-    yaml:
+    analyzer:
+      type: yaml
       exists-any:
         - dependencies
         - dev_dependencies
         - dependency_overrides
-  - name: dart-pubspec-lock
+  - id: dart-pubspec-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^pubspec\.lock$'
-    yaml:
+    analyzer:
+      type: yaml
       exists-any:
         - packages
-  - name: erlang-rebar-config
+  - id: erlang-rebar-config
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^rebar\.config$'
-  - name: erlang-rebar-lock
+  - id: erlang-rebar-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^rebar\.lock$'
-  - name: clojure-deps-edn
+  - id: clojure-deps-edn
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^deps\.edn$'
-  - name: clojure-project-clj
+  - id: clojure-project-clj
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^project\.clj$'
-  - name: clojure-boot
+  - id: clojure-boot
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^build\.boot$'
-  - name: haskell-stack
+  - id: haskell-stack
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^stack\.yaml$'
-  - name: haskell-stack-lock
+  - id: haskell-stack-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^stack\.yaml\.lock$'
-  - name: haskell-cabal-project
+  - id: haskell-cabal-project
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^cabal\.project$'
-  - name: haskell-cabal-project-freeze
+  - id: haskell-cabal-project-freeze
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^cabal\.project\.freeze$'
-  - name: haskell-cabal
+  - id: haskell-cabal
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '.*\.cabal$'
-  - name: haskell-package-yaml
+  - id: haskell-package-yaml
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^package\.yaml$'
-    yaml:
+    analyzer:
+      type: yaml
       exists-any:
         - dependencies
-  - name: dotnet-packages-config
+  - id: dotnet-packages-config
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^packages\.config$'
-    xml:
+    analyzer:
+      type: xml
       exists-any:
         - packages.package
-  - name: dotnet-packages-lock
+  - id: dotnet-packages-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^packages\.lock\.json$'
-    json:
+    analyzer:
+      type: json
       exists-any:
         - dependencies
-  - name: dotnet-directory-packages-props
+  - id: dotnet-directory-packages-props
+    form: version-catalog
+    roles: [declaration, constraint]
     filename-regex: '^Directory\.Packages\.props$'
-    xml:
+    analyzer:
+      type: xml
       exists-any:
         - Project.ItemGroup.PackageVersion
-  - name: dotnet-paket-dependencies
+  - id: dotnet-paket-dependencies
+    form: requirements
+    roles: [declaration, constraint]
     filename-regex: '^paket\.dependencies$'
-  - name: dotnet-paket-lock
+  - id: dotnet-paket-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^paket\.lock$'
-  - name: dotnet-fsproj
+  - id: dotnet-fsproj
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '.*\.fsproj$'
-  - name: dotnet-vbproj
+  - id: dotnet-vbproj
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '.*\.vbproj$'
-  - name: dotnet-directory-build
+  - id: dotnet-directory-build
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^Directory\.Build\.(props|targets)$'
-  - name: dotnet-paket-references
+  - id: dotnet-paket-references
+    form: requirements
+    roles: [declaration, constraint]
     filename-regex: '^paket\.references$'
-  - name: dotnet-tools-manifest
+  - id: dotnet-tools-manifest
+    form: manifest
+    roles: [declaration, constraint]
     path-glob: '**/.config/dotnet-tools.json'
-  - name: go-mod
-    dependency-type: golang
+  - id: go-mod
+    form: manifest
+    roles: [declaration, constraint, resolution]
+    package-type: golang
     filename-regex: '^go\.mod$'
-    go-mod: {}
-  - name: go-sum
+    analyzer:
+      type: go-mod
+  - id: go-sum
+    form: checksum-file
+    roles: [integrity]
     filename-regex: '^go\.sum$'
-  - name: go-work
+  - id: go-work
+    form: workspace-definition
+    roles: [workspace, configuration]
     filename-regex: '^go\.work$'
-  - name: go-gopkg-toml
+  - id: go-gopkg-toml
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^Gopkg\.toml$'
-  - name: go-glide-yaml
+  - id: go-glide-yaml
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^glide\.yaml$'
-    yaml:
+    analyzer:
+      type: yaml
       exists-any:
         - import
         - testImport
-  - name: go-godep
+  - id: go-godep
+    form: manifest
+    roles: [declaration, constraint]
     path-glob: '**/Godeps/Godeps.json'
-  - name: rust-cargo
+  - id: rust-cargo
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^Cargo\.toml$'
-    toml:
+    analyzer:
+      type: toml
       table-exists-any:
         - dependencies
         - dev-dependencies
@@ -302,294 +508,528 @@ rules:
         - target.*.dependencies
         - target.*.dev-dependencies
         - target.*.build-dependencies
-  - name: rust-cargo-lock
-    dependency-type: cargo
+  - id: rust-cargo-lock
+    form: lockfile
+    roles: [resolution, integrity]
+    package-type: cargo
     filename-regex: '^Cargo\.lock$'
-    cargo-lock: {}
-  - name: rust-cargo-config
+    analyzer:
+      type: cargo-lock
+  - id: rust-cargo-config
+    form: tool-config
+    roles: [configuration]
     path-glob: '**/.cargo/config.toml'
-  - name: go-gopkg-lock
+  - id: go-gopkg-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^Gopkg\.lock$'
-    toml:
+    analyzer:
+      type: toml
       exists-any:
         - projects
-  - name: go-glide-lock
+  - id: go-glide-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^glide\.lock$'
-  - name: dotnet-csproj
+  - id: dotnet-csproj
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '.*\.csproj$'
-    xml:
+    analyzer:
+      type: xml
       exists-any:
         - Project.ItemGroup.PackageReference
-  - name: cpp-conanfile
+  - id: cpp-conanfile
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^conanfile\.txt$'
-  - name: cpp-conan-lock
+  - id: cpp-conan-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^conan\.lock$'
-  - name: cpp-vcpkg
+  - id: cpp-vcpkg
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^vcpkg\.json$'
-    json:
+    analyzer:
+      type: json
       exists-any:
         - dependencies
-  - name: cpp-cmake
+  - id: cpp-cmake
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^CMakeLists\.txt$'
-  - name: cpp-conanfile-py
+  - id: cpp-conanfile-py
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^conanfile\.py$'
-  - name: cpp-vcpkg-config
+  - id: cpp-vcpkg-config
+    form: tool-config
+    roles: [configuration]
     filename-regex: '^vcpkg-configuration\.json$'
-  - name: cpp-meson
+  - id: cpp-meson
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^meson\.build$'
-  - name: cpp-autotools
+  - id: cpp-autotools
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^configure\.(ac|in)$'
-  - name: cpp-cmake-modules
+  - id: cpp-cmake-modules
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     path-glob: '**/cmake/*.cmake'
-  - name: cpp-meson-wrap
+  - id: cpp-meson-wrap
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     path-glob: '**/subprojects/*.wrap'
   # DRAFT: cpp-gclient-deps — root-only path-glob for gclient repos
-  # TODO: upgrade to Level 2 (content check for Python-style 'deps = {' or 'vars = {') to reduce false positives
-  # - name: cpp-gclient-deps
+  # TODO: add content-aware recognition (content check for Python-style 'deps = {' or 'vars = {') to reduce false positives
+  # - id: cpp-gclient-deps
+  #   form: source-code
+  #   roles: [declaration, constraint]
   #   path-glob: 'DEPS'
-  - name: swift-package-resolved
+  - id: swift-package-resolved
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^Package\.resolved$'
-    json:
+    analyzer:
+      type: json
       exists-any:
         - pins
-  - name: ios-podfile-lock
+  - id: ios-podfile-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^Podfile\.lock$'
-    yaml:
+    analyzer:
+      type: yaml
       exists-any:
         - PODS
         - DEPENDENCIES
-  - name: elixir-mix
+  - id: elixir-mix
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^mix\.exs$'
-  - name: elixir-mix-lock
+  - id: elixir-mix-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^mix\.lock$'
-  - name: julia-project
+  - id: julia-project
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^Project\.toml$'
-    toml:
+    analyzer:
+      type: toml
       table-exists-any:
         - deps
-  - name: julia-manifest
+  - id: julia-manifest
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^Manifest\.toml$'
-    toml:
+    analyzer:
+      type: toml
       table-exists-any:
         - deps
-  - name: perl-cpanfile
+  - id: perl-cpanfile
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^cpanfile$'
-  - name: perl-cpanfile-snapshot
+  - id: perl-cpanfile-snapshot
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^cpanfile\.snapshot$'
-  - name: perl-makefile-pl
+  - id: perl-makefile-pl
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^Makefile\.PL$'
-  - name: perl-build-pl
+  - id: perl-build-pl
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^Build\.PL$'
-  - name: perl-meta
+  - id: perl-meta
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^META\.(json|ya?ml)$'
-  - name: perl-dist-ini
+  - id: perl-dist-ini
+    form: tool-config
+    roles: [configuration]
     filename-regex: '^dist\.ini$'
-  - name: raku-meta
+  - id: raku-meta
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^META6\.json$'
-  - name: r-renv-lock
+  - id: r-renv-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^renv\.lock$'
-  - name: r-packrat-lock
+  - id: r-packrat-lock
+    form: lockfile
+    roles: [resolution, integrity]
     path-glob: '**/packrat/packrat.lock'
   # DRAFT: r-description — filename-regex for R package manifests (noisy)
-  # TODO: upgrade to Level 2 (content check for DCF 'Package:' header) to reduce false positives
-  # - name: r-description
+  # TODO: add content-aware recognition (content check for DCF 'Package:' header) to reduce false positives
+  # - id: r-description
+  #   form: manifest
+  #   roles: [declaration, constraint]
   #   filename-regex: '^DESCRIPTION$'
-  - name: lua-rockspec
+  - id: lua-rockspec
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '.*\.rockspec$'
-  - name: zig-build-zon
+  - id: zig-build-zon
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^build\.zig\.zon$'
-  - name: zig-build
+  - id: zig-build
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^build\.zig$'
-  - name: nim-nimble
+  - id: nim-nimble
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '.*\.nimble$'
-  - name: ocaml-opam
+  - id: ocaml-opam
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '.*\.opam$'
-  - name: ocaml-opam-locked
+  - id: ocaml-opam-locked
+    form: lockfile
+    roles: [resolution]
     filename-regex: '.*\.opam\.locked$'
-  - name: ocaml-dune-project
+  - id: ocaml-dune-project
+    form: workspace-definition
+    roles: [workspace, configuration]
     filename-regex: '^dune-project$'
-  - name: ocaml-esy
+  - id: ocaml-esy
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^esy\.json$'
   # DRAFT: ocaml-dune — filename-regex for OCaml Dune per-directory build files (noisy)
-  # TODO: upgrade to Level 2 (s-expression content check for 'library'/'executable' stanzas) to reduce false positives
-  # - name: ocaml-dune
+  # TODO: add content-aware recognition (s-expression content check for 'library'/'executable' stanzas) to reduce false positives
+  # - id: ocaml-dune
+  #   form: build-definition
+  #   roles: [declaration, configuration]
   #   filename-regex: '^dune$'
-  - name: crystal-shard
+  - id: crystal-shard
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^shard\.yml$'
-    yaml:
+    analyzer:
+      type: yaml
       exists-any:
         - dependencies
-  - name: crystal-shard-lock
+  - id: crystal-shard-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^shard\.lock$'
-  - name: gleam
+  - id: gleam
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^gleam\.toml$'
-    toml:
+    analyzer:
+      type: toml
       table-exists-any:
         - dependencies
-  - name: gleam-manifest
+  - id: gleam-manifest
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^manifest\.toml$'
-  - name: fortran-fpm
+  - id: fortran-fpm
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^fpm\.toml$'
-  - name: vlang
+  - id: vlang
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^v\.mod$'
-  - name: helm-chart
+  - id: helm-chart
+    form: deployment-definition
+    roles: [declaration, configuration]
     filename-regex: '^Chart\.yaml$'
-    yaml:
+    analyzer:
+      type: yaml
       exists-any:
         - dependencies
-  - name: ansible-requirements
+  - id: ansible-requirements
+    form: requirements
+    roles: [declaration, constraint]
     filename-regex: '^requirements\.ya?ml$'
-    yaml:
+    analyzer:
+      type: yaml
       exists-any:
         - roles
         - collections
-  - name: buf
+  - id: buf
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^buf\.yaml$'
-    yaml:
+    analyzer:
+      type: yaml
       exists-any:
         - deps
-  - name: homebrew-brewfile
+  - id: homebrew-brewfile
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^Brewfile$'
-  - name: jsonnet-bundler
+  - id: jsonnet-bundler
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^jsonnetfile\.json$'
-    json:
+    analyzer:
+      type: json
       exists-any:
         - dependencies
-  - name: terraform-lock
+  - id: terraform-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^\.terraform\.lock\.hcl$'
-  - name: unity-packages-manifest
+  - id: unity-packages-manifest
+    form: manifest
+    roles: [declaration, constraint]
     path-glob: 'Packages/manifest.json'
-    json:
+    analyzer:
+      type: json
       exists-any:
         - dependencies
-  - name: unity-packages-lock
+  - id: unity-packages-lock
+    form: lockfile
+    roles: [resolution, integrity]
     path-glob: 'Packages/packages-lock.json'
-  - name: docker-dockerfile
+  - id: docker-dockerfile
+    form: deployment-definition
+    roles: [declaration, configuration]
     filename-regex: '^Dockerfile(\..+)?$'
-  - name: docker-compose
+  - id: docker-compose
+    form: deployment-definition
+    roles: [declaration, configuration]
     filename-regex: '^(docker-compose|compose)\.ya?ml$'
-  - name: github-actions-action
+  - id: github-actions-action
+    form: automation-definition
+    roles: [configuration, usage]
     filename-regex: '^action\.ya?ml$'
-  - name: github-actions-workflow
+  - id: github-actions-workflow
+    form: automation-definition
+    roles: [configuration, usage]
     path-glob: '**/.github/workflows/*.yml'
-  - name: bazel-workspace
+  - id: bazel-workspace
+    form: workspace-definition
+    roles: [workspace, configuration]
     filename-regex: '^WORKSPACE(\.bazel)?$'
-  - name: bazel-module
+  - id: bazel-module
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^MODULE\.bazel$'
-  - name: bazel-module-lock
+  - id: bazel-module-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^MODULE\.bazel\.lock$'
-  - name: bazel-build-file
+  - id: bazel-build-file
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     filename-regex: '^BUILD\.bazel$'
-  - name: bazel-third-party-bzl
+  - id: bazel-third-party-bzl
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     path-glob: '**/third_party/*.bzl'
-  - name: js-nx
+  - id: js-nx
+    form: tool-config
+    roles: [configuration]
     filename-regex: '^nx\.json$'
   # DRAFT: js-nx-project — filename-regex for Nx per-project config (noisy)
-  # TODO: upgrade to Level 2 (json exists-any: targets,implicitDependencies) to reduce false positives
-  # - name: js-nx-project
+  # TODO: add content-aware recognition (json exists-any: targets,implicitDependencies) to reduce false positives
+  # - id: js-nx-project
+  #   form: tool-config
+  #   roles: [configuration]
   #   filename-regex: '^project\.json$'
-  - name: js-lerna
+  - id: js-lerna
+    form: tool-config
+    roles: [configuration]
     filename-regex: '^lerna\.json$'
-  - name: js-rush
+  - id: js-rush
+    form: tool-config
+    roles: [configuration]
     filename-regex: '^rush\.json$'
-  - name: rush-common-versions
+  - id: rush-common-versions
+    form: constraint-file
+    roles: [constraint]
     path-glob: '**/common/config/rush/common-versions.json'
-  - name: js-turbo
+  - id: js-turbo
+    form: tool-config
+    roles: [configuration]
     filename-regex: '^turbo\.json$'
-  - name: pants-config
+  - id: pants-config
+    form: tool-config
+    roles: [configuration]
     filename-regex: '^pants\.toml$'
-  - name: pants-jvm-build
+  - id: pants-jvm-build
+    form: build-definition
+    roles: [declaration, constraint, configuration]
     path-glob: '**/3rdparty/jvm/BUILD'
   # DRAFT: bazel-build-file-bare — filename-regex for bare BUILD files (noisy; both Bazel and Pants)
-  # TODO: upgrade to Level 2 (content check for Bazel/Pants target functions) to reduce false positives
-  # - name: bazel-build-file-bare
+  # TODO: add content-aware recognition (content check for Bazel/Pants target functions) to reduce false positives
+  # - id: bazel-build-file-bare
+  #   form: build-definition
+  #   roles: [declaration, constraint, configuration]
   #   filename-regex: '^BUILD$'
-  - name: git-submodules
+  - id: git-submodules
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^\.gitmodules$'
-  - name: nix-default-shell
+  - id: nix-default-shell
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^(default|shell)\.nix$'
-  - name: nix-flake
+  - id: nix-flake
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^flake\.nix$'
-  - name: nix-flake-lock
+  - id: nix-flake-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^flake\.lock$'
-  - name: helm-chart-lock
+  - id: helm-chart-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^Chart\.lock$'
-  - name: homebrew-brewfile-lock
+  - id: homebrew-brewfile-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^Brewfile\.lock\.json$'
-  - name: buf-lock
+  - id: buf-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^buf\.lock$'
-  - name: puppet-puppetfile
+  - id: puppet-puppetfile
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^Puppetfile$'
   # DRAFT: puppet-cookbook-metadata — path-glob for Puppet cookbook layout
   # Constrained to standard Puppet repo layout; noisier alternative (not active):
   #   filename-regex: '^metadata\.json$'
-  # TODO: upgrade to Level 2 (json exists-any: dependencies,name with Puppet-specific fields) to reduce false positives
-  # - name: puppet-cookbook-metadata
+  # TODO: add content-aware recognition (json exists-any: dependencies,name with Puppet-specific fields) to reduce false positives
+  # - id: puppet-cookbook-metadata
+  #   form: manifest
+  #   roles: [declaration, constraint]
   #   path-glob: '**/cookbooks/*/metadata.json'
-  - name: chef-berksfile
+  - id: chef-berksfile
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^Berksfile$'
-  - name: chef-berksfile-lock
+  - id: chef-berksfile-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^Berksfile\.lock$'
-  - name: chef-metadata
+  - id: chef-metadata
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^metadata\.rb$'
-  - name: chef-policyfile
+  - id: chef-policyfile
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^Policyfile\.rb$'
-  - name: chef-policyfile-lock
+  - id: chef-policyfile-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^Policyfile\.lock\.json$'
-  - name: jsonnet-lock
+  - id: jsonnet-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^jsonnetfile\.lock\.json$'
-  - name: emacs-cask
+  - id: emacs-cask
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '^Cask$'
-  - name: unreal-uproject
+  - id: unreal-uproject
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '.*\.uproject$'
-  - name: unreal-uplugin
+  - id: unreal-uplugin
+    form: manifest
+    roles: [declaration, constraint]
     filename-regex: '.*\.uplugin$'
-  - name: godot-plugin-cfg
+  - id: godot-plugin-cfg
+    form: tool-config
+    roles: [configuration]
     filename-regex: '^plugin\.cfg$'
-  - name: foundry-toml
+  - id: foundry-toml
+    form: tool-config
+    roles: [configuration]
     filename-regex: '^foundry\.toml$'
-  - name: foundry-remappings
+  - id: foundry-remappings
+    form: constraint-file
+    roles: [constraint]
     filename-regex: '^remappings\.txt$'
-  - name: soldeer-lock
+  - id: soldeer-lock
+    form: lockfile
+    roles: [resolution, integrity]
     filename-regex: '^soldeer\.lock$'
-  - name: js-banner-block-start
-    dependency-type: npm
+  - id: js-banner-block-start
+    form: source-code
+    roles: [usage, inventory]
+    package-type: npm
     filename-regex: '.*\.js$'
-    banner-regex: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
-  - name: js-banner-plain-block-start
-    dependency-type: npm
+    analyzer:
+      type: banner-regex
+      pattern: '(?i)^\s*/\*!\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
+  - id: js-banner-plain-block-start
+    form: source-code
+    roles: [usage, inventory]
+    package-type: npm
     filename-regex: '.*\.js$'
-    banner-regex: '(?i)^\s*/\*\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
-  - name: js-banner-multiline-preserved
-    dependency-type: npm
+    analyzer:
+      type: banner-regex
+      pattern: '(?i)^\s*/\*\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^\r\n]*\*/'
+  - id: js-banner-multiline-preserved
+    form: source-code
+    roles: [usage, inventory]
+    package-type: npm
     filename-regex: '.*\.js$'
-    banner-regex: '(?is)^\s*/\*![\s*]*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*)).*?\*/'
-  - name: js-banner-line-comment
-    dependency-type: npm
+    analyzer:
+      type: banner-regex
+      pattern: '(?is)^\s*/\*![\s*]*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*)).*?\*/'
+  - id: js-banner-line-comment
+    form: source-code
+    roles: [usage, inventory]
+    package-type: npm
     filename-regex: '.*\.js$'
-    banner-regex: '(?im)^\s*//[!/]\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))\b'
-  - name: js-banner-version-tagged
-    dependency-type: npm
+    analyzer:
+      type: banner-regex
+      pattern: '(?im)^\s*//[!/]\s*([A-Za-z0-9@._/-]+)\s+v?(\d+\.\d+\.\d+(?:[-+.\w]*))\b'
+  - id: js-banner-version-tagged
+    form: source-code
+    roles: [usage, inventory]
+    package-type: npm
     filename-regex: '.*\.js$'
-    banner-regex: '(?is)^\s*/\*![^*]*package:\s*([A-Za-z0-9@._/-]+)[^*]*version:\s*v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^*]*\*/'
-  - name: html-external-scripts
+    analyzer:
+      type: banner-regex
+      pattern: '(?is)^\s*/\*![^*]*package:\s*([A-Za-z0-9@._/-]+)[^*]*version:\s*v?(\d+\.\d+\.\d+(?:[-+.\w]*))[^*]*\*/'
+  - id: html-external-scripts
+    form: markup
+    roles: [usage]
     filename-regex: '.*\.(html|htm|xhtml|tmpl|gohtml|mustache|hbs|njk)$'
-    html:
+    analyzer:
+      type: html
       external_scripts: true
-  - name: terraform.aws_glue_job.python
-    dependency-type: pypi
+  - id: terraform.aws_glue_job.python
+    form: source-code
+    roles: [usage, inventory]
+    package-type: pypi
     filename-regex: '.*\.tf$'
-    terraform:
+    analyzer:
+      type: terraform
       resource_type: aws_glue_job
       conditions:
         - path: default_arguments.--job-language
           equals: python
         - path: default_arguments.--additional-python-modules
           present: true
-  - name: typescript.cdk.aws_glue_job.python
-    dependency-type: pypi
+  - id: typescript.cdk.aws_glue_job.python
+    form: source-code
+    roles: [usage, inventory]
+    package-type: pypi
     filename-regex: '.*\.ts$'
-    typescript:
+    analyzer:
+      type: typescript
       cdk_construct:
         module: aws-cdk-lib/aws-glue
         construct: CfnJob
@@ -604,10 +1044,13 @@ rules:
         extract:
           key: --additional-python-modules
           split: comma
-  - name: python.cdk.aws_glue_job.python
-    dependency-type: pypi
+  - id: python.cdk.aws_glue_job.python
+    form: source-code
+    roles: [usage, inventory]
+    package-type: pypi
     filename-regex: '.*\.py$'
-    python:
+    analyzer:
+      type: python
       cdk_construct:
         module: aws_cdk.aws_glue
         construct: CfnJob

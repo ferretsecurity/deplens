@@ -13,23 +13,23 @@ func TestScanPNPMLockExtractsDependencies(t *testing.T) {
 		t.Fatalf("Scan failed: %v", err)
 	}
 
-	var pnpmLock *ManifestMatch
-	for i := range result.Manifests {
-		if result.Manifests[i].Type == ManifestType("js-pnpm-lock") && result.Manifests[i].Path == "pnpm-lock.yaml" {
-			pnpmLock = &result.Manifests[i]
+	var pnpmLock *DependencySourceResult
+	for i := range result.Sources {
+		if result.Sources[i].Detector == DetectorID("js-pnpm-lock") && result.Sources[i].Path == "pnpm-lock.yaml" {
+			pnpmLock = &result.Sources[i]
 			break
 		}
 	}
 	if pnpmLock == nil {
-		t.Fatalf("expected js-pnpm-lock manifest, got %+v", result.Manifests)
+		t.Fatalf("expected js-pnpm-lock dependency source, got %+v", result.Sources)
 	}
-	if pnpmLock.HasDependencies == nil || !*pnpmLock.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", pnpmLock.HasDependencies)
+	if pnpmLock.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", pnpmLock.Analysis)
 	}
 
-	want := []Dependency{
-		{Type: PackageType("npm"), Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies", Extras: map[string]string{"specifier": "^18.3.1"}},
-		{Type: PackageType("npm"), Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies", Extras: map[string]string{"specifier": "^20.12.7"}},
+	want := []DependencyReference{
+		{PackageType: PackageType("npm"), Raw: "react@18.3.1", Name: "react", Version: "18.3.1", SourceGroup: "dependencies", Attributes: map[string]string{"specifier": "^18.3.1"}},
+		{PackageType: PackageType("npm"), Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", SourceGroup: "devDependencies", Attributes: map[string]string{"specifier": "^20.12.7"}},
 	}
 	if !equalDependencies(pnpmLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", pnpmLock.Dependencies, want)
@@ -42,13 +42,13 @@ func TestScanPNPMLockWithTransitiveInPackagesFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	pnpmLock := mustFindPNPMLockManifest(t, result)
-	if pnpmLock.HasDependencies == nil || !*pnpmLock.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", pnpmLock.HasDependencies)
+	pnpmLock := mustFindPNPMLockSource(t, result)
+	if pnpmLock.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", pnpmLock.Analysis)
 	}
-	want := []Dependency{
-		{Type: PackageType("npm"), Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies", Extras: map[string]string{"specifier": "^18.3.1"}},
-		{Type: PackageType("npm"), Raw: "loose-envify@1.4.0", Name: "loose-envify", Version: "1.4.0"},
+	want := []DependencyReference{
+		{PackageType: PackageType("npm"), Raw: "react@18.3.1", Name: "react", Version: "18.3.1", SourceGroup: "dependencies", Attributes: map[string]string{"specifier": "^18.3.1"}},
+		{PackageType: PackageType("npm"), Raw: "loose-envify@1.4.0", Name: "loose-envify", Version: "1.4.0"},
 	}
 	if !equalDependencies(pnpmLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", pnpmLock.Dependencies, want)
@@ -63,15 +63,15 @@ func TestScanPNPMLockExtractsTopLevelDependenciesForOlderLocks(t *testing.T) {
 		t.Fatalf("Scan failed: %v", err)
 	}
 
-	pnpmLock := mustFindPNPMLockManifest(t, result)
-	if pnpmLock.HasDependencies == nil || !*pnpmLock.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", pnpmLock.HasDependencies)
+	pnpmLock := mustFindPNPMLockSource(t, result)
+	if pnpmLock.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", pnpmLock.Analysis)
 	}
 
-	want := []Dependency{
-		{Type: PackageType("npm"), Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"},
-		{Type: PackageType("npm"), Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies"},
-		{Type: PackageType("npm"), Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", Section: "optionalDependencies"},
+	want := []DependencyReference{
+		{PackageType: PackageType("npm"), Raw: "react@18.3.1", Name: "react", Version: "18.3.1", SourceGroup: "dependencies"},
+		{PackageType: PackageType("npm"), Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", SourceGroup: "devDependencies"},
+		{PackageType: PackageType("npm"), Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", SourceGroup: "optionalDependencies"},
 	}
 	if !equalDependencies(pnpmLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", pnpmLock.Dependencies, want)
@@ -86,14 +86,14 @@ func TestScanPNPMLockWorkspaceExtractsOnlyRootImporterDependencies(t *testing.T)
 		t.Fatalf("Scan failed: %v", err)
 	}
 
-	pnpmLock := mustFindPNPMLockManifest(t, result)
-	if pnpmLock.HasDependencies == nil || !*pnpmLock.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", pnpmLock.HasDependencies)
+	pnpmLock := mustFindPNPMLockSource(t, result)
+	if pnpmLock.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", pnpmLock.Analysis)
 	}
 
-	want := []Dependency{
-		{Type: PackageType("npm"), Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"},
-		{Type: PackageType("npm"), Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies"},
+	want := []DependencyReference{
+		{PackageType: PackageType("npm"), Raw: "react@18.3.1", Name: "react", Version: "18.3.1", SourceGroup: "dependencies"},
+		{PackageType: PackageType("npm"), Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", SourceGroup: "devDependencies"},
 	}
 	if !equalDependencies(pnpmLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", pnpmLock.Dependencies, want)
@@ -108,24 +108,24 @@ func TestScanPNPMLockWorkspaceWithoutRootDependenciesIsConclusiveEmpty(t *testin
 		t.Fatalf("Scan failed: %v", err)
 	}
 
-	pnpmLock := mustFindPNPMLockManifest(t, result)
+	pnpmLock := mustFindPNPMLockSource(t, result)
 	if pnpmLock.Dependencies != nil {
 		t.Fatalf("expected no dependencies, got %+v", pnpmLock.Dependencies)
 	}
-	if pnpmLock.HasDependencies == nil || *pnpmLock.HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", pnpmLock.HasDependencies)
+	if pnpmLock.Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", pnpmLock.Analysis)
 	}
 }
 
-func mustFindPNPMLockManifest(t *testing.T, result ScanResult) *ManifestMatch {
+func mustFindPNPMLockSource(t *testing.T, result ScanResult) *DependencySourceResult {
 	t.Helper()
 
-	for i := range result.Manifests {
-		if result.Manifests[i].Type == ManifestType("js-pnpm-lock") && result.Manifests[i].Path == "pnpm-lock.yaml" {
-			return &result.Manifests[i]
+	for i := range result.Sources {
+		if result.Sources[i].Detector == DetectorID("js-pnpm-lock") && result.Sources[i].Path == "pnpm-lock.yaml" {
+			return &result.Sources[i]
 		}
 	}
 
-	t.Fatalf("expected js-pnpm-lock manifest, got %+v", result.Manifests)
+	t.Fatalf("expected js-pnpm-lock dependency source, got %+v", result.Sources)
 	return nil
 }

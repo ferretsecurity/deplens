@@ -60,7 +60,7 @@ type typescriptCDKConstructMatcher struct {
 	extract            *typescriptExtract
 }
 
-func newTypeScriptMatcher(raw typescriptMatcherConfig) (manifestParser, error) {
+func newTypeScriptMatcher(raw typescriptMatcherConfig) (sourceAnalyzer, error) {
 	if raw.CDKConstruct == nil {
 		return nil, fmt.Errorf("typescript.cdk_construct: required")
 	}
@@ -129,12 +129,12 @@ func newTypeScriptMatcher(raw typescriptMatcherConfig) (manifestParser, error) {
 	}, nil
 }
 
-func (m typescriptCDKConstructMatcher) Match(path string, content []byte) (manifestParserResult, error) {
+func (m typescriptCDKConstructMatcher) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	parser := sitter.NewParser()
 	defer parser.Close()
 
 	if err := parser.SetLanguage(sitter.NewLanguage(tstypescript.LanguageTypescript())); err != nil {
-		return manifestParserResult{}, fmt.Errorf("configure typescript parser for %q: %w", path, err)
+		return sourceAnalyzerResult{}, fmt.Errorf("configure typescript parser for %q: %w", path, err)
 	}
 
 	tree := parser.Parse(content, nil)
@@ -143,7 +143,7 @@ func (m typescriptCDKConstructMatcher) Match(path string, content []byte) (manif
 	root := tree.RootNode()
 	imports := collectTypeScriptImports(root, content, m.module, m.construct)
 	if len(imports.namespaces) == 0 && len(imports.named) == 0 {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
 	var (
@@ -167,18 +167,19 @@ func (m typescriptCDKConstructMatcher) Match(path string, content []byte) (manif
 	})
 
 	if !matched {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 	if len(dependencies) == 0 {
-		return manifestParserResult{
+		return sourceAnalyzerResult{
 			Dependencies: dependenciesFromStrings(dependencies),
-			Matched:      true,
+			Analysis:     identifiedAnalysis(),
+			Recognized:   true,
 		}, nil
 	}
-	return manifestParserResult{
-		Dependencies:    dependenciesFromStrings(dependencies),
-		HasDependencies: boolPtr(true),
-		Matched:         true,
+	return sourceAnalyzerResult{
+		Dependencies: dependenciesFromStrings(dependencies),
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+		Recognized:   true,
 	}, nil
 }
 

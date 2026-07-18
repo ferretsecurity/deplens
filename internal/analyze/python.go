@@ -112,7 +112,7 @@ const (
 
 var pythonIdentifierRegexp = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
-func newPythonMatcher(raw pythonMatcherConfig) (manifestParser, error) {
+func newPythonMatcher(raw pythonMatcherConfig) (sourceAnalyzer, error) {
 	if raw.CDKConstruct != nil && raw.Call != nil {
 		return nil, fmt.Errorf("exactly one of python.cdk_construct or python.call may be configured")
 	}
@@ -184,7 +184,7 @@ func newPythonMatcher(raw pythonMatcherConfig) (manifestParser, error) {
 	}, nil
 }
 
-func newPythonCallMatcher(raw pythonCallConfig) (manifestParser, error) {
+func newPythonCallMatcher(raw pythonCallConfig) (sourceAnalyzer, error) {
 	if raw.Module == "" {
 		return nil, fmt.Errorf("python.call.module: required")
 	}
@@ -265,11 +265,11 @@ func newPythonCallExtracts(raw []pythonCallExtractConfig) ([]pythonCallExtract, 
 	return extracts, nil
 }
 
-func (m pythonCDKConstructMatcher) Match(path string, content []byte) (manifestParserResult, error) {
+func (m pythonCDKConstructMatcher) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	source := string(content)
 	imports := collectPythonImports(source, m.module, m.construct)
 	if len(imports.namespaces) == 0 && len(imports.named) == 0 {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
 	callStarts := pythonConstructorCallStarts(source, imports, m.construct)
@@ -313,7 +313,7 @@ func (m pythonCDKConstructMatcher) Match(path string, content []byte) (manifestP
 		}
 
 		if m.extract == nil {
-			return manifestParserResult{Matched: true}, nil
+			return sourceAnalyzerResult{Recognized: true, Analysis: identifiedAnalysis()}, nil
 		}
 
 		valueExpr, ok := pythonDictValue(source, current, m.extract.key, end)
@@ -329,21 +329,21 @@ func (m pythonCDKConstructMatcher) Match(path string, content []byte) (manifestP
 		if len(dependencies) == 0 {
 			continue
 		}
-		return manifestParserResult{
-			Dependencies:    dependenciesFromStrings(dependencies),
-			HasDependencies: boolPtr(true),
-			Matched:         true,
+		return sourceAnalyzerResult{
+			Dependencies: dependenciesFromStrings(dependencies),
+			Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+			Recognized:   true,
 		}, nil
 	}
 
-	return manifestParserResult{}, nil
+	return sourceAnalyzerResult{}, nil
 }
 
-func (m pythonCallMatcher) Match(path string, content []byte) (manifestParserResult, error) {
+func (m pythonCallMatcher) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	source := string(content)
 	imports := collectPythonImports(source, m.module, m.function)
 	if len(imports.namespaces) == 0 && len(imports.named) == 0 {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
 	callStarts := pythonConstructorCallStarts(source, imports, m.function)
@@ -355,17 +355,17 @@ func (m pythonCallMatcher) Match(path string, content []byte) (manifestParserRes
 		if m.conditions.match(source, args, start) {
 			dependencies := m.extractDependencies(args)
 			if len(dependencies) == 0 {
-				return manifestParserResult{Matched: true}, nil
+				return sourceAnalyzerResult{Recognized: true, Analysis: identifiedAnalysis()}, nil
 			}
-			return manifestParserResult{
-				Dependencies:    dependenciesFromStrings(dependencies),
-				HasDependencies: boolPtr(true),
-				Matched:         true,
+			return sourceAnalyzerResult{
+				Dependencies: dependenciesFromStrings(dependencies),
+				Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+				Recognized:   true,
 			}, nil
 		}
 	}
 
-	return manifestParserResult{}, nil
+	return sourceAnalyzerResult{}, nil
 }
 
 func (m pythonCallMatcher) extractDependencies(args string) []string {

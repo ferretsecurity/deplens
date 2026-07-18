@@ -11,7 +11,7 @@ type bannerRegexParser struct {
 	regex *regexp.Regexp
 }
 
-func newBannerRegexParser(pattern string) (manifestParser, error) {
+func newBannerRegexParser(pattern string) (sourceAnalyzer, error) {
 	if pattern == "" {
 		return nil, fmt.Errorf("banner-regex: required")
 	}
@@ -27,25 +27,25 @@ func newBannerRegexParser(pattern string) (manifestParser, error) {
 	return bannerRegexParser{regex: compiled}, nil
 }
 
-func (p bannerRegexParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p bannerRegexParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	if len(content) > bannerRegexScanLimit {
 		content = content[:bannerRegexScanLimit]
 	}
 
 	match := p.regex.FindSubmatch(content)
 	if len(match) == 0 {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
 	name := string(match[1])
 	version := string(match[2])
 	if name == "" || version == "" {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
-	return manifestParserResult{
-		Dependencies:    dependenciesFromStrings([]string{fmt.Sprintf("%s@%s", name, version)}),
-		HasDependencies: boolPtr(true),
-		Matched:         true,
+	return sourceAnalyzerResult{
+		Dependencies: dependenciesFromStrings([]string{fmt.Sprintf("%s@%s", name, version)}),
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+		Recognized:   true,
 	}, nil
 }

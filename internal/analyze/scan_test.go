@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func dependencyNames(dependencies []Dependency) []string {
+func dependencyNames(dependencies []DependencyReference) []string {
 	names := make([]string, 0, len(dependencies))
 	for _, dependency := range dependencies {
 		if dependency.Raw != "" {
@@ -21,7 +21,7 @@ func dependencyNames(dependencies []Dependency) []string {
 	return names
 }
 
-func equalDependencies(a, b []Dependency) bool {
+func equalDependencies(a, b []DependencyReference) bool {
 	return reflect.DeepEqual(a, b)
 }
 
@@ -40,160 +40,160 @@ func TestDependenciesFromStringsSetsRaw(t *testing.T) {
 	}
 }
 
-func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
+func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	testCases := []struct {
 		name string
-		want ManifestType
+		want DetectorID
 	}{
-		{name: "bun.lock", want: ManifestType("js-bun-lock")},
-		{name: "bun.lockb", want: ManifestType("js-bun-lockb")},
-		{name: "gradle.lockfile", want: ManifestType("java-gradle-lockfile")},
-		{name: "build.gradle", want: ManifestType("java-gradle")},
-		{name: "build.gradle.kts", want: ManifestType("java-gradle-kts")},
-		{name: "settings.gradle", want: ManifestType("java-gradle-settings")},
-		{name: "settings.gradle.kts", want: ManifestType("java-gradle-settings-kts")},
-		{name: "Gemfile", want: ManifestType("ruby-gemfile")},
-		{name: "Gemfile.lock", want: ManifestType("ruby-gemfile-lock")},
-		{name: "Package.swift", want: ManifestType("swift-package")},
-		{name: "Podfile", want: ManifestType("ios-podfile")},
-		{name: "Cartfile", want: ManifestType("ios-cartfile")},
-		{name: "rebar.config", want: ManifestType("erlang-rebar-config")},
-		{name: "rebar.lock", want: ManifestType("erlang-rebar-lock")},
-		{name: "deps.edn", want: ManifestType("clojure-deps-edn")},
-		{name: "project.clj", want: ManifestType("clojure-project-clj")},
-		{name: "stack.yaml", want: ManifestType("haskell-stack")},
-		{name: "stack.yaml.lock", want: ManifestType("haskell-stack-lock")},
-		{name: "cabal.project", want: ManifestType("haskell-cabal-project")},
-		{name: "paket.dependencies", want: ManifestType("dotnet-paket-dependencies")},
-		{name: "paket.lock", want: ManifestType("dotnet-paket-lock")},
-		{name: "go.sum", want: ManifestType("go-sum")},
-		{name: "go.work", want: ManifestType("go-work")},
-		{name: "Gopkg.toml", want: ManifestType("go-gopkg-toml")},
-		{name: "glide.lock", want: ManifestType("go-glide-lock")},
-		{name: "conan.lock", want: ManifestType("cpp-conan-lock")},
-		{name: "mix.exs", want: ManifestType("elixir-mix")},
-		{name: "mix.lock", want: ManifestType("elixir-mix-lock")},
-		{name: "demo.cabal", want: ManifestType("haskell-cabal")},
-		{name: "demo.gemspec", want: ManifestType("ruby-gemspec")},
-		{name: "conanfile.txt", want: ManifestType("cpp-conanfile")},
-		{name: "cpanfile", want: ManifestType("perl-cpanfile")},
-		{name: "build.zig.zon", want: ManifestType("zig-build-zon")},
-		{name: "demo.nimble", want: ManifestType("nim-nimble")},
-		{name: "demo.opam", want: ManifestType("ocaml-opam")},
-		{name: "v.mod", want: ManifestType("vlang")},
-		{name: "Brewfile", want: ManifestType("homebrew-brewfile")},
-		{name: ".terraform.lock.hcl", want: ManifestType("terraform-lock")},
-		{name: "Dockerfile", want: ManifestType("docker-dockerfile")},
-		{name: "Dockerfile.dev", want: ManifestType("docker-dockerfile")},
-		{name: "Dockerfile.prod", want: ManifestType("docker-dockerfile")},
-		{name: "docker-compose.yml", want: ManifestType("docker-compose")},
-		{name: "docker-compose.yaml", want: ManifestType("docker-compose")},
-		{name: "compose.yml", want: ManifestType("docker-compose")},
-		{name: "compose.yaml", want: ManifestType("docker-compose")},
-		{name: "action.yml", want: ManifestType("github-actions-action")},
-		{name: "action.yaml", want: ManifestType("github-actions-action")},
+		{name: "bun.lock", want: DetectorID("js-bun-lock")},
+		{name: "bun.lockb", want: DetectorID("js-bun-lockb")},
+		{name: "gradle.lockfile", want: DetectorID("java-gradle-lockfile")},
+		{name: "build.gradle", want: DetectorID("java-gradle")},
+		{name: "build.gradle.kts", want: DetectorID("java-gradle-kts")},
+		{name: "settings.gradle", want: DetectorID("java-gradle-settings")},
+		{name: "settings.gradle.kts", want: DetectorID("java-gradle-settings-kts")},
+		{name: "Gemfile", want: DetectorID("ruby-gemfile")},
+		{name: "Gemfile.lock", want: DetectorID("ruby-gemfile-lock")},
+		{name: "Package.swift", want: DetectorID("swift-package")},
+		{name: "Podfile", want: DetectorID("ios-podfile")},
+		{name: "Cartfile", want: DetectorID("ios-cartfile")},
+		{name: "rebar.config", want: DetectorID("erlang-rebar-config")},
+		{name: "rebar.lock", want: DetectorID("erlang-rebar-lock")},
+		{name: "deps.edn", want: DetectorID("clojure-deps-edn")},
+		{name: "project.clj", want: DetectorID("clojure-project-clj")},
+		{name: "stack.yaml", want: DetectorID("haskell-stack")},
+		{name: "stack.yaml.lock", want: DetectorID("haskell-stack-lock")},
+		{name: "cabal.project", want: DetectorID("haskell-cabal-project")},
+		{name: "paket.dependencies", want: DetectorID("dotnet-paket-dependencies")},
+		{name: "paket.lock", want: DetectorID("dotnet-paket-lock")},
+		{name: "go.sum", want: DetectorID("go-sum")},
+		{name: "go.work", want: DetectorID("go-work")},
+		{name: "Gopkg.toml", want: DetectorID("go-gopkg-toml")},
+		{name: "glide.lock", want: DetectorID("go-glide-lock")},
+		{name: "conan.lock", want: DetectorID("cpp-conan-lock")},
+		{name: "mix.exs", want: DetectorID("elixir-mix")},
+		{name: "mix.lock", want: DetectorID("elixir-mix-lock")},
+		{name: "demo.cabal", want: DetectorID("haskell-cabal")},
+		{name: "demo.gemspec", want: DetectorID("ruby-gemspec")},
+		{name: "conanfile.txt", want: DetectorID("cpp-conanfile")},
+		{name: "cpanfile", want: DetectorID("perl-cpanfile")},
+		{name: "build.zig.zon", want: DetectorID("zig-build-zon")},
+		{name: "demo.nimble", want: DetectorID("nim-nimble")},
+		{name: "demo.opam", want: DetectorID("ocaml-opam")},
+		{name: "v.mod", want: DetectorID("vlang")},
+		{name: "Brewfile", want: DetectorID("homebrew-brewfile")},
+		{name: ".terraform.lock.hcl", want: DetectorID("terraform-lock")},
+		{name: "Dockerfile", want: DetectorID("docker-dockerfile")},
+		{name: "Dockerfile.dev", want: DetectorID("docker-dockerfile")},
+		{name: "Dockerfile.prod", want: DetectorID("docker-dockerfile")},
+		{name: "docker-compose.yml", want: DetectorID("docker-compose")},
+		{name: "docker-compose.yaml", want: DetectorID("docker-compose")},
+		{name: "compose.yml", want: DetectorID("docker-compose")},
+		{name: "compose.yaml", want: DetectorID("docker-compose")},
+		{name: "action.yml", want: DetectorID("github-actions-action")},
+		{name: "action.yaml", want: DetectorID("github-actions-action")},
 		// Group 1b: Build systems and monorepo tools
-		{name: "WORKSPACE", want: ManifestType("bazel-workspace")},
-		{name: "WORKSPACE.bazel", want: ManifestType("bazel-workspace")},
-		{name: "MODULE.bazel", want: ManifestType("bazel-module")},
-		{name: "MODULE.bazel.lock", want: ManifestType("bazel-module-lock")},
-		{name: "BUILD.bazel", want: ManifestType("bazel-build-file")},
-		// DRAFT (Group 3): {name: "BUILD", want: ManifestType("bazel-build-file-bare")},
-		{name: "nx.json", want: ManifestType("js-nx")},
-		// DRAFT (Group 3): {name: "project.json", want: ManifestType("js-nx-project")},
-		{name: "lerna.json", want: ManifestType("js-lerna")},
-		{name: "rush.json", want: ManifestType("js-rush")},
-		{name: "turbo.json", want: ManifestType("js-turbo")},
-		{name: "pants.toml", want: ManifestType("pants-config")},
-		{name: ".gitmodules", want: ManifestType("git-submodules")},
+		{name: "WORKSPACE", want: DetectorID("bazel-workspace")},
+		{name: "WORKSPACE.bazel", want: DetectorID("bazel-workspace")},
+		{name: "MODULE.bazel", want: DetectorID("bazel-module")},
+		{name: "MODULE.bazel.lock", want: DetectorID("bazel-module-lock")},
+		{name: "BUILD.bazel", want: DetectorID("bazel-build-file")},
+		// DRAFT (Group 3): {name: "BUILD", want: DetectorID("bazel-build-file-bare")},
+		{name: "nx.json", want: DetectorID("js-nx")},
+		// DRAFT (Group 3): {name: "project.json", want: DetectorID("js-nx-project")},
+		{name: "lerna.json", want: DetectorID("js-lerna")},
+		{name: "rush.json", want: DetectorID("js-rush")},
+		{name: "turbo.json", want: DetectorID("js-turbo")},
+		{name: "pants.toml", want: DetectorID("pants-config")},
+		{name: ".gitmodules", want: DetectorID("git-submodules")},
 		// Group 1c: JVM ecosystem extensions
-		{name: "build.sbt", want: ManifestType("scala-sbt-build")},
-		{name: "build.sc", want: ManifestType("scala-mill")},
-		{name: "ivy.xml", want: ManifestType("java-ivy")},
-		{name: "ivysettings.xml", want: ManifestType("java-ivy-settings")},
-		{name: "build.xml", want: ManifestType("java-ant-build")},
+		{name: "build.sbt", want: DetectorID("scala-sbt-build")},
+		{name: "build.sc", want: DetectorID("scala-mill")},
+		{name: "ivy.xml", want: DetectorID("java-ivy")},
+		{name: "ivysettings.xml", want: DetectorID("java-ivy-settings")},
+		{name: "build.xml", want: DetectorID("java-ant-build")},
 		// Group 1d: C/C++ ecosystem extensions
-		{name: "CMakeLists.txt", want: ManifestType("cpp-cmake")},
-		{name: "conanfile.py", want: ManifestType("cpp-conanfile-py")},
-		{name: "vcpkg-configuration.json", want: ManifestType("cpp-vcpkg-config")},
-		{name: "meson.build", want: ManifestType("cpp-meson")},
-		{name: "configure.ac", want: ManifestType("cpp-autotools")},
-		{name: "configure.in", want: ManifestType("cpp-autotools")},
+		{name: "CMakeLists.txt", want: DetectorID("cpp-cmake")},
+		{name: "conanfile.py", want: DetectorID("cpp-conanfile-py")},
+		{name: "vcpkg-configuration.json", want: DetectorID("cpp-vcpkg-config")},
+		{name: "meson.build", want: DetectorID("cpp-meson")},
+		{name: "configure.ac", want: DetectorID("cpp-autotools")},
+		{name: "configure.in", want: DetectorID("cpp-autotools")},
 		// Group 1e: .NET ecosystem extensions
-		{name: "demo.fsproj", want: ManifestType("dotnet-fsproj")},
-		{name: "demo.vbproj", want: ManifestType("dotnet-vbproj")},
-		{name: "Directory.Build.props", want: ManifestType("dotnet-directory-build")},
-		{name: "Directory.Build.targets", want: ManifestType("dotnet-directory-build")},
-		{name: "paket.references", want: ManifestType("dotnet-paket-references")},
+		{name: "demo.fsproj", want: DetectorID("dotnet-fsproj")},
+		{name: "demo.vbproj", want: DetectorID("dotnet-vbproj")},
+		{name: "Directory.Build.props", want: DetectorID("dotnet-directory-build")},
+		{name: "Directory.Build.targets", want: DetectorID("dotnet-directory-build")},
+		{name: "paket.references", want: DetectorID("dotnet-paket-references")},
 		// Group 1f: JavaScript/Node ecosystem extensions
-		{name: ".pnp.cjs", want: ManifestType("js-pnp")},
-		{name: ".pnp.loader.mjs", want: ManifestType("js-pnp")},
-		{name: "pnpm-workspace.yaml", want: ManifestType("js-pnpm-workspace")},
-		{name: "pnpm-workspace.yml", want: ManifestType("js-pnpm-workspace")},
-		{name: ".npmrc", want: ManifestType("js-npmrc")},
-		{name: ".yarnrc.yml", want: ManifestType("js-yarnrc")},
-		{name: "importmap.json", want: ManifestType("js-importmap")},
+		{name: ".pnp.cjs", want: DetectorID("js-pnp")},
+		{name: ".pnp.loader.mjs", want: DetectorID("js-pnp")},
+		{name: "pnpm-workspace.yaml", want: DetectorID("js-pnpm-workspace")},
+		{name: "pnpm-workspace.yml", want: DetectorID("js-pnpm-workspace")},
+		{name: ".npmrc", want: DetectorID("js-npmrc")},
+		{name: ".yarnrc.yml", want: DetectorID("js-yarnrc")},
+		{name: "importmap.json", want: DetectorID("js-importmap")},
 		// Group 1g: Python ecosystem extensions
-		{name: "constraints.txt", want: ManifestType("python-constraints")},
-		{name: "conda.yml", want: ManifestType("python-conda-env-alt")},
-		{name: "conda.yaml", want: ManifestType("python-conda-env-alt")},
+		{name: "constraints.txt", want: DetectorID("python-constraints")},
+		{name: "conda.yml", want: DetectorID("python-conda-env-alt")},
+		{name: "conda.yaml", want: DetectorID("python-conda-env-alt")},
 		// Group 1h: Systems languages extensions
-		{name: "build.zig", want: ManifestType("zig-build")},
+		{name: "build.zig", want: DetectorID("zig-build")},
 		// Group 1i: Ruby/iOS ecosystem extensions
-		{name: "demo.podspec", want: ManifestType("ios-podspec")},
-		{name: "Cartfile.resolved", want: ManifestType("ios-cartfile-resolved")},
+		{name: "demo.podspec", want: DetectorID("ios-podspec")},
+		{name: "Cartfile.resolved", want: DetectorID("ios-cartfile-resolved")},
 		// Group 1j: Functional and niche languages
-		{name: "cabal.project.freeze", want: ManifestType("haskell-cabal-project-freeze")},
-		{name: "build.boot", want: ManifestType("clojure-boot")},
-		{name: "demo.rockspec", want: ManifestType("lua-rockspec")},
-		{name: "renv.lock", want: ManifestType("r-renv-lock")},
-		// DRAFT (Group 3): {name: "DESCRIPTION", want: ManifestType("r-description")},
-		{name: "cpanfile.snapshot", want: ManifestType("perl-cpanfile-snapshot")},
-		{name: "Makefile.PL", want: ManifestType("perl-makefile-pl")},
-		{name: "Build.PL", want: ManifestType("perl-build-pl")},
-		{name: "META.json", want: ManifestType("perl-meta")},
-		{name: "META.yml", want: ManifestType("perl-meta")},
-		{name: "META.yaml", want: ManifestType("perl-meta")},
-		{name: "dist.ini", want: ManifestType("perl-dist-ini")},
-		{name: "META6.json", want: ManifestType("raku-meta")},
-		{name: "demo.opam.locked", want: ManifestType("ocaml-opam-locked")},
-		{name: "dune-project", want: ManifestType("ocaml-dune-project")},
-		{name: "esy.json", want: ManifestType("ocaml-esy")},
-		// DRAFT (Group 3): {name: "dune", want: ManifestType("ocaml-dune")},
-		{name: "shard.lock", want: ManifestType("crystal-shard-lock")},
-		{name: "manifest.toml", want: ManifestType("gleam-manifest")},
-		{name: "fpm.toml", want: ManifestType("fortran-fpm")},
+		{name: "cabal.project.freeze", want: DetectorID("haskell-cabal-project-freeze")},
+		{name: "build.boot", want: DetectorID("clojure-boot")},
+		{name: "demo.rockspec", want: DetectorID("lua-rockspec")},
+		{name: "renv.lock", want: DetectorID("r-renv-lock")},
+		// DRAFT (Group 3): {name: "DESCRIPTION", want: DetectorID("r-description")},
+		{name: "cpanfile.snapshot", want: DetectorID("perl-cpanfile-snapshot")},
+		{name: "Makefile.PL", want: DetectorID("perl-makefile-pl")},
+		{name: "Build.PL", want: DetectorID("perl-build-pl")},
+		{name: "META.json", want: DetectorID("perl-meta")},
+		{name: "META.yml", want: DetectorID("perl-meta")},
+		{name: "META.yaml", want: DetectorID("perl-meta")},
+		{name: "dist.ini", want: DetectorID("perl-dist-ini")},
+		{name: "META6.json", want: DetectorID("raku-meta")},
+		{name: "demo.opam.locked", want: DetectorID("ocaml-opam-locked")},
+		{name: "dune-project", want: DetectorID("ocaml-dune-project")},
+		{name: "esy.json", want: DetectorID("ocaml-esy")},
+		// DRAFT (Group 3): {name: "dune", want: DetectorID("ocaml-dune")},
+		{name: "shard.lock", want: DetectorID("crystal-shard-lock")},
+		{name: "manifest.toml", want: DetectorID("gleam-manifest")},
+		{name: "fpm.toml", want: DetectorID("fortran-fpm")},
 		// Group 1k: Nix
-		{name: "default.nix", want: ManifestType("nix-default-shell")},
-		{name: "shell.nix", want: ManifestType("nix-default-shell")},
-		{name: "flake.nix", want: ManifestType("nix-flake")},
-		{name: "flake.lock", want: ManifestType("nix-flake-lock")},
+		{name: "default.nix", want: DetectorID("nix-default-shell")},
+		{name: "shell.nix", want: DetectorID("nix-default-shell")},
+		{name: "flake.nix", want: DetectorID("nix-flake")},
+		{name: "flake.lock", want: DetectorID("nix-flake-lock")},
 		// Group 1l: Infrastructure and ops tooling
-		{name: "Chart.lock", want: ManifestType("helm-chart-lock")},
-		{name: "Brewfile.lock.json", want: ManifestType("homebrew-brewfile-lock")},
-		{name: "buf.lock", want: ManifestType("buf-lock")},
-		{name: "Puppetfile", want: ManifestType("puppet-puppetfile")},
-		{name: "Berksfile", want: ManifestType("chef-berksfile")},
-		{name: "Berksfile.lock", want: ManifestType("chef-berksfile-lock")},
-		{name: "metadata.rb", want: ManifestType("chef-metadata")},
-		{name: "Policyfile.rb", want: ManifestType("chef-policyfile")},
-		{name: "Policyfile.lock.json", want: ManifestType("chef-policyfile-lock")},
-		{name: "jsonnetfile.lock.json", want: ManifestType("jsonnet-lock")},
-		{name: "Cask", want: ManifestType("emacs-cask")},
+		{name: "Chart.lock", want: DetectorID("helm-chart-lock")},
+		{name: "Brewfile.lock.json", want: DetectorID("homebrew-brewfile-lock")},
+		{name: "buf.lock", want: DetectorID("buf-lock")},
+		{name: "Puppetfile", want: DetectorID("puppet-puppetfile")},
+		{name: "Berksfile", want: DetectorID("chef-berksfile")},
+		{name: "Berksfile.lock", want: DetectorID("chef-berksfile-lock")},
+		{name: "metadata.rb", want: DetectorID("chef-metadata")},
+		{name: "Policyfile.rb", want: DetectorID("chef-policyfile")},
+		{name: "Policyfile.lock.json", want: DetectorID("chef-policyfile-lock")},
+		{name: "jsonnetfile.lock.json", want: DetectorID("jsonnet-lock")},
+		{name: "Cask", want: DetectorID("emacs-cask")},
 		// Group 1m: Game engines
-		{name: "MyGame.uproject", want: ManifestType("unreal-uproject")},
-		{name: "MyPlugin.uplugin", want: ManifestType("unreal-uplugin")},
-		{name: "plugin.cfg", want: ManifestType("godot-plugin-cfg")},
+		{name: "MyGame.uproject", want: DetectorID("unreal-uproject")},
+		{name: "MyPlugin.uplugin", want: DetectorID("unreal-uplugin")},
+		{name: "plugin.cfg", want: DetectorID("godot-plugin-cfg")},
 		// Group 1n: Blockchain / Solidity
-		{name: "foundry.toml", want: ManifestType("foundry-toml")},
-		{name: "remappings.txt", want: ManifestType("foundry-remappings")},
-		{name: "soldeer.lock", want: ManifestType("soldeer-lock")},
+		{name: "foundry.toml", want: DetectorID("foundry-toml")},
+		{name: "remappings.txt", want: DetectorID("foundry-remappings")},
+		{name: "soldeer.lock", want: DetectorID("soldeer-lock")},
 	}
 
 	for _, tc := range testCases {
-		got, ok := ruleset.DetectSelectorOnlyManifest(tc.name)
+		got, ok := ruleset.MatchSelectorOnlySource(tc.name)
 		if !ok {
 			t.Fatalf("expected %s to be detected", tc.name)
 		}
@@ -203,7 +203,7 @@ func TestDetectSelectorOnlyManifestMatchesSupportedFiles(t *testing.T) {
 	}
 }
 
-func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
+func TestMatchSelectorOnlySourceIgnoresSimilarNames(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	testCases := []string{
@@ -394,13 +394,13 @@ func TestDetectManifestIgnoresSimilarNames(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		if _, ok := ruleset.DetectSelectorOnlyManifest(tc); ok {
+		if _, ok := ruleset.MatchSelectorOnlySource(tc); ok {
 			t.Fatalf("expected %s to be ignored", tc)
 		}
 	}
 }
 
-func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
+func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	testCases := []string{
@@ -447,60 +447,60 @@ func TestDetectManifestIgnoresParserBackedManifests(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		if _, ok := ruleset.DetectSelectorOnlyManifest(tc); ok {
-			t.Fatalf("expected %s to be ignored by DetectManifest", tc)
+		if _, ok := ruleset.MatchSelectorOnlySource(tc); ok {
+			t.Fatalf("expected %s to be ignored by MatchSelectorOnlySource", tc)
 		}
 	}
 }
 
-func TestDetectSelectorOnlyManifestIgnoresYarnLockParserRule(t *testing.T) {
+func TestMatchSelectorOnlySourceIgnoresYarnLockParserRule(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	if _, ok := ruleset.DetectSelectorOnlyManifest("yarn.lock"); ok {
-		t.Fatalf("expected yarn.lock to be ignored by DetectSelectorOnlyManifest")
+	if _, ok := ruleset.MatchSelectorOnlySource("yarn.lock"); ok {
+		t.Fatalf("expected yarn.lock to be ignored by MatchSelectorOnlySource")
 	}
 }
 
-func TestDetectManifestIgnoresPathGlobBackedManifests(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    path-glob: 'apps/**/package.json'\n"))
+func TestMatchSelectorOnlySourceIgnoresPathGlobBackedSources(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: js\n      path-glob: 'apps/**/package.json'\n      form: other\n      roles:\n        - inventory\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
 
-	if _, ok := ruleset.DetectSelectorOnlyManifest("package.json"); ok {
-		t.Fatalf("expected DetectManifest to ignore path-glob-backed rules")
+	if _, ok := ruleset.MatchSelectorOnlySource("package.json"); ok {
+		t.Fatalf("expected MatchSelectorOnlySource to ignore path-glob-backed rules")
 	}
 }
 
-func TestDetectManifestFileAtRelativePathMatchesPathGlob(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: '**/requirements/*.txt'\n"))
+func TestAnalyzeDependencySourceAtRelativePathMatchesPathGlob(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-requirements\n      path-glob: '**/requirements/*.txt'\n      form: other\n      roles:\n        - inventory\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFileAtRelativePath("apps/api/requirements/base.txt", "base.txt", "apps/api/requirements/base.txt")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourcePartsAtRelativePath(ruleset, "apps/api/requirements/base.txt", "base.txt", "apps/api/requirements/base.txt")
 	if err != nil {
-		t.Fatalf("DetectManifestFileAtRelativePath failed: %v", err)
+		t.Fatalf("AnalyzeDependencySourceAtRelativePath failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected path-glob rule to match relative path input")
 	}
-	if got != ManifestType("python-requirements") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("python-requirements") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDependencies != nil {
-		t.Fatalf("expected unknown has_dependencies, got %+v", hasDependencies)
+	if present != nil {
+		t.Fatalf("expected unknown presence, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestDetectManifestFileAtRelativePathMatchesPathGlobWithAbsolutePath(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: '**/requirements/*.txt'\n"))
+func TestAnalyzeDependencySourceAtRelativePathMatchesPathGlobWithAbsolutePath(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-requirements\n      path-glob: '**/requirements/*.txt'\n      form: other\n      roles:\n        - inventory\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -508,79 +508,79 @@ func TestDetectManifestFileAtRelativePathMatchesPathGlobWithAbsolutePath(t *test
 	root := t.TempDir()
 	absPath := filepath.Join(root, "apps", "api", "requirements", "base.txt")
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFileAtRelativePath(absPath, "base.txt", "apps/api/requirements/base.txt")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourcePartsAtRelativePath(ruleset, absPath, "base.txt", "apps/api/requirements/base.txt")
 	if err != nil {
-		t.Fatalf("DetectManifestFileAtRelativePath failed: %v", err)
+		t.Fatalf("AnalyzeDependencySourceAtRelativePath failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected path-glob rule to match absolute path with explicit relative path")
 	}
-	if got != ManifestType("python-requirements") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("python-requirements") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDependencies != nil {
-		t.Fatalf("expected unknown has_dependencies, got %+v", hasDependencies)
+	if present != nil {
+		t.Fatalf("expected unknown presence, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestDetectManifestFileDoesNotMatchPathGlobWithoutRelativePath(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: 'apps/**/requirements/*.txt'\n"))
+func TestAnalyzeDependencySourceDoesNotMatchPathGlobWithoutRelativePath(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-requirements\n      path-glob: 'apps/**/requirements/*.txt'\n      form: other\n      roles:\n        - inventory\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile("apps/api/requirements/base.txt", "base.txt")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, "apps/api/requirements/base.txt", "base.txt")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if ok {
-		t.Fatalf("expected no path-glob match without explicit relative path, got type=%q deps=%+v hasDependencies=%+v warnings=%+v", got, deps, hasDependencies, warnings)
+		t.Fatalf("expected no path-glob match without explicit relative path, got detector=%q deps=%+v presence=%+v diagnostics=%+v", got, deps, present, diagnosticMessages)
 	}
 }
 
-func TestDetectManifestFileMatchesSelectorOnlyFilenameRuleWithEmptyPath(t *testing.T) {
+func TestAnalyzeDependencySourceMatchesSelectorOnlyFilenameRuleWithEmptyPath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile("", "bun.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, "", "bun.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected filename-only rule to match with empty path")
 	}
-	if got != ManifestType("js-bun-lock") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("js-bun-lock") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDependencies != nil {
-		t.Fatalf("expected unknown has_dependencies, got %+v", hasDependencies)
+	if present != nil {
+		t.Fatalf("expected unknown presence, got %+v", present)
 	}
 }
 
-func TestDetectManifestFileIgnoresParserBackedRuleWithEmptyPath(t *testing.T) {
+func TestAnalyzeDependencySourceIgnoresParserBackedRuleWithEmptyPath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile("", "package-lock.json")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, "", "package-lock.json")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if ok {
-		t.Fatalf("expected parser-backed rule to be ignored with empty path, got type=%q deps=%+v hasDependencies=%+v warnings=%+v", got, deps, hasDependencies, warnings)
+		t.Fatalf("expected parser-backed rule to be ignored with empty path, got detector=%q deps=%+v presence=%+v diagnostics=%+v", got, deps, present, diagnosticMessages)
 	}
 }
 
-func TestScanFindsNestedManifestsSortedByRelativePath(t *testing.T) {
+func TestScanFindsNestedSourcesSortedByRelativePath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "b", "requirements.dev.in"), "")
@@ -600,11 +600,11 @@ resource "aws_glue_job" "python_shell_example" {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 4 {
-		t.Fatalf("expected 4 manifests, got %d", len(result.Manifests))
+	if len(result.Sources) != 4 {
+		t.Fatalf("expected 4 dependency sources, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Path != "a/index.html" || result.Manifests[1].Path != "a/package.json" || result.Manifests[2].Path != "b/requirements.dev.in" || result.Manifests[3].Path != "c/job.tf" {
-		t.Fatalf("unexpected manifest order: %+v", result.Manifests)
+	if result.Sources[0].Path != "a/index.html" || result.Sources[1].Path != "a/package.json" || result.Sources[2].Path != "b/requirements.dev.in" || result.Sources[3].Path != "c/job.tf" {
+		t.Fatalf("unexpected dependency source order: %+v", result.Sources)
 	}
 }
 
@@ -616,19 +616,19 @@ func TestScanFindsRequirementsInFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	for _, manifest := range result.Manifests {
-		if manifest.Type == ManifestType("python-requirements") && manifest.Path == "requirements.qt6_3.in" {
-			if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"PyQt6==6.7.0"}) {
-				t.Fatalf("unexpected dependencies: got %+v", manifest.Dependencies)
+	for _, source := range result.Sources {
+		if source.Detector == DetectorID("python-requirements") && source.Path == "requirements.qt6_3.in" {
+			if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"PyQt6==6.7.0"}) {
+				t.Fatalf("unexpected dependencies: got %+v", source.Dependencies)
 			}
-			if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-				t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+			if source.Analysis.Presence != PresencePresent {
+				t.Fatalf("expected presence=present, got %+v", source.Analysis)
 			}
 			return
 		}
 	}
 
-	t.Fatalf("expected requirements.qt6_3.in fixture to be detected, got %+v", result.Manifests)
+	t.Fatalf("expected requirements.qt6_3.in fixture to be detected, got %+v", result.Sources)
 }
 
 func TestScanMatchesRequirementsFixtureWithExtractedDependencies(t *testing.T) {
@@ -639,19 +639,19 @@ func TestScanMatchesRequirementsFixtureWithExtractedDependencies(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("python-requirements") || manifest.Path != "requirements.txt" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("python-requirements") || source.Path != "requirements.txt" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests>=2.31", `uvicorn[standard]>=0.30 ; python_version >= "3.11"`}) {
-		t.Fatalf("unexpected dependencies: got %+v", manifest.Dependencies)
+	if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"requests>=2.31", `uvicorn[standard]>=0.30 ; python_version >= "3.11"`}) {
+		t.Fatalf("unexpected dependencies: got %+v", source.Dependencies)
 	}
-	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", source.Analysis)
 	}
 }
 
@@ -663,19 +663,19 @@ func TestScanMatchesRequirementsFixtureWithOnlyDirectivesAsConclusiveEmpty(t *te
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("python-requirements") || manifest.Path != "requirements.txt" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("python-requirements") || source.Path != "requirements.txt" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
-	if manifest.Dependencies != nil {
-		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	if source.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", source.Dependencies)
 	}
-	if manifest.HasDependencies == nil || *manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", source.Analysis)
 	}
 }
 
@@ -687,26 +687,26 @@ func TestScanMatchesRequirementsFixtureWithRecursiveIncludes(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("python-requirements") || manifest.Path != "requirements.txt" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("python-requirements") || source.Path != "requirements.txt" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests>=2.31", "urllib3<3", "pendulum>=3", "pytest>=8"}) {
-		t.Fatalf("unexpected dependencies: got %+v", manifest.Dependencies)
+	if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"requests>=2.31", "urllib3<3", "pendulum>=3", "pytest>=8"}) {
+		t.Fatalf("unexpected dependencies: got %+v", source.Dependencies)
 	}
-	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", source.Analysis)
 	}
-	if len(manifest.Warnings) != 0 {
-		t.Fatalf("expected no warnings, got %+v", manifest.Warnings)
+	if len(source.Diagnostics) != 0 {
+		t.Fatalf("expected no diagnostics, got %+v", source.Diagnostics)
 	}
 }
 
-func TestScanMatchesRequirementsFixtureWithWarnings(t *testing.T) {
+func TestScanMatchesRequirementsFixtureWithDiagnostics(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	result, err := Scan(filepath.Join("..", "..", "testdata", "python", "requirements-missing-include"), nil, ruleset)
@@ -714,19 +714,19 @@ func TestScanMatchesRequirementsFixtureWithWarnings(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests>=2.31"}) {
-		t.Fatalf("unexpected dependencies: got %+v", manifest.Dependencies)
+	source := result.Sources[0]
+	if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"requests>=2.31"}) {
+		t.Fatalf("unexpected dependencies: got %+v", source.Dependencies)
 	}
-	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", source.Analysis)
 	}
-	if len(manifest.Warnings) != 1 {
-		t.Fatalf("expected one warning, got %+v", manifest.Warnings)
+	if len(source.Diagnostics) != 1 {
+		t.Fatalf("expected one warning, got %+v", source.Diagnostics)
 	}
 }
 
@@ -738,19 +738,19 @@ func TestScanMatchesRequirementsFixtureAsUnknownWhenOnlyUnreadableIncludeRemains
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Dependencies != nil {
-		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	source := result.Sources[0]
+	if source.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", source.Dependencies)
 	}
-	if manifest.HasDependencies != nil {
-		t.Fatalf("expected unknown has_dependencies, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresenceUnknown {
+		t.Fatalf("expected unknown presence, got %+v", source.Analysis)
 	}
-	if len(manifest.Warnings) != 1 {
-		t.Fatalf("expected one warning, got %+v", manifest.Warnings)
+	if len(source.Diagnostics) != 1 {
+		t.Fatalf("expected one warning, got %+v", source.Diagnostics)
 	}
 }
 
@@ -762,13 +762,13 @@ func TestScanFindsPoetryLockInFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	for _, manifest := range result.Manifests {
-		if manifest.Type == ManifestType("python-poetry-lock") && manifest.Path == "backend/poetry.lock" {
+	for _, source := range result.Sources {
+		if source.Detector == DetectorID("python-poetry-lock") && source.Path == "backend/poetry.lock" {
 			return
 		}
 	}
 
-	t.Fatalf("expected backend/poetry.lock fixture to be detected, got %+v", result.Manifests)
+	t.Fatalf("expected backend/poetry.lock fixture to be detected, got %+v", result.Sources)
 }
 
 func TestScanFindsCondaEnvironmentInFixture(t *testing.T) {
@@ -779,19 +779,19 @@ func TestScanFindsCondaEnvironmentInFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	for _, manifest := range result.Manifests {
-		if manifest.Type == ManifestType("python-conda-environment") && manifest.Path == "environment.yml" {
-			if manifest.Dependencies != nil {
-				t.Fatalf("expected no extracted dependencies, got %+v", manifest.Dependencies)
+	for _, source := range result.Sources {
+		if source.Detector == DetectorID("python-conda-environment") && source.Path == "environment.yml" {
+			if source.Dependencies != nil {
+				t.Fatalf("expected no extracted dependencies, got %+v", source.Dependencies)
 			}
-			if manifest.HasDependencies != nil {
-				t.Fatalf("expected has_dependencies to remain unknown, got %+v", manifest.HasDependencies)
+			if source.Analysis.Presence != PresenceUnknown {
+				t.Fatalf("expected presence to remain unknown, got %+v", source.Analysis)
 			}
 			return
 		}
 	}
 
-	t.Fatalf("expected environment.yml fixture to be detected, got %+v", result.Manifests)
+	t.Fatalf("expected environment.yml fixture to be detected, got %+v", result.Sources)
 }
 
 func TestScanFindsPackageJSONFixtureWithoutMatchingSections(t *testing.T) {
@@ -801,14 +801,14 @@ func TestScanFindsPackageJSONFixtureWithoutMatchingSections(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Path != "package.json" {
-		t.Fatalf("expected package.json fixture, got %+v", result.Manifests[0])
+	if result.Sources[0].Path != "package.json" {
+		t.Fatalf("expected package.json fixture, got %+v", result.Sources[0])
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -819,17 +819,17 @@ func TestScanFindsPackageJSONFixtureWithOneMatchingSection(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Path != "package.json" {
-		t.Fatalf("expected package.json fixture, got %+v", result.Manifests[0])
+	if result.Sources[0].Path != "package.json" {
+		t.Fatalf("expected package.json fixture, got %+v", result.Sources[0])
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if len(result.Manifests[0].Dependencies) != 0 {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
@@ -840,14 +840,14 @@ func TestScanFindsPackageJSONFixtureWithTwoMatchingSections(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Path != "package.json" {
-		t.Fatalf("expected package.json fixture, got %+v", result.Manifests[0])
+	if result.Sources[0].Path != "package.json" {
+		t.Fatalf("expected package.json fixture, got %+v", result.Sources[0])
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -858,17 +858,17 @@ func TestScanMatchesComposerJSONWithRequireSections(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("php-composer") || result.Manifests[0].Path != "composer.json" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("php-composer") || result.Sources[0].Path != "composer.json" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if len(result.Manifests[0].Dependencies) != 0 {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
@@ -879,11 +879,11 @@ func TestScanMatchesComposerJSONWithoutRequireSections(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -894,14 +894,14 @@ func TestScanMatchesDenoJSONWithImports(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("deno-json") || result.Manifests[0].Path != "deno.json" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("deno-json") || result.Sources[0].Path != "deno.json" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -912,14 +912,14 @@ func TestScanMatchesDenoJSONCWithoutImports(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("deno-jsonc") || result.Manifests[0].Path != "deno.jsonc" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("deno-jsonc") || result.Sources[0].Path != "deno.jsonc" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -930,17 +930,17 @@ func TestScanMatchesCargoTOMLWithDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("rust-cargo") || result.Manifests[0].Path != "Cargo.toml" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("rust-cargo") || result.Sources[0].Path != "Cargo.toml" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if len(result.Manifests[0].Dependencies) != 0 {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
@@ -951,11 +951,11 @@ func TestScanMatchesCargoTOMLWithoutDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -966,14 +966,14 @@ func TestScanMatchesPubspecYAMLWithDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("dart-pubspec") || result.Manifests[0].Path != "pubspec.yaml" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("dart-pubspec") || result.Sources[0].Path != "pubspec.yaml" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -984,11 +984,11 @@ func TestScanMatchesPubspecYAMLWithoutDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -999,17 +999,17 @@ func TestScanMatchesMavenPOMWithDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("java") || result.Manifests[0].Path != "pom.xml" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("java") || result.Sources[0].Path != "pom.xml" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if len(result.Manifests[0].Dependencies) != 0 {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
@@ -1020,11 +1020,11 @@ func TestScanMatchesMavenPOMWithoutDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -1035,11 +1035,11 @@ func TestScanMatchesNamespacedMavenPOMWithDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -1050,26 +1050,26 @@ func TestScanMatchesMavenPOMWithDependencyManagementOnlyAsNoDependencies(t *test
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
-func TestScanMarksHasDependenciesTrueWhenDependenciesAreExtracted(t *testing.T) {
+func TestScanMarksPresencePresentWhenDependenciesAreExtracted(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	result, err := Scan(filepath.Join("..", "..", "testdata", "toml", "pipfile"), nil, ruleset)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -1081,13 +1081,13 @@ func TestScanFindsPipfileLockInFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	for _, manifest := range result.Manifests {
-		if manifest.Type == ManifestType("python-pipfile-lock") && manifest.Path == "backend/Pipfile.lock" {
+	for _, source := range result.Sources {
+		if source.Detector == DetectorID("python-pipfile-lock") && source.Path == "backend/Pipfile.lock" {
 			return
 		}
 	}
 
-	t.Fatalf("expected backend/Pipfile.lock fixture to be detected, got %+v", result.Manifests)
+	t.Fatalf("expected backend/Pipfile.lock fixture to be detected, got %+v", result.Sources)
 }
 
 func TestScanFindsPdmLockInFixture(t *testing.T) {
@@ -1098,19 +1098,19 @@ func TestScanFindsPdmLockInFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	for _, manifest := range result.Manifests {
-		if manifest.Type == ManifestType("python-pdm-lock") && manifest.Path == "backend/pdm.lock" {
-			if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-				t.Fatalf("expected backend/pdm.lock fixture to have has_dependencies=true, got %+v", manifest.HasDependencies)
+	for _, source := range result.Sources {
+		if source.Detector == DetectorID("python-pdm-lock") && source.Path == "backend/pdm.lock" {
+			if source.Analysis.Presence != PresencePresent {
+				t.Fatalf("expected backend/pdm.lock fixture to have presence=present, got %+v", source.Analysis)
 			}
-			if manifest.Dependencies != nil {
-				t.Fatalf("expected backend/pdm.lock fixture to remain non-extracting, got %+v", manifest.Dependencies)
+			if source.Dependencies != nil {
+				t.Fatalf("expected backend/pdm.lock fixture to remain non-extracting, got %+v", source.Dependencies)
 			}
 			return
 		}
 	}
 
-	t.Fatalf("expected backend/pdm.lock fixture to be detected, got %+v", result.Manifests)
+	t.Fatalf("expected backend/pdm.lock fixture to be detected, got %+v", result.Sources)
 }
 
 func TestScanFindsGopkgLockInFixture(t *testing.T) {
@@ -1121,19 +1121,19 @@ func TestScanFindsGopkgLockInFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	for _, manifest := range result.Manifests {
-		if manifest.Type == ManifestType("go-gopkg-lock") && manifest.Path == "go-service/Gopkg.lock" {
-			if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-				t.Fatalf("expected go-service/Gopkg.lock fixture to have has_dependencies=true, got %+v", manifest.HasDependencies)
+	for _, source := range result.Sources {
+		if source.Detector == DetectorID("go-gopkg-lock") && source.Path == "go-service/Gopkg.lock" {
+			if source.Analysis.Presence != PresencePresent {
+				t.Fatalf("expected go-service/Gopkg.lock fixture to have presence=present, got %+v", source.Analysis)
 			}
-			if manifest.Dependencies != nil {
-				t.Fatalf("expected go-service/Gopkg.lock fixture to remain non-extracting, got %+v", manifest.Dependencies)
+			if source.Dependencies != nil {
+				t.Fatalf("expected go-service/Gopkg.lock fixture to remain non-extracting, got %+v", source.Dependencies)
 			}
 			return
 		}
 	}
 
-	t.Fatalf("expected go-service/Gopkg.lock fixture to be detected, got %+v", result.Manifests)
+	t.Fatalf("expected go-service/Gopkg.lock fixture to be detected, got %+v", result.Sources)
 }
 
 func TestScanFindsCondaLockInFixture(t *testing.T) {
@@ -1144,13 +1144,13 @@ func TestScanFindsCondaLockInFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	for _, manifest := range result.Manifests {
-		if manifest.Type == ManifestType("python-conda-lock") && manifest.Path == "backend/conda-lock.yml" {
+	for _, source := range result.Sources {
+		if source.Detector == DetectorID("python-conda-lock") && source.Path == "backend/conda-lock.yml" {
 			return
 		}
 	}
 
-	t.Fatalf("expected backend/conda-lock.yml fixture to be detected, got %+v", result.Manifests)
+	t.Fatalf("expected backend/conda-lock.yml fixture to be detected, got %+v", result.Sources)
 }
 
 func TestScanFindsAdditionalLockfilesInFixture(t *testing.T) {
@@ -1161,39 +1161,39 @@ func TestScanFindsAdditionalLockfilesInFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	want := map[string]ManifestType{
-		"frontend/package-lock.json":   ManifestType("js-npm-lock"),
-		"frontend/pnpm-lock.yaml":      ManifestType("js-pnpm-lock"),
-		"frontend/bun.lock":            ManifestType("js-bun-lock"),
-		"frontend/bun.lockb":           ManifestType("js-bun-lockb"),
-		"frontend/deno.lock":           ManifestType("deno-lock"),
-		"java-service/gradle.lockfile": ManifestType("java-gradle-lockfile"),
-		"ruby-app/Gemfile":             ManifestType("ruby-gemfile"),
-		"ruby-app/Gemfile.lock":        ManifestType("ruby-gemfile-lock"),
-		"php-app/composer.json":        ManifestType("php-composer"),
-		"php-app/composer.lock":        ManifestType("php-composer-lock"),
-		"go-service/go.mod":            ManifestType("go-mod"),
-		"go-service/go.sum":            ManifestType("go-sum"),
-		"rust-app/Cargo.toml":          ManifestType("rust-cargo"),
-		"rust-app/Cargo.lock":          ManifestType("rust-cargo-lock"),
-		"go-service/Gopkg.lock":        ManifestType("go-gopkg-lock"),
-		"go-service/glide.lock":        ManifestType("go-glide-lock"),
-		"dotnet-app/app.csproj":        ManifestType("dotnet-csproj"),
-		"cpp-app/conan.lock":           ManifestType("cpp-conan-lock"),
-		"ios-app/Package.resolved":     ManifestType("swift-package-resolved"),
-		"ios-app/Podfile.lock":         ManifestType("ios-podfile-lock"),
-		"elixir-app/mix.lock":          ManifestType("elixir-mix-lock"),
+	want := map[string]DetectorID{
+		"frontend/package-lock.json":   DetectorID("js-npm-lock"),
+		"frontend/pnpm-lock.yaml":      DetectorID("js-pnpm-lock"),
+		"frontend/bun.lock":            DetectorID("js-bun-lock"),
+		"frontend/bun.lockb":           DetectorID("js-bun-lockb"),
+		"frontend/deno.lock":           DetectorID("deno-lock"),
+		"java-service/gradle.lockfile": DetectorID("java-gradle-lockfile"),
+		"ruby-app/Gemfile":             DetectorID("ruby-gemfile"),
+		"ruby-app/Gemfile.lock":        DetectorID("ruby-gemfile-lock"),
+		"php-app/composer.json":        DetectorID("php-composer"),
+		"php-app/composer.lock":        DetectorID("php-composer-lock"),
+		"go-service/go.mod":            DetectorID("go-mod"),
+		"go-service/go.sum":            DetectorID("go-sum"),
+		"rust-app/Cargo.toml":          DetectorID("rust-cargo"),
+		"rust-app/Cargo.lock":          DetectorID("rust-cargo-lock"),
+		"go-service/Gopkg.lock":        DetectorID("go-gopkg-lock"),
+		"go-service/glide.lock":        DetectorID("go-glide-lock"),
+		"dotnet-app/app.csproj":        DetectorID("dotnet-csproj"),
+		"cpp-app/conan.lock":           DetectorID("cpp-conan-lock"),
+		"ios-app/Package.resolved":     DetectorID("swift-package-resolved"),
+		"ios-app/Podfile.lock":         DetectorID("ios-podfile-lock"),
+		"elixir-app/mix.lock":          DetectorID("elixir-mix-lock"),
 	}
 
-	for _, manifest := range result.Manifests {
-		wantType, ok := want[manifest.Path]
+	for _, source := range result.Sources {
+		wantType, ok := want[source.Path]
 		if !ok {
 			continue
 		}
-		if manifest.Type != wantType {
-			t.Fatalf("expected %s to be detected as %q, got %q", manifest.Path, wantType, manifest.Type)
+		if source.Detector != wantType {
+			t.Fatalf("expected %s to be detected as %q, got %q", source.Path, wantType, source.Detector)
 		}
-		delete(want, manifest.Path)
+		delete(want, source.Path)
 	}
 
 	if len(want) != 0 {
@@ -1232,23 +1232,23 @@ func TestDefaultRulesScanPackageLockExtractedFixtures(t *testing.T) {
 			if err != nil {
 				t.Fatalf("scan failed: %v", err)
 			}
-			if len(result.Manifests) != 1 {
-				t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+			if len(result.Sources) != 1 {
+				t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 			}
 
-			manifest := result.Manifests[0]
-			if manifest.Path != "package-lock.json" {
-				t.Fatalf("unexpected manifest path: %+v", manifest)
+			source := result.Sources[0]
+			if source.Path != "package-lock.json" {
+				t.Fatalf("unexpected dependency source path: %+v", source)
 			}
-			if manifest.Type != ManifestType("js-npm-lock") {
-				t.Fatalf("unexpected manifest type: %+v", manifest)
+			if source.Detector != DetectorID("js-npm-lock") {
+				t.Fatalf("unexpected dependency source type: %+v", source)
 			}
-			got := dependencyNames(manifest.Dependencies)
+			got := dependencyNames(source.Dependencies)
 			if !equalStringSets(got, tc.want) {
 				t.Fatalf("unexpected dependencies: got %+v want %+v (order-independent)", got, tc.want)
 			}
-			if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-				t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+			if source.Analysis.Presence != PresencePresent {
+				t.Fatalf("expected presence=present, got %+v", source.Analysis)
 			}
 		})
 	}
@@ -1261,22 +1261,22 @@ func TestDefaultRulesScanPackageLockEmptyFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Path != "package-lock.json" {
-		t.Fatalf("unexpected manifest path: %+v", manifest)
+	source := result.Sources[0]
+	if source.Path != "package-lock.json" {
+		t.Fatalf("unexpected dependency source path: %+v", source)
 	}
-	if manifest.Type != ManifestType("js-npm-lock") {
-		t.Fatalf("unexpected manifest type: %+v", manifest)
+	if source.Detector != DetectorID("js-npm-lock") {
+		t.Fatalf("unexpected dependency source type: %+v", source)
 	}
-	if manifest.Dependencies != nil {
-		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	if source.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", source.Dependencies)
 	}
-	if manifest.HasDependencies == nil || *manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", source.Analysis)
 	}
 }
 
@@ -1287,23 +1287,23 @@ func TestDefaultRulesScanNpmShrinkwrapExtractedFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Path != "npm-shrinkwrap.json" {
-		t.Fatalf("unexpected manifest path: %+v", manifest)
+	source := result.Sources[0]
+	if source.Path != "npm-shrinkwrap.json" {
+		t.Fatalf("unexpected dependency source path: %+v", source)
 	}
-	if manifest.Type != ManifestType("js-npm-shrinkwrap") {
-		t.Fatalf("unexpected manifest type: %+v", manifest)
+	if source.Detector != DetectorID("js-npm-shrinkwrap") {
+		t.Fatalf("unexpected dependency source type: %+v", source)
 	}
 	want := []string{"left-pad@1.3.0", "@types/node@20.12.7"}
-	if got := dependencyNames(manifest.Dependencies); !equalStringSets(got, want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v (order-independent)", manifest.Dependencies, want)
+	if got := dependencyNames(source.Dependencies); !equalStringSets(got, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v (order-independent)", source.Dependencies, want)
 	}
-	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", source.Analysis)
 	}
 }
 
@@ -1314,22 +1314,22 @@ func TestDefaultRulesScanNpmShrinkwrapEmptyFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Path != "npm-shrinkwrap.json" {
-		t.Fatalf("unexpected manifest path: %+v", manifest)
+	source := result.Sources[0]
+	if source.Path != "npm-shrinkwrap.json" {
+		t.Fatalf("unexpected dependency source path: %+v", source)
 	}
-	if manifest.Type != ManifestType("js-npm-shrinkwrap") {
-		t.Fatalf("unexpected manifest type: %+v", manifest)
+	if source.Detector != DetectorID("js-npm-shrinkwrap") {
+		t.Fatalf("unexpected dependency source type: %+v", source)
 	}
-	if manifest.Dependencies != nil {
-		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	if source.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", source.Dependencies)
 	}
-	if manifest.HasDependencies == nil || *manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", source.Analysis)
 	}
 }
 
@@ -1340,91 +1340,91 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 		name string
 		root string
 		path string
-		typ  ManifestType
+		typ  DetectorID
 	}{
 		{
 			name: "helm chart",
 			root: filepath.Join("..", "..", "testdata", "helm", "chart"),
 			path: "Chart.yaml",
-			typ:  ManifestType("helm-chart"),
+			typ:  DetectorID("helm-chart"),
 		},
 		{
 			name: "crystal shard",
 			root: filepath.Join("..", "..", "testdata", "crystal", "shard"),
 			path: "shard.yml",
-			typ:  ManifestType("crystal-shard"),
+			typ:  DetectorID("crystal-shard"),
 		},
 		{
 			name: "julia project",
 			root: filepath.Join("..", "..", "testdata", "julia", "project"),
 			path: "Project.toml",
-			typ:  ManifestType("julia-project"),
+			typ:  DetectorID("julia-project"),
 		},
 		{
 			name: "julia manifest",
 			root: filepath.Join("..", "..", "testdata", "julia", "manifest"),
 			path: "Manifest.toml",
-			typ:  ManifestType("julia-manifest"),
+			typ:  DetectorID("julia-manifest"),
 		},
 		{
 			name: "gleam project",
 			root: filepath.Join("..", "..", "testdata", "gleam", "project"),
 			path: "gleam.toml",
-			typ:  ManifestType("gleam"),
+			typ:  DetectorID("gleam"),
 		},
 		{
 			name: "dotnet csproj",
 			root: filepath.Join("..", "..", "testdata", "sample-monorepo", "dotnet-app"),
 			path: "app.csproj",
-			typ:  ManifestType("dotnet-csproj"),
+			typ:  DetectorID("dotnet-csproj"),
 		},
 		{
 			name: "directory packages props",
 			root: filepath.Join("..", "..", "testdata", "dotnet", "directory-packages-props-with-deps"),
 			path: "Directory.Packages.props",
-			typ:  ManifestType("dotnet-directory-packages-props"),
+			typ:  DetectorID("dotnet-directory-packages-props"),
 		},
 		{
 			name: "packages config",
 			root: filepath.Join("..", "..", "testdata", "dotnet", "packages-config-with-deps"),
 			path: "packages.config",
-			typ:  ManifestType("dotnet-packages-config"),
+			typ:  DetectorID("dotnet-packages-config"),
 		},
 		{
 			name: "unity packages manifest",
 			root: filepath.Join("..", "..", "testdata", "unity", "packages-manifest-with-deps"),
 			path: "Packages/manifest.json",
-			typ:  ManifestType("unity-packages-manifest"),
+			typ:  DetectorID("unity-packages-manifest"),
 		},
 		{
 			name: "bower manifest",
 			root: filepath.Join("..", "..", "testdata", "js", "bower-with-deps"),
 			path: "bower.json",
-			typ:  ManifestType("js-bower"),
+			typ:  DetectorID("js-bower"),
 		},
 		{
 			name: "pubspec lock",
 			root: filepath.Join("..", "..", "testdata", "yaml", "pubspec-lock-with-deps"),
 			path: "pubspec.lock",
-			typ:  ManifestType("dart-pubspec-lock"),
+			typ:  DetectorID("dart-pubspec-lock"),
 		},
 		{
 			name: "glide yaml",
 			root: filepath.Join("..", "..", "testdata", "go", "glide-yaml-with-deps"),
 			path: "glide.yaml",
-			typ:  ManifestType("go-glide-yaml"),
+			typ:  DetectorID("go-glide-yaml"),
 		},
 		{
 			name: "gopkg lock",
 			root: filepath.Join("..", "..", "testdata", "go", "gopkg-lock-with-deps"),
 			path: "Gopkg.lock",
-			typ:  ManifestType("go-gopkg-lock"),
+			typ:  DetectorID("go-gopkg-lock"),
 		},
 		{
 			name: "swift package resolved",
 			root: filepath.Join("..", "..", "testdata", "swift", "package-resolved-with-deps"),
 			path: "Package.resolved",
-			typ:  ManifestType("swift-package-resolved"),
+			typ:  DetectorID("swift-package-resolved"),
 		},
 	}
 
@@ -1434,19 +1434,19 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			if err != nil {
 				t.Fatalf("scan failed: %v", err)
 			}
-			if len(result.Manifests) != 1 {
-				t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+			if len(result.Sources) != 1 {
+				t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 			}
 
-			manifest := result.Manifests[0]
-			if manifest.Type != tc.typ || manifest.Path != tc.path {
-				t.Fatalf("unexpected manifest: %+v", manifest)
+			source := result.Sources[0]
+			if source.Detector != tc.typ || source.Path != tc.path {
+				t.Fatalf("unexpected dependency source: %+v", source)
 			}
-			if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-				t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+			if source.Analysis.Presence != PresencePresent {
+				t.Fatalf("expected presence=present, got %+v", source.Analysis)
 			}
-			if manifest.Dependencies != nil {
-				t.Fatalf("expected no extracted dependencies, got %+v", manifest.Dependencies)
+			if source.Dependencies != nil {
+				t.Fatalf("expected no extracted dependencies, got %+v", source.Dependencies)
 			}
 		})
 	}
@@ -1461,7 +1461,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 		withPath    string
 		withoutRoot string
 		withoutPath string
-		typ         ManifestType
+		typ         DetectorID
 	}{
 		{
 			name:        "python pdm lock",
@@ -1469,7 +1469,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "pdm.lock",
 			withoutRoot: filepath.Join("..", "..", "testdata", "python", "pdm-lock-no-deps"),
 			withoutPath: "pdm.lock",
-			typ:         ManifestType("python-pdm-lock"),
+			typ:         DetectorID("python-pdm-lock"),
 		},
 		{
 			name:        "python conda lock",
@@ -1477,7 +1477,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "conda-lock.yml",
 			withoutRoot: filepath.Join("..", "..", "testdata", "python", "conda-lock-no-deps"),
 			withoutPath: "conda-lock.yml",
-			typ:         ManifestType("python-conda-lock"),
+			typ:         DetectorID("python-conda-lock"),
 		},
 		{
 			name:        "helm chart",
@@ -1485,7 +1485,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "Chart.yaml",
 			withoutRoot: filepath.Join("..", "..", "testdata", "helm", "chart-no-deps"),
 			withoutPath: "Chart.yaml",
-			typ:         ManifestType("helm-chart"),
+			typ:         DetectorID("helm-chart"),
 		},
 		{
 			name:        "crystal shard",
@@ -1493,7 +1493,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "shard.yml",
 			withoutRoot: filepath.Join("..", "..", "testdata", "crystal", "shard-no-deps"),
 			withoutPath: "shard.yml",
-			typ:         ManifestType("crystal-shard"),
+			typ:         DetectorID("crystal-shard"),
 		},
 		{
 			name:        "julia project",
@@ -1501,7 +1501,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "Project.toml",
 			withoutRoot: filepath.Join("..", "..", "testdata", "julia", "project-no-deps"),
 			withoutPath: "Project.toml",
-			typ:         ManifestType("julia-project"),
+			typ:         DetectorID("julia-project"),
 		},
 		{
 			name:        "julia manifest",
@@ -1509,7 +1509,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "Manifest.toml",
 			withoutRoot: filepath.Join("..", "..", "testdata", "julia", "manifest-no-deps"),
 			withoutPath: "Manifest.toml",
-			typ:         ManifestType("julia-manifest"),
+			typ:         DetectorID("julia-manifest"),
 		},
 		{
 			name:        "gleam project",
@@ -1517,7 +1517,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "gleam.toml",
 			withoutRoot: filepath.Join("..", "..", "testdata", "gleam", "project-no-deps"),
 			withoutPath: "gleam.toml",
-			typ:         ManifestType("gleam"),
+			typ:         DetectorID("gleam"),
 		},
 		{
 			name:        "dotnet csproj",
@@ -1525,7 +1525,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "app.csproj",
 			withoutRoot: filepath.Join("..", "..", "testdata", "dotnet", "csproj-no-deps"),
 			withoutPath: "app.csproj",
-			typ:         ManifestType("dotnet-csproj"),
+			typ:         DetectorID("dotnet-csproj"),
 		},
 		{
 			name:        "directory packages props",
@@ -1533,7 +1533,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "Directory.Packages.props",
 			withoutRoot: filepath.Join("..", "..", "testdata", "dotnet", "directory-packages-props-no-deps"),
 			withoutPath: "Directory.Packages.props",
-			typ:         ManifestType("dotnet-directory-packages-props"),
+			typ:         DetectorID("dotnet-directory-packages-props"),
 		},
 		{
 			name:        "packages config",
@@ -1541,7 +1541,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "packages.config",
 			withoutRoot: filepath.Join("..", "..", "testdata", "dotnet", "packages-config-no-deps"),
 			withoutPath: "packages.config",
-			typ:         ManifestType("dotnet-packages-config"),
+			typ:         DetectorID("dotnet-packages-config"),
 		},
 		{
 			name:        "packages lock",
@@ -1549,7 +1549,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "packages.lock.json",
 			withoutRoot: filepath.Join("..", "..", "testdata", "dotnet", "packages-lock-no-deps"),
 			withoutPath: "packages.lock.json",
-			typ:         ManifestType("dotnet-packages-lock"),
+			typ:         DetectorID("dotnet-packages-lock"),
 		},
 		{
 			name:        "unity packages manifest",
@@ -1557,7 +1557,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "Packages/manifest.json",
 			withoutRoot: filepath.Join("..", "..", "testdata", "unity", "packages-manifest-no-deps"),
 			withoutPath: "Packages/manifest.json",
-			typ:         ManifestType("unity-packages-manifest"),
+			typ:         DetectorID("unity-packages-manifest"),
 		},
 		{
 			name:        "bower manifest",
@@ -1565,7 +1565,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "bower.json",
 			withoutRoot: filepath.Join("..", "..", "testdata", "js", "bower-no-deps"),
 			withoutPath: "bower.json",
-			typ:         ManifestType("js-bower"),
+			typ:         DetectorID("js-bower"),
 		},
 		{
 			name:        "pubspec lock",
@@ -1573,7 +1573,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "pubspec.lock",
 			withoutRoot: filepath.Join("..", "..", "testdata", "yaml", "pubspec-lock-no-deps"),
 			withoutPath: "pubspec.lock",
-			typ:         ManifestType("dart-pubspec-lock"),
+			typ:         DetectorID("dart-pubspec-lock"),
 		},
 		{
 			name:        "glide yaml",
@@ -1581,7 +1581,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "glide.yaml",
 			withoutRoot: filepath.Join("..", "..", "testdata", "go", "glide-yaml-no-deps"),
 			withoutPath: "glide.yaml",
-			typ:         ManifestType("go-glide-yaml"),
+			typ:         DetectorID("go-glide-yaml"),
 		},
 		{
 			name:        "gopkg lock",
@@ -1589,7 +1589,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "Gopkg.lock",
 			withoutRoot: filepath.Join("..", "..", "testdata", "go", "gopkg-lock-no-deps"),
 			withoutPath: "Gopkg.lock",
-			typ:         ManifestType("go-gopkg-lock"),
+			typ:         DetectorID("go-gopkg-lock"),
 		},
 		{
 			name:        "swift package resolved",
@@ -1597,7 +1597,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "Package.resolved",
 			withoutRoot: filepath.Join("..", "..", "testdata", "swift", "package-resolved-no-deps"),
 			withoutPath: "Package.resolved",
-			typ:         ManifestType("swift-package-resolved"),
+			typ:         DetectorID("swift-package-resolved"),
 		},
 		{
 			name:        "ios podfile lock",
@@ -1605,7 +1605,7 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			withPath:    "Podfile.lock",
 			withoutRoot: filepath.Join("..", "..", "testdata", "ios", "podfile-lock-no-deps"),
 			withoutPath: "Podfile.lock",
-			typ:         ManifestType("ios-podfile-lock"),
+			typ:         DetectorID("ios-podfile-lock"),
 		},
 	}
 
@@ -1615,28 +1615,28 @@ func TestStructuredPriorityOneTestdataIncludesWithAndWithoutDependencyExamples(t
 			if err != nil {
 				t.Fatalf("scan with-deps fixture failed: %v", err)
 			}
-			if len(withResult.Manifests) != 1 {
-				t.Fatalf("expected 1 with-deps manifest, got %+v", withResult.Manifests)
+			if len(withResult.Sources) != 1 {
+				t.Fatalf("expected 1 with-deps dependency source, got %+v", withResult.Sources)
 			}
-			if withResult.Manifests[0].Type != tc.typ || withResult.Manifests[0].Path != tc.withPath {
-				t.Fatalf("unexpected with-deps manifest: %+v", withResult.Manifests[0])
+			if withResult.Sources[0].Detector != tc.typ || withResult.Sources[0].Path != tc.withPath {
+				t.Fatalf("unexpected with-deps dependency source: %+v", withResult.Sources[0])
 			}
-			if withResult.Manifests[0].HasDependencies == nil || !*withResult.Manifests[0].HasDependencies {
-				t.Fatalf("expected with-deps fixture to have has_dependencies=true, got %+v", withResult.Manifests[0].HasDependencies)
+			if withResult.Sources[0].Analysis.Presence != PresencePresent {
+				t.Fatalf("expected with-deps fixture to have presence=present, got %+v", withResult.Sources[0].Analysis)
 			}
 
 			withoutResult, err := Scan(tc.withoutRoot, nil, ruleset)
 			if err != nil {
 				t.Fatalf("scan no-deps fixture failed: %v", err)
 			}
-			if len(withoutResult.Manifests) != 1 {
-				t.Fatalf("expected 1 no-deps manifest, got %+v", withoutResult.Manifests)
+			if len(withoutResult.Sources) != 1 {
+				t.Fatalf("expected 1 no-deps dependency source, got %+v", withoutResult.Sources)
 			}
-			if withoutResult.Manifests[0].Type != tc.typ || withoutResult.Manifests[0].Path != tc.withoutPath {
-				t.Fatalf("unexpected no-deps manifest: %+v", withoutResult.Manifests[0])
+			if withoutResult.Sources[0].Detector != tc.typ || withoutResult.Sources[0].Path != tc.withoutPath {
+				t.Fatalf("unexpected no-deps dependency source: %+v", withoutResult.Sources[0])
 			}
-			if withoutResult.Manifests[0].HasDependencies == nil || *withoutResult.Manifests[0].HasDependencies {
-				t.Fatalf("expected no-deps fixture to have has_dependencies=false, got %+v", withoutResult.Manifests[0].HasDependencies)
+			if withoutResult.Sources[0].Analysis.Presence != PresenceAbsent {
+				t.Fatalf("expected no-deps fixture to have presence=absent, got %+v", withoutResult.Sources[0].Analysis)
 			}
 		})
 	}
@@ -1649,55 +1649,55 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFilesWithoutDependencies(t *te
 		name    string
 		relPath string
 		content string
-		typ     ManifestType
+		typ     DetectorID
 	}{
 		{
 			name:    "helm chart missing dependencies",
 			relPath: "Chart.yaml",
 			content: "apiVersion: v2\nname: demo\nversion: 0.1.0\n",
-			typ:     ManifestType("helm-chart"),
+			typ:     DetectorID("helm-chart"),
 		},
 		{
 			name:    "crystal shard empty dependencies",
 			relPath: "shard.yml",
 			content: "name: demo\nversion: 0.1.0\ndependencies: {}\n",
-			typ:     ManifestType("crystal-shard"),
+			typ:     DetectorID("crystal-shard"),
 		},
 		{
 			name:    "julia project empty deps",
 			relPath: "Project.toml",
 			content: "name = \"Demo\"\nuuid = \"00000000-0000-0000-0000-000000000000\"\n\n[deps]\n",
-			typ:     ManifestType("julia-project"),
+			typ:     DetectorID("julia-project"),
 		},
 		{
 			name:    "gleam empty dependencies",
 			relPath: "gleam.toml",
 			content: "name = \"demo\"\nversion = \"0.1.0\"\n\n[dependencies]\n",
-			typ:     ManifestType("gleam"),
+			typ:     DetectorID("gleam"),
 		},
 		{
 			name:    "dotnet csproj without package reference",
 			relPath: "app.csproj",
 			content: "<Project Sdk=\"Microsoft.NET.Sdk\"><ItemGroup><Compile Include=\"Program.cs\" /></ItemGroup></Project>\n",
-			typ:     ManifestType("dotnet-csproj"),
+			typ:     DetectorID("dotnet-csproj"),
 		},
 		{
 			name:    "directory packages props without package version",
 			relPath: "Directory.Packages.props",
 			content: "<Project><PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup></Project>\n",
-			typ:     ManifestType("dotnet-directory-packages-props"),
+			typ:     DetectorID("dotnet-directory-packages-props"),
 		},
 		{
 			name:    "packages config empty",
 			relPath: "packages.config",
 			content: "<?xml version=\"1.0\" encoding=\"utf-8\"?><packages></packages>\n",
-			typ:     ManifestType("dotnet-packages-config"),
+			typ:     DetectorID("dotnet-packages-config"),
 		},
 		{
 			name:    "unity manifest empty dependencies",
 			relPath: filepath.Join("Packages", "manifest.json"),
 			content: "{\n  \"dependencies\": {}\n}\n",
-			typ:     ManifestType("unity-packages-manifest"),
+			typ:     DetectorID("unity-packages-manifest"),
 		},
 	}
 
@@ -1710,19 +1710,19 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFilesWithoutDependencies(t *te
 			if err != nil {
 				t.Fatalf("scan failed: %v", err)
 			}
-			if len(result.Manifests) != 1 {
-				t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+			if len(result.Sources) != 1 {
+				t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 			}
 
-			manifest := result.Manifests[0]
-			if manifest.Type != tc.typ {
-				t.Fatalf("unexpected manifest type: %+v", manifest)
+			source := result.Sources[0]
+			if source.Detector != tc.typ {
+				t.Fatalf("unexpected dependency source type: %+v", source)
 			}
-			if manifest.HasDependencies == nil || *manifest.HasDependencies {
-				t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+			if source.Analysis.Presence != PresenceAbsent {
+				t.Fatalf("expected presence=absent, got %+v", source.Analysis)
 			}
-			if manifest.Dependencies != nil {
-				t.Fatalf("expected no extracted dependencies, got %+v", manifest.Dependencies)
+			if source.Dependencies != nil {
+				t.Fatalf("expected no extracted dependencies, got %+v", source.Dependencies)
 			}
 		})
 	}
@@ -1738,8 +1738,8 @@ func TestScanDefaultRulesDoNotMatchNonUnityManifestJSONPaths(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -1754,26 +1754,26 @@ func TestScanDefaultRulesMatchRequirementsDirectoriesAnywhere(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 2 {
-		t.Fatalf("expected 2 manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 2 {
+		t.Fatalf("expected 2 dependency sources, got %+v", result.Sources)
 	}
-	if result.Manifests[0].Type != ManifestType("python-requirements-dir") || result.Manifests[1].Type != ManifestType("python-requirements-dir") {
-		t.Fatalf("unexpected manifest types: %+v", result.Manifests)
+	if result.Sources[0].Detector != DetectorID("python-requirements-dir") || result.Sources[1].Detector != DetectorID("python-requirements-dir") {
+		t.Fatalf("unexpected dependency source types: %+v", result.Sources)
 	}
-	if result.Manifests[0].Path != "apps/api/requirements/base.txt" || result.Manifests[1].Path != "requirements/base.txt" {
-		t.Fatalf("unexpected manifests: %+v", result.Manifests)
+	if result.Sources[0].Path != "apps/api/requirements/base.txt" || result.Sources[1].Path != "requirements/base.txt" {
+		t.Fatalf("unexpected dependency sources: %+v", result.Sources)
 	}
-	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"urllib3<3"}) {
-		t.Fatalf("unexpected dependencies for nested requirements dir file: %+v", result.Manifests[0].Dependencies)
+	if got := dependencyNames(result.Sources[0].Dependencies); !slices.Equal(got, []string{"urllib3<3"}) {
+		t.Fatalf("unexpected dependencies for nested requirements dir file: %+v", result.Sources[0].Dependencies)
 	}
-	if got := dependencyNames(result.Manifests[1].Dependencies); !slices.Equal(got, []string{"requests>=2.31"}) {
-		t.Fatalf("unexpected dependencies for top-level requirements dir file: %+v", result.Manifests[1].Dependencies)
+	if got := dependencyNames(result.Sources[1].Dependencies); !slices.Equal(got, []string{"requests>=2.31"}) {
+		t.Fatalf("unexpected dependencies for top-level requirements dir file: %+v", result.Sources[1].Dependencies)
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected nested requirements dir file to have dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected nested requirements dir file to have dependencies=true, got %+v", result.Sources[0].Analysis)
 	}
-	if result.Manifests[1].HasDependencies == nil || !*result.Manifests[1].HasDependencies {
-		t.Fatalf("expected top-level requirements dir file to have dependencies=true, got %+v", result.Manifests[1].HasDependencies)
+	if result.Sources[1].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected top-level requirements dir file to have dependencies=true, got %+v", result.Sources[1].Analysis)
 	}
 }
 
@@ -1788,16 +1788,16 @@ func TestScanDefaultRulesReportEmptyRequirementsFilesConclusiveEmpty(t *testing.
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 2 {
-		t.Fatalf("expected 2 manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 2 {
+		t.Fatalf("expected 2 dependency sources, got %+v", result.Sources)
 	}
 
-	for _, manifest := range result.Manifests {
-		if manifest.Dependencies != nil {
-			t.Fatalf("expected no extracted dependencies, got %+v", manifest.Dependencies)
+	for _, source := range result.Sources {
+		if source.Dependencies != nil {
+			t.Fatalf("expected no extracted dependencies, got %+v", source.Dependencies)
 		}
-		if manifest.HasDependencies == nil || *manifest.HasDependencies {
-			t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+		if source.Analysis.Presence != PresenceAbsent {
+			t.Fatalf("expected presence=absent, got %+v", source.Analysis)
 		}
 	}
 }
@@ -1812,8 +1812,8 @@ func TestScanDefaultRulesDoNotMatchNestedRequirementGrandchildren(t *testing.T) 
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -1825,31 +1825,31 @@ func TestScanMatchesPyprojectDependenciesFromFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "pyproject.toml" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("python-pyproject") || source.Path != "pyproject.toml" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
 
-	want := []Dependency{
-		{Type: PackageType("pypi"), Raw: "scikit-build-core>=0.10", Name: "scikit-build-core", Constraint: ">=0.10", VERS: "vers:pypi/>=0.10", Section: "build-system.requires"},
-		{Type: PackageType("pypi"), Raw: "pybind11>=2.12.0", Name: "pybind11", Constraint: ">=2.12.0", VERS: "vers:pypi/>=2.12.0", Section: "build-system.requires"},
-		{Type: PackageType("pypi"), Raw: "requests>=2.31", Name: "requests", Constraint: ">=2.31", VERS: "vers:pypi/>=2.31", Section: "project.dependencies"},
-		{Type: PackageType("pypi"), Raw: "fastapi[all]>=0.110; python_version >= '3.10'", Name: "fastapi", Constraint: ">=0.110", VERS: "vers:pypi/>=0.110", Section: "project.dependencies", Extras: map[string]string{"extras": "all", "marker": "python_version >= '3.10'"}},
-		{Type: PackageType("pypi"), Raw: "pytest>=8", Name: "pytest", Constraint: ">=8", VERS: "vers:pypi/>=8", Section: "project.optional-dependencies.dev"},
-		{Type: PackageType("pypi"), Raw: "ruff==0.4.8", Name: "ruff", Constraint: "==0.4.8", VERS: "vers:pypi/%3D0.4.8", Section: "project.optional-dependencies.dev"},
-		{Type: PackageType("pypi"), Raw: "mypy>=1.10", Name: "mypy", Constraint: ">=1.10", VERS: "vers:pypi/>=1.10", Section: "dependency-groups.lint"},
-		{Type: PackageType("pypi"), Raw: "django = \"^5.0\"", Section: "tool.poetry.dependencies"},
-		{Type: PackageType("pypi"), Raw: "httpx = { extras = [\"http2\"], version = \"^0.27\" }", Section: "tool.poetry.dependencies"},
-		{Type: PackageType("pypi"), Raw: "private-lib = { branch = \"main\", git = \"https://github.com/acme/private-lib.git\" }", Section: "tool.poetry.dependencies"},
-		{Type: PackageType("pypi"), Raw: "factory-boy = { markers = \"python_version >= '3.11'\", version = \"^3.3\" }", Section: "tool.poetry.group.test.dependencies"},
-		{Type: PackageType("pypi"), Raw: "pytest-cov = \"^5.0\"", Section: "tool.poetry.group.test.dependencies"},
+	want := []DependencyReference{
+		{PackageType: PackageType("pypi"), Raw: "scikit-build-core>=0.10", Name: "scikit-build-core", VersionConstraint: ">=0.10", VERS: "vers:pypi/>=0.10", SourceGroup: "build-system.requires"},
+		{PackageType: PackageType("pypi"), Raw: "pybind11>=2.12.0", Name: "pybind11", VersionConstraint: ">=2.12.0", VERS: "vers:pypi/>=2.12.0", SourceGroup: "build-system.requires"},
+		{PackageType: PackageType("pypi"), Raw: "requests>=2.31", Name: "requests", VersionConstraint: ">=2.31", VERS: "vers:pypi/>=2.31", SourceGroup: "project.dependencies"},
+		{PackageType: PackageType("pypi"), Raw: "fastapi[all]>=0.110; python_version >= '3.10'", Name: "fastapi", VersionConstraint: ">=0.110", VERS: "vers:pypi/>=0.110", SourceGroup: "project.dependencies", Attributes: map[string]string{"extras": "all", "marker": "python_version >= '3.10'"}},
+		{PackageType: PackageType("pypi"), Raw: "pytest>=8", Name: "pytest", VersionConstraint: ">=8", VERS: "vers:pypi/>=8", SourceGroup: "project.optional-dependencies.dev"},
+		{PackageType: PackageType("pypi"), Raw: "ruff==0.4.8", Name: "ruff", VersionConstraint: "==0.4.8", VERS: "vers:pypi/%3D0.4.8", SourceGroup: "project.optional-dependencies.dev"},
+		{PackageType: PackageType("pypi"), Raw: "mypy>=1.10", Name: "mypy", VersionConstraint: ">=1.10", VERS: "vers:pypi/>=1.10", SourceGroup: "dependency-groups.lint"},
+		{PackageType: PackageType("pypi"), Raw: "django = \"^5.0\"", SourceGroup: "tool.poetry.dependencies"},
+		{PackageType: PackageType("pypi"), Raw: "httpx = { extras = [\"http2\"], version = \"^0.27\" }", SourceGroup: "tool.poetry.dependencies"},
+		{PackageType: PackageType("pypi"), Raw: "private-lib = { branch = \"main\", git = \"https://github.com/acme/private-lib.git\" }", SourceGroup: "tool.poetry.dependencies"},
+		{PackageType: PackageType("pypi"), Raw: "factory-boy = { markers = \"python_version >= '3.11'\", version = \"^3.3\" }", SourceGroup: "tool.poetry.group.test.dependencies"},
+		{PackageType: PackageType("pypi"), Raw: "pytest-cov = \"^5.0\"", SourceGroup: "tool.poetry.group.test.dependencies"},
 	}
-	if !equalDependencies(manifest.Dependencies, want) {
-		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
+	if !equalDependencies(source.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: %+v", source.Dependencies)
 	}
 }
 
@@ -1877,21 +1877,21 @@ sphinx = ">=7"
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("python-pipfile") || manifest.Path != "Pipfile" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("python-pipfile") || source.Path != "Pipfile" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
 
 	want := []string{
 		"requests = \"*\"",
 		"sphinx = \">=7\"",
 	}
-	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	if !slices.Equal(dependencyNames(source.Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", source.Dependencies, want)
 	}
 }
 
@@ -1913,8 +1913,8 @@ python_version = "3.12"
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -1932,20 +1932,20 @@ dependencies = ["requests>=2.31"]
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 2 {
-		t.Fatalf("expected 2 manifests, got %d", len(result.Manifests))
+	if len(result.Sources) != 2 {
+		t.Fatalf("expected 2 dependency sources, got %d", len(result.Sources))
 	}
 
-	if result.Manifests[0].Type != ManifestType("python-pipfile") || result.Manifests[0].Path != "Pipfile" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("python-pipfile") || result.Sources[0].Path != "Pipfile" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if len(result.Manifests[0].Warnings) != 1 || !strings.Contains(result.Manifests[0].Warnings[0], "parse toml file") {
-		t.Fatalf("expected parse warning on Pipfile, got %+v", result.Manifests[0].Warnings)
+	if len(result.Sources[0].Diagnostics) != 1 || !strings.Contains(result.Sources[0].Diagnostics[0].Message, "parse toml file") {
+		t.Fatalf("expected parse warning on Pipfile, got %+v", result.Sources[0].Diagnostics)
 	}
 
-	manifest := result.Manifests[1]
-	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "pyproject.toml" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[1]
+	if source.Detector != DetectorID("python-pyproject") || source.Path != "pyproject.toml" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
 }
 
@@ -1963,20 +1963,20 @@ dependencies = ["requests>=2.31"]
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 2 {
-		t.Fatalf("expected 2 manifests, got %d", len(result.Manifests))
+	if len(result.Sources) != 2 {
+		t.Fatalf("expected 2 dependency sources, got %d", len(result.Sources))
 	}
 
-	if result.Manifests[0].Type != ManifestType("python-pipfile-lock") || result.Manifests[0].Path != "Pipfile.lock" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("python-pipfile-lock") || result.Sources[0].Path != "Pipfile.lock" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if len(result.Manifests[0].Warnings) != 1 || !strings.Contains(result.Manifests[0].Warnings[0], "parse json file") {
-		t.Fatalf("expected parse warning on Pipfile.lock, got %+v", result.Manifests[0].Warnings)
+	if len(result.Sources[0].Diagnostics) != 1 || !strings.Contains(result.Sources[0].Diagnostics[0].Message, "parse json file") {
+		t.Fatalf("expected parse warning on Pipfile.lock, got %+v", result.Sources[0].Diagnostics)
 	}
 
-	manifest := result.Manifests[1]
-	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "pyproject.toml" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[1]
+	if source.Detector != DetectorID("python-pyproject") || source.Path != "pyproject.toml" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
 }
 
@@ -1994,19 +1994,19 @@ dependencies = ["requests>=2.31"]
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 2 {
-		t.Fatalf("expected 2 manifests, got %d", len(result.Manifests))
+	if len(result.Sources) != 2 {
+		t.Fatalf("expected 2 dependency sources, got %d", len(result.Sources))
 	}
 
-	if result.Manifests[0].Type != ManifestType("js") || result.Manifests[0].Path != "package.json" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("js") || result.Sources[0].Path != "package.json" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	manifest := result.Manifests[1]
-	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "pyproject.toml" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[1]
+	if source.Detector != DetectorID("python-pyproject") || source.Path != "pyproject.toml" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
-	if len(manifest.Warnings) != 1 || !strings.Contains(manifest.Warnings[0], "parse toml file") {
-		t.Fatalf("expected parse warning on pyproject.toml, got %+v", manifest.Warnings)
+	if len(source.Diagnostics) != 1 || !strings.Contains(source.Diagnostics[0].Message, "parse toml file") {
+		t.Fatalf("expected parse warning on pyproject.toml, got %+v", source.Diagnostics)
 	}
 }
 
@@ -2018,13 +2018,13 @@ func TestScanMatchesPipfileDependenciesFromFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("python-pipfile") || manifest.Path != "Pipfile" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("python-pipfile") || source.Path != "Pipfile" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
 
 	want := []string{
@@ -2032,8 +2032,8 @@ func TestScanMatchesPipfileDependenciesFromFixture(t *testing.T) {
 		"pytest = \">=8\"",
 		"sphinx = { extras = [\"docs\"], version = \">=7\" }",
 	}
-	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	if !slices.Equal(dependencyNames(source.Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", source.Dependencies, want)
 	}
 }
 
@@ -2045,8 +2045,8 @@ func TestScanIgnoresPipfileMetadataOnlyFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -2070,16 +2070,16 @@ func assertPipfileFixtureDependencies(t *testing.T, fixture string, want []strin
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("python-pipfile") || manifest.Path != "Pipfile" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("python-pipfile") || source.Path != "Pipfile" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
-	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	if !slices.Equal(dependencyNames(source.Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", source.Dependencies, want)
 	}
 }
 
@@ -2091,15 +2091,15 @@ func TestScanMatchesSetupPyWithInstallRequiresFromFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("python-setup-py") || manifest.Path != "setup.py" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("python-setup-py") || source.Path != "setup.py" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests>=2.31", "pytest>=8", "ruff>=0.4"}) {
+	if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"requests>=2.31", "pytest>=8", "ruff>=0.4"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
 }
@@ -2111,10 +2111,10 @@ func TestScanMatchesSetupPyWithExtrasRequireOnly(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pytest>=8", "ruff>=0.4", "mkdocs>=1.6"}) {
+	if got := dependencyNames(result.Sources[0].Dependencies); !slices.Equal(got, []string{"pytest>=8", "ruff>=0.4", "mkdocs>=1.6"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
 }
@@ -2126,10 +2126,10 @@ func TestScanMatchesSetupPyWithInstallRequiresAndExtrasRequire(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"requests>=2.31", "pytest>=8"}) {
+	if got := dependencyNames(result.Sources[0].Dependencies); !slices.Equal(got, []string{"requests>=2.31", "pytest>=8"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
 }
@@ -2141,10 +2141,10 @@ func TestScanMatchesSetupPyWithoutExtractingNonLiteralDependencies(t *testing.T)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if got := result.Manifests[0].Dependencies; len(got) != 0 {
+	if got := result.Sources[0].Dependencies; len(got) != 0 {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
 }
@@ -2157,15 +2157,15 @@ func assertSetupCfgFixtureDependencies(t *testing.T, fixture string, want []stri
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("python-setup-cfg") || manifest.Path != "setup.cfg" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("python-setup-cfg") || source.Path != "setup.cfg" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, want) {
+	if got := dependencyNames(source.Dependencies); !slices.Equal(got, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", got, want)
 	}
 }
@@ -2222,19 +2222,19 @@ func TestScanMatchesHTMLExternalScripts(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("html-external-scripts") || manifest.Path != "templates/index.html" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("html-external-scripts") || source.Path != "templates/index.html" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
 	want := []string{
 		"https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js",
 		"https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js",
 	}
-	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	if !slices.Equal(dependencyNames(source.Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", source.Dependencies, want)
 	}
 }
 
@@ -2246,18 +2246,18 @@ func TestScanMatchesHTMLModuleImportFromTestdata(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("html-external-scripts") || manifest.Path != "index.html" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("html-external-scripts") || source.Path != "index.html" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
 
 	want := []string{"https://cdn.jsdelivr.net/npm/swiper@12.1.2/+esm"}
-	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	if !slices.Equal(dependencyNames(source.Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", source.Dependencies, want)
 	}
 }
 
@@ -2269,18 +2269,18 @@ func TestScanMatchesHTMLNamespaceModuleImportFromTestdata(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("html-external-scripts") || manifest.Path != "index.html" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("html-external-scripts") || source.Path != "index.html" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
 
 	want := []string{"https://cdn.jsdelivr.net/npm/d3@7/+esm"}
-	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	if !slices.Equal(dependencyNames(source.Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", source.Dependencies, want)
 	}
 }
 
@@ -2292,13 +2292,13 @@ func TestScanMatchesHTMLImportMapFromTestdata(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("html-external-scripts") || manifest.Path != "index.html" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("html-external-scripts") || source.Path != "index.html" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
 
 	want := []string{
@@ -2306,8 +2306,8 @@ func TestScanMatchesHTMLImportMapFromTestdata(t *testing.T) {
 		"https://cdn.jsdelivr.net/npm/media-tracks@0.2/+esm",
 		"https://cdn.jsdelivr.net/npm/hls.js@1.6.0-beta.1/dist/hls.mjs",
 	}
-	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	if !slices.Equal(dependencyNames(source.Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", source.Dependencies, want)
 	}
 }
 
@@ -2338,19 +2338,19 @@ func TestScanMatchesHTMLImportMapRemoteImports(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
-	manifest := result.Manifests[0]
+	source := result.Sources[0]
 	want := []string{
 		"https://cdn.jsdelivr.net/npm/super-media-element@1.3/+esm",
 		"https://cdn.jsdelivr.net/npm/media-tracks@0.2/+esm",
 		"https://cdn.jsdelivr.net/npm/hls.js@1.6.0-beta.1/dist/hls.mjs",
 		"https://registry.npmmirror.com/stylelint-config-recess-order/5.0.0/files/groups.js",
 	}
-	if !slices.Equal(dependencyNames(manifest.Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", manifest.Dependencies, want)
+	if !slices.Equal(dependencyNames(source.Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", source.Dependencies, want)
 	}
 }
 
@@ -2376,8 +2376,8 @@ func TestScanMatchesHTMLImportMapESMShImports(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
 	want := []string{
@@ -2387,8 +2387,8 @@ func TestScanMatchesHTMLImportMapESMShImports(t *testing.T) {
 		"https://esm.sh/recharts@^2.15.3",
 		"https://esm.sh/react-dom@^19.1.0/",
 	}
-	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
+	if !slices.Equal(dependencyNames(result.Sources[0].Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Sources[0].Dependencies, want)
 	}
 }
 
@@ -2405,8 +2405,8 @@ func TestScanDoesNotMatchHTMLWithoutExternalScripts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -2415,32 +2415,32 @@ func TestScanMatchesJavaScriptBannerDetectors(t *testing.T) {
 
 	testCases := []struct {
 		path     string
-		wantType ManifestType
+		wantType DetectorID
 		wantDeps []string
 	}{
 		{
 			path:     "jquery.min.js",
-			wantType: ManifestType("js-banner-block-start"),
+			wantType: DetectorID("js-banner-block-start"),
 			wantDeps: []string{"jQuery@3.7.1"},
 		},
 		{
 			path:     "purify.min.js",
-			wantType: ManifestType("js-banner-plain-block-start"),
+			wantType: DetectorID("js-banner-plain-block-start"),
 			wantDeps: []string{"DOMPurify@3.0.8"},
 		},
 		{
 			path:     "bootstrap.min.js",
-			wantType: ManifestType("js-banner-multiline-preserved"),
+			wantType: DetectorID("js-banner-multiline-preserved"),
 			wantDeps: []string{"Bootstrap@5.3.3"},
 		},
 		{
 			path:     "mustache.min.js",
-			wantType: ManifestType("js-banner-line-comment"),
+			wantType: DetectorID("js-banner-line-comment"),
 			wantDeps: []string{"Mustache.js@4.2.0"},
 		},
 		{
 			path:     "htmx.min.js",
-			wantType: ManifestType("js-banner-version-tagged"),
+			wantType: DetectorID("js-banner-version-tagged"),
 			wantDeps: []string{"htmx.org@2.0.4"},
 		},
 	}
@@ -2450,25 +2450,25 @@ func TestScanMatchesJavaScriptBannerDetectors(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != len(testCases) {
-		t.Fatalf("expected %d manifests, got %d", len(testCases), len(result.Manifests))
+	if len(result.Sources) != len(testCases) {
+		t.Fatalf("expected %d dependency sources, got %d", len(testCases), len(result.Sources))
 	}
 
-	gotByPath := make(map[string]ManifestMatch, len(result.Manifests))
-	for _, manifest := range result.Manifests {
-		gotByPath[manifest.Path] = manifest
+	gotByPath := make(map[string]DependencySourceResult, len(result.Sources))
+	for _, source := range result.Sources {
+		gotByPath[source.Path] = source
 	}
 
 	for _, tc := range testCases {
-		manifest, ok := gotByPath[tc.path]
+		source, ok := gotByPath[tc.path]
 		if !ok {
-			t.Fatalf("expected manifest for %q, got %+v", tc.path, result.Manifests)
+			t.Fatalf("expected dependency source for %q, got %+v", tc.path, result.Sources)
 		}
-		if manifest.Type != tc.wantType {
-			t.Fatalf("unexpected manifest type for %q: got %q want %q", tc.path, manifest.Type, tc.wantType)
+		if source.Detector != tc.wantType {
+			t.Fatalf("unexpected dependency source type for %q: got %q want %q", tc.path, source.Detector, tc.wantType)
 		}
-		if !slices.Equal(dependencyNames(manifest.Dependencies), tc.wantDeps) {
-			t.Fatalf("unexpected dependencies for %q: got %+v want %+v", tc.path, manifest.Dependencies, tc.wantDeps)
+		if !slices.Equal(dependencyNames(source.Dependencies), tc.wantDeps) {
+			t.Fatalf("unexpected dependencies for %q: got %+v want %+v", tc.path, source.Dependencies, tc.wantDeps)
 		}
 	}
 }
@@ -2482,8 +2482,8 @@ func TestScanDoesNotMatchJavaScriptWithoutBanner(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -2496,8 +2496,8 @@ func TestScanDoesNotMatchCSSBannerWithDefaultRules(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -2518,14 +2518,14 @@ resource "aws_glue_job" "python_shell_example" {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("terraform.aws_glue_job.python") || result.Manifests[0].Path != "glue/job.tf" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("terraform.aws_glue_job.python") || result.Sources[0].Path != "glue/job.tf" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if len(result.Manifests[0].Dependencies) != 0 {
-		t.Fatalf("expected terraform detector to keep dependencies empty, got %+v", result.Manifests[0].Dependencies)
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected terraform detector to keep dependencies empty, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
@@ -2544,8 +2544,8 @@ resource "aws_glue_job" "python_shell_example" {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -2565,8 +2565,8 @@ resource "aws_glue_job" "scala_job" {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -2590,8 +2590,8 @@ locals {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -2614,15 +2614,15 @@ new glue.CfnJob(this, "Job", {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("typescript.cdk.aws_glue_job.python") || result.Manifests[0].Path != "glue/job.ts" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("typescript.cdk.aws_glue_job.python") || result.Sources[0].Path != "glue/job.ts" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
 	wantDependencies := []string{"pandas==2.2.1", "scikit-learn==1.4.1.post1"}
-	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), wantDependencies) {
-		t.Fatalf("unexpected dependencies: got %v want %v", result.Manifests[0].Dependencies, wantDependencies)
+	if !slices.Equal(dependencyNames(result.Sources[0].Dependencies), wantDependencies) {
+		t.Fatalf("unexpected dependencies: got %v want %v", result.Sources[0].Dependencies, wantDependencies)
 	}
 }
 
@@ -2644,10 +2644,10 @@ new GlueJob(this, "Job", {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Sources[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -2669,8 +2669,8 @@ new glue.CfnJob(this, "Job", {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -2692,8 +2692,8 @@ new CfnJob(this, "Job", {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -2715,8 +2715,8 @@ new CfnJob(this, "Job", {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -2740,10 +2740,10 @@ new CfnJob(this, "Job", props);
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Sources[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -2768,10 +2768,10 @@ new CfnJob(this, "Job", {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Sources[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -2784,15 +2784,15 @@ func TestScanMatchesTypeScriptFixtureFromTestdata(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("typescript.cdk.aws_glue_job.python") || result.Manifests[0].Path != "job.ts" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("typescript.cdk.aws_glue_job.python") || result.Sources[0].Path != "job.ts" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
 	wantDependencies := []string{"pandas==2.2.1", "scikit-learn==1.4.1.post1"}
-	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), wantDependencies) {
-		t.Fatalf("unexpected dependencies: got %v want %v", result.Manifests[0].Dependencies, wantDependencies)
+	if !slices.Equal(dependencyNames(result.Sources[0].Dependencies), wantDependencies) {
+		t.Fatalf("unexpected dependencies: got %v want %v", result.Sources[0].Dependencies, wantDependencies)
 	}
 }
 
@@ -2807,8 +2807,8 @@ func TestScanDoesNotMatchTypeScriptNegativeFixturesFromTestdata(t *testing.T) {
 		if err != nil {
 			t.Fatalf("scan failed for %s: %v", root, err)
 		}
-		if len(result.Manifests) != 0 {
-			t.Fatalf("expected no manifests for %s, got %+v", root, result.Manifests)
+		if len(result.Sources) != 0 {
+			t.Fatalf("expected no dependency sources for %s, got %+v", root, result.Sources)
 		}
 	}
 }
@@ -2821,13 +2821,13 @@ func TestScanMatchesTypeScriptVariablePropsFixtureFromTestdata(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("typescript.cdk.aws_glue_job.python") || result.Manifests[0].Path != "job.ts" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("typescript.cdk.aws_glue_job.python") || result.Sources[0].Path != "job.ts" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Sources[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -2840,13 +2840,13 @@ func TestScanMatchesTypeScriptComputedModulesFixtureFromTestdata(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("typescript.cdk.aws_glue_job.python") || result.Manifests[0].Path != "job.ts" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("typescript.cdk.aws_glue_job.python") || result.Sources[0].Path != "job.ts" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Sources[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -2859,13 +2859,13 @@ func TestScanMatchesTypeScriptFunctionComputedModulesFixtureFromTestdata(t *test
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("typescript.cdk.aws_glue_job.python") || result.Manifests[0].Path != "job.ts" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("typescript.cdk.aws_glue_job.python") || result.Sources[0].Path != "job.ts" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if got := result.Manifests[0].Dependencies; len(got) != 0 {
+	if got := result.Sources[0].Dependencies; len(got) != 0 {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -2892,15 +2892,15 @@ glue.CfnJob(
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("python.cdk.aws_glue_job.python") || result.Manifests[0].Path != "glue/job.py" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("python.cdk.aws_glue_job.python") || result.Sources[0].Path != "glue/job.py" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
 	wantDependencies := []string{"pandas==2.2.1", "scikit-learn==1.4.1.post1"}
-	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), wantDependencies) {
-		t.Fatalf("unexpected dependencies: got %v want %v", result.Manifests[0].Dependencies, wantDependencies)
+	if !slices.Equal(dependencyNames(result.Sources[0].Dependencies), wantDependencies) {
+		t.Fatalf("unexpected dependencies: got %v want %v", result.Sources[0].Dependencies, wantDependencies)
 	}
 }
 
@@ -2929,10 +2929,10 @@ CfnJob(
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Sources[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -2958,8 +2958,8 @@ glue.CfnJob(
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
@@ -2971,13 +2971,13 @@ func TestScanMatchesPythonFixtureFromTestdata(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("python.cdk.aws_glue_job.python") || result.Manifests[0].Path != "job.py" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("python.cdk.aws_glue_job.python") || result.Sources[0].Path != "job.py" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if got := dependencyNames(result.Manifests[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
+	if got := dependencyNames(result.Sources[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
 	}
 }
@@ -2993,11 +2993,11 @@ func TestScanSkipsIgnoredDirectories(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Path != "src/package.json" {
-		t.Fatalf("unexpected manifest path: %+v", result.Manifests[0])
+	if result.Sources[0].Path != "src/package.json" {
+		t.Fatalf("unexpected dependency source path: %+v", result.Sources[0])
 	}
 }
 
@@ -3010,16 +3010,16 @@ func TestScanOverrideIgnoreListChangesTraversalBehavior(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected vendor manifest to be found without ignore list, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected vendor dependency source to be found without ignore list, got %d", len(result.Sources))
 	}
 
 	result, err = Scan(root, []string{"vendor"}, ruleset)
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected vendor manifest to be ignored, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected vendor dependency source to be ignored, got %+v", result.Sources)
 	}
 }
 
@@ -3036,63 +3036,63 @@ func TestScanRejectsFilePath(t *testing.T) {
 }
 
 func TestLoadRulesRejectsMissingFields(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: \"\"\n    filename-regex: '^package\\.json$'\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: \"\"\n      filename-regex: '^package\\.json$'\n      form: other\n      roles:\n        - inventory\n"))
 	if err == nil {
 		t.Fatalf("expected error for missing rule name")
 	}
 }
 
 func TestLoadRulesRejectsInvalidRegex(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    filename-regex: '('\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: js\n      filename-regex: '('\n      form: other\n      roles:\n        - inventory\n"))
 	if err == nil {
 		t.Fatalf("expected invalid regex error")
 	}
 }
 
 func TestLoadRulesRejectsMissingSelectors(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: js\n      form: other\n      roles:\n        - inventory\n"))
 	if err == nil {
 		t.Fatalf("expected error for missing selectors")
 	}
 }
 
 func TestLoadRulesAcceptsPathGlobSelector(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    path-glob: 'apps/**/package.json'\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: js\n      path-glob: 'apps/**/package.json'\n      form: other\n      roles:\n        - inventory\n"))
 	if err != nil {
 		t.Fatalf("expected path glob rule to load: %v", err)
 	}
 }
 
 func TestLoadRulesRejectsInvalidPathGlob(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    path-glob: 'apps/[.json'\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: js\n      path-glob: 'apps/[.json'\n      form: other\n      roles:\n        - inventory\n"))
 	if err == nil {
 		t.Fatalf("expected invalid path glob error")
 	}
 }
 
 func TestLoadRulesRejectsPathGlobWithEmptySegment(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    path-glob: 'apps//package.json'\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: js\n      path-glob: 'apps//package.json'\n      form: other\n      roles:\n        - inventory\n"))
 	if err == nil {
 		t.Fatalf("expected invalid path glob with empty segment")
 	}
 }
 
 func TestLoadRulesRejectsPathGlobWithInvalidRecursiveWildcardPlacement(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    path-glob: 'apps/**b/package.json'\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: js\n      path-glob: 'apps/**b/package.json'\n      form: other\n      roles:\n        - inventory\n"))
 	if err == nil {
 		t.Fatalf("expected invalid recursive wildcard placement")
 	}
 }
 
 func TestLoadRulesAcceptsCombinedSelectors(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js\n    filename-regex: '^package\\.json$'\n    path-glob: 'apps/**/package.json'\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: js\n      filename-regex: '^package\\.json$'\n      path-glob: 'apps/**/package.json'\n      form: other\n      roles:\n        - inventory\n"))
 	if err != nil {
 		t.Fatalf("expected combined selector rule to load: %v", err)
 	}
 }
 
 func TestScanMatchesPathGlobRequirementsAnywhere(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: '**/requirements/*.txt'\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-requirements\n      path-glob: '**/requirements/*.txt'\n      form: other\n      roles:\n        - inventory\n"))
 	if err != nil {
 		t.Fatalf("expected path glob rule to load: %v", err)
 	}
@@ -3105,16 +3105,16 @@ func TestScanMatchesPathGlobRequirementsAnywhere(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 2 {
-		t.Fatalf("expected 2 manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 2 {
+		t.Fatalf("expected 2 dependency sources, got %+v", result.Sources)
 	}
-	if result.Manifests[0].Path != "apps/api/requirements/base.txt" || result.Manifests[1].Path != "requirements/base.txt" {
-		t.Fatalf("unexpected manifests: %+v", result.Manifests)
+	if result.Sources[0].Path != "apps/api/requirements/base.txt" || result.Sources[1].Path != "requirements/base.txt" {
+		t.Fatalf("unexpected dependency sources: %+v", result.Sources)
 	}
 }
 
 func TestScanMatchesQuestionMarkGlobSemantics(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: 'apps/**/req?.txt'\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-requirements\n      path-glob: 'apps/**/req?.txt'\n      form: other\n      roles:\n        - inventory\n"))
 	if err != nil {
 		t.Fatalf("expected path glob rule to load: %v", err)
 	}
@@ -3127,11 +3127,11 @@ func TestScanMatchesQuestionMarkGlobSemantics(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
-	if result.Manifests[0].Path != "apps/api/req1.txt" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Path != "apps/api/req1.txt" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
 }
 
@@ -3144,7 +3144,7 @@ func TestNormalizeRelativePathConvertsBackslashes(t *testing.T) {
 }
 
 func TestScanMatchesPathGlobWithSlashNormalizedRelativePath(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: 'apps/**/requirements/*.txt'\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-requirements\n      path-glob: 'apps/**/requirements/*.txt'\n      form: other\n      roles:\n        - inventory\n"))
 	if err != nil {
 		t.Fatalf("expected path glob rule to load: %v", err)
 	}
@@ -3156,16 +3156,16 @@ func TestScanMatchesPathGlobWithSlashNormalizedRelativePath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
-	if result.Manifests[0].Path != "apps/api/requirements/base.txt" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Path != "apps/api/requirements/base.txt" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
 }
 
 func TestScanPathGlobDoesNotMatchNestedGrandchildren(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    path-glob: '**/requirements/*.txt'\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-requirements\n      path-glob: '**/requirements/*.txt'\n      form: other\n      roles:\n        - inventory\n"))
 	if err != nil {
 		t.Fatalf("expected path glob rule to load: %v", err)
 	}
@@ -3177,13 +3177,13 @@ func TestScanPathGlobDoesNotMatchNestedGrandchildren(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests for nested grandchild path, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources for nested grandchild path, got %+v", result.Sources)
 	}
 }
 
 func TestScanCombinedSelectorsRequireBothMatches(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    filename-regex: '^requirements\\.txt$'\n    path-glob: '**/requirements/*.txt'\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-requirements\n      filename-regex: '^requirements\\.txt$'\n      path-glob: '**/requirements/*.txt'\n      form: other\n      roles:\n        - inventory\n"))
 	if err != nil {
 		t.Fatalf("expected combined selector rule to load: %v", err)
 	}
@@ -3198,70 +3198,70 @@ func TestScanCombinedSelectorsRequireBothMatches(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
-	if result.Manifests[0].Path != "apps/api/requirements/requirements.txt" {
-		t.Fatalf("unexpected manifest path: %+v", result.Manifests[0])
+	if result.Sources[0].Path != "apps/api/requirements/requirements.txt" {
+		t.Fatalf("unexpected dependency source path: %+v", result.Sources[0])
 	}
 }
 
 func TestLoadRulesAcceptsBannerRegexParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js-banner\n    filename-regex: '.*\\.js$'\n    banner-regex: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: js-banner\n      filename-regex: '.*\\.js$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: banner-regex\n        pattern: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n"))
 	if err != nil {
 		t.Fatalf("expected banner regex rule to load: %v", err)
 	}
 }
 
 func TestLoadRulesAcceptsPyRequirementsParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-requirements\n    filename-regex: '^requirements\\.txt$'\n    py-requirements: {}\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-requirements\n      filename-regex: '^requirements\\.txt$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: py-requirements\n"))
 	if err != nil {
 		t.Fatalf("expected py-requirements rule to load: %v", err)
 	}
 }
 
 func TestLoadRulesAcceptsYarnLockParserRule(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js-yarn\n    filename-regex: '^yarn\\.lock$'\n    yarn-lock: {}\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: js-yarn\n      filename-regex: '^yarn\\.lock$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yarn-lock\n"))
 	if err != nil {
 		t.Fatalf("expected yarn-lock rule to load: %v", err)
 	}
 }
 
-func TestDetectManifestFileMatchesYarnLockParserRule(t *testing.T) {
+func TestAnalyzeDependencySourceMatchesYarnLockParserRule(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	root := t.TempDir()
 	filePath := filepath.Join(root, "yarn.lock")
 	mustWriteFile(t, filePath, "# yarn lockfile v1\n")
 
-	gotType, deps, hasDeps, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	detectorID, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected yarn-lock parser-backed rule to match the file")
 	}
-	if gotType != ManifestType("js-yarn") {
-		t.Fatalf("unexpected type: %q", gotType)
+	if detectorID != DetectorID("js-yarn") {
+		t.Fatalf("unexpected type: %q", detectorID)
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDeps == nil || *hasDeps {
-		t.Fatalf("expected has_dependencies=false, got %+v", hasDeps)
+	if present == nil || *present {
+		t.Fatalf("expected presence=absent, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
 func TestLoadRulesAcceptsUVLockParser(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-uv\n    filename-regex: '^uv\\.lock$'\n    uv-lock: {}\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-uv\n      filename-regex: '^uv\\.lock$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: uv-lock\n"))
 	if err != nil {
 		t.Fatalf("expected uv-lock rule to load: %v", err)
 	}
 
-	if got := ruleset.SupportedManifestTypes(); !slices.Equal(got, []ManifestType{ManifestType("python-uv")}) {
+	if got := ruleset.DetectorIDs(); !slices.Equal(got, []DetectorID{DetectorID("python-uv")}) {
 		t.Fatalf("unexpected supported types: %+v", got)
 	}
 
@@ -3269,34 +3269,34 @@ func TestLoadRulesAcceptsUVLockParser(t *testing.T) {
 	filePath := filepath.Join(root, "uv.lock")
 	mustWriteFile(t, filePath, "version = 1\n")
 
-	gotType, deps, hasDeps, warnings, ok, err := ruleset.DetectManifestFile(filePath, "uv.lock")
+	detectorID, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "uv.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected uv-lock parser-backed rule to match the file")
 	}
-	if gotType != ManifestType("python-uv") {
-		t.Fatalf("unexpected type: %q", gotType)
+	if detectorID != DetectorID("python-uv") {
+		t.Fatalf("unexpected type: %q", detectorID)
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDeps == nil || *hasDeps {
-		t.Fatalf("expected has_dependencies=false, got %+v", hasDeps)
+	if present == nil || *present {
+		t.Fatalf("expected presence=absent, got %+v", present)
 	}
-	if len(warnings) != 0 {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if len(diagnosticMessages) != 0 {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
 func TestLoadRulesAcceptsPoetryLockParser(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-poetry-lock\n    filename-regex: '^poetry\\.lock$'\n    poetry-lock: {}\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-poetry-lock\n      filename-regex: '^poetry\\.lock$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: poetry-lock\n"))
 	if err != nil {
 		t.Fatalf("expected poetry-lock rule to load: %v", err)
 	}
 
-	if got := ruleset.SupportedManifestTypes(); !slices.Equal(got, []ManifestType{ManifestType("python-poetry-lock")}) {
+	if got := ruleset.DetectorIDs(); !slices.Equal(got, []DetectorID{DetectorID("python-poetry-lock")}) {
 		t.Fatalf("unexpected supported types: %+v", got)
 	}
 
@@ -3304,24 +3304,24 @@ func TestLoadRulesAcceptsPoetryLockParser(t *testing.T) {
 	filePath := filepath.Join(root, "poetry.lock")
 	mustWriteFile(t, filePath, "[metadata]\nlock-version = \"2.1\"\n")
 
-	gotType, deps, hasDeps, warnings, ok, err := ruleset.DetectManifestFile(filePath, "poetry.lock")
+	detectorID, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "poetry.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected poetry-lock parser-backed rule to match the file")
 	}
-	if gotType != ManifestType("python-poetry-lock") {
-		t.Fatalf("unexpected type: %q", gotType)
+	if detectorID != DetectorID("python-poetry-lock") {
+		t.Fatalf("unexpected type: %q", detectorID)
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDeps == nil || *hasDeps {
-		t.Fatalf("expected has_dependencies=false, got %+v", hasDeps)
+	if present == nil || *present {
+		t.Fatalf("expected presence=absent, got %+v", present)
 	}
-	if len(warnings) != 0 {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if len(diagnosticMessages) != 0 {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
@@ -3332,19 +3332,19 @@ func TestDefaultRulesScanPoetryLockBasicFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Path != "poetry.lock" {
-		t.Fatalf("unexpected manifest path: %+v", manifest)
+	source := result.Sources[0]
+	if source.Path != "poetry.lock" {
+		t.Fatalf("unexpected dependency source path: %+v", source)
 	}
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "urllib3==2.2.2"}) {
+	if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "urllib3==2.2.2"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
-	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", source.Analysis)
 	}
 }
 
@@ -3355,19 +3355,19 @@ func TestDefaultRulesScanPoetryLockEmptyFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Path != "poetry.lock" {
-		t.Fatalf("unexpected manifest path: %+v", manifest)
+	source := result.Sources[0]
+	if source.Path != "poetry.lock" {
+		t.Fatalf("unexpected dependency source path: %+v", source)
 	}
-	if manifest.Dependencies != nil {
-		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	if source.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", source.Dependencies)
 	}
-	if manifest.HasDependencies == nil || *manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", source.Analysis)
 	}
 }
 
@@ -3378,19 +3378,19 @@ func TestDefaultRulesScanPoetryLockFilteredFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Path != "poetry.lock" {
-		t.Fatalf("unexpected manifest path: %+v", manifest)
+	source := result.Sources[0]
+	if source.Path != "poetry.lock" {
+		t.Fatalf("unexpected dependency source path: %+v", source)
 	}
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"internal-lib", "requests==2.32.3"}) {
+	if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"internal-lib", "requests==2.32.3"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
-	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", source.Analysis)
 	}
 }
 
@@ -3401,19 +3401,19 @@ func TestDefaultRulesScanPoetryLockIgnoredSelfFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Path != "poetry.lock" {
-		t.Fatalf("unexpected manifest path: %+v", manifest)
+	source := result.Sources[0]
+	if source.Path != "poetry.lock" {
+		t.Fatalf("unexpected dependency source path: %+v", source)
 	}
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3"}) {
+	if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"requests==2.32.3"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
-	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", source.Analysis)
 	}
 }
 
@@ -3424,19 +3424,19 @@ func TestDefaultRulesScanUVLockExtractedFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Path != "uv.lock" {
-		t.Fatalf("unexpected manifest path: %+v", manifest)
+	source := result.Sources[0]
+	if source.Path != "uv.lock" {
+		t.Fatalf("unexpected dependency source path: %+v", source)
 	}
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "local-lib"}) {
+	if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "local-lib"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
-	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", source.Analysis)
 	}
 }
 
@@ -3447,19 +3447,19 @@ func TestDefaultRulesScanUVLockEmptyFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Path != "uv.lock" {
-		t.Fatalf("unexpected manifest path: %+v", manifest)
+	source := result.Sources[0]
+	if source.Path != "uv.lock" {
+		t.Fatalf("unexpected dependency source path: %+v", source)
 	}
-	if manifest.Dependencies != nil {
-		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	if source.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", source.Dependencies)
 	}
-	if manifest.HasDependencies == nil || *manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", source.Analysis)
 	}
 }
 
@@ -3470,19 +3470,19 @@ func TestDefaultRulesScanUVLockFilteredEmptyFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Path != "uv.lock" {
-		t.Fatalf("unexpected manifest path: %+v", manifest)
+	source := result.Sources[0]
+	if source.Path != "uv.lock" {
+		t.Fatalf("unexpected dependency source path: %+v", source)
 	}
-	if manifest.Dependencies != nil {
-		t.Fatalf("expected no dependencies, got %+v", manifest.Dependencies)
+	if source.Dependencies != nil {
+		t.Fatalf("expected no dependencies, got %+v", source.Dependencies)
 	}
-	if manifest.HasDependencies == nil || *manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", source.Analysis)
 	}
 }
 
@@ -3493,104 +3493,104 @@ func TestDefaultRulesScanUVLockIgnoredSelfFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Path != "uv.lock" {
-		t.Fatalf("unexpected manifest path: %+v", manifest)
+	source := result.Sources[0]
+	if source.Path != "uv.lock" {
+		t.Fatalf("unexpected dependency source path: %+v", source)
 	}
-	if got := dependencyNames(manifest.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "local-lib"}) {
+	if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"requests==2.32.3", "local-lib"}) {
 		t.Fatalf("unexpected dependencies: got %+v", got)
 	}
-	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", manifest.HasDependencies)
+	if source.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", source.Analysis)
 	}
 }
 
 func TestLoadRulesRejectsInvalidBannerRegex(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js-banner\n    filename-regex: '.*\\.js$'\n    banner-regex: '('\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: js-banner\n      filename-regex: '.*\\.js$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: banner-regex\n        pattern: '('\n"))
 	if err == nil {
 		t.Fatalf("expected invalid banner regex error")
 	}
 }
 
 func TestLoadRulesRejectsBannerRegexWithoutRequiredCaptureGroups(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: js-banner\n    filename-regex: '.*\\.js$'\n    banner-regex: '^/\\*!\\s*[A-Za-z0-9._/-]+\\s+v?\\d+\\.\\d+\\.\\d+'\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: js-banner\n      filename-regex: '.*\\.js$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: banner-regex\n        pattern: '^/\\*!\\s*[A-Za-z0-9._/-]+\\s+v?\\d+\\.\\d+\\.\\d+'\n"))
 	if err == nil {
 		t.Fatalf("expected missing capture group error")
 	}
 }
 
 func TestLoadRulesRejectsTerraformParserWithoutResourceType(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform.aws_glue_job.python\n    filename-regex: '.*\\.tf$'\n    terraform:\n      conditions:\n        - path: default_arguments.--job-language\n          equals: python\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: terraform.aws_glue_job.python\n      filename-regex: '.*\\.tf$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: terraform\n        conditions:\n            - path: default_arguments.--job-language\n              equals: python\n"))
 	if err == nil {
 		t.Fatalf("expected missing resource type error")
 	}
 }
 
 func TestLoadRulesAcceptsTypeScriptParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        module: aws-cdk-lib/aws-glue\n        construct: CfnJob\n        props_argument_index: 2\n        within:\n          - defaultArguments\n        conditions:\n          - key: --additional-python-modules\n            present: true\n        extract:\n          key: --additional-python-modules\n          split: comma\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: typescript.cdk.aws_glue_job.python\n      filename-regex: '.*\\.ts$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: typescript\n        cdk_construct:\n            module: aws-cdk-lib/aws-glue\n            construct: CfnJob\n            props_argument_index: 2\n            within:\n                - defaultArguments\n            conditions:\n                - key: --additional-python-modules\n                  present: true\n            extract:\n                key: --additional-python-modules\n                split: comma\n"))
 	if err != nil {
 		t.Fatalf("expected typescript parser to load: %v", err)
 	}
 }
 
 func TestLoadRulesAcceptsPythonParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python.cdk.aws_glue_job.python\n    filename-regex: '.*\\.py$'\n    python:\n      cdk_construct:\n        module: aws_cdk.aws_glue\n        construct: CfnJob\n        keyword_argument: default_arguments\n        conditions:\n          - key: --additional-python-modules\n            present: true\n        extract:\n          key: --additional-python-modules\n          split: comma\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python.cdk.aws_glue_job.python\n      filename-regex: '.*\\.py$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: python\n        cdk_construct:\n            module: aws_cdk.aws_glue\n            construct: CfnJob\n            keyword_argument: default_arguments\n            conditions:\n                - key: --additional-python-modules\n                  present: true\n            extract:\n                key: --additional-python-modules\n                split: comma\n"))
 	if err != nil {
 		t.Fatalf("expected python parser to load: %v", err)
 	}
 }
 
 func TestLoadRulesAcceptsGenericPythonCallParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-py\n    filename-regex: '^setup\\.py$'\n    python:\n      call:\n        module: setuptools\n        function: setup\n        conditions:\n          any_of:\n            - keyword: install_requires\n              present: true\n            - keyword: extras_require\n              present: true\n        extract:\n          - keyword: install_requires\n            literal: string_list\n          - keyword: extras_require\n            literal: dict_string_lists\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-setup-py\n      filename-regex: '^setup\\.py$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: python\n        call:\n            module: setuptools\n            function: setup\n            conditions:\n                any_of:\n                    - keyword: install_requires\n                      present: true\n                    - keyword: extras_require\n                      present: true\n            extract:\n                - keyword: install_requires\n                  literal: string_list\n                - keyword: extras_require\n                  literal: dict_string_lists\n"))
 	if err != nil {
 		t.Fatalf("expected generic python call parser to load: %v", err)
 	}
 }
 
 func TestLoadRulesRejectsPythonCallParserWithUnsupportedLiteralExtractor(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-py\n    filename-regex: '^setup\\.py$'\n    python:\n      call:\n        module: setuptools\n        function: setup\n        conditions:\n          any_of:\n            - keyword: install_requires\n              present: true\n        extract:\n          - keyword: install_requires\n            literal: string_tuple\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-setup-py\n      filename-regex: '^setup\\.py$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: python\n        call:\n            module: setuptools\n            function: setup\n            conditions:\n                any_of:\n                    - keyword: install_requires\n                      present: true\n            extract:\n                - keyword: install_requires\n                  literal: string_tuple\n"))
 	if err == nil {
 		t.Fatalf("expected unsupported literal extractor error")
 	}
 }
 
 func TestLoadRulesAcceptsHTMLParser(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: html-external-scripts\n    filename-regex: '.*\\.html$'\n    html:\n      external_scripts: true\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: html-external-scripts\n      filename-regex: '.*\\.html$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: html\n        external_scripts: true\n"))
 	if err != nil {
 		t.Fatalf("expected html rule to load: %v", err)
 	}
-	if got := ruleset.SupportedManifestTypes(); !slices.Equal(got, []ManifestType{ManifestType("html-external-scripts")}) {
+	if got := ruleset.DetectorIDs(); !slices.Equal(got, []DetectorID{DetectorID("html-external-scripts")}) {
 		t.Fatalf("unexpected supported types: %+v", got)
 	}
 }
 
 func TestLoadRulesRejectsHTMLParserWithoutExternalScripts(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: html-external-scripts\n    filename-regex: '.*\\.html$'\n    html: {}\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: html-external-scripts\n      filename-regex: '.*\\.html$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: html\n"))
 	if err == nil {
 		t.Fatalf("expected missing html parser configuration error")
 	}
 }
 
 func TestLoadRulesRejectsTypeScriptParserWithoutModule(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        construct: CfnJob\n        props_argument_index: 2\n        conditions:\n          - key: --additional-python-modules\n            present: true\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: typescript.cdk.aws_glue_job.python\n      filename-regex: '.*\\.ts$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: typescript\n        cdk_construct:\n            construct: CfnJob\n            props_argument_index: 2\n            conditions:\n                - key: --additional-python-modules\n                  present: true\n"))
 	if err == nil {
 		t.Fatalf("expected missing module error")
 	}
 }
 
 func TestLoadRulesRejectsPythonParserWithoutKeywordArgument(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python.cdk.aws_glue_job.python\n    filename-regex: '.*\\.py$'\n    python:\n      cdk_construct:\n        module: aws_cdk.aws_glue\n        construct: CfnJob\n        conditions:\n          - key: --additional-python-modules\n            present: true\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python.cdk.aws_glue_job.python\n      filename-regex: '.*\\.py$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: python\n        cdk_construct:\n            module: aws_cdk.aws_glue\n            construct: CfnJob\n            conditions:\n                - key: --additional-python-modules\n                  present: true\n"))
 	if err == nil {
 		t.Fatalf("expected missing keyword argument error")
 	}
 }
 
 func TestScanDoesNotMatchSetupPyWithoutTargetKeywords(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-py\n    filename-regex: '^setup\\.py$'\n    python:\n      call:\n        module: setuptools\n        function: setup\n        conditions:\n          any_of:\n            - keyword: install_requires\n              present: true\n            - keyword: extras_require\n              present: true\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-setup-py\n      filename-regex: '^setup\\.py$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: python\n        call:\n            module: setuptools\n            function: setup\n            conditions:\n                any_of:\n                    - keyword: install_requires\n                      present: true\n                    - keyword: extras_require\n                      present: true\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -3609,485 +3609,485 @@ setup(
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
 func TestLoadRulesRejectsTypeScriptParserWithoutConstruct(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        module: aws-cdk-lib/aws-glue\n        props_argument_index: 2\n        conditions:\n          - key: --additional-python-modules\n            present: true\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: typescript.cdk.aws_glue_job.python\n      filename-regex: '.*\\.ts$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: typescript\n        cdk_construct:\n            module: aws-cdk-lib/aws-glue\n            props_argument_index: 2\n            conditions:\n                - key: --additional-python-modules\n                  present: true\n"))
 	if err == nil {
 		t.Fatalf("expected missing construct error")
 	}
 }
 
 func TestLoadRulesRejectsTerraformParserWithoutConditions(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform.aws_glue_job.python\n    filename-regex: '.*\\.tf$'\n    terraform:\n      resource_type: aws_glue_job\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: terraform.aws_glue_job.python\n      filename-regex: '.*\\.tf$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: terraform\n        resource_type: aws_glue_job\n"))
 	if err == nil {
 		t.Fatalf("expected missing conditions error")
 	}
 }
 
 func TestLoadRulesRejectsTerraformConditionWithoutMatcher(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: terraform.aws_glue_job.python\n    filename-regex: '.*\\.tf$'\n    terraform:\n      resource_type: aws_glue_job\n      conditions:\n        - path: default_arguments.--job-language\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: terraform.aws_glue_job.python\n      filename-regex: '.*\\.tf$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: terraform\n        resource_type: aws_glue_job\n        conditions:\n            - path: default_arguments.--job-language\n"))
 	if err == nil {
 		t.Fatalf("expected invalid terraform condition error")
 	}
 }
 
 func TestLoadRulesRejectsTypeScriptParserWithoutPropsArgumentIndex(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        module: aws-cdk-lib/aws-glue\n        construct: CfnJob\n        conditions:\n          - key: --additional-python-modules\n            present: true\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: typescript.cdk.aws_glue_job.python\n      filename-regex: '.*\\.ts$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: typescript\n        cdk_construct:\n            module: aws-cdk-lib/aws-glue\n            construct: CfnJob\n            conditions:\n                - key: --additional-python-modules\n                  present: true\n"))
 	if err == nil {
 		t.Fatalf("expected missing props argument index error")
 	}
 }
 
 func TestLoadRulesRejectsTypeScriptParserWithoutConditions(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        module: aws-cdk-lib/aws-glue\n        construct: CfnJob\n        props_argument_index: 2\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: typescript.cdk.aws_glue_job.python\n      filename-regex: '.*\\.ts$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: typescript\n        cdk_construct:\n            module: aws-cdk-lib/aws-glue\n            construct: CfnJob\n            props_argument_index: 2\n"))
 	if err == nil {
 		t.Fatalf("expected missing typescript conditions error")
 	}
 }
 
 func TestLoadRulesRejectsPythonParserWithoutConditions(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python.cdk.aws_glue_job.python\n    filename-regex: '.*\\.py$'\n    python:\n      cdk_construct:\n        module: aws_cdk.aws_glue\n        construct: CfnJob\n        keyword_argument: default_arguments\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python.cdk.aws_glue_job.python\n      filename-regex: '.*\\.py$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: python\n        cdk_construct:\n            module: aws_cdk.aws_glue\n            construct: CfnJob\n            keyword_argument: default_arguments\n"))
 	if err == nil {
 		t.Fatalf("expected missing python conditions error")
 	}
 }
 
 func TestLoadRulesRejectsTypeScriptConditionWithoutMatcher(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        module: aws-cdk-lib/aws-glue\n        construct: CfnJob\n        props_argument_index: 2\n        conditions:\n          - key: --additional-python-modules\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: typescript.cdk.aws_glue_job.python\n      filename-regex: '.*\\.ts$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: typescript\n        cdk_construct:\n            module: aws-cdk-lib/aws-glue\n            construct: CfnJob\n            props_argument_index: 2\n            conditions:\n                - key: --additional-python-modules\n"))
 	if err == nil {
 		t.Fatalf("expected invalid typescript condition error")
 	}
 }
 
 func TestLoadRulesRejectsTypeScriptParserWithUnsupportedExtractSplit(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: typescript.cdk.aws_glue_job.python\n    filename-regex: '.*\\.ts$'\n    typescript:\n      cdk_construct:\n        module: aws-cdk-lib/aws-glue\n        construct: CfnJob\n        props_argument_index: 2\n        conditions:\n          - key: --additional-python-modules\n            present: true\n        extract:\n          key: --additional-python-modules\n          split: space\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: typescript.cdk.aws_glue_job.python\n      filename-regex: '.*\\.ts$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: typescript\n        cdk_construct:\n            module: aws-cdk-lib/aws-glue\n            construct: CfnJob\n            props_argument_index: 2\n            conditions:\n                - key: --additional-python-modules\n                  present: true\n            extract:\n                key: --additional-python-modules\n                split: space\n"))
 	if err == nil {
 		t.Fatalf("expected invalid extract split error")
 	}
 }
 
 func TestLoadRulesRejectsPythonParserWithUnsupportedExtractSplit(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python.cdk.aws_glue_job.python\n    filename-regex: '.*\\.py$'\n    python:\n      cdk_construct:\n        module: aws_cdk.aws_glue\n        construct: CfnJob\n        keyword_argument: default_arguments\n        conditions:\n          - key: --additional-python-modules\n            present: true\n        extract:\n          key: --additional-python-modules\n          split: space\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python.cdk.aws_glue_job.python\n      filename-regex: '.*\\.py$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: python\n        cdk_construct:\n            module: aws_cdk.aws_glue\n            construct: CfnJob\n            keyword_argument: default_arguments\n            conditions:\n                - key: --additional-python-modules\n                  present: true\n            extract:\n                key: --additional-python-modules\n                split: space\n"))
 	if err == nil {
 		t.Fatalf("expected invalid python extract split error")
 	}
 }
 
 func TestLoadRulesAcceptsYAMLParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '.*\\.ya?ml$'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: yaml-pip\n      filename-regex: '.*\\.ya?ml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        query: workflow.steps[].config.packages.pip[]\n"))
 	if err != nil {
 		t.Fatalf("expected yaml parser to load: %v", err)
 	}
 }
 
 func TestLoadRulesAcceptsYAMLExistsParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: conda-environment\n    filename-regex: '^environment\\.ya?ml$'\n    yaml:\n      exists: dependencies\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: conda-environment\n      filename-regex: '^environment\\.ya?ml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        exists: dependencies\n"))
 	if err != nil {
 		t.Fatalf("expected yaml exists parser to load: %v", err)
 	}
 }
 
 func TestLoadRulesSupportsTOMLTableQueriesAndExcludeKeys(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pipfile\n    filename-regex: '^Pipfile$'\n    toml:\n      table-queries:\n        - '*'\n      exclude-keys:\n        - source\n        - requires\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pipfile\n      filename-regex: '^Pipfile$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        table-queries:\n            - '*'\n        exclude-keys:\n            - source\n            - requires\n"))
 	if err != nil {
 		t.Fatalf("expected generic toml table config to load: %v", err)
 	}
 }
 
 func TestLoadRulesAcceptsTOMLExistsAnyParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pdm-lock\n    filename-regex: '^pdm\\.lock$'\n    toml:\n      exists-any:\n        - package\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pdm-lock\n      filename-regex: '^pdm\\.lock$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        exists-any:\n            - package\n"))
 	if err != nil {
 		t.Fatalf("expected generic toml exists-any config to load: %v", err)
 	}
 }
 
 func TestLoadRulesRejectsYAMLParserWithoutQuery(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '.*\\.ya?ml$'\n    yaml: {}\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: yaml-pip\n      filename-regex: '.*\\.ya?ml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n"))
 	if err == nil {
 		t.Fatalf("expected missing yaml query error")
 	}
 }
 
 func TestLoadRulesRejectsYAMLParserWithQueryAndExists(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: conda-environment\n    filename-regex: '^environment\\.ya?ml$'\n    yaml:\n      query: dependencies[]\n      exists: dependencies\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: conda-environment\n      filename-regex: '^environment\\.ya?ml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        query: dependencies[]\n        exists: dependencies\n"))
 	if err == nil {
 		t.Fatalf("expected mutually exclusive yaml query and exists error")
 	}
 }
 
 func TestLoadRulesRejectsMalformedYAMLQuery(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '.*\\.ya?ml$'\n    yaml:\n      query: workflow..steps[].config.packages.pip[]\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: yaml-pip\n      filename-regex: '.*\\.ya?ml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        query: workflow..steps[].config.packages.pip[]\n"))
 	if err == nil {
 		t.Fatalf("expected malformed yaml query error")
 	}
 }
 
 func TestLoadRulesRejectsMalformedYAMLExistsPath(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: conda-environment\n    filename-regex: '^environment\\.ya?ml$'\n    yaml:\n      exists: dependencies..\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: conda-environment\n      filename-regex: '^environment\\.ya?ml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        exists: dependencies..\n"))
 	if err == nil {
 		t.Fatalf("expected malformed yaml exists path error")
 	}
 }
 
 func TestLoadRulesAcceptsTOMLParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project.dependencies[]\n        - project.optional-dependencies.*[]\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pyproject\n      filename-regex: '^pyproject\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        queries:\n            - project.dependencies[]\n            - project.optional-dependencies.*[]\n"))
 	if err != nil {
 		t.Fatalf("expected toml parser to load: %v", err)
 	}
 }
 
 func TestLoadRulesRejectsTOMLParserWithoutQueries(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml: {}\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pyproject\n      filename-regex: '^pyproject\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n"))
 	if err == nil {
 		t.Fatalf("expected missing toml queries error")
 	}
 }
 
 func TestLoadRulesRejectsMalformedTOMLQuery(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project..dependencies[]\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pyproject\n      filename-regex: '^pyproject\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        queries:\n            - project..dependencies[]\n"))
 	if err == nil {
 		t.Fatalf("expected malformed toml query error")
 	}
 }
 
 func TestLoadRulesRejectsMalformedTOMLExistsAnyQuery(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pdm-lock\n    filename-regex: '^pdm\\.lock$'\n    toml:\n      exists-any:\n        - package..\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pdm-lock\n      filename-regex: '^pdm\\.lock$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        exists-any:\n            - package..\n"))
 	if err == nil {
 		t.Fatalf("expected malformed toml exists-any query error")
 	}
 }
 
 func TestLoadRulesRejectsTOMLParserWithOtherParserType(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: mixed\n    filename-regex: '^pyproject\\.toml$'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: mixed\n      filename-regex: '^pyproject\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        query: workflow.steps[].config.packages.pip[]\n      analyzer:\n        type: toml\n        queries:\n            - project.dependencies[]\n"))
 	if err == nil {
 		t.Fatalf("expected multiple parser type error")
 	}
 }
 
 func TestLoadRulesAcceptsXMLParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: java\n    filename-regex: '^pom\\.xml$'\n    xml:\n      exists-any:\n        - project.dependencies.dependency\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: java\n      filename-regex: '^pom\\.xml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: xml\n        exists-any:\n            - project.dependencies.dependency\n"))
 	if err != nil {
 		t.Fatalf("expected xml parser to load: %v", err)
 	}
 }
 
 func TestLoadRulesRejectsXMLParserWithoutQueries(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: java\n    filename-regex: '^pom\\.xml$'\n    xml: {}\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: java\n      filename-regex: '^pom\\.xml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: xml\n"))
 	if err == nil {
 		t.Fatalf("expected missing xml queries error")
 	}
 }
 
 func TestLoadRulesRejectsMalformedXMLQuery(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: java\n    filename-regex: '^pom\\.xml$'\n    xml:\n      exists-any:\n        - project..dependencies.dependency\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: java\n      filename-regex: '^pom\\.xml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: xml\n        exists-any:\n            - project..dependencies.dependency\n"))
 	if err == nil {
 		t.Fatalf("expected malformed xml query error")
 	}
 }
 
 func TestLoadRulesAcceptsINIParser(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-cfg\n    filename-regex: '^setup\\.cfg$'\n    ini:\n      queries:\n        - section: options\n          key: install_requires\n        - section: options.extras_require\n          key: '*'\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-setup-cfg\n      filename-regex: '^setup\\.cfg$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: ini\n        queries:\n            - section: options\n              key: install_requires\n            - section: options.extras_require\n              key: '*'\n"))
 	if err != nil {
 		t.Fatalf("expected ini parser to load: %v", err)
 	}
 }
 
 func TestLoadRulesRejectsINIParserWithoutQueries(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-cfg\n    filename-regex: '^setup\\.cfg$'\n    ini: {}\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-setup-cfg\n      filename-regex: '^setup\\.cfg$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: ini\n"))
 	if err == nil {
 		t.Fatalf("expected missing ini queries error")
 	}
 }
 
 func TestLoadRulesRejectsINIQueryWithoutSection(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-cfg\n    filename-regex: '^setup\\.cfg$'\n    ini:\n      queries:\n        - key: install_requires\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-setup-cfg\n      filename-regex: '^setup\\.cfg$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: ini\n        queries:\n            - key: install_requires\n"))
 	if err == nil {
 		t.Fatalf("expected missing ini section error")
 	}
 }
 
 func TestLoadRulesRejectsINIQueryWithoutKey(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: python-setup-cfg\n    filename-regex: '^setup\\.cfg$'\n    ini:\n      queries:\n        - section: options\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-setup-cfg\n      filename-regex: '^setup\\.cfg$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: ini\n        queries:\n            - section: options\n"))
 	if err == nil {
 		t.Fatalf("expected missing ini key error")
 	}
 }
 
 func TestLoadRulesRejectsINIParserWithOtherParserType(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: mixed\n    filename-regex: '^setup\\.cfg$'\n    ini:\n      queries:\n        - section: options\n          key: install_requires\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: mixed\n      filename-regex: '^setup\\.cfg$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: ini\n        queries:\n            - section: options\n              key: install_requires\n      analyzer:\n        type: toml\n        queries:\n            - project.dependencies[]\n"))
 	if err == nil {
 		t.Fatalf("expected multiple parser type error")
 	}
 }
 
 func TestLoadRulesRejectsMultipleParserTypes(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: mixed\n    filename-regex: '.*'\n    terraform:\n      resource_type: aws_glue_job\n      conditions:\n        - path: default_arguments.--job-language\n          equals: python\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: mixed\n      filename-regex: '.*'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: terraform\n        resource_type: aws_glue_job\n        conditions:\n            - path: default_arguments.--job-language\n              equals: python\n      analyzer:\n        type: yaml\n        query: workflow.steps[].config.packages.pip[]\n"))
 	if err == nil {
 		t.Fatalf("expected multiple parser type error")
 	}
 }
 
 func TestLoadRulesRejectsBannerRegexWithOtherParserType(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte("rules:\n  - name: mixed\n    filename-regex: '.*\\.js$'\n    banner-regex: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n    html:\n      external_scripts: true\n"))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: mixed\n      filename-regex: '.*\\.js$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: banner-regex\n        pattern: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n      analyzer:\n        type: html\n        external_scripts: true\n"))
 	if err == nil {
 		t.Fatalf("expected multiple parser type error")
 	}
 }
 
 func TestLoadRulesSupportsCustomFirstMatchOrdering(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: broad\n    filename-regex: '.*\\.json$'\n  - name: specific\n    filename-regex: '^package\\.json$'\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: broad\n      filename-regex: '.*\\.json$'\n      form: other\n      roles:\n        - inventory\n    - id: specific\n      filename-regex: '^package\\.json$'\n      form: other\n      roles:\n        - inventory\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
 
-	got, ok := ruleset.DetectSelectorOnlyManifest("package.json")
+	got, ok := ruleset.MatchSelectorOnlySource("package.json")
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("broad") {
+	if got != DetectorID("broad") {
 		t.Fatalf("expected first pattern to win, got %q", got)
 	}
 }
 
-func TestDetectSelectorOnlyManifestIgnoresPackageLockParserRule(t *testing.T) {
+func TestMatchSelectorOnlySourceIgnoresPackageLockParserRule(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	if _, ok := ruleset.DetectSelectorOnlyManifest("package-lock.json"); ok {
+	if _, ok := ruleset.MatchSelectorOnlySource("package-lock.json"); ok {
 		t.Fatalf("expected selector-only detection to ignore package-lock parser rule")
 	}
 }
 
-func TestDetectSelectorOnlyManifestIgnoresCargoLockParserRule(t *testing.T) {
+func TestMatchSelectorOnlySourceIgnoresCargoLockParserRule(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	if _, ok := ruleset.DetectSelectorOnlyManifest("Cargo.lock"); ok {
+	if _, ok := ruleset.MatchSelectorOnlySource("Cargo.lock"); ok {
 		t.Fatalf("expected selector-only detection to ignore cargo-lock parser rule")
 	}
 }
 
-func TestDetectSelectorOnlyManifestIgnoresPodfileLockParserRule(t *testing.T) {
+func TestMatchSelectorOnlySourceIgnoresPodfileLockParserRule(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	if _, ok := ruleset.DetectSelectorOnlyManifest("Podfile.lock"); ok {
+	if _, ok := ruleset.MatchSelectorOnlySource("Podfile.lock"); ok {
 		t.Fatalf("expected selector-only detection to ignore Podfile.lock parser rule")
 	}
 }
 
-func TestDetectSelectorOnlyManifestIgnoresGopkgLockParserRule(t *testing.T) {
+func TestMatchSelectorOnlySourceIgnoresGopkgLockParserRule(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	if _, ok := ruleset.DetectSelectorOnlyManifest("Gopkg.lock"); ok {
+	if _, ok := ruleset.MatchSelectorOnlySource("Gopkg.lock"); ok {
 		t.Fatalf("expected selector-only detection to ignore Gopkg.lock parser rule")
 	}
 }
 
 func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
-	want := []ManifestType{
-		ManifestType("python-requirements"),
-		ManifestType("python-requirements-dir"),
-		ManifestType("python-uv"),
-		ManifestType("python-poetry-lock"),
-		ManifestType("python-pipfile-lock"),
-		ManifestType("python-pdm-lock"),
-		ManifestType("python-conda-lock"),
-		ManifestType("python-conda-env-alt"),
-		ManifestType("python-pyproject"),
-		ManifestType("python-conda-environment"),
-		ManifestType("python-pipfile"),
-		ManifestType("python-setup-py"),
-		ManifestType("python-setup-cfg"),
-		ManifestType("python-constraints"),
-		ManifestType("js"),
-		ManifestType("js-bower"),
-		ManifestType("js-npm-shrinkwrap"),
-		ManifestType("js-npm-lock"),
-		ManifestType("js-yarn"),
-		ManifestType("js-pnpm-lock"),
-		ManifestType("js-bun-lock"),
-		ManifestType("js-bun-lockb"),
-		ManifestType("deno-lock"),
-		ManifestType("deno-json"),
-		ManifestType("deno-jsonc"),
-		ManifestType("js-pnp"),
-		ManifestType("js-pnpm-workspace"),
-		ManifestType("js-npmrc"),
-		ManifestType("js-yarnrc"),
-		ManifestType("js-importmap"),
-		ManifestType("java"),
-		ManifestType("java-gradle-lockfile"),
-		ManifestType("java-gradle"),
-		ManifestType("java-gradle-kts"),
-		ManifestType("java-gradle-settings"),
-		ManifestType("java-gradle-settings-kts"),
-		ManifestType("java-gradle-version-catalog"),
-		ManifestType("java-gradle-wrapper"),
-		ManifestType("scala-sbt-build"),
-		ManifestType("scala-sbt-plugins"),
-		ManifestType("scala-sbt-dependencies"),
-		ManifestType("scala-sbt-build-props"),
-		ManifestType("scala-mill"),
-		ManifestType("java-ant-build"),
-		ManifestType("java-ivy"),
-		ManifestType("java-ivy-settings"),
-		ManifestType("ruby-gemfile"),
-		ManifestType("ruby-gemfile-lock"),
-		ManifestType("ruby-gemspec"),
-		ManifestType("ruby-appraisal"),
-		ManifestType("swift-package"),
-		ManifestType("ios-podfile"),
-		ManifestType("ios-cartfile"),
-		ManifestType("ios-podspec"),
-		ManifestType("ios-cartfile-resolved"),
-		ManifestType("php-composer"),
-		ManifestType("php-composer-lock"),
-		ManifestType("dart-pubspec"),
-		ManifestType("dart-pubspec-lock"),
-		ManifestType("erlang-rebar-config"),
-		ManifestType("erlang-rebar-lock"),
-		ManifestType("clojure-deps-edn"),
-		ManifestType("clojure-project-clj"),
-		ManifestType("clojure-boot"),
-		ManifestType("haskell-stack"),
-		ManifestType("haskell-stack-lock"),
-		ManifestType("haskell-cabal-project"),
-		ManifestType("haskell-cabal-project-freeze"),
-		ManifestType("haskell-cabal"),
-		ManifestType("haskell-package-yaml"),
-		ManifestType("dotnet-packages-config"),
-		ManifestType("dotnet-packages-lock"),
-		ManifestType("dotnet-directory-packages-props"),
-		ManifestType("dotnet-paket-dependencies"),
-		ManifestType("dotnet-paket-lock"),
-		ManifestType("dotnet-fsproj"),
-		ManifestType("dotnet-vbproj"),
-		ManifestType("dotnet-directory-build"),
-		ManifestType("dotnet-paket-references"),
-		ManifestType("dotnet-tools-manifest"),
-		ManifestType("go-mod"),
-		ManifestType("go-sum"),
-		ManifestType("go-work"),
-		ManifestType("go-gopkg-toml"),
-		ManifestType("go-glide-yaml"),
-		ManifestType("go-godep"),
-		ManifestType("rust-cargo"),
-		ManifestType("rust-cargo-lock"),
-		ManifestType("rust-cargo-config"),
-		ManifestType("go-gopkg-lock"),
-		ManifestType("go-glide-lock"),
-		ManifestType("dotnet-csproj"),
-		ManifestType("cpp-conanfile"),
-		ManifestType("cpp-conan-lock"),
-		ManifestType("cpp-vcpkg"),
-		ManifestType("cpp-cmake"),
-		ManifestType("cpp-conanfile-py"),
-		ManifestType("cpp-vcpkg-config"),
-		ManifestType("cpp-meson"),
-		ManifestType("cpp-autotools"),
-		ManifestType("cpp-cmake-modules"),
-		ManifestType("cpp-meson-wrap"),
-		// DRAFT (Group 3): ManifestType("cpp-gclient-deps"),
-		ManifestType("swift-package-resolved"),
-		ManifestType("ios-podfile-lock"),
-		ManifestType("elixir-mix"),
-		ManifestType("elixir-mix-lock"),
-		ManifestType("julia-project"),
-		ManifestType("julia-manifest"),
-		ManifestType("perl-cpanfile"),
-		ManifestType("perl-cpanfile-snapshot"),
-		ManifestType("perl-makefile-pl"),
-		ManifestType("perl-build-pl"),
-		ManifestType("perl-meta"),
-		ManifestType("perl-dist-ini"),
-		ManifestType("raku-meta"),
-		ManifestType("r-renv-lock"),
-		ManifestType("r-packrat-lock"),
-		// DRAFT (Group 3): ManifestType("r-description"),
-		ManifestType("lua-rockspec"),
-		ManifestType("zig-build-zon"),
-		ManifestType("zig-build"),
-		ManifestType("nim-nimble"),
-		ManifestType("ocaml-opam"),
-		ManifestType("ocaml-opam-locked"),
-		ManifestType("ocaml-dune-project"),
-		ManifestType("ocaml-esy"),
-		// DRAFT (Group 3): ManifestType("ocaml-dune"),
-		ManifestType("crystal-shard"),
-		ManifestType("crystal-shard-lock"),
-		ManifestType("gleam"),
-		ManifestType("gleam-manifest"),
-		ManifestType("fortran-fpm"),
-		ManifestType("vlang"),
-		ManifestType("helm-chart"),
-		ManifestType("ansible-requirements"),
-		ManifestType("buf"),
-		ManifestType("homebrew-brewfile"),
-		ManifestType("jsonnet-bundler"),
-		ManifestType("terraform-lock"),
-		ManifestType("unity-packages-manifest"),
-		ManifestType("unity-packages-lock"),
-		ManifestType("docker-dockerfile"),
-		ManifestType("docker-compose"),
-		ManifestType("github-actions-action"),
-		ManifestType("github-actions-workflow"),
-		ManifestType("bazel-workspace"),
-		ManifestType("bazel-module"),
-		ManifestType("bazel-module-lock"),
-		ManifestType("bazel-build-file"),
-		ManifestType("bazel-third-party-bzl"),
-		ManifestType("js-nx"),
-		// DRAFT (Group 3): ManifestType("js-nx-project"),
-		ManifestType("js-lerna"),
-		ManifestType("js-rush"),
-		ManifestType("rush-common-versions"),
-		ManifestType("js-turbo"),
-		ManifestType("pants-config"),
-		ManifestType("pants-jvm-build"),
-		// DRAFT (Group 3): ManifestType("bazel-build-file-bare"),
-		ManifestType("git-submodules"),
-		ManifestType("nix-default-shell"),
-		ManifestType("nix-flake"),
-		ManifestType("nix-flake-lock"),
-		ManifestType("helm-chart-lock"),
-		ManifestType("homebrew-brewfile-lock"),
-		ManifestType("buf-lock"),
-		ManifestType("puppet-puppetfile"),
-		// DRAFT (Group 3): ManifestType("puppet-cookbook-metadata"),
-		ManifestType("chef-berksfile"),
-		ManifestType("chef-berksfile-lock"),
-		ManifestType("chef-metadata"),
-		ManifestType("chef-policyfile"),
-		ManifestType("chef-policyfile-lock"),
-		ManifestType("jsonnet-lock"),
-		ManifestType("emacs-cask"),
-		ManifestType("unreal-uproject"),
-		ManifestType("unreal-uplugin"),
-		ManifestType("godot-plugin-cfg"),
-		ManifestType("foundry-toml"),
-		ManifestType("foundry-remappings"),
-		ManifestType("soldeer-lock"),
-		ManifestType("js-banner-block-start"),
-		ManifestType("js-banner-plain-block-start"),
-		ManifestType("js-banner-multiline-preserved"),
-		ManifestType("js-banner-line-comment"),
-		ManifestType("js-banner-version-tagged"),
-		ManifestType("html-external-scripts"),
-		ManifestType("terraform.aws_glue_job.python"),
-		ManifestType("typescript.cdk.aws_glue_job.python"),
-		ManifestType("python.cdk.aws_glue_job.python"),
+	want := []DetectorID{
+		DetectorID("python-requirements"),
+		DetectorID("python-requirements-dir"),
+		DetectorID("python-uv"),
+		DetectorID("python-poetry-lock"),
+		DetectorID("python-pipfile-lock"),
+		DetectorID("python-pdm-lock"),
+		DetectorID("python-conda-lock"),
+		DetectorID("python-conda-env-alt"),
+		DetectorID("python-pyproject"),
+		DetectorID("python-conda-environment"),
+		DetectorID("python-pipfile"),
+		DetectorID("python-setup-py"),
+		DetectorID("python-setup-cfg"),
+		DetectorID("python-constraints"),
+		DetectorID("js"),
+		DetectorID("js-bower"),
+		DetectorID("js-npm-shrinkwrap"),
+		DetectorID("js-npm-lock"),
+		DetectorID("js-yarn"),
+		DetectorID("js-pnpm-lock"),
+		DetectorID("js-bun-lock"),
+		DetectorID("js-bun-lockb"),
+		DetectorID("deno-lock"),
+		DetectorID("deno-json"),
+		DetectorID("deno-jsonc"),
+		DetectorID("js-pnp"),
+		DetectorID("js-pnpm-workspace"),
+		DetectorID("js-npmrc"),
+		DetectorID("js-yarnrc"),
+		DetectorID("js-importmap"),
+		DetectorID("java"),
+		DetectorID("java-gradle-lockfile"),
+		DetectorID("java-gradle"),
+		DetectorID("java-gradle-kts"),
+		DetectorID("java-gradle-settings"),
+		DetectorID("java-gradle-settings-kts"),
+		DetectorID("java-gradle-version-catalog"),
+		DetectorID("java-gradle-wrapper"),
+		DetectorID("scala-sbt-build"),
+		DetectorID("scala-sbt-plugins"),
+		DetectorID("scala-sbt-dependencies"),
+		DetectorID("scala-sbt-build-props"),
+		DetectorID("scala-mill"),
+		DetectorID("java-ant-build"),
+		DetectorID("java-ivy"),
+		DetectorID("java-ivy-settings"),
+		DetectorID("ruby-gemfile"),
+		DetectorID("ruby-gemfile-lock"),
+		DetectorID("ruby-gemspec"),
+		DetectorID("ruby-appraisal"),
+		DetectorID("swift-package"),
+		DetectorID("ios-podfile"),
+		DetectorID("ios-cartfile"),
+		DetectorID("ios-podspec"),
+		DetectorID("ios-cartfile-resolved"),
+		DetectorID("php-composer"),
+		DetectorID("php-composer-lock"),
+		DetectorID("dart-pubspec"),
+		DetectorID("dart-pubspec-lock"),
+		DetectorID("erlang-rebar-config"),
+		DetectorID("erlang-rebar-lock"),
+		DetectorID("clojure-deps-edn"),
+		DetectorID("clojure-project-clj"),
+		DetectorID("clojure-boot"),
+		DetectorID("haskell-stack"),
+		DetectorID("haskell-stack-lock"),
+		DetectorID("haskell-cabal-project"),
+		DetectorID("haskell-cabal-project-freeze"),
+		DetectorID("haskell-cabal"),
+		DetectorID("haskell-package-yaml"),
+		DetectorID("dotnet-packages-config"),
+		DetectorID("dotnet-packages-lock"),
+		DetectorID("dotnet-directory-packages-props"),
+		DetectorID("dotnet-paket-dependencies"),
+		DetectorID("dotnet-paket-lock"),
+		DetectorID("dotnet-fsproj"),
+		DetectorID("dotnet-vbproj"),
+		DetectorID("dotnet-directory-build"),
+		DetectorID("dotnet-paket-references"),
+		DetectorID("dotnet-tools-manifest"),
+		DetectorID("go-mod"),
+		DetectorID("go-sum"),
+		DetectorID("go-work"),
+		DetectorID("go-gopkg-toml"),
+		DetectorID("go-glide-yaml"),
+		DetectorID("go-godep"),
+		DetectorID("rust-cargo"),
+		DetectorID("rust-cargo-lock"),
+		DetectorID("rust-cargo-config"),
+		DetectorID("go-gopkg-lock"),
+		DetectorID("go-glide-lock"),
+		DetectorID("dotnet-csproj"),
+		DetectorID("cpp-conanfile"),
+		DetectorID("cpp-conan-lock"),
+		DetectorID("cpp-vcpkg"),
+		DetectorID("cpp-cmake"),
+		DetectorID("cpp-conanfile-py"),
+		DetectorID("cpp-vcpkg-config"),
+		DetectorID("cpp-meson"),
+		DetectorID("cpp-autotools"),
+		DetectorID("cpp-cmake-modules"),
+		DetectorID("cpp-meson-wrap"),
+		// DRAFT (Group 3): DetectorID("cpp-gclient-deps"),
+		DetectorID("swift-package-resolved"),
+		DetectorID("ios-podfile-lock"),
+		DetectorID("elixir-mix"),
+		DetectorID("elixir-mix-lock"),
+		DetectorID("julia-project"),
+		DetectorID("julia-manifest"),
+		DetectorID("perl-cpanfile"),
+		DetectorID("perl-cpanfile-snapshot"),
+		DetectorID("perl-makefile-pl"),
+		DetectorID("perl-build-pl"),
+		DetectorID("perl-meta"),
+		DetectorID("perl-dist-ini"),
+		DetectorID("raku-meta"),
+		DetectorID("r-renv-lock"),
+		DetectorID("r-packrat-lock"),
+		// DRAFT (Group 3): DetectorID("r-description"),
+		DetectorID("lua-rockspec"),
+		DetectorID("zig-build-zon"),
+		DetectorID("zig-build"),
+		DetectorID("nim-nimble"),
+		DetectorID("ocaml-opam"),
+		DetectorID("ocaml-opam-locked"),
+		DetectorID("ocaml-dune-project"),
+		DetectorID("ocaml-esy"),
+		// DRAFT (Group 3): DetectorID("ocaml-dune"),
+		DetectorID("crystal-shard"),
+		DetectorID("crystal-shard-lock"),
+		DetectorID("gleam"),
+		DetectorID("gleam-manifest"),
+		DetectorID("fortran-fpm"),
+		DetectorID("vlang"),
+		DetectorID("helm-chart"),
+		DetectorID("ansible-requirements"),
+		DetectorID("buf"),
+		DetectorID("homebrew-brewfile"),
+		DetectorID("jsonnet-bundler"),
+		DetectorID("terraform-lock"),
+		DetectorID("unity-packages-manifest"),
+		DetectorID("unity-packages-lock"),
+		DetectorID("docker-dockerfile"),
+		DetectorID("docker-compose"),
+		DetectorID("github-actions-action"),
+		DetectorID("github-actions-workflow"),
+		DetectorID("bazel-workspace"),
+		DetectorID("bazel-module"),
+		DetectorID("bazel-module-lock"),
+		DetectorID("bazel-build-file"),
+		DetectorID("bazel-third-party-bzl"),
+		DetectorID("js-nx"),
+		// DRAFT (Group 3): DetectorID("js-nx-project"),
+		DetectorID("js-lerna"),
+		DetectorID("js-rush"),
+		DetectorID("rush-common-versions"),
+		DetectorID("js-turbo"),
+		DetectorID("pants-config"),
+		DetectorID("pants-jvm-build"),
+		// DRAFT (Group 3): DetectorID("bazel-build-file-bare"),
+		DetectorID("git-submodules"),
+		DetectorID("nix-default-shell"),
+		DetectorID("nix-flake"),
+		DetectorID("nix-flake-lock"),
+		DetectorID("helm-chart-lock"),
+		DetectorID("homebrew-brewfile-lock"),
+		DetectorID("buf-lock"),
+		DetectorID("puppet-puppetfile"),
+		// DRAFT (Group 3): DetectorID("puppet-cookbook-metadata"),
+		DetectorID("chef-berksfile"),
+		DetectorID("chef-berksfile-lock"),
+		DetectorID("chef-metadata"),
+		DetectorID("chef-policyfile"),
+		DetectorID("chef-policyfile-lock"),
+		DetectorID("jsonnet-lock"),
+		DetectorID("emacs-cask"),
+		DetectorID("unreal-uproject"),
+		DetectorID("unreal-uplugin"),
+		DetectorID("godot-plugin-cfg"),
+		DetectorID("foundry-toml"),
+		DetectorID("foundry-remappings"),
+		DetectorID("soldeer-lock"),
+		DetectorID("js-banner-block-start"),
+		DetectorID("js-banner-plain-block-start"),
+		DetectorID("js-banner-multiline-preserved"),
+		DetectorID("js-banner-line-comment"),
+		DetectorID("js-banner-version-tagged"),
+		DetectorID("html-external-scripts"),
+		DetectorID("terraform.aws_glue_job.python"),
+		DetectorID("typescript.cdk.aws_glue_job.python"),
+		DetectorID("python.cdk.aws_glue_job.python"),
 	}
-	got := ruleset.SupportedManifestTypes()
+	got := ruleset.DetectorIDs()
 	if !slices.Equal(got, want) {
 		t.Fatalf("unexpected supported type order: got %v want %v", got, want)
 	}
 }
 
 func TestScanMatchesYAMLDependenciesFromCustomRule(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '^workflow\\.yaml$'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: yaml-pip\n      filename-regex: '^workflow\\.yaml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        query: workflow.steps[].config.packages.pip[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4108,16 +4108,16 @@ workflow:
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), []string{"requests", "pendulum"}) {
-		t.Fatalf("unexpected dependencies: %+v", result.Manifests[0].Dependencies)
+	if !slices.Equal(dependencyNames(result.Sources[0].Dependencies), []string{"requests", "pendulum"}) {
+		t.Fatalf("unexpected dependencies: %+v", result.Sources[0].Dependencies)
 	}
 }
 
 func TestScanMatchesYAMLExistsRuleWithoutExtractingDependencies(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: conda-environment\n    filename-regex: '^environment\\.ya?ml$'\n    yaml:\n      exists: dependencies\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: conda-environment\n      filename-regex: '^environment\\.ya?ml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        exists: dependencies\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4134,19 +4134,19 @@ dependencies:
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("conda-environment") || result.Manifests[0].Path != "environment.yml" {
-		t.Fatalf("unexpected manifest: %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("conda-environment") || result.Sources[0].Path != "environment.yml" {
+		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if result.Manifests[0].Dependencies != nil {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	if result.Sources[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
 func TestScanMatchesYAMLExistsAnyRuleWithDependenciesPresent(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: dart-pubspec\n    filename-regex: '^pubspec\\.yaml$'\n    yaml:\n      exists-any:\n        - dependencies\n        - dev_dependencies\n        - dependency_overrides\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: dart-pubspec\n      filename-regex: '^pubspec\\.yaml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        exists-any:\n            - dependencies\n            - dev_dependencies\n            - dependency_overrides\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4162,19 +4162,19 @@ dependencies:
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if result.Manifests[0].Dependencies != nil {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	if result.Sources[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
 func TestScanMatchesYAMLExistsAnyRuleWithoutDependencies(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: dart-pubspec\n    filename-regex: '^pubspec\\.yaml$'\n    yaml:\n      exists-any:\n        - dependencies\n        - dev_dependencies\n        - dependency_overrides\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: dart-pubspec\n      filename-regex: '^pubspec\\.yaml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        exists-any:\n            - dependencies\n            - dev_dependencies\n            - dependency_overrides\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4190,11 +4190,11 @@ environment:
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4205,14 +4205,14 @@ func TestScanMatchesBufYAMLWithDeps(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("buf") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("buf") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4223,14 +4223,14 @@ func TestScanMarksBufYAMLEmptyDepsAsNoDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("buf") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("buf") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4241,14 +4241,14 @@ func TestScanMarksBufYAMLWithoutDepsKeyAsNoDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("buf") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("buf") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4259,14 +4259,14 @@ func TestScanMatchesAnsibleRequirementsWithRoles(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("ansible-requirements") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("ansible-requirements") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4277,14 +4277,14 @@ func TestScanMatchesAnsibleRequirementsWithCollections(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("ansible-requirements") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("ansible-requirements") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4295,14 +4295,14 @@ func TestScanMatchesAnsibleRequirementsWithRolesAndCollections(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("ansible-requirements") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("ansible-requirements") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4313,14 +4313,14 @@ func TestScanMarksAnsibleRequirementsEmptyListsAsNoDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("ansible-requirements") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("ansible-requirements") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4331,14 +4331,14 @@ func TestScanMarksAnsibleRequirementsWithoutKeysAsNoDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("ansible-requirements") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("ansible-requirements") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4349,14 +4349,14 @@ func TestScanMatchesJsonnetBundlerWithDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("jsonnet-bundler") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("jsonnet-bundler") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4367,14 +4367,14 @@ func TestScanMarksJsonnetBundlerEmptyDependenciesAsNoDependencies(t *testing.T) 
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("jsonnet-bundler") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("jsonnet-bundler") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4385,14 +4385,14 @@ func TestScanMarksJsonnetBundlerWithoutDependenciesKeyAsNoDependencies(t *testin
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("jsonnet-bundler") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("jsonnet-bundler") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4403,14 +4403,14 @@ func TestScanMarksJsonnetBundlerWrongTypeAsNoDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("jsonnet-bundler") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("jsonnet-bundler") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4421,17 +4421,17 @@ func TestScanMatchesHaskellPackageYAMLWithDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("haskell-package-yaml") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("haskell-package-yaml") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if result.Manifests[0].Dependencies != nil {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	if result.Sources[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
@@ -4442,14 +4442,14 @@ func TestScanMarksHaskellPackageYAMLWithoutDependenciesAsNoDependencies(t *testi
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("haskell-package-yaml") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("haskell-package-yaml") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4460,17 +4460,17 @@ func TestScanMatchesVcpkgWithDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("cpp-vcpkg") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("cpp-vcpkg") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if result.Manifests[0].Dependencies != nil {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	if result.Sources[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
@@ -4481,19 +4481,19 @@ func TestScanMarksVcpkgWithoutDependenciesAsNoDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("cpp-vcpkg") {
-		t.Fatalf("unexpected manifest type: got %q", result.Manifests[0].Type)
+	if result.Sources[0].Detector != DetectorID("cpp-vcpkg") {
+		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
 func TestScanMatchesYAMLDependenciesFromPathGlobRule(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    path-glob: '**/pipelines/workflow.yaml'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: yaml-pip\n      path-glob: '**/pipelines/workflow.yaml'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        query: workflow.steps[].config.packages.pip[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4523,20 +4523,20 @@ workflow:
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("yaml-pip") || manifest.Path != "apps/api/pipelines/workflow.yaml" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("yaml-pip") || source.Path != "apps/api/pipelines/workflow.yaml" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
-	if !slices.Equal(dependencyNames(manifest.Dependencies), []string{"requests", "pendulum"}) {
-		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
+	if !slices.Equal(dependencyNames(source.Dependencies), []string{"requests", "pendulum"}) {
+		t.Fatalf("unexpected dependencies: %+v", source.Dependencies)
 	}
 }
 
 func TestScanMatchesTOMLDependenciesFromPathGlobRule(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    path-glob: '**/pyproject.toml'\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pyproject\n      path-glob: '**/pyproject.toml'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        queries:\n            - project.dependencies[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4555,20 +4555,20 @@ dependencies = ["should-not-match"]
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "services/api/pyproject.toml" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("python-pyproject") || source.Path != "services/api/pyproject.toml" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
-	if !slices.Equal(dependencyNames(manifest.Dependencies), []string{"requests>=2.31"}) {
-		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
+	if !slices.Equal(dependencyNames(source.Dependencies), []string{"requests>=2.31"}) {
+		t.Fatalf("unexpected dependencies: %+v", source.Dependencies)
 	}
 }
 
 func TestScanMatchesTOMLDependenciesFromCombinedSelectors(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    path-glob: '**/pipelines/pyproject.toml'\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pyproject\n      filename-regex: '^pyproject\\.toml$'\n      path-glob: '**/pipelines/pyproject.toml'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        queries:\n            - project.dependencies[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4591,20 +4591,20 @@ dependencies = ["wrong-name"]
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("python-pyproject") || manifest.Path != "apps/api/pipelines/pyproject.toml" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("python-pyproject") || source.Path != "apps/api/pipelines/pyproject.toml" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
-	if !slices.Equal(dependencyNames(manifest.Dependencies), []string{"requests>=2.31"}) {
-		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
+	if !slices.Equal(dependencyNames(source.Dependencies), []string{"requests>=2.31"}) {
+		t.Fatalf("unexpected dependencies: %+v", source.Dependencies)
 	}
 }
 
 func TestScanMatchesYAMLDependenciesAcrossNestedLists(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '^workflow\\.yaml$'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: yaml-pip\n      filename-regex: '^workflow\\.yaml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        query: workflow.steps[].config.packages.pip[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4629,16 +4629,16 @@ workflow:
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), []string{"requests", "pendulum"}) {
-		t.Fatalf("unexpected dependencies: %+v", result.Manifests[0].Dependencies)
+	if !slices.Equal(dependencyNames(result.Sources[0].Dependencies), []string{"requests", "pendulum"}) {
+		t.Fatalf("unexpected dependencies: %+v", result.Sources[0].Dependencies)
 	}
 }
 
 func TestScanMatchesYAMLDependenciesFromCombinedSelectors(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '^workflow\\.yaml$'\n    path-glob: '**/pipelines/workflow.yaml'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: yaml-pip\n      filename-regex: '^workflow\\.yaml$'\n      path-glob: '**/pipelines/workflow.yaml'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        query: workflow.steps[].config.packages.pip[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4677,20 +4677,20 @@ workflow:
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("yaml-pip") || manifest.Path != "apps/api/pipelines/workflow.yaml" {
-		t.Fatalf("unexpected manifest: %+v", manifest)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("yaml-pip") || source.Path != "apps/api/pipelines/workflow.yaml" {
+		t.Fatalf("unexpected dependency source: %+v", source)
 	}
-	if !slices.Equal(dependencyNames(manifest.Dependencies), []string{"requests", "pendulum"}) {
-		t.Fatalf("unexpected dependencies: %+v", manifest.Dependencies)
+	if !slices.Equal(dependencyNames(source.Dependencies), []string{"requests", "pendulum"}) {
+		t.Fatalf("unexpected dependencies: %+v", source.Dependencies)
 	}
 }
 
 func TestScanDoesNotMatchYAMLWhenQueryResolvesToNonStrings(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '^workflow\\.yaml$'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: yaml-pip\n      filename-regex: '^workflow\\.yaml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        query: workflow.steps[].config.packages.pip[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4711,13 +4711,13 @@ workflow:
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
 func TestScanDoesNotMatchYAMLWhenQueryMissing(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: yaml-pip\n    filename-regex: '^workflow\\.yaml$'\n    yaml:\n      query: workflow.steps[].config.packages.pip[]\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: yaml-pip\n      filename-regex: '^workflow\\.yaml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        query: workflow.steps[].config.packages.pip[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4733,13 +4733,13 @@ workflow:
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
 func TestScanDoesNotMatchYAMLExistsRuleWhenPathMissing(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: conda-environment\n    filename-regex: '^environment\\.ya?ml$'\n    yaml:\n      exists: dependencies\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: conda-environment\n      filename-regex: '^environment\\.ya?ml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yaml\n        exists: dependencies\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4755,13 +4755,13 @@ channels:
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
 func TestScanMatchesTOMLDependenciesFromCustomRule(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - build-system.requires[]\n        - project.dependencies[]\n        - project.optional-dependencies.*[]\n        - dependency-groups.*[]\n        - tool.poetry.dependencies\n        - tool.poetry.group.*.dependencies\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pyproject\n      filename-regex: '^pyproject\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        queries:\n            - build-system.requires[]\n            - project.dependencies[]\n            - project.optional-dependencies.*[]\n            - dependency-groups.*[]\n            - tool.poetry.dependencies\n            - tool.poetry.group.*.dependencies\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4794,27 +4794,27 @@ pytest-cov = "^5.0"
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
-	want := []Dependency{
-		{Raw: "scikit-build-core>=0.10", Name: "scikit-build-core", Constraint: ">=0.10", Section: "build-system.requires"},
-		{Raw: "pybind11>=2.12.0", Name: "pybind11", Constraint: ">=2.12.0", Section: "build-system.requires"},
-		{Raw: "requests>=2.31", Name: "requests", Constraint: ">=2.31", Section: "project.dependencies"},
-		{Raw: "pytest>=8", Name: "pytest", Constraint: ">=8", Section: "project.optional-dependencies.dev"},
-		{Raw: "mypy>=1.10", Name: "mypy", Constraint: ">=1.10", Section: "dependency-groups.lint"},
-		{Raw: "django = \"^5.0\"", Section: "tool.poetry.dependencies"},
-		{Raw: "httpx = { extras = [\"http2\"], version = \"^0.27\" }", Section: "tool.poetry.dependencies"},
-		{Raw: "pytest-cov = \"^5.0\"", Section: "tool.poetry.group.test.dependencies"},
+	want := []DependencyReference{
+		{Raw: "scikit-build-core>=0.10", Name: "scikit-build-core", VersionConstraint: ">=0.10", SourceGroup: "build-system.requires"},
+		{Raw: "pybind11>=2.12.0", Name: "pybind11", VersionConstraint: ">=2.12.0", SourceGroup: "build-system.requires"},
+		{Raw: "requests>=2.31", Name: "requests", VersionConstraint: ">=2.31", SourceGroup: "project.dependencies"},
+		{Raw: "pytest>=8", Name: "pytest", VersionConstraint: ">=8", SourceGroup: "project.optional-dependencies.dev"},
+		{Raw: "mypy>=1.10", Name: "mypy", VersionConstraint: ">=1.10", SourceGroup: "dependency-groups.lint"},
+		{Raw: "django = \"^5.0\"", SourceGroup: "tool.poetry.dependencies"},
+		{Raw: "httpx = { extras = [\"http2\"], version = \"^0.27\" }", SourceGroup: "tool.poetry.dependencies"},
+		{Raw: "pytest-cov = \"^5.0\"", SourceGroup: "tool.poetry.group.test.dependencies"},
 	}
-	if !equalDependencies(result.Manifests[0].Dependencies, want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
+	if !equalDependencies(result.Sources[0].Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Sources[0].Dependencies, want)
 	}
 }
 
 func TestScanMatchesTOMLDependencyTablesFromCustomRule(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pipfile\n    filename-regex: '^Pipfile$'\n    toml:\n      table-queries:\n        - '*'\n      exclude-keys:\n        - source\n        - requires\n        - scripts\n        - pipenv\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pipfile\n      filename-regex: '^Pipfile$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        table-queries:\n            - '*'\n        exclude-keys:\n            - source\n            - requires\n            - scripts\n            - pipenv\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4840,21 +4840,21 @@ pytest-cov = ">=5"
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
 	want := []string{
 		"requests = \"*\"",
 		"pytest-cov = \">=5\"",
 	}
-	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
+	if !slices.Equal(dependencyNames(result.Sources[0].Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Sources[0].Dependencies, want)
 	}
 }
 
 func TestScanMatchesTOMLTableExistsAnyRuleWithDependenciesPresent(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: rust-cargo\n    filename-regex: '^Cargo\\.toml$'\n    toml:\n      table-exists-any:\n        - dependencies\n        - dev-dependencies\n        - build-dependencies\n        - workspace.dependencies\n        - target.*.dependencies\n        - target.*.dev-dependencies\n        - target.*.build-dependencies\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: rust-cargo\n      filename-regex: '^Cargo\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        table-exists-any:\n            - dependencies\n            - dev-dependencies\n            - build-dependencies\n            - workspace.dependencies\n            - target.*.dependencies\n            - target.*.dev-dependencies\n            - target.*.build-dependencies\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4873,19 +4873,19 @@ nix = "0.29"
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if result.Manifests[0].Dependencies != nil {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	if result.Sources[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
 func TestScanMatchesTOMLTableExistsAnyRuleWithoutDependencies(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: rust-cargo\n    filename-regex: '^Cargo\\.toml$'\n    toml:\n      table-exists-any:\n        - dependencies\n        - dev-dependencies\n        - build-dependencies\n        - workspace.dependencies\n        - target.*.dependencies\n        - target.*.dev-dependencies\n        - target.*.build-dependencies\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: rust-cargo\n      filename-regex: '^Cargo\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        table-exists-any:\n            - dependencies\n            - dev-dependencies\n            - build-dependencies\n            - workspace.dependencies\n            - target.*.dependencies\n            - target.*.dev-dependencies\n            - target.*.build-dependencies\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4901,16 +4901,16 @@ version = "0.1.0"
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
 }
 
 func TestScanMatchesTOMLExistsAnyRuleWithDependenciesPresent(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pdm-lock\n    filename-regex: '^pdm\\.lock$'\n    toml:\n      exists-any:\n        - package\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pdm-lock\n      filename-regex: '^pdm\\.lock$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        exists-any:\n            - package\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4928,19 +4928,19 @@ version = "2.32.0"
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || !*result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if result.Manifests[0].Dependencies != nil {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	if result.Sources[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
 func TestScanMatchesTOMLExistsAnyRuleWithoutDependencies(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pdm-lock\n    filename-regex: '^pdm\\.lock$'\n    toml:\n      exists-any:\n        - package\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pdm-lock\n      filename-regex: '^pdm\\.lock$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        exists-any:\n            - package\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4954,19 +4954,19 @@ version = "4.5.0"
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].HasDependencies == nil || *result.Manifests[0].HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.Manifests[0].HasDependencies)
+	if result.Sources[0].Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
 	}
-	if result.Manifests[0].Dependencies != nil {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Manifests[0].Dependencies)
+	if result.Sources[0].Dependencies != nil {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
 func TestScanDoesNotMatchTOMLWhenQueryResolvesToNoUsableValues(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pyproject\n      filename-regex: '^pyproject\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        queries:\n            - project.dependencies[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -4981,13 +4981,13 @@ dependencies = [123, true]
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
 func TestScanIgnoresInlineTablesInExpandedTOMLArrays(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - dependency-groups.*[]\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pyproject\n      filename-regex: '^pyproject\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        queries:\n            - dependency-groups.*[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -5005,18 +5005,18 @@ dev = [
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
 	want := []string{"pytest>=8"}
-	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
+	if !slices.Equal(dependencyNames(result.Sources[0].Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Sources[0].Dependencies, want)
 	}
 }
 
 func TestScanDoesNotMatchTOMLWhenExpandedArrayContainsOnlyInlineTables(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - dependency-groups.*[]\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pyproject\n      filename-regex: '^pyproject\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        queries:\n            - dependency-groups.*[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -5033,13 +5033,13 @@ dev = [
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
 func TestScanPreservesPythonKeyOutsidePoetryDependencies(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: custom-toml\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - tool.custom.dependencies\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: custom-toml\n      filename-regex: '^pyproject\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        queries:\n            - tool.custom.dependencies\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -5055,21 +5055,21 @@ django = "^5.0"
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
 	want := []string{
 		"django = \"^5.0\"",
 		"python = \"^3.12\"",
 	}
-	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
+	if !slices.Equal(dependencyNames(result.Sources[0].Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Sources[0].Dependencies, want)
 	}
 }
 
 func TestScanSkipsPythonInConcretePoetryDependencyGroupTable(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - tool.poetry.group.test.dependencies\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pyproject\n      filename-regex: '^pyproject\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        queries:\n            - tool.poetry.group.test.dependencies\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -5085,18 +5085,18 @@ django = "^5.0"
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
 
 	want := []string{"django = \"^5.0\""}
-	if !slices.Equal(dependencyNames(result.Manifests[0].Dependencies), want) {
-		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Manifests[0].Dependencies, want)
+	if !slices.Equal(dependencyNames(result.Sources[0].Dependencies), want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Sources[0].Dependencies, want)
 	}
 }
 
-func TestScanReportsTOMLParseErrorsAsWarnings(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: python-pyproject\n    filename-regex: '^pyproject\\.toml$'\n    toml:\n      queries:\n        - project.dependencies[]\n"))
+func TestScanReportsTOMLParseErrorsAsDiagnostics(t *testing.T) {
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pyproject\n      filename-regex: '^pyproject\\.toml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: toml\n        queries:\n            - project.dependencies[]\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -5111,16 +5111,16 @@ dependencies = ["requests>=2.31"]
 	if err != nil {
 		t.Fatalf("expected scan to continue, got %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if len(result.Manifests[0].Warnings) != 1 || !strings.Contains(result.Manifests[0].Warnings[0], "parse toml file") {
-		t.Fatalf("expected toml parse warning, got %+v", result.Manifests[0].Warnings)
+	if len(result.Sources[0].Diagnostics) != 1 || !strings.Contains(result.Sources[0].Diagnostics[0].Message, "parse toml file") {
+		t.Fatalf("expected toml parse warning, got %+v", result.Sources[0].Diagnostics)
 	}
 }
 
 func TestScanBannerRegexRequiresNonEmptyCaptureGroups(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: js-banner\n    filename-regex: '^app\\.js$'\n    banner-regex: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)?\\s+v?(\\d+\\.\\d+\\.\\d+)?'\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: js-banner\n      filename-regex: '^app\\.js$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: banner-regex\n        pattern: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)?\\s+v?(\\d+\\.\\d+\\.\\d+)?'\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -5132,13 +5132,13 @@ func TestScanBannerRegexRequiresNonEmptyCaptureGroups(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 0 {
-		t.Fatalf("expected no manifests, got %+v", result.Manifests)
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
 	}
 }
 
 func TestScanBannerRegexUsesFirstMatchingRule(t *testing.T) {
-	ruleset, err := loadRules("test.yaml", []byte("rules:\n  - name: first\n    filename-regex: '^app\\.js$'\n    banner-regex: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n  - name: second\n    filename-regex: '^app\\.js$'\n    banner-regex: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n"))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: first\n      filename-regex: '^app\\.js$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: banner-regex\n        pattern: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n    - id: second\n      filename-regex: '^app\\.js$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: banner-regex\n        pattern: '(?i)^/\\*!\\s*([A-Za-z0-9._/-]+)\\s+v?(\\d+\\.\\d+\\.\\d+)'\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -5150,11 +5150,11 @@ func TestScanBannerRegexUsesFirstMatchingRule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %d", len(result.Manifests))
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Manifests[0].Type != ManifestType("first") {
-		t.Fatalf("expected first matching rule to win, got %+v", result.Manifests[0])
+	if result.Sources[0].Detector != DetectorID("first") {
+		t.Fatalf("expected first matching rule to win, got %+v", result.Sources[0])
 	}
 }
 
@@ -5167,13 +5167,13 @@ func mustLoadDefaultRules(t *testing.T) Ruleset {
 	return ruleset
 }
 
-func TestScanDefaultRulesDetectsPathGlobManifests(t *testing.T) {
+func TestScanDefaultRulesDetectsPathGlobSources(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	testCases := []struct {
 		name string
 		path string
-		typ  ManifestType
+		typ  DetectorID
 	}{
 		// Group 2a: JVM ecosystem
 		{name: "gradle version catalog", path: "gradle/libs.versions.toml", typ: "java-gradle-version-catalog"},
@@ -5209,14 +5209,14 @@ func TestScanDefaultRulesDetectsPathGlobManifests(t *testing.T) {
 			if err != nil {
 				t.Fatalf("scan failed: %v", err)
 			}
-			if len(result.Manifests) != 1 {
-				t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+			if len(result.Sources) != 1 {
+				t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 			}
-			if result.Manifests[0].Type != tc.typ {
-				t.Fatalf("expected type %q, got %q", tc.typ, result.Manifests[0].Type)
+			if result.Sources[0].Detector != tc.typ {
+				t.Fatalf("expected type %q, got %q", tc.typ, result.Sources[0].Detector)
 			}
-			if result.Manifests[0].Path != tc.path {
-				t.Fatalf("expected path %q, got %q", tc.path, result.Manifests[0].Path)
+			if result.Sources[0].Path != tc.path {
+				t.Fatalf("expected path %q, got %q", tc.path, result.Sources[0].Path)
 			}
 		})
 	}

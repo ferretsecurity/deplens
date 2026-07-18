@@ -12,27 +12,27 @@ func TestScanPipfileLockExtractsDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(result.Manifests) != 5 {
-		t.Fatalf("expected 5 manifests, got %d", len(result.Manifests))
+	if len(result.Sources) != 5 {
+		t.Fatalf("expected 5 dependency sources, got %d", len(result.Sources))
 	}
 
-	var pipfileLock *ManifestMatch
-	for i := range result.Manifests {
-		if result.Manifests[i].Type == ManifestType("python-pipfile-lock") {
-			pipfileLock = &result.Manifests[i]
+	var pipfileLock *DependencySourceResult
+	for i := range result.Sources {
+		if result.Sources[i].Detector == DetectorID("python-pipfile-lock") {
+			pipfileLock = &result.Sources[i]
 			break
 		}
 	}
 	if pipfileLock == nil {
-		t.Fatalf("expected python-pipfile-lock manifest, got %+v", result.Manifests)
+		t.Fatalf("expected python-pipfile-lock dependency source, got %+v", result.Sources)
 	}
-	if pipfileLock.HasDependencies == nil || !*pipfileLock.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", pipfileLock.HasDependencies)
+	if pipfileLock.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", pipfileLock.Analysis)
 	}
 
-	want := []Dependency{
-		{Type: PackageType("pypi"), Raw: "requests==2.32.3", Name: "requests", Version: "2.32.3", Section: "default"},
-		{Type: PackageType("pypi"), Raw: "pytest==8.3.3", Name: "pytest", Version: "8.3.3", Section: "develop"},
+	want := []DependencyReference{
+		{PackageType: PackageType("pypi"), Raw: "requests==2.32.3", Name: "requests", Version: "2.32.3", SourceGroup: "default"},
+		{PackageType: PackageType("pypi"), Raw: "pytest==8.3.3", Name: "pytest", Version: "8.3.3", SourceGroup: "develop"},
 	}
 	if !equalDependencies(pipfileLock.Dependencies, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", pipfileLock.Dependencies, want)

@@ -1,75 +1,113 @@
-# Glossary
+# Dependency source glossary
 
-## Core Concepts
+This glossary defines the vocabulary used by rules, Go APIs, JSON, CLI text, tests, and documentation.
 
-### Manifest
-A manifest is a file or path that `deplens` reports because a detector considers it relevant to dependency scanning. Users can treat it as an item the scanner recognized as worth describing. A manifest may yield extracted dependencies, only a match, or a status that says extraction did not happen.
+## Core terms
+
+### Dependency source
+
+A file that can identify, declare, constrain, resolve, configure, use, or inventory dependencies. This is the umbrella term. A manifest and a lockfile are forms of dependency source; they are not synonyms for the umbrella term.
 
 ### Detector
-A detector is the logic that decides whether a file or path should be treated as a manifest and, if possible, whether dependencies can be extracted from it. Detectors are what connect file patterns and content patterns to the scanner’s output. A detector may match a file without being able to extract any dependencies.
 
-### Rule
-A rule is a detector definition made from selectors and extraction behavior. Rules tell `deplens` what to look for and how to interpret a match. They can be built in or supplied by the user.
+A rule that selects candidate files and may analyze their content. A detector has a stable `id`, exactly one `form`, one or more `roles`, selectors, and optionally an analyzer.
 
-### Built-in Rule
-A built-in rule is a rule embedded in the binary. Built-in rules define the default built-in ruleset and the default detection behavior. They are part of the tool’s normal behavior rather than user-provided configuration.
+### Selector
 
-### Custom Rule
-A custom rule is a rule loaded from a YAML file passed with `--rules`. When `--rules` is set, `deplens` loads that file for the run instead of using the embedded default ruleset. It uses the same rule concepts as a built-in rule.
+A cheap path-based test: `filename-regex`, `path-glob`, or both. Both selectors use AND semantics when present together. Selection does not imply content recognition.
 
-### Match
-A match is the result of a detector recognizing a file or path as relevant. A match does not necessarily mean dependencies were extracted. It only means the detector considered the item in scope.
+### Analyzer
 
-### Extracted Dependency
-An extracted dependency is a dependency name reported by the scanner for a matched manifest. In human-readable output, it appears as a listed dependency, either flat or within a section. In JSON output, it appears as an object in the `dependencies` array.
+Content-aware logic that may recognize a source, assess dependency presence, extract references, and emit diagnostics. Syntax parsers are implementation details used by analyzers.
 
-### Section
-A section is a named group of extracted dependencies, such as `project.dependencies` or `extras_require.dev`. It preserves source structure when the underlying format provides that structure. When no section is available, dependencies may be shown without one.
+### Dependency reference
 
-### Manifest Type
-Manifest type is the `type` field on a JSON manifest entry. It identifies the `deplens` detector or rule that matched the file, such as `python-requirements` or `js-npm-lock`.
+One dependency value obtained from a source. `raw` preserves the source value. Shared fields include `package_type`, `name`, `version`, `version_constraint`, `vers`, `source_group`, `origin_kind`, `relationship`, `scope`, and `attributes`.
 
-### Dependency Type
-Dependency type is the `type` field on a JSON dependency entry. It identifies the package ecosystem using a PURL/VERS-compatible package type such as `pypi`, `npm`, `docker`, or `golang`. It is distinct from manifest type.
+### Diagnostic
 
-## Detection and Extraction
+A structured warning or error with `severity`, stable kebab-case `code`, and human-readable `message`.
 
-### Dependency Status
-Dependency status is the user-facing label that describes what the scanner could conclude about a manifest’s dependency presence and extraction. It distinguishes confirmed empty results, confirmed presence without extracted names, and cases where dependency presence could not be determined. The label shown depends on what the detector or extractor was able to confirm.
+## Source forms
 
-### Dependency Status Unknown
-Dependency status unknown means the scanner matched the file but could not determine whether dependencies are present. It is the `has_dependencies: null` state. In summary text, this state is described as `dependency status unknown`; in detailed human-readable output, it is rendered as `[matched]`; in JSON output, it corresponds to `has_dependencies: null`. This is distinct from `no dependencies` and from `Dependencies Present, Not Extracted`.
+A source has exactly one physical or syntactic form:
 
-### No Dependencies
-No dependencies means the scanner determined that a matched manifest is empty. This is a conclusive empty result, not just a lack of extraction. In human-readable output, it is the label used for known-empty manifests when they are shown.
+- `manifest`
+- `requirements`
+- `lockfile`
+- `constraint-file`
+- `checksum-file`
+- `version-catalog`
+- `workspace-definition`
+- `build-definition`
+- `automation-definition`
+- `deployment-definition`
+- `tool-config`
+- `source-code`
+- `markup`
+- `vendored-file`
+- `other`
 
-### Dependencies Present, Not Extracted
-Dependencies present, not extracted is a project and output label for the case where dependency presence is confirmed but the individual dependency names are not listed. It describes the vocabulary used by the renderer and README, not a guaranteed current analyzer state. In practice, it marks a confirmed presence without extraction detail.
+## Source roles
 
-### Empty Manifest
-An empty manifest is a manifest that was conclusively matched and found to have no dependencies. The phrase describes the file’s content state, not its file type. In human-readable output, empty manifests are the entries that can be shown with the `no dependencies` label.
+A source has one or more semantic roles:
 
-## Output Semantics
+- `declaration`: declares dependency references.
+- `constraint`: limits acceptable versions or origins.
+- `resolution`: records selected dependency versions or revisions.
+- `integrity`: records hashes, checksums, or integrity metadata.
+- `configuration`: configures dependency tooling or behavior.
+- `workspace`: defines project or package membership.
+- `usage`: directly refers to a dependency in code, markup, automation, or deployment content.
+- `inventory`: records observed, installed, or vendored dependencies.
 
-### Human-Readable Output
-Human-readable output is the default text output. It starts with summary counts and then prints manifest details in path-first order. The labels in this output are meant to be read directly by a person.
+Form and role are independent. For example, `go.mod` is a `manifest` with declaration, constraint, and resolution roles.
 
-### JSON Output
-JSON output is machine-readable output that contains a top-level `root` and a `manifests` array. Each manifest entry includes `type`, `path`, and `has_dependencies`, with `dependencies` optional when present. The structure is intended for tools that want to process scanner results programmatically.
+## Analysis state
 
-### Path-First Output
-Path-first output is an ordering style where manifest details are printed by path rather than grouped by detector or file type. This makes the output easier to scan by repository location. It is the default layout for the detailed human-readable view.
+### Presence
 
-### Root
-Root is the directory that `deplens` scanned. In JSON output, it is the top-level `root` field. In human-readable output, it is the scan root path shown on the `Root: ...` line.
+- `unknown`: the analyzer cannot determine whether references exist.
+- `absent`: the analyzer determined that no references exist.
+- `present`: references are known to exist.
 
-### `has_dependencies`
-`has_dependencies` is a JSON field on each manifest entry. It is `true` when extraction confirmed at least one dependency, `false` when a detector or extractor conclusively found none, and `null` when dependency presence is unknown. The field summarizes dependency presence without requiring a user to inspect the extracted list.
+### Extraction
 
-## Configuration Terms
+- `unsupported`: extraction was not attempted or is not implemented.
+- `complete`: extraction completed for the analyzer's defined scope.
+- `partial`: useful references were returned, but analysis was incomplete.
+- `failed`: analysis failed and no usable references were returned.
 
-### `dependency-type`
-`dependency-type` is an optional rule field that supplies the default PURL/VERS-compatible package type for dependencies emitted by that rule. Unknown values are preserved and produce a warning instead of preventing the ruleset from loading.
+Valid pairs are: unknown/unsupported, unknown/failed, absent/unsupported, absent/complete, present/unsupported, present/complete, and present/partial.
 
-### `--show-empty`
-`--show-empty` is a CLI flag that includes known-empty manifests in the detailed human-readable output. It does not change whether they are counted in the summary. The flag only affects visibility of empty matches in the text view.
+## Dependency fields
+
+### `version`
+
+The selected version or revision, commonly obtained from a lockfile. This project does not use `resolved_version`.
+
+### `version_constraint`
+
+A declaration range or exact declaration specifier from the source.
+
+### `source_group`
+
+The logical source section or group, such as `dependencies`, `devDependencies`, or `project.optional-dependencies.dev`.
+
+### `origin_kind`
+
+How a dependency is obtained: `registry`, `git`, `path`, or `url`.
+
+### `relationship`
+
+Whether a reference is `direct`, `transitive`, or `inconclusive`.
+
+### `scope`
+
+The dependency scope when known: `runtime`, `development`, `test`, `build`, or `optional`.
+
+## CLI
+
+### `--show-without-dependencies`
+
+Includes sources whose presence is `absent` in detailed human output. It does not alter scanning or JSON. The former `--show-empty` name is removed.

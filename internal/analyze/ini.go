@@ -21,12 +21,12 @@ type iniQueryParser struct {
 }
 
 type iniQuery struct {
-	section string
-	key     string
-	anyKey  bool
+	sourceGroup string
+	key         string
+	anyKey      bool
 }
 
-func newINIQueryParser(raw iniMatcherConfig) (manifestParser, error) {
+func newINIQueryParser(raw iniMatcherConfig) (sourceAnalyzer, error) {
 	if len(raw.Queries) == 0 {
 		return nil, fmt.Errorf("ini.queries: must contain at least one entry")
 	}
@@ -44,34 +44,34 @@ func newINIQueryParser(raw iniMatcherConfig) (manifestParser, error) {
 		}
 
 		queries = append(queries, iniQuery{
-			section: query.Section,
-			key:     query.Key,
-			anyKey:  query.Key == "*",
+			sourceGroup: query.Section,
+			key:         query.Key,
+			anyKey:      query.Key == "*",
 		})
 	}
 
 	return iniQueryParser{queries: queries}, nil
 }
 
-func (p iniQueryParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p iniQueryParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	file, err := ini.LoadSources(ini.LoadOptions{
 		AllowNestedValues:        true,
 		Insensitive:              true,
 		SpaceBeforeInlineComment: true,
 	}, content)
 	if err != nil {
-		return manifestParserResult{}, fmt.Errorf("parse ini file %q: %w", path, err)
+		return sourceAnalyzerResult{}, fmt.Errorf("parse ini file %q: %w", path, err)
 	}
 
 	dependencies := make([]string, 0)
 	found := false
 	for _, query := range p.queries {
-		section, err := file.GetSection(query.section)
+		sourceGroup, err := file.GetSection(query.sourceGroup)
 		if err != nil {
 			continue
 		}
 
-		keys := matchingINIKeys(section, query)
+		keys := matchingINIKeys(sourceGroup, query)
 		if len(keys) == 0 {
 			continue
 		}
@@ -83,26 +83,26 @@ func (p iniQueryParser) Match(path string, content []byte) (manifestParserResult
 	}
 
 	if !found {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 	if len(dependencies) == 0 {
-		return manifestParserResult{HasDependencies: boolPtr(false), Matched: true}, nil
+		return sourceAnalyzerResult{Analysis: SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}, Recognized: true}, nil
 	}
-	return manifestParserResult{
-		Dependencies:    dependenciesFromStrings(dependencies),
-		HasDependencies: boolPtr(true),
-		Matched:         true,
+	return sourceAnalyzerResult{
+		Dependencies: dependenciesFromStrings(dependencies),
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+		Recognized:   true,
 	}, nil
 }
 
-func matchingINIKeys(section *ini.Section, query iniQuery) []*ini.Key {
+func matchingINIKeys(sourceGroup *ini.Section, query iniQuery) []*ini.Key {
 	if query.anyKey {
-		return section.Keys()
+		return sourceGroup.Keys()
 	}
-	if !section.HasKey(query.key) {
+	if !sourceGroup.HasKey(query.key) {
 		return nil
 	}
-	return []*ini.Key{section.Key(query.key)}
+	return []*ini.Key{sourceGroup.Key(query.key)}
 }
 
 func extractINIDependencies(key *ini.Key) []string {

@@ -21,47 +21,56 @@ var ignoredPyRequirementsLinePrefixes = []string{
 	"--hash",
 }
 
-func newPyRequirementsMatcher(raw pyRequirementsMatcherConfig) (manifestParser, error) {
+func newPyRequirementsMatcher(raw pyRequirementsMatcherConfig) (sourceAnalyzer, error) {
 	return pyRequirementsMatcher{}, nil
 }
 
-func (m pyRequirementsMatcher) Match(path string, content []byte) (manifestParserResult, error) {
-	rawDeps, warnings := m.collectDependencies(path, content, map[string]bool{})
+func (m pyRequirementsMatcher) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
+	rawDeps, diagnosticMessages := m.collectDependencies(path, content, map[string]bool{})
 	if len(rawDeps) > 0 {
-		deps := make([]Dependency, 0, len(rawDeps))
+		deps := make([]DependencyReference, 0, len(rawDeps))
 		for _, spec := range rawDeps {
 			parsed := parsePEP508Dep(spec)
-			dep := Dependency{Raw: spec}
+			dep := DependencyReference{Raw: spec}
 			if parsed.name != "" {
 				dep.Name = parsed.name
-				dep.Constraint = parsed.constraint
-				dep.Extras = parsed.extras
+				dep.VersionConstraint = parsed.versionConstraint
+				dep.Attributes = parsed.attributes
 			}
 			deps = append(deps, dep)
 		}
-		return manifestParserResult{
-			Dependencies:    deps,
-			HasDependencies: boolPtr(true),
-			Warnings:        warnings,
-			Matched:         true,
+		return sourceAnalyzerResult{
+			Dependencies: deps,
+			Analysis: SourceAnalysis{
+				Presence: PresencePresent,
+				Extraction: func() ExtractionState {
+					if len(diagnosticMessages) > 0 {
+						return ExtractionPartial
+					}
+					return ExtractionComplete
+				}(),
+			},
+			Diagnostics: diagnosticsFromMessages(DiagnosticWarning, "included-requirement-unreadable", diagnosticMessages),
+			Recognized:  true,
 		}, nil
 	}
-	if len(warnings) > 0 {
-		return manifestParserResult{
-			Warnings: warnings,
-			Matched:  true,
+	if len(diagnosticMessages) > 0 {
+		return sourceAnalyzerResult{
+			Analysis:    failedAnalysis(),
+			Diagnostics: diagnosticsFromMessages(DiagnosticError, "included-requirement-unreadable", diagnosticMessages),
+			Recognized:  true,
 		}, nil
 	}
-	return manifestParserResult{
-		HasDependencies: boolPtr(false),
-		Matched:         true,
+	return sourceAnalyzerResult{
+		Analysis:   completeAnalysis(nil),
+		Recognized: true,
 	}, nil
 }
 
 func (m pyRequirementsMatcher) collectDependencies(path string, content []byte, active map[string]bool) ([]string, []string) {
 	logicalLines := joinPyRequirementsContinuations(string(content))
 	dependencies := make([]string, 0, len(logicalLines))
-	warnings := make([]string, 0)
+	diagnosticMessages := make([]string, 0)
 
 	cleanPath := filepath.Clean(path)
 	active[cleanPath] = true
@@ -75,19 +84,19 @@ func (m pyRequirementsMatcher) collectDependencies(path string, content []byte, 
 		if includeTarget, ok := parsePyRequirementsInclude(trimmed); ok {
 			includedPath := filepath.Clean(filepath.Join(filepath.Dir(cleanPath), includeTarget))
 			if active[includedPath] {
-				warnings = append(warnings, fmt.Sprintf("detected requirements include cycle for %q via %q", includedPath, includeTarget))
+				diagnosticMessages = append(diagnosticMessages, fmt.Sprintf("detected requirements include cycle for %q via %q", includedPath, includeTarget))
 				continue
 			}
 
 			includedContent, err := os.ReadFile(includedPath)
 			if err != nil {
-				warnings = append(warnings, fmt.Sprintf("could not read included requirements file %q: %v", includeTarget, err))
+				diagnosticMessages = append(diagnosticMessages, fmt.Sprintf("could not read included requirements file %q: %v", includeTarget, err))
 				continue
 			}
 
-			includedDependencies, includedWarnings := m.collectDependencies(includedPath, includedContent, active)
+			includedDependencies, includedDiagnostics := m.collectDependencies(includedPath, includedContent, active)
 			dependencies = append(dependencies, includedDependencies...)
-			warnings = append(warnings, includedWarnings...)
+			diagnosticMessages = append(diagnosticMessages, includedDiagnostics...)
 			continue
 		}
 		if isIgnoredPyRequirementsDirective(trimmed) {
@@ -96,7 +105,7 @@ func (m pyRequirementsMatcher) collectDependencies(path string, content []byte, 
 		dependencies = append(dependencies, trimmed)
 	}
 
-	return dependencies, warnings
+	return dependencies, diagnosticMessages
 }
 
 func joinPyRequirementsContinuations(content string) []string {

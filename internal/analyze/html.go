@@ -21,17 +21,17 @@ type htmlMatcherConfig struct {
 
 type htmlExternalScriptsParser struct{}
 
-func newHTMLMatcher(raw htmlMatcherConfig) (manifestParser, error) {
+func newHTMLMatcher(raw htmlMatcherConfig) (sourceAnalyzer, error) {
 	if !raw.ExternalScripts {
 		return nil, fmt.Errorf("html.external_scripts: must be true")
 	}
 	return htmlExternalScriptsParser{}, nil
 }
 
-func (p htmlExternalScriptsParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p htmlExternalScriptsParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	matches := scriptBlockRegexp.FindAllSubmatch(content, -1)
 	if len(matches) == 0 {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
 	dependencies := make([]string, 0, len(matches))
@@ -70,12 +70,12 @@ func (p htmlExternalScriptsParser) Match(path string, content []byte) (manifestP
 		}
 	}
 	if len(dependencies) == 0 {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
-	return manifestParserResult{
-		Dependencies:    dependenciesFromStrings(dependencies),
-		HasDependencies: boolPtr(true),
-		Matched:         true,
+	return sourceAnalyzerResult{
+		Dependencies: dependenciesFromStrings(dependencies),
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+		Recognized:   true,
 	}, nil
 }
 
