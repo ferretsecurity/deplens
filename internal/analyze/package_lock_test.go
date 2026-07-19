@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestPackageLockDetectManifestFileExtractsV1RootDependencies(t *testing.T) {
+func TestPackageLockAnalyzeDependencySourceExtractsV1RootDependencies(t *testing.T) {
 	ruleset := mustLoadPackageLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "package-lock.json")
 
@@ -26,28 +26,28 @@ func TestPackageLockDetectManifestFileExtractsV1RootDependencies(t *testing.T) {
 }
 `)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "package-lock.json")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("js-npm-lock") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("js-npm-lock") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if want := []string{"left-pad@1.3.0", "lodash@4.17.21"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestPackageLockDetectManifestFileExtractsV3RootDependenciesAndOptionalDependenciesWithDedupe(t *testing.T) {
+func TestPackageLockAnalyzeDependencySourceExtractsV3RootDependenciesAndOptionalDependenciesWithDedupe(t *testing.T) {
 	ruleset := mustLoadPackageLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "package-lock.json")
 
@@ -77,28 +77,28 @@ func TestPackageLockDetectManifestFileExtractsV3RootDependenciesAndOptionalDepen
 }
 `)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "package-lock.json")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("js-npm-lock") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("js-npm-lock") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if want := []string{"left-pad@1.3.0", "fsevents@2.3.3"}; !equalStringSets(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestPackageLockV3DetectManifestFileIncludesTransitiveNodeModules(t *testing.T) {
+func TestPackageLockV3AnalyzeDependencySourceIncludesTransitiveNodeModules(t *testing.T) {
 	ruleset := mustLoadPackageLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "package-lock.json")
 
@@ -117,9 +117,9 @@ func TestPackageLockV3DetectManifestFileIncludesTransitiveNodeModules(t *testing
   }
 }
 `)
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "package-lock.json")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
@@ -128,8 +128,8 @@ func TestPackageLockV3DetectManifestFileIncludesTransitiveNodeModules(t *testing
 	if !equalStringSets(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", dependencyNames(deps), want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
@@ -149,9 +149,9 @@ func TestPackageLockV1WalksNestedDependencies(t *testing.T) {
   }
 }`)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "package-lock.json")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
@@ -159,12 +159,12 @@ func TestPackageLockV1WalksNestedDependencies(t *testing.T) {
 	if want := []string{"left-pad@1.3.0", "loose-envify@1.4.0"}; !equalStringSets(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", dependencyNames(deps), want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestPackageLockDetectManifestFileFallsBackToNameWhenVersionIsMissing(t *testing.T) {
+func TestPackageLockAnalyzeDependencySourceFallsBackToNameWhenVersionIsMissing(t *testing.T) {
 	ruleset := mustLoadPackageLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "package-lock.json")
 
@@ -184,28 +184,28 @@ func TestPackageLockDetectManifestFileFallsBackToNameWhenVersionIsMissing(t *tes
 }
 `)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "package-lock.json")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("js-npm-lock") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("js-npm-lock") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if want := []string{"left-pad"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestPackageLockDetectManifestFileReturnsConclusiveEmptyWhenSupportedRootMapsAreMissing(t *testing.T) {
+func TestPackageLockAnalyzeDependencySourceReturnsConclusiveEmptyWhenSupportedRootMapsAreMissing(t *testing.T) {
 	ruleset := mustLoadPackageLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "package-lock.json")
 
@@ -222,51 +222,51 @@ func TestPackageLockDetectManifestFileReturnsConclusiveEmptyWhenSupportedRootMap
 }
 `)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "package-lock.json")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("js-npm-lock") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("js-npm-lock") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDependencies == nil || *hasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", hasDependencies)
+	if present == nil || *present {
+		t.Fatalf("expected presence=absent, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestPackageLockDetectManifestFileRejectsMalformedJSON(t *testing.T) {
+func TestPackageLockAnalyzeDependencySourceRejectsMalformedJSON(t *testing.T) {
 	ruleset := mustLoadPackageLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "package-lock.json")
 
 	mustWriteFile(t, filePath, `{"lockfileVersion": 3,`)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "package-lock.json")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "package-lock.json")
 	if err != nil {
 		t.Fatalf("expected warning, got error: %v", err)
 	}
-	if !ok || got != ManifestType("js-npm-lock") {
-		t.Fatalf("expected package-lock warning match, got type=%q ok=%v", got, ok)
+	if !ok || got != DetectorID("js-npm-lock") {
+		t.Fatalf("expected package-lock warning match, got detector=%q ok=%v", got, ok)
 	}
-	if deps != nil || hasDependencies != nil {
-		t.Fatalf("expected no dependency result, got deps=%+v hasDependencies=%+v", deps, hasDependencies)
+	if deps != nil || present != nil {
+		t.Fatalf("expected no dependency result, got deps=%+v presence=%+v", deps, present)
 	}
-	if len(warnings) != 1 || !strings.Contains(warnings[0], "package-lock.json") {
-		t.Fatalf("unexpected warnings: %+v", warnings)
+	if len(diagnosticMessages) != 1 || !strings.Contains(diagnosticMessages[0], "package-lock.json") {
+		t.Fatalf("unexpected diagnostics: %+v", diagnosticMessages)
 	}
 }
 
 func TestPackageLockV2ParserSetsStructuredFieldsWithSections(t *testing.T) {
 	parser, _ := newPackageLockParser(packageLockMatcherConfig{})
-	result, _ := parser.Match("package-lock.json", []byte(`{
+	result, _ := parser.Analyze("package-lock.json", []byte(`{
         "lockfileVersion": 2,
         "packages": {
             "": {
@@ -280,7 +280,7 @@ func TestPackageLockV2ParserSetsStructuredFieldsWithSections(t *testing.T) {
         }
     }`))
 	deps := result.Dependencies
-	find := func(name string) *Dependency {
+	find := func(name string) *DependencyReference {
 		for i := range deps {
 			if deps[i].Name == name {
 				return &deps[i]
@@ -298,34 +298,29 @@ func TestPackageLockV2ParserSetsStructuredFieldsWithSections(t *testing.T) {
 	if r.Version != "18.0.0" {
 		t.Errorf("react Version: got %q", r.Version)
 	}
-	if r.Section != "dependencies" {
-		t.Errorf("react Section: got %q", r.Section)
+	if r.SourceGroup != "dependencies" {
+		t.Errorf("react SourceGroup: got %q", r.SourceGroup)
 	}
 	j := find("jest")
 	if j == nil {
 		t.Fatal("jest not found")
 	}
-	if j.Section != "devDependencies" {
-		t.Errorf("jest Section: got %q", j.Section)
+	if j.SourceGroup != "devDependencies" {
+		t.Errorf("jest SourceGroup: got %q", j.SourceGroup)
 	}
 	f := find("fsevents")
 	if f == nil {
 		t.Fatal("fsevents not found")
 	}
-	if f.Section != "optionalDependencies" {
-		t.Errorf("fsevents Section: got %q", f.Section)
+	if f.SourceGroup != "optionalDependencies" {
+		t.Errorf("fsevents SourceGroup: got %q", f.SourceGroup)
 	}
 }
 
 func mustLoadPackageLockRules(t *testing.T) Ruleset {
 	t.Helper()
 
-	ruleset, err := loadRules("test.yaml", []byte(`
-rules:
-  - name: js-npm-lock
-    filename-regex: '^package-lock\.json$'
-    package-lock: {}
-`))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: js-npm-lock\n      filename-regex: '^package-lock\\.json$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: package-lock\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}

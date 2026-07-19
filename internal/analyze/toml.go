@@ -37,17 +37,17 @@ type tomlQueryParser struct {
 }
 
 type tomlMatchedTable struct {
-	key     string
-	section string
-	value   map[string]any
+	key         string
+	sourceGroup string
+	value       map[string]any
 }
 
 type tomlMatchedValue struct {
-	section string
-	value   any
+	sourceGroup string
+	value       any
 }
 
-func newTOMLQueryParser(raw tomlMatcherConfig) (manifestParser, error) {
+func newTOMLQueryParser(raw tomlMatcherConfig) (sourceAnalyzer, error) {
 	if len(raw.Queries) == 0 && len(raw.TableQueries) == 0 && len(raw.ExistsAny) == 0 && len(raw.TableExistsAny) == 0 {
 		return nil, fmt.Errorf("toml: at least one of queries, table-queries, exists-any, or table-exists-any must contain an entry")
 	}
@@ -105,13 +105,13 @@ func newTOMLQueryParser(raw tomlMatcherConfig) (manifestParser, error) {
 	}, nil
 }
 
-func (p tomlQueryParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p tomlQueryParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	var root map[string]any
 	if err := toml.Unmarshal(content, &root); err != nil {
-		return manifestParserResult{}, fmt.Errorf("parse toml file %q: %w", path, err)
+		return sourceAnalyzerResult{}, fmt.Errorf("parse toml file %q: %w", path, err)
 	}
 
-	dependencies := make([]Dependency, 0)
+	dependencies := make([]DependencyReference, 0)
 	for _, query := range p.queries {
 		nodes := evalTOMLQuery([]tomlMatchedValue{{value: root}}, query)
 		dependencies = append(dependencies, extractTOMLDependencies(nodes, query)...)
@@ -125,26 +125,26 @@ func (p tomlQueryParser) Match(path string, content []byte) (manifestParserResul
 			for _, query := range p.existsAny {
 				nodes := evalTOMLQuery([]tomlMatchedValue{{value: root}}, query)
 				if hasNonEmptyTOMLValue(nodes) {
-					return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+					return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}, nil
 				}
 			}
-			return manifestParserResult{HasDependencies: boolPtr(false), Matched: true}, nil
+			return sourceAnalyzerResult{Analysis: presenceAnalysis(false), Recognized: true}, nil
 		}
 		if len(p.tableExistsAny) > 0 {
 			for _, query := range p.tableExistsAny {
 				tables := evalTOMLTableQuery([]tomlMatchedTable{{value: root}}, query)
 				if hasNonEmptyTOMLTable(tables) {
-					return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+					return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}, nil
 				}
 			}
-			return manifestParserResult{HasDependencies: boolPtr(false), Matched: true}, nil
+			return sourceAnalyzerResult{Analysis: presenceAnalysis(false), Recognized: true}, nil
 		}
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
-	return manifestParserResult{
-		Dependencies:    dependencies,
-		HasDependencies: boolPtr(true),
-		Matched:         true,
+	return sourceAnalyzerResult{
+		Dependencies: dependencies,
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+		Recognized:   true,
 	}, nil
 }
 
@@ -242,27 +242,27 @@ func evalTOMLQuery(current []tomlMatchedValue, query tomlQuery) []tomlMatchedVal
 				slices.Sort(keys)
 				for _, key := range keys {
 					value := mapped[key]
-					section := appendTOMLSection(node.section, key)
+					sourceGroup := appendTOMLSection(node.sourceGroup, key)
 					if segment.expand {
-						next = appendTOMLArrayValues(next, value, section)
+						next = appendTOMLArrayValues(next, value, sourceGroup)
 						continue
 					}
-					next = append(next, tomlMatchedValue{section: section, value: value})
+					next = append(next, tomlMatchedValue{sourceGroup: sourceGroup, value: value})
 				}
 			case segment.expand:
 				value, ok := mapped[segment.key]
 				if !ok {
 					continue
 				}
-				next = appendTOMLArrayValues(next, value, appendTOMLSection(node.section, segment.key))
+				next = appendTOMLArrayValues(next, value, appendTOMLSection(node.sourceGroup, segment.key))
 			default:
 				value, ok := mapped[segment.key]
 				if !ok {
 					continue
 				}
 				next = append(next, tomlMatchedValue{
-					section: appendTOMLSection(node.section, segment.key),
-					value:   value,
+					sourceGroup: appendTOMLSection(node.sourceGroup, segment.key),
+					value:       value,
 				})
 			}
 		}
@@ -297,9 +297,9 @@ func evalTOMLTableQuery(current []tomlMatchedTable, query tomlQuery) []tomlMatch
 						continue
 					}
 					next = append(next, tomlMatchedTable{
-						key:     key,
-						section: appendTOMLSection(node.section, key),
-						value:   value,
+						key:         key,
+						sourceGroup: appendTOMLSection(node.sourceGroup, key),
+						value:       value,
 					})
 				}
 			case segment.expand:
@@ -311,9 +311,9 @@ func evalTOMLTableQuery(current []tomlMatchedTable, query tomlQuery) []tomlMatch
 					continue
 				}
 				next = append(next, tomlMatchedTable{
-					key:     segment.key,
-					section: appendTOMLSection(node.section, segment.key),
-					value:   value,
+					key:         segment.key,
+					sourceGroup: appendTOMLSection(node.sourceGroup, segment.key),
+					value:       value,
 				})
 			}
 		}
@@ -326,16 +326,16 @@ func evalTOMLTableQuery(current []tomlMatchedTable, query tomlQuery) []tomlMatch
 	return current
 }
 
-func appendTOMLArrayValues(dst []tomlMatchedValue, value any, section string) []tomlMatchedValue {
+func appendTOMLArrayValues(dst []tomlMatchedValue, value any, sourceGroup string) []tomlMatchedValue {
 	switch typed := value.(type) {
 	case []any:
 		for _, item := range typed {
-			dst = append(dst, tomlMatchedValue{section: section, value: item})
+			dst = append(dst, tomlMatchedValue{sourceGroup: sourceGroup, value: item})
 		}
 		return dst
 	case []map[string]any:
 		for _, item := range typed {
-			dst = append(dst, tomlMatchedValue{section: section, value: item})
+			dst = append(dst, tomlMatchedValue{sourceGroup: sourceGroup, value: item})
 		}
 		return dst
 	default:
@@ -362,22 +362,22 @@ func isPoetryDependencyQuery(segments []tomlSegment) bool {
 	return false
 }
 
-func extractTOMLDependencies(nodes []tomlMatchedValue, query tomlQuery) []Dependency {
-	dependencies := make([]Dependency, 0, len(nodes))
+func extractTOMLDependencies(nodes []tomlMatchedValue, query tomlQuery) []DependencyReference {
+	dependencies := make([]DependencyReference, 0, len(nodes))
 	allowDependencyTables := allowsTOMLDependencyTables(query.segments)
 	for _, node := range nodes {
 		switch value := node.value.(type) {
 		case string:
 			if value != "" {
-				dep := Dependency{Raw: value, Section: node.section}
+				dep := DependencyReference{Raw: value, SourceGroup: node.sourceGroup}
 				// PEP 508 lines (e.g. "requests>=2.31") do not use " = " assignment.
 				// Table serialization uses "name = value" and is not PEP 508.
 				if !strings.Contains(value, " = ") {
 					parsed := parsePEP508Dep(value)
 					if parsed.name != "" {
 						dep.Name = parsed.name
-						dep.Constraint = parsed.constraint
-						dep.Extras = parsed.extras
+						dep.VersionConstraint = parsed.versionConstraint
+						dep.Attributes = parsed.attributes
 					}
 				}
 				dependencies = append(dependencies, dep)
@@ -386,13 +386,13 @@ func extractTOMLDependencies(nodes []tomlMatchedValue, query tomlQuery) []Depend
 			if !allowDependencyTables {
 				continue
 			}
-			dependencies = append(dependencies, serializeTOMLDependencyTable(value, query.skipPython, node.section)...)
+			dependencies = append(dependencies, serializeTOMLDependencyTable(value, query.skipPython, node.sourceGroup)...)
 		}
 	}
 	return dependencies
 }
 
-func extractTOMLTableDependencies(nodes []tomlMatchedTable, excludeKeys map[string]struct{}) []Dependency {
+func extractTOMLTableDependencies(nodes []tomlMatchedTable, excludeKeys map[string]struct{}) []DependencyReference {
 	filtered := make([]tomlMatchedTable, 0, len(nodes))
 	for _, node := range nodes {
 		if _, excluded := excludeKeys[node.key]; excluded {
@@ -407,14 +407,14 @@ func extractTOMLTableDependencies(nodes []tomlMatchedTable, excludeKeys map[stri
 		)
 	})
 
-	dependencies := make([]Dependency, 0, len(filtered))
+	dependencies := make([]DependencyReference, 0, len(filtered))
 	for _, node := range filtered {
-		dependencies = append(dependencies, serializeTOMLDependencyTable(node.value, false, node.section)...)
+		dependencies = append(dependencies, serializeTOMLDependencyTable(node.value, false, node.sourceGroup)...)
 	}
 	return dependencies
 }
 
-func serializeTOMLDependencyTable(value map[string]any, skipPython bool, section string) []Dependency {
+func serializeTOMLDependencyTable(value map[string]any, skipPython bool, sourceGroup string) []DependencyReference {
 	keys := make([]string, 0, len(value))
 	for key := range value {
 		if skipPython && key == "python" {
@@ -429,15 +429,15 @@ func serializeTOMLDependencyTable(value map[string]any, skipPython bool, section
 		)
 	})
 
-	dependencies := make([]Dependency, 0, len(keys))
+	dependencies := make([]DependencyReference, 0, len(keys))
 	for _, key := range keys {
 		serialized, ok := serializeTOMLValue(value[key])
 		if !ok {
 			continue
 		}
-		dependencies = append(dependencies, Dependency{
-			Raw:     fmt.Sprintf("%s = %s", key, serialized),
-			Section: section,
+		dependencies = append(dependencies, DependencyReference{
+			Raw:         fmt.Sprintf("%s = %s", key, serialized),
+			SourceGroup: sourceGroup,
 		})
 	}
 	return dependencies

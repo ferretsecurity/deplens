@@ -10,33 +10,32 @@ type goModMatcherConfig struct{}
 
 type goModMatcher struct{}
 
-func newGoModMatcher(raw goModMatcherConfig) (manifestParser, error) {
+func newGoModMatcher(raw goModMatcherConfig) (sourceAnalyzer, error) {
 	return goModMatcher{}, nil
 }
 
-func (m goModMatcher) Match(path string, content []byte) (manifestParserResult, error) {
+func (m goModMatcher) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	parsed, err := modfile.Parse(path, content, nil)
 	if err != nil {
-		return manifestParserResult{}, fmt.Errorf("parse go.mod file %q: %w", path, err)
+		return sourceAnalyzerResult{}, fmt.Errorf("parse go.mod file %q: %w", path, err)
 	}
 
-	dependencies := make([]Dependency, 0, len(parsed.Require))
+	dependencies := make([]DependencyReference, 0, len(parsed.Require))
 	for _, req := range parsed.Require {
-		dep := Dependency{
+		dep := DependencyReference{
 			Raw:     req.Mod.Path,
 			Name:    req.Mod.Path,
 			Version: req.Mod.Version,
 		}
 		if req.Indirect {
-			dep.Section = "indirect"
+			dep.SourceGroup = "indirect"
 		}
 		dependencies = append(dependencies, dep)
 	}
 
-	hasDependencies := len(dependencies) > 0
-	return manifestParserResult{
-		Dependencies:    dependencies,
-		HasDependencies: boolPtr(hasDependencies),
-		Matched:         true,
+	return sourceAnalyzerResult{
+		Dependencies: dependencies,
+		Analysis:     completeAnalysis(dependencies),
+		Recognized:   true,
 	}, nil
 }

@@ -11,52 +11,56 @@ import (
 )
 
 type dependencyTypeTestParser struct {
-	dependencies []Dependency
+	dependencies []DependencyReference
 }
 
-func (p dependencyTypeTestParser) Match(string, []byte) (manifestParserResult, error) {
-	return manifestParserResult{
-		Dependencies:    p.dependencies,
-		HasDependencies: boolPtr(len(p.dependencies) > 0),
-		Matched:         true,
+func (p dependencyTypeTestParser) Analyze(string, []byte) (sourceAnalyzerResult, error) {
+	return sourceAnalyzerResult{
+		Dependencies: p.dependencies,
+		Analysis:     completeAnalysis(p.dependencies),
+		Recognized:   true,
 	}, nil
 }
 
 func TestDependencyTypeFromRuleIsCopiedToDependencies(t *testing.T) {
 	ruleset := Ruleset{
-		rules: []manifestRule{
+		detectors: []detector{
 			{
-				Type:           ManifestType("custom-python"),
-				DependencyType: PackageType("pypi"),
+				ID:             DetectorID("custom-python"),
+				PackageType:    PackageType("pypi"),
+				Form:           FormRequirements,
+				Roles:          []SourceRole{RoleDeclaration},
 				FilenameRegexp: regexp.MustCompile(`^requirements\.txt$`),
-				Parser:         dependencyTypeTestParser{dependencies: []Dependency{{Raw: "requests>=2.31"}}},
+				Analyzer:       dependencyTypeTestParser{dependencies: []DependencyReference{{Raw: "requests>=2.31"}}},
 			},
 		},
 	}
 	path := filepath.Join(t.TempDir(), "requirements.txt")
 	mustWriteFile(t, path, "requests>=2.31\n")
 
-	_, dependencies, _, _, ok, err := ruleset.DetectManifestFile(path, "requirements.txt")
+	_, dependencies, _, _, ok, err := analyzeSourceParts(ruleset, path, "requirements.txt")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok || len(dependencies) != 1 {
 		t.Fatalf("expected one dependency match, ok=%v deps=%+v", ok, dependencies)
 	}
-	if dependencies[0].Type != PackageType("pypi") {
+	if dependencies[0].PackageType != PackageType("pypi") {
 		t.Fatalf("expected dependency type pypi, got %+v", dependencies[0])
 	}
 }
 
 func TestDependencyTypeFromParserIsNotOverwrittenByRule(t *testing.T) {
 	ruleset := Ruleset{
-		rules: []manifestRule{
+		detectors: []detector{
 			{
-				Type:           ManifestType("custom-mixed"),
-				DependencyType: PackageType("generic"),
+				ID:             DetectorID("custom-mixed"),
+				PackageType:    PackageType("generic"),
+				Form:           FormOther,
+				Roles:          []SourceRole{RoleInventory},
 				FilenameRegexp: regexp.MustCompile(`^deps\.txt$`),
-				Parser: dependencyTypeTestParser{dependencies: []Dependency{
-					{Type: PackageType("npm"), Raw: "react@18.2.0"},
+				Analyzer: dependencyTypeTestParser{dependencies: []DependencyReference{
+					{PackageType: PackageType("npm"), Raw: "react@18.2.0"},
 				}},
 			},
 		},
@@ -64,26 +68,20 @@ func TestDependencyTypeFromParserIsNotOverwrittenByRule(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "deps.txt")
 	mustWriteFile(t, path, "react@18.2.0\n")
 
-	_, dependencies, _, _, ok, err := ruleset.DetectManifestFile(path, "deps.txt")
+	_, dependencies, _, _, ok, err := analyzeSourceParts(ruleset, path, "deps.txt")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok || len(dependencies) != 1 {
 		t.Fatalf("expected one dependency match, ok=%v deps=%+v", ok, dependencies)
 	}
-	if dependencies[0].Type != PackageType("npm") {
+	if dependencies[0].PackageType != PackageType("npm") {
 		t.Fatalf("expected parser-supplied dependency type npm, got %+v", dependencies[0])
 	}
 }
 
 func TestLoadRulesAcceptsKnownDependencyType(t *testing.T) {
-	_, err := loadRules("test.yaml", []byte(`
-rules:
-  - name: python-requirements
-    dependency-type: pypi
-    filename-regex: '^requirements\.txt$'
-    py-requirements: {}
-`))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: python-requirements\n      package-type: pypi\n      form: requirements\n      roles: [declaration, constraint]\n      filename-regex: '^requirements\\.txt$'\n      analyzer:\n        type: py-requirements\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
@@ -100,17 +98,12 @@ func TestLoadRulesWarnsButAcceptsUnknownDependencyType(t *testing.T) {
 		log.SetFlags(oldFlags)
 	})
 
-	_, err := loadRules("test.yaml", []byte(`
-rules:
-  - name: future-ecosystem
-    dependency-type: futurepkg
-    filename-regex: '^deps\.txt$'
-`))
+	_, err := loadRules("test.yaml", []byte("rules:\n    - id: future-ecosystem\n      package-type: futurepkg\n      form: other\n      roles: [inventory]\n      filename-regex: '^deps\\.txt$'\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}
 	got := logOutput.String()
-	if !strings.Contains(got, `unknown dependency-type "futurepkg"`) || !strings.Contains(got, `rule "future-ecosystem"`) {
+	if !strings.Contains(got, `unknown package-type "futurepkg"`) || !strings.Contains(got, `rule "future-ecosystem"`) {
 		t.Fatalf("expected warning to mention rule and unknown type, got %q", got)
 	}
 }
@@ -125,16 +118,16 @@ func TestScanAddsPURLCompatibleDependencyTypesFromDefaultRules(t *testing.T) {
 		t.Fatalf("Scan failed: %v", err)
 	}
 
-	pythonDeps := dependenciesForManifest(t, result, "requirements.txt")
+	pythonDeps := dependenciesForSource(t, result, "requirements.txt")
 	for _, dependency := range pythonDeps {
-		if dependency.Type != PackageType("pypi") {
+		if dependency.PackageType != PackageType("pypi") {
 			t.Fatalf("expected Python dependency type pypi, got %+v", dependency)
 		}
 	}
 
-	npmDeps := dependenciesForManifest(t, result, "package-lock.json")
+	npmDeps := dependenciesForSource(t, result, "package-lock.json")
 	for _, dependency := range npmDeps {
-		if dependency.Type != PackageType("npm") {
+		if dependency.PackageType != PackageType("npm") {
 			t.Fatalf("expected npm dependency type npm, got %+v", dependency)
 		}
 	}
@@ -149,16 +142,16 @@ func mustCopyFile(t *testing.T, src string, dst string) {
 	mustWriteFile(t, dst, string(data))
 }
 
-func dependenciesForManifest(t *testing.T, result ScanResult, path string) []Dependency {
+func dependenciesForSource(t *testing.T, result ScanResult, path string) []DependencyReference {
 	t.Helper()
-	for _, manifest := range result.Manifests {
-		if manifest.Path == path {
-			if len(manifest.Dependencies) == 0 {
-				t.Fatalf("manifest %s had no dependencies", path)
+	for _, source := range result.Sources {
+		if source.Path == path {
+			if len(source.Dependencies) == 0 {
+				t.Fatalf("dependency source %s had no dependencies", path)
 			}
-			return manifest.Dependencies
+			return source.Dependencies
 		}
 	}
-	t.Fatalf("manifest %s not found in %+v", path, result.Manifests)
+	t.Fatalf("dependency source %s not found in %+v", path, result.Sources)
 	return nil
 }

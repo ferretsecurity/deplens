@@ -32,39 +32,39 @@ type poetryLockSource struct {
 	Reference string `toml:"reference"`
 }
 
-func newPoetryLockParser(raw poetryLockMatcherConfig) (manifestParser, error) {
+func newPoetryLockParser(raw poetryLockMatcherConfig) (sourceAnalyzer, error) {
 	return poetryLockParser{}, nil
 }
 
-func (p poetryLockParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p poetryLockParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	var file poetryLockFile
 	if err := toml.Unmarshal(content, &file); err != nil {
-		return manifestParserResult{}, fmt.Errorf("parse toml file %q: %w", path, err)
+		return sourceAnalyzerResult{}, fmt.Errorf("parse toml file %q: %w", path, err)
 	}
 
 	if len(file.Packages) == 0 && !hasPoetryLockMetadata(file.Metadata) {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
-	dependencies := make([]Dependency, 0, len(file.Packages))
+	dependencies := make([]DependencyReference, 0, len(file.Packages))
 	seen := make(map[string]struct{}, len(file.Packages))
 	for _, pkg := range file.Packages {
 		if pkg.Name == "" {
 			continue
 		}
 		if pkg.Source != nil && strings.TrimSpace(pkg.Source.Type) == "git" {
-			dep := Dependency{
-				Raw:    pkg.Name,
-				Name:   pkg.Name,
-				Source: "git",
+			dep := DependencyReference{
+				Raw:        pkg.Name,
+				Name:       pkg.Name,
+				OriginKind: OriginGit,
 			}
 			if pkg.Source.URL != "" || pkg.Source.Reference != "" {
-				dep.Extras = make(map[string]string)
+				dep.Attributes = make(map[string]string)
 				if u := strings.TrimSpace(pkg.Source.URL); u != "" {
-					dep.Extras["source_url"] = u
+					dep.Attributes["source_url"] = u
 				}
 				if r := strings.TrimSpace(pkg.Source.Reference); r != "" {
-					dep.Extras["source_ref"] = r
+					dep.Attributes["source_ref"] = r
 				}
 			}
 			key := "git:" + pkg.Name
@@ -86,7 +86,7 @@ func (p poetryLockParser) Match(path string, content []byte) (manifestParserResu
 			continue
 		}
 		seen[raw] = struct{}{}
-		dependencies = append(dependencies, Dependency{
+		dependencies = append(dependencies, DependencyReference{
 			Raw:     raw,
 			Name:    pkg.Name,
 			Version: pkg.Version,
@@ -94,16 +94,16 @@ func (p poetryLockParser) Match(path string, content []byte) (manifestParserResu
 	}
 
 	if len(dependencies) == 0 {
-		return manifestParserResult{
-			Matched:         true,
-			HasDependencies: boolPtr(false),
+		return sourceAnalyzerResult{
+			Recognized: true,
+			Analysis:   SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete},
 		}, nil
 	}
 
-	return manifestParserResult{
-		Dependencies:    dependencies,
-		Matched:         true,
-		HasDependencies: boolPtr(true),
+	return sourceAnalyzerResult{
+		Dependencies: dependencies,
+		Recognized:   true,
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 	}, nil
 }
 

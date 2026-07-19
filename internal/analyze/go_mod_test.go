@@ -7,7 +7,7 @@ import (
 
 func TestGoModParserSetsStructuredFields(t *testing.T) {
 	matcher, _ := newGoModMatcher(goModMatcherConfig{})
-	result, _ := matcher.Match("go.mod", []byte(`module example.com/app
+	result, _ := matcher.Analyze("go.mod", []byte(`module example.com/app
 
 go 1.21
 
@@ -26,14 +26,14 @@ require github.com/BurntSushi/toml v0.3.1
 	if dep.Version != "v0.3.1" {
 		t.Errorf("Version: got %q", dep.Version)
 	}
-	if dep.Section != "" {
-		t.Errorf("Section: expected empty for direct require, got %q", dep.Section)
+	if dep.SourceGroup != "" {
+		t.Errorf("SourceGroup: expected empty for direct require, got %q", dep.SourceGroup)
 	}
 }
 
 func TestGoModParserSetsSectionIndirect(t *testing.T) {
 	matcher, _ := newGoModMatcher(goModMatcherConfig{})
-	result, _ := matcher.Match("go.mod", []byte(`module example.com/app
+	result, _ := matcher.Analyze("go.mod", []byte(`module example.com/app
 
 go 1.25
 
@@ -46,10 +46,10 @@ require (
 		t.Fatalf("expected 2 deps, got %d", len(result.Dependencies))
 	}
 	direct, indirect := result.Dependencies[0], result.Dependencies[1]
-	if direct.Name != "github.com/google/uuid" || direct.Section != "" {
+	if direct.Name != "github.com/google/uuid" || direct.SourceGroup != "" {
 		t.Errorf("direct: got %+v", direct)
 	}
-	if indirect.Name != "golang.org/x/text" || indirect.Section != "indirect" {
+	if indirect.Name != "golang.org/x/text" || indirect.SourceGroup != "indirect" {
 		t.Errorf("indirect: got %+v", indirect)
 	}
 }
@@ -62,23 +62,23 @@ func TestScanExtractsGoModDependenciesFromFixture(t *testing.T) {
 		t.Fatalf("scan failed: %v", err)
 	}
 
-	for _, manifest := range result.Manifests {
-		if manifest.Path != "go.mod" {
+	for _, source := range result.Sources {
+		if source.Path != "go.mod" {
 			continue
 		}
-		if manifest.Type != ManifestType("go-mod") {
-			t.Fatalf("expected go.mod manifest type %q, got %q", ManifestType("go-mod"), manifest.Type)
+		if source.Detector != DetectorID("go-mod") {
+			t.Fatalf("expected go.mod dependency source type %q, got %q", DetectorID("go-mod"), source.Detector)
 		}
-		if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-			t.Fatalf("expected go.mod to report extracted dependencies, got %+v", manifest)
+		if source.Analysis.Presence != PresencePresent {
+			t.Fatalf("expected go.mod to report extracted dependencies, got %+v", source)
 		}
-		if got := dependencyNames(manifest.Dependencies); len(got) != 1 || got[0] != "github.com/stretchr/testify" {
-			t.Fatalf("unexpected go.mod dependencies: %+v", manifest.Dependencies)
+		if got := dependencyNames(source.Dependencies); len(got) != 1 || got[0] != "github.com/stretchr/testify" {
+			t.Fatalf("unexpected go.mod dependencies: %+v", source.Dependencies)
 		}
 		return
 	}
 
-	t.Fatalf("expected go.mod manifest in result, got %+v", result.Manifests)
+	t.Fatalf("expected go.mod dependency source in result, got %+v", result.Sources)
 }
 
 func TestScanExtractsGoModDependenciesFromDedicatedFixture(t *testing.T) {
@@ -89,19 +89,19 @@ func TestScanExtractsGoModDependenciesFromDedicatedFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("go-mod") {
-		t.Fatalf("expected go.mod manifest type %q, got %q", ManifestType("go-mod"), manifest.Type)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("go-mod") {
+		t.Fatalf("expected go.mod dependency source type %q, got %q", DetectorID("go-mod"), source.Detector)
 	}
-	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-		t.Fatalf("expected go.mod to report extracted dependencies, got %+v", manifest)
+	if source.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected go.mod to report extracted dependencies, got %+v", source)
 	}
-	if got := dependencyNames(manifest.Dependencies); len(got) != 2 || got[0] != "github.com/google/uuid" || got[1] != "github.com/spf13/cobra" {
-		t.Fatalf("unexpected go.mod dependencies: %+v", manifest.Dependencies)
+	if got := dependencyNames(source.Dependencies); len(got) != 2 || got[0] != "github.com/google/uuid" || got[1] != "github.com/spf13/cobra" {
+		t.Fatalf("unexpected go.mod dependencies: %+v", source.Dependencies)
 	}
 }
 
@@ -112,19 +112,19 @@ func TestScanMarksGoModWithoutRequireAsEmpty(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.Type != ManifestType("go-mod") {
-		t.Fatalf("expected go.mod manifest type %q, got %q", ManifestType("go-mod"), manifest.Type)
+	source := result.Sources[0]
+	if source.Detector != DetectorID("go-mod") {
+		t.Fatalf("expected go.mod dependency source type %q, got %q", DetectorID("go-mod"), source.Detector)
 	}
-	if manifest.HasDependencies == nil || *manifest.HasDependencies {
-		t.Fatalf("expected go.mod without require directives to be empty, got %+v", manifest)
+	if source.Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected go.mod without require directives to be empty, got %+v", source)
 	}
-	if len(manifest.Dependencies) != 0 {
-		t.Fatalf("expected no extracted dependencies, got %+v", manifest.Dependencies)
+	if len(source.Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %+v", source.Dependencies)
 	}
 }
 
@@ -135,19 +135,19 @@ func TestScanExtractsAllGoModRequirements(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Manifests) != 1 {
-		t.Fatalf("expected 1 manifest, got %+v", result.Manifests)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
 	}
 
-	manifest := result.Manifests[0]
-	if manifest.HasDependencies == nil || !*manifest.HasDependencies {
-		t.Fatalf("expected go.mod to report extracted dependencies, got %+v", manifest)
+	source := result.Sources[0]
+	if source.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected go.mod to report extracted dependencies, got %+v", source)
 	}
-	want := []Dependency{
-		{Type: PackageType("golang"), Raw: "github.com/google/uuid", Name: "github.com/google/uuid", Version: "v1.6.0"},
-		{Type: PackageType("golang"), Raw: "golang.org/x/text", Name: "golang.org/x/text", Version: "v0.25.0", Section: "indirect"},
+	want := []DependencyReference{
+		{PackageType: PackageType("golang"), Raw: "github.com/google/uuid", Name: "github.com/google/uuid", Version: "v1.6.0"},
+		{PackageType: PackageType("golang"), Raw: "golang.org/x/text", Name: "golang.org/x/text", Version: "v0.25.0", SourceGroup: "indirect"},
 	}
-	if !equalDependencies(manifest.Dependencies, want) {
-		t.Fatalf("unexpected go.mod dependencies: got %+v want %+v", manifest.Dependencies, want)
+	if !equalDependencies(source.Dependencies, want) {
+		t.Fatalf("unexpected go.mod dependencies: got %+v want %+v", source.Dependencies, want)
 	}
 }

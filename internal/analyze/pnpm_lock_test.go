@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestPNPMLockDetectManifestFileExtractsImporterDependencies(t *testing.T) {
+func TestPNPMLockAnalyzeDependencySourceExtractsImporterDependencies(t *testing.T) {
 	ruleset := mustLoadPNPMLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
 
@@ -29,32 +29,32 @@ importers:
         version: 2.3.3
 `)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "pnpm-lock.yaml")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("js-pnpm-lock") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("js-pnpm-lock") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
-	if want := []Dependency{
-		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies", Extras: map[string]string{"specifier": "^18.3.1"}},
-		{Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies", Extras: map[string]string{"specifier": "^20.12.7"}},
-		{Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", Section: "optionalDependencies", Extras: map[string]string{"specifier": "^2.3.3"}},
+	if want := []DependencyReference{
+		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", SourceGroup: "dependencies", Attributes: map[string]string{"specifier": "^18.3.1"}},
+		{Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", SourceGroup: "devDependencies", Attributes: map[string]string{"specifier": "^20.12.7"}},
+		{Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", SourceGroup: "optionalDependencies", Attributes: map[string]string{"specifier": "^2.3.3"}},
 	}; !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestPNPMLockDetectManifestFileFallsBackToSpecifierWhenVersionIsMissing(t *testing.T) {
+func TestPNPMLockAnalyzeDependencySourceFallsBackToSpecifierWhenVersionIsMissing(t *testing.T) {
 	ruleset := mustLoadPNPMLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
 
@@ -68,22 +68,22 @@ importers:
         specifier: ^1.3.0
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "pnpm-lock.yaml")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []Dependency{{Raw: "left-pad@^1.3.0", Name: "left-pad", Section: "dependencies", Constraint: "^1.3.0"}}; !equalDependencies(deps, want) {
+	if want := []DependencyReference{{Raw: "left-pad@^1.3.0", Name: "left-pad", SourceGroup: "dependencies", VersionConstraint: "^1.3.0"}}; !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestPNPMLockDetectManifestFileAcceptsScalarImporterDependencies(t *testing.T) {
+func TestPNPMLockAnalyzeDependencySourceAcceptsScalarImporterDependencies(t *testing.T) {
 	ruleset := mustLoadPNPMLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
 
@@ -100,26 +100,26 @@ importers:
       fsevents: 2.3.3
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "pnpm-lock.yaml")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []Dependency{
-		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"},
-		{Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies"},
-		{Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", Section: "optionalDependencies"},
+	if want := []DependencyReference{
+		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", SourceGroup: "dependencies"},
+		{Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", SourceGroup: "devDependencies"},
+		{Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", SourceGroup: "optionalDependencies"},
 	}; !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestPNPMLockDetectManifestFileExtractsTopLevelDependenciesForOlderLocks(t *testing.T) {
+func TestPNPMLockAnalyzeDependencySourceExtractsTopLevelDependenciesForOlderLocks(t *testing.T) {
 	ruleset := mustLoadPNPMLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
 
@@ -134,26 +134,26 @@ optionalDependencies:
   fsevents: 2.3.3
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "pnpm-lock.yaml")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []Dependency{
-		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"},
-		{Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", Section: "devDependencies"},
-		{Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", Section: "optionalDependencies"},
+	if want := []DependencyReference{
+		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", SourceGroup: "dependencies"},
+		{Raw: "@types/node@20.12.7", Name: "@types/node", Version: "20.12.7", SourceGroup: "devDependencies"},
+		{Raw: "fsevents@2.3.3", Name: "fsevents", Version: "2.3.3", SourceGroup: "optionalDependencies"},
 	}; !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestPNPMLockDetectManifestFileMergesPackagesSectionV9(t *testing.T) {
+func TestPNPMLockAnalyzeDependencySourceMergesPackagesSectionV9(t *testing.T) {
 	ruleset := mustLoadPNPMLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
 
@@ -172,22 +172,22 @@ packages:
   loose-envify@1.4.0: {}
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "pnpm-lock.yaml")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	want := []Dependency{
-		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies", Extras: map[string]string{"specifier": "^18.3.1"}},
+	want := []DependencyReference{
+		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", SourceGroup: "dependencies", Attributes: map[string]string{"specifier": "^18.3.1"}},
 		{Raw: "loose-envify@1.4.0", Name: "loose-envify", Version: "1.4.0"},
 	}
 	if !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
@@ -205,26 +205,26 @@ packages:
   /loose-envify/1.4.0: {}
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "pnpm-lock.yaml")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	want := []Dependency{
-		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"},
+	want := []DependencyReference{
+		{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", SourceGroup: "dependencies"},
 		{Raw: "loose-envify@1.4.0", Name: "loose-envify", Version: "1.4.0"},
 	}
 	if !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestPNPMLockDetectManifestFileExtractsOnlyRootImporterDependencies(t *testing.T) {
+func TestPNPMLockAnalyzeDependencySourceExtractsOnlyRootImporterDependencies(t *testing.T) {
 	ruleset := mustLoadPNPMLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
 
@@ -242,22 +242,22 @@ importers:
         version: 5.2.1
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "pnpm-lock.yaml")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []Dependency{{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", Section: "dependencies"}}; !equalDependencies(deps, want) {
+	if want := []DependencyReference{{Raw: "react@18.3.1", Name: "react", Version: "18.3.1", SourceGroup: "dependencies"}}; !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestPNPMLockDetectManifestFileFallsBackToNameWhenVersionAndSpecifierAreMissing(t *testing.T) {
+func TestPNPMLockAnalyzeDependencySourceFallsBackToNameWhenVersionAndSpecifierAreMissing(t *testing.T) {
 	ruleset := mustLoadPNPMLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
 
@@ -270,22 +270,22 @@ importers:
       left-pad: {}
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "pnpm-lock.yaml")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if want := []Dependency{{Raw: "left-pad", Name: "left-pad", Section: "dependencies"}}; !equalDependencies(deps, want) {
+	if want := []DependencyReference{{Raw: "left-pad", Name: "left-pad", SourceGroup: "dependencies"}}; !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestPNPMLockDetectManifestFileReturnsConclusiveEmptyWhenImportersHaveNoDependencies(t *testing.T) {
+func TestPNPMLockAnalyzeDependencySourceReturnsConclusiveEmptyWhenImportersHaveNoDependencies(t *testing.T) {
 	ruleset := mustLoadPNPMLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
 
@@ -296,9 +296,9 @@ importers:
   .: {}
 `)
 
-	_, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	_, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "pnpm-lock.yaml")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
@@ -306,15 +306,15 @@ importers:
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDependencies == nil || *hasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", hasDependencies)
+	if present == nil || *present {
+		t.Fatalf("expected presence=absent, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestPNPMLockDetectManifestFileReturnsNoMatchWithoutLockfileVersion(t *testing.T) {
+func TestPNPMLockAnalyzeDependencySourceReturnsNoMatchWithoutLockfileVersion(t *testing.T) {
 	ruleset := mustLoadPNPMLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
 
@@ -326,9 +326,9 @@ importers:
         version: 18.3.1
 `)
 
-	_, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	_, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "pnpm-lock.yaml")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if ok {
 		t.Fatalf("expected no match")
@@ -336,44 +336,39 @@ importers:
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDependencies != nil {
-		t.Fatalf("expected unknown has_dependencies, got %+v", hasDependencies)
+	if present != nil {
+		t.Fatalf("expected unknown presence, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestPNPMLockDetectManifestFileRejectsMalformedYAML(t *testing.T) {
+func TestPNPMLockAnalyzeDependencySourceRejectsMalformedYAML(t *testing.T) {
 	ruleset := mustLoadPNPMLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "pnpm-lock.yaml")
 
 	mustWriteFile(t, filePath, "lockfileVersion: '9.0'\nimporters: [")
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "pnpm-lock.yaml")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "pnpm-lock.yaml")
 	if err != nil {
 		t.Fatalf("expected warning, got error: %v", err)
 	}
-	if !ok || got != ManifestType("js-pnpm-lock") {
-		t.Fatalf("expected pnpm lock warning match, got type=%q ok=%v", got, ok)
+	if !ok || got != DetectorID("js-pnpm-lock") {
+		t.Fatalf("expected pnpm lock warning match, got detector=%q ok=%v", got, ok)
 	}
-	if deps != nil || hasDependencies != nil {
-		t.Fatalf("expected no dependency result, got deps=%+v hasDependencies=%+v", deps, hasDependencies)
+	if deps != nil || present != nil {
+		t.Fatalf("expected no dependency result, got deps=%+v presence=%+v", deps, present)
 	}
-	if len(warnings) != 1 || !strings.Contains(warnings[0], "pnpm-lock.yaml") {
-		t.Fatalf("unexpected warnings: %+v", warnings)
+	if len(diagnosticMessages) != 1 || !strings.Contains(diagnosticMessages[0], "pnpm-lock.yaml") {
+		t.Fatalf("unexpected diagnostics: %+v", diagnosticMessages)
 	}
 }
 
 func mustLoadPNPMLockRules(t *testing.T) Ruleset {
 	t.Helper()
 
-	ruleset, err := loadRules("test.yaml", []byte(`
-rules:
-  - name: js-pnpm-lock
-    filename-regex: '^pnpm-lock\.yaml$'
-    pnpm-lock: {}
-`))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: js-pnpm-lock\n      filename-regex: '^pnpm-lock\\.yaml$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: pnpm-lock\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}

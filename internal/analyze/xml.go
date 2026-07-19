@@ -16,7 +16,7 @@ type xmlExistsAnyParser struct {
 	queries [][]string
 }
 
-func newXMLMatcher(raw xmlMatcherConfig) (manifestParser, error) {
+func newXMLMatcher(raw xmlMatcherConfig) (sourceAnalyzer, error) {
 	if len(raw.ExistsAny) == 0 {
 		return nil, fmt.Errorf("xml.exists-any: must contain at least one entry")
 	}
@@ -48,7 +48,7 @@ func parseXMLPath(raw string, fieldName string) ([]string, error) {
 	return segments, nil
 }
 
-func (p xmlExistsAnyParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p xmlExistsAnyParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	decoder := xml.NewDecoder(bytes.NewReader(content))
 	stack := make([]string, 0)
 
@@ -56,9 +56,9 @@ func (p xmlExistsAnyParser) Match(path string, content []byte) (manifestParserRe
 		token, err := decoder.Token()
 		if err != nil {
 			if err == io.EOF {
-				return manifestParserResult{HasDependencies: boolPtr(false), Matched: true}, nil
+				return sourceAnalyzerResult{Analysis: presenceAnalysis(false), Recognized: true}, nil
 			}
-			return manifestParserResult{}, fmt.Errorf("parse xml file %q: %w", path, err)
+			return sourceAnalyzerResult{}, fmt.Errorf("parse xml file %q: %w", path, err)
 		}
 
 		switch typed := token.(type) {
@@ -69,7 +69,7 @@ func (p xmlExistsAnyParser) Match(path string, content []byte) (manifestParserRe
 					continue
 				}
 				if xmlPathMatches(stack, query) {
-					return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+					return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}, nil
 				}
 			}
 		case xml.EndElement:

@@ -2,7 +2,7 @@ BINARY   := deplens
 CMD      := ./cmd/deplens
 LDFLAGS  := -ldflags="-s -w"
 
-.PHONY: help build run run-json run-empty test test-verbose test-pkg test-single vet clean install
+.PHONY: help build run run-json run-without-dependencies test test-verbose test-pkg test-single vet clean install
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -17,8 +17,8 @@ run: build ## Scan current directory (human output)
 run-json: build ## Scan current directory (JSON output)
 	./$(BINARY) --json .
 
-run-empty: build ## Scan current directory, include empty manifests
-	./$(BINARY) --show-empty .
+run-without-dependencies: build ## Scan current directory, include sources without dependencies
+	./$(BINARY) --show-without-dependencies .
 
 test: ## Run all tests
 	go test ./...

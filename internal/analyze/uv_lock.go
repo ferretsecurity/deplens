@@ -27,20 +27,20 @@ type uvLockSource struct {
 	Path      *string `toml:"path"`
 }
 
-func newUVLockParser(raw uvLockMatcherConfig) (manifestParser, error) {
+func newUVLockParser(raw uvLockMatcherConfig) (sourceAnalyzer, error) {
 	return uvLockParser{}, nil
 }
 
-func (p uvLockParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p uvLockParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	var file uvLockFile
 	if err := toml.Unmarshal(content, &file); err != nil {
-		return manifestParserResult{}, fmt.Errorf("parse toml file %q: %w", path, err)
+		return sourceAnalyzerResult{}, fmt.Errorf("parse toml file %q: %w", path, err)
 	}
 	if file.Version == nil {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
-	dependencies := make([]Dependency, 0, len(file.Packages))
+	dependencies := make([]DependencyReference, 0, len(file.Packages))
 	for _, pkg := range file.Packages {
 		if pkg.Name == "" {
 			continue
@@ -56,10 +56,10 @@ func (p uvLockParser) Match(path string, content []byte) (manifestParserResult, 
 				continue
 			}
 			if pkg.Source.Path != nil {
-				dependencies = append(dependencies, Dependency{
-					Raw:    pkg.Name,
-					Name:   pkg.Name,
-					Source: "path",
+				dependencies = append(dependencies, DependencyReference{
+					Raw:        pkg.Name,
+					Name:       pkg.Name,
+					OriginKind: OriginPath,
 				})
 				continue
 			}
@@ -67,7 +67,7 @@ func (p uvLockParser) Match(path string, content []byte) (manifestParserResult, 
 		if pkg.Version == "" {
 			continue
 		}
-		dependencies = append(dependencies, Dependency{
+		dependencies = append(dependencies, DependencyReference{
 			Raw:     pkg.Name + "==" + pkg.Version,
 			Name:    pkg.Name,
 			Version: pkg.Version,
@@ -75,16 +75,16 @@ func (p uvLockParser) Match(path string, content []byte) (manifestParserResult, 
 	}
 
 	if len(dependencies) == 0 {
-		return manifestParserResult{
-			Matched:         true,
-			HasDependencies: boolPtr(false),
+		return sourceAnalyzerResult{
+			Recognized: true,
+			Analysis:   SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete},
 		}, nil
 	}
 
-	return manifestParserResult{
-		Dependencies:    dependencies,
-		Matched:         true,
-		HasDependencies: boolPtr(true),
+	return sourceAnalyzerResult{
+		Dependencies: dependencies,
+		Recognized:   true,
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 	}, nil
 }
 

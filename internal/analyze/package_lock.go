@@ -28,19 +28,19 @@ type packageLockV1Dependency struct {
 }
 
 type packageLockDependency struct {
-	Name    string
-	Version string
-	Section string
+	Name        string
+	Version     string
+	SourceGroup string
 }
 
-func newPackageLockParser(raw packageLockMatcherConfig) (manifestParser, error) {
+func newPackageLockParser(raw packageLockMatcherConfig) (sourceAnalyzer, error) {
 	return packageLockParser{}, nil
 }
 
-func (p packageLockParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p packageLockParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	var file packageLockFile
 	if err := json.Unmarshal(content, &file); err != nil {
-		return manifestParserResult{}, fmt.Errorf("parse json file %q: %w", path, err)
+		return sourceAnalyzerResult{}, fmt.Errorf("parse json file %q: %w", path, err)
 	}
 
 	switch file.LockfileVersion {
@@ -49,15 +49,15 @@ func (p packageLockParser) Match(path string, content []byte) (manifestParserRes
 	case 2, 3:
 		return matchPackageLockV2V3(file), nil
 	default:
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 }
 
-func matchPackageLockV1Dependencies(dependencies map[string]json.RawMessage) manifestParserResult {
+func matchPackageLockV1Dependencies(dependencies map[string]json.RawMessage) sourceAnalyzerResult {
 	if len(dependencies) == 0 {
-		return manifestParserResult{
-			Matched:         true,
-			HasDependencies: boolPtr(false),
+		return sourceAnalyzerResult{
+			Recognized: true,
+			Analysis:   SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete},
 		}
 	}
 	seen := make(map[string]struct{})
@@ -107,26 +107,26 @@ func mapKeysV1ChildDeps(dependencies map[string]packageLockV1Dependency) []strin
 	return slices.Compact(keys)
 }
 
-func buildPackageLockRootSectionByName(packages map[string]packageLockPackage) map[string]string {
+func buildPackageLockRootSourceGroupByName(packages map[string]packageLockPackage) map[string]string {
 	root, ok := packages[""]
 	if !ok {
 		return nil
 	}
-	section := make(map[string]string)
+	sourceGroup := make(map[string]string)
 	assign := func(names []string, sec string) {
 		for _, name := range names {
 			if name == "" {
 				continue
 			}
-			if _, ok := section[name]; !ok {
-				section[name] = sec
+			if _, ok := sourceGroup[name]; !ok {
+				sourceGroup[name] = sec
 			}
 		}
 	}
 	assign(mapKeys(root.Dependencies), "dependencies")
 	assign(mapKeys(root.DevDependencies), "devDependencies")
 	assign(mapKeys(root.OptionalDependencies), "optionalDependencies")
-	return section
+	return sourceGroup
 }
 
 func packageNameFromNodeModulesPath(path string) string {
@@ -144,7 +144,7 @@ func packageNameFromNodeModulesPath(path string) string {
 	return strings.SplitN(rest, "/", 2)[0]
 }
 
-func matchPackageLockV2V3FromRootOnly(file packageLockFile, root packageLockPackage) manifestParserResult {
+func matchPackageLockV2V3FromRootOnly(file packageLockFile, root packageLockPackage) sourceAnalyzerResult {
 	seen := make(map[string]struct{})
 	var resolved []packageLockDependency
 	appendWithDedupe := func(names []string, sec string) {
@@ -156,7 +156,7 @@ func matchPackageLockV2V3FromRootOnly(file packageLockFile, root packageLockPack
 				continue
 			}
 			seen[name] = struct{}{}
-			dep := packageLockDependency{Name: name, Section: sec}
+			dep := packageLockDependency{Name: name, SourceGroup: sec}
 			if p, ok := file.Packages[packagePathForPackageName(name)]; ok {
 				dep.Version = p.Version
 			}
@@ -179,14 +179,14 @@ func packagePathForPackageName(name string) string {
 	return "node_modules/" + name
 }
 
-func matchPackageLockV2V3(file packageLockFile) manifestParserResult {
+func matchPackageLockV2V3(file packageLockFile) sourceAnalyzerResult {
 	if len(file.Packages) == 0 {
-		return manifestParserResult{
-			Matched:         true,
-			HasDependencies: boolPtr(false),
+		return sourceAnalyzerResult{
+			Recognized: true,
+			Analysis:   SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete},
 		}
 	}
-	sectionByName := buildPackageLockRootSectionByName(file.Packages)
+	sourceGroupByName := buildPackageLockRootSourceGroupByName(file.Packages)
 	paths := make([]string, 0, len(file.Packages))
 	for p := range file.Packages {
 		if p == "" {
@@ -198,9 +198,9 @@ func matchPackageLockV2V3(file packageLockFile) manifestParserResult {
 	if len(paths) == 0 {
 		root, ok := file.Packages[""]
 		if !ok {
-			return manifestParserResult{
-				Matched:         true,
-				HasDependencies: boolPtr(false),
+			return sourceAnalyzerResult{
+				Recognized: true,
+				Analysis:   SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete},
 			}
 		}
 		return matchPackageLockV2V3FromRootOnly(file, root)
@@ -217,31 +217,31 @@ func matchPackageLockV2V3(file packageLockFile) manifestParserResult {
 			Name:    name,
 			Version: pkg.Version,
 		}
-		if s, ok := sectionByName[name]; ok {
-			dep.Section = s
+		if s, ok := sourceGroupByName[name]; ok {
+			dep.SourceGroup = s
 		}
 		resolved = append(resolved, dep)
 	}
 	return packageLockResultFromDependencies(resolved)
 }
 
-func packageLockResultFromDependencies(resolved []packageLockDependency) manifestParserResult {
+func packageLockResultFromDependencies(resolved []packageLockDependency) sourceAnalyzerResult {
 	if len(resolved) == 0 {
-		return manifestParserResult{
-			Matched:         true,
-			HasDependencies: boolPtr(false),
+		return sourceAnalyzerResult{
+			Recognized: true,
+			Analysis:   SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete},
 		}
 	}
 
-	deps := make([]Dependency, 0, len(resolved))
+	deps := make([]DependencyReference, 0, len(resolved))
 	for _, r := range resolved {
 		if r.Name == "" {
 			continue
 		}
-		dep := Dependency{
-			Raw:     r.Name,
-			Name:    r.Name,
-			Section: r.Section,
+		dep := DependencyReference{
+			Raw:         r.Name,
+			Name:        r.Name,
+			SourceGroup: r.SourceGroup,
 		}
 		if r.Version != "" {
 			dep.Raw = r.Name + "@" + r.Version
@@ -249,10 +249,10 @@ func packageLockResultFromDependencies(resolved []packageLockDependency) manifes
 		}
 		deps = append(deps, dep)
 	}
-	return manifestParserResult{
-		Dependencies:    deps,
-		Matched:         true,
-		HasDependencies: boolPtr(true),
+	return sourceAnalyzerResult{
+		Dependencies: deps,
+		Recognized:   true,
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 	}
 }
 

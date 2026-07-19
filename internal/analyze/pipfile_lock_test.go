@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestPipfileLockDetectManifestFileExtractsDefaultAndDevelopDependencies(t *testing.T) {
+func TestPipfileLockAnalyzeDependencySourceExtractsDefaultAndDevelopDependencies(t *testing.T) {
 	ruleset := mustLoadPipfileLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "Pipfile.lock")
 
@@ -31,35 +31,35 @@ func TestPipfileLockDetectManifestFileExtractsDefaultAndDevelopDependencies(t *t
   }
 }`)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "Pipfile.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "Pipfile.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("python-pipfile-lock") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("python-pipfile-lock") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
-	want := []Dependency{
-		{Raw: "requests==2.32.3", Name: "requests", Version: "2.32.3", Section: "default"},
-		{Raw: "urllib3==2.2.2", Name: "urllib3", Version: "2.2.2", Section: "default"},
-		{Raw: "pytest==8.3.3", Name: "pytest", Version: "8.3.3", Section: "develop"},
+	want := []DependencyReference{
+		{Raw: "requests==2.32.3", Name: "requests", Version: "2.32.3", SourceGroup: "default"},
+		{Raw: "urllib3==2.2.2", Name: "urllib3", Version: "2.2.2", SourceGroup: "default"},
+		{Raw: "pytest==8.3.3", Name: "pytest", Version: "8.3.3", SourceGroup: "develop"},
 	}
 	if !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
 func TestPipfileLockParserSetsStructuredFields(t *testing.T) {
 	parser, _ := newPipfileLockParser(pipfileLockMatcherConfig{})
-	result, _ := parser.Match("Pipfile.lock", []byte(`{
+	result, _ := parser.Analyze("Pipfile.lock", []byte(`{
         "_meta": {},
         "default": {"requests": {"version": "==2.32.3"}},
         "develop": {}
@@ -74,12 +74,12 @@ func TestPipfileLockParserSetsStructuredFields(t *testing.T) {
 	if dep.Version != "2.32.3" {
 		t.Errorf("Version: got %q", dep.Version)
 	}
-	if dep.Section != "default" {
-		t.Errorf("Section: got %q", dep.Section)
+	if dep.SourceGroup != "default" {
+		t.Errorf("SourceGroup: got %q", dep.SourceGroup)
 	}
 }
 
-func TestPipfileLockDetectManifestFileFallsBackToNameWhenVersionIsMissing(t *testing.T) {
+func TestPipfileLockAnalyzeDependencySourceFallsBackToNameWhenVersionIsMissing(t *testing.T) {
 	ruleset := mustLoadPipfileLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "Pipfile.lock")
 
@@ -95,23 +95,23 @@ func TestPipfileLockDetectManifestFileFallsBackToNameWhenVersionIsMissing(t *tes
   }
 }`)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "Pipfile.lock")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "Pipfile.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	want := []Dependency{{Raw: "requests", Name: "requests", Section: "default"}}
+	want := []DependencyReference{{Raw: "requests", Name: "requests", SourceGroup: "default"}}
 	if !equalDependencies(deps, want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestPipfileLockDetectManifestFileReturnsConclusiveEmptyForMetadataOnlyLockfile(t *testing.T) {
+func TestPipfileLockAnalyzeDependencySourceReturnsConclusiveEmptyForMetadataOnlyLockfile(t *testing.T) {
 	ruleset := mustLoadPipfileLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "Pipfile.lock")
 
@@ -126,9 +126,9 @@ func TestPipfileLockDetectManifestFileReturnsConclusiveEmptyForMetadataOnlyLockf
   "develop": {}
 }`)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "Pipfile.lock")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "Pipfile.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
@@ -136,8 +136,8 @@ func TestPipfileLockDetectManifestFileReturnsConclusiveEmptyForMetadataOnlyLockf
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDependencies == nil || *hasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", hasDependencies)
+	if present == nil || *present {
+		t.Fatalf("expected presence=absent, got %+v", present)
 	}
 }
 
@@ -148,54 +148,54 @@ func TestPipfileLockParserFixtureCoverage(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name       string
-		fixtureDir string
-		wantDeps   []Dependency
-		wantHas    *bool
+		name        string
+		fixtureDir  string
+		wantDeps    []DependencyReference
+		wantPresent *bool
 	}{
 		{
 			name:       "basic sections",
 			fixtureDir: "pipfile-lock-basic",
-			wantDeps: []Dependency{
-				{Raw: "requests==2.32.3", Name: "requests", Version: "2.32.3", Section: "default"},
-				{Raw: "urllib3==2.2.2", Name: "urllib3", Version: "2.2.2", Section: "default"},
-				{Raw: "pytest==8.3.3", Name: "pytest", Version: "8.3.3", Section: "develop"},
+			wantDeps: []DependencyReference{
+				{Raw: "requests==2.32.3", Name: "requests", Version: "2.32.3", SourceGroup: "default"},
+				{Raw: "urllib3==2.2.2", Name: "urllib3", Version: "2.2.2", SourceGroup: "default"},
+				{Raw: "pytest==8.3.3", Name: "pytest", Version: "8.3.3", SourceGroup: "develop"},
 			},
-			wantHas: boolPtr(true),
+			wantPresent: boolPtr(true),
 		},
 		{
 			name:       "missing versions fall back to names",
 			fixtureDir: "pipfile-lock-missing-version",
-			wantDeps: []Dependency{
-				{Raw: "requests", Name: "requests", Section: "default"},
-				{Raw: "pytest", Name: "pytest", Section: "develop"},
+			wantDeps: []DependencyReference{
+				{Raw: "requests", Name: "requests", SourceGroup: "default"},
+				{Raw: "pytest", Name: "pytest", SourceGroup: "develop"},
 			},
-			wantHas: boolPtr(true),
+			wantPresent: boolPtr(true),
 		},
 		{
-			name:       "reports conclusive empty",
-			fixtureDir: "pipfile-lock-empty",
-			wantDeps:   nil,
-			wantHas:    boolPtr(false),
+			name:        "reports conclusive empty",
+			fixtureDir:  "pipfile-lock-empty",
+			wantDeps:    nil,
+			wantPresent: boolPtr(false),
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			content := mustReadTestdataFile(t, "python", tc.fixtureDir, "Pipfile.lock")
-			result, err := parser.Match("Pipfile.lock", content)
+			result, err := parser.Analyze("Pipfile.lock", content)
 			if err != nil {
 				t.Fatalf("Match returned error: %v", err)
 			}
-			if !result.Matched {
+			if !result.Recognized {
 				t.Fatalf("expected parser to match Pipfile.lock")
 			}
-			if tc.wantHas == nil {
-				if result.HasDependencies != nil {
-					t.Fatalf("expected has_dependencies=nil, got %+v", result.HasDependencies)
+			if tc.wantPresent == nil {
+				if result.Analysis.Presence != "" && result.Analysis.Presence != PresenceUnknown {
+					t.Fatalf("expected presence=unknown, got %+v", result.Analysis)
 				}
-			} else if result.HasDependencies == nil || *result.HasDependencies != *tc.wantHas {
-				t.Fatalf("unexpected has_dependencies: got %+v want %+v", result.HasDependencies, tc.wantHas)
+			} else if result.Analysis.Presence != presenceAnalysis(*tc.wantPresent).Presence {
+				t.Fatalf("unexpected presence: got %+v want %+v", result.Analysis, tc.wantPresent)
 			}
 			if !equalDependencies(result.Dependencies, tc.wantDeps) {
 				t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, tc.wantDeps)
@@ -207,12 +207,7 @@ func TestPipfileLockParserFixtureCoverage(t *testing.T) {
 func mustLoadPipfileLockRules(t *testing.T) Ruleset {
 	t.Helper()
 
-	ruleset, err := loadRules("test.yaml", []byte(`
-rules:
-  - name: python-pipfile-lock
-    filename-regex: '^Pipfile\.lock$'
-    pipfile-lock: {}
-`))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: python-pipfile-lock\n      filename-regex: '^Pipfile\\.lock$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: pipfile-lock\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}

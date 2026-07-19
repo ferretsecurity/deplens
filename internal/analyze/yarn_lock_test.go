@@ -9,7 +9,7 @@ import (
 
 func TestYarnLockClassicParserSetsStructuredFields(t *testing.T) {
 	parser, _ := newYarnLockParser(yarnLockMatcherConfig{})
-	result, _ := parser.Match("yarn.lock", []byte(`# yarn lockfile v1
+	result, _ := parser.Analyze("yarn.lock", []byte(`# yarn lockfile v1
 
 react@^18.0.0:
   version "18.0.0"
@@ -29,7 +29,7 @@ react@^18.0.0:
 	}
 }
 
-func TestYarnLockDetectManifestFileExtractsClassicEntries(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceExtractsClassicEntries(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -42,28 +42,28 @@ lodash@^4.17.0, lodash@~4.17.21:
 	version "4.17.21"
 `)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("js-yarn") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("js-yarn") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if want := []string{"left-pad@1.3.0", "lodash@4.17.21"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestYarnLockDetectManifestFileDeduplicatesClassicSelectors(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceDeduplicatesClassicSelectors(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -76,9 +76,9 @@ left-pad@1.3.0:
 	version "1.3.0"
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
@@ -86,12 +86,12 @@ left-pad@1.3.0:
 	if want := []string{"left-pad@1.3.0"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestYarnLockDetectManifestFileClassicFallsBackToNameWhenVersionMissing(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceClassicFallsBackToNameWhenVersionMissing(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -101,9 +101,9 @@ left-pad@^1.3.0:
 	resolved "https://registry.yarnpkg.com/left-pad/-/left-pad-1.3.0.tgz"
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
@@ -111,12 +111,12 @@ left-pad@^1.3.0:
 	if want := []string{"left-pad"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestYarnLockDetectManifestFileClassicEmitsMixedVersionedAndVersionMissingEntries(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceClassicEmitsMixedVersionedAndVersionMissingEntries(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -129,9 +129,9 @@ lodash@^4.17.0:
 	resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz"
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
@@ -139,12 +139,12 @@ lodash@^4.17.0:
 	if want := []string{"left-pad@1.3.0", "lodash"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestYarnLockDetectManifestFileExtractsClassicScopedGroupedSelectors(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceExtractsClassicScopedGroupedSelectors(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -154,9 +154,9 @@ func TestYarnLockDetectManifestFileExtractsClassicScopedGroupedSelectors(t *test
 	version "7.27.1"
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
@@ -164,39 +164,39 @@ func TestYarnLockDetectManifestFileExtractsClassicScopedGroupedSelectors(t *test
 	if want := []string{"@babel/code-frame@7.27.1"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestYarnLockDetectManifestFileClassicHeaderOnlyIsConclusiveEmpty(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceClassicHeaderOnlyIsConclusiveEmpty(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
 	mustWriteFile(t, filePath, "# yarn lockfile v1\n")
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("js-yarn") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("js-yarn") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDependencies == nil || *hasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", hasDependencies)
+	if present == nil || *present {
+		t.Fatalf("expected presence=absent, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestYarnLockDetectManifestFileExtractsModernEntries(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceExtractsModernEntries(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -217,28 +217,28 @@ func TestYarnLockDetectManifestFileExtractsModernEntries(t *testing.T) {
   resolution: "@babel/code-frame@npm:7.27.1"
 `)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("js-yarn") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("js-yarn") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if want := []string{"@babel/code-frame@7.27.1", "react@18.3.1", "typescript@5.4.5"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestYarnLockDetectManifestFileModernFallsBackToNameWhenVersionMissing(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceModernFallsBackToNameWhenVersionMissing(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -250,9 +250,9 @@ func TestYarnLockDetectManifestFileModernFallsBackToNameWhenVersionMissing(t *te
   resolution: "string-width@npm:4.2.3"
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
@@ -260,12 +260,12 @@ func TestYarnLockDetectManifestFileModernFallsBackToNameWhenVersionMissing(t *te
 	if want := []string{"string-width"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestYarnLockDetectManifestFileModernGroupedSelectorsFallBackToNameWithoutResolution(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceModernGroupedSelectorsFallBackToNameWithoutResolution(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -280,9 +280,9 @@ func TestYarnLockDetectManifestFileModernGroupedSelectorsFallBackToNameWithoutRe
   version: "7.27.0"
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
@@ -290,12 +290,12 @@ func TestYarnLockDetectManifestFileModernGroupedSelectorsFallBackToNameWithoutRe
 	if want := []string{"@babel/core@7.27.0", "left-pad@1.3.0"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestYarnLockDetectManifestFileModernMatchesWithLeadingCommentPreamble(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceModernMatchesWithLeadingCommentPreamble(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -310,9 +310,9 @@ __metadata:
   resolution: "react@npm:18.3.1"
 `)
 
-	_, deps, hasDependencies, _, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	_, deps, present, _, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
@@ -320,12 +320,12 @@ __metadata:
 	if want := []string{"react@18.3.1"}; !slices.Equal(dependencyNames(deps), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", deps, want)
 	}
-	if hasDependencies == nil || !*hasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", hasDependencies)
+	if present == nil || !*present {
+		t.Fatalf("expected presence=present, got %+v", present)
 	}
 }
 
-func TestYarnLockDetectManifestFileModernMetadataOnlyIsConclusiveEmpty(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceModernMetadataOnlyIsConclusiveEmpty(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -334,28 +334,28 @@ func TestYarnLockDetectManifestFileModernMetadataOnlyIsConclusiveEmpty(t *testin
   cacheKey: 10
 `)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("js-yarn") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("js-yarn") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDependencies == nil || *hasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", hasDependencies)
+	if present == nil || *present {
+		t.Fatalf("expected presence=absent, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestYarnLockDetectManifestFileRejectsMalformedModernYAML(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceRejectsMalformedModernYAML(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -365,22 +365,22 @@ func TestYarnLockDetectManifestFileRejectsMalformedModernYAML(t *testing.T) {
   version: "18.3.1"
 `)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
 		t.Fatalf("expected warning, got error: %v", err)
 	}
-	if !ok || got != ManifestType("js-yarn") {
-		t.Fatalf("expected yarn warning match, got type=%q ok=%v", got, ok)
+	if !ok || got != DetectorID("js-yarn") {
+		t.Fatalf("expected yarn warning match, got detector=%q ok=%v", got, ok)
 	}
-	if deps != nil || hasDependencies != nil {
-		t.Fatalf("expected no dependency result, got deps=%+v hasDependencies=%+v", deps, hasDependencies)
+	if deps != nil || present != nil {
+		t.Fatalf("expected no dependency result, got deps=%+v presence=%+v", deps, present)
 	}
-	if len(warnings) != 1 || !strings.Contains(warnings[0], "yarn.lock") {
-		t.Fatalf("expected warning to mention yarn.lock, got %+v", warnings)
+	if len(diagnosticMessages) != 1 || !strings.Contains(diagnosticMessages[0], "yarn.lock") {
+		t.Fatalf("expected warning to mention yarn.lock, got %+v", diagnosticMessages)
 	}
 }
 
-func TestYarnLockDetectManifestFileRejectsStructurallyInvalidModernEntry(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceRejectsStructurallyInvalidModernEntry(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -391,22 +391,22 @@ func TestYarnLockDetectManifestFileRejectsStructurallyInvalidModernEntry(t *test
 "react@npm:^18.3.1": oops
 `)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
 		t.Fatalf("expected warning, got error: %v", err)
 	}
-	if !ok || got != ManifestType("js-yarn") {
-		t.Fatalf("expected yarn warning match, got type=%q ok=%v", got, ok)
+	if !ok || got != DetectorID("js-yarn") {
+		t.Fatalf("expected yarn warning match, got detector=%q ok=%v", got, ok)
 	}
-	if deps != nil || hasDependencies != nil {
-		t.Fatalf("expected no dependency result, got deps=%+v hasDependencies=%+v", deps, hasDependencies)
+	if deps != nil || present != nil {
+		t.Fatalf("expected no dependency result, got deps=%+v presence=%+v", deps, present)
 	}
-	if len(warnings) != 1 || !strings.Contains(warnings[0], "yarn.lock") {
-		t.Fatalf("expected warning to mention yarn.lock, got %+v", warnings)
+	if len(diagnosticMessages) != 1 || !strings.Contains(diagnosticMessages[0], "yarn.lock") {
+		t.Fatalf("expected warning to mention yarn.lock, got %+v", diagnosticMessages)
 	}
 }
 
-func TestYarnLockDetectManifestFileReturnsNoMatchForUnrecognizedContent(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceReturnsNoMatchForUnrecognizedContent(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
@@ -414,9 +414,9 @@ func TestYarnLockDetectManifestFileReturnsNoMatchForUnrecognizedContent(t *testi
 just some text
 `)
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if ok {
 		t.Fatalf("expected no match, got %q", got)
@@ -424,77 +424,72 @@ just some text
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDependencies != nil {
-		t.Fatalf("expected unknown has_dependencies, got %+v", hasDependencies)
+	if present != nil {
+		t.Fatalf("expected unknown presence, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestYarnLockDetectManifestFileClassicHeaderMatchesWithUTF8BOM(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceClassicHeaderMatchesWithUTF8BOM(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
 	mustWriteFile(t, filePath, "\ufeff# yarn lockfile v1\n")
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("js-yarn") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("js-yarn") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDependencies == nil || *hasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", hasDependencies)
+	if present == nil || *present {
+		t.Fatalf("expected presence=absent, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
-func TestYarnLockDetectManifestFileClassicHeaderMatchesWithGeneratedPreamble(t *testing.T) {
+func TestYarnLockAnalyzeDependencySourceClassicHeaderMatchesWithGeneratedPreamble(t *testing.T) {
 	ruleset := mustLoadYarnLockRules(t)
 	filePath := filepath.Join(t.TempDir(), "yarn.lock")
 
 	mustWriteFile(t, filePath, "# THIS IS AN AUTOGENERATED FILE. DO NOT EDIT THIS FILE DIRECTLY.\n# yarn lockfile v1\n")
 
-	got, deps, hasDependencies, warnings, ok, err := ruleset.DetectManifestFile(filePath, "yarn.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, filePath, "yarn.lock")
 	if err != nil {
-		t.Fatalf("DetectManifestFile failed: %v", err)
+		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected match")
 	}
-	if got != ManifestType("js-yarn") {
-		t.Fatalf("unexpected manifest type: got %q", got)
+	if got != DetectorID("js-yarn") {
+		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if deps != nil {
 		t.Fatalf("expected no dependencies, got %+v", deps)
 	}
-	if hasDependencies == nil || *hasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", hasDependencies)
+	if present == nil || *present {
+		t.Fatalf("expected presence=absent, got %+v", present)
 	}
-	if warnings != nil {
-		t.Fatalf("expected no warnings, got %+v", warnings)
+	if diagnosticMessages != nil {
+		t.Fatalf("expected no diagnostics, got %+v", diagnosticMessages)
 	}
 }
 
 func mustLoadYarnLockRules(t *testing.T) Ruleset {
 	t.Helper()
 
-	ruleset, err := loadRules("test.yaml", []byte(`
-rules:
-  - name: js-yarn
-    filename-regex: '^yarn\.lock$'
-    yarn-lock: {}
-`))
+	ruleset, err := loadRules("test.yaml", []byte("rules:\n    - id: js-yarn\n      filename-regex: '^yarn\\.lock$'\n      form: other\n      roles:\n        - inventory\n      analyzer:\n        type: yarn-lock\n"))
 	if err != nil {
 		t.Fatalf("loadRules failed: %v", err)
 	}

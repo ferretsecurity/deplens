@@ -11,7 +11,7 @@ func TestPoetryLockParserExtractsRetainedDependencies(t *testing.T) {
 		t.Fatalf("newPoetryLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("poetry.lock", []byte(`
+	result, err := parser.Analyze("poetry.lock", []byte(`
 [[package]]
 name = "requests"
 version = "2.32.3"
@@ -32,14 +32,14 @@ content-hash = "basic"
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if !result.Matched {
+	if !result.Recognized {
 		t.Fatalf("expected match")
 	}
 	if want := []string{"requests==2.32.3", "urllib3==2.2.2"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
 	}
-	if result.HasDependencies == nil || !*result.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Analysis)
 	}
 }
 
@@ -49,7 +49,7 @@ func TestPoetryLockParserReturnsConclusiveEmptyForMetadataOnlyFiles(t *testing.T
 		t.Fatalf("newPoetryLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("poetry.lock", []byte(`
+	result, err := parser.Analyze("poetry.lock", []byte(`
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
@@ -58,14 +58,14 @@ content-hash = "empty"
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if !result.Matched {
+	if !result.Recognized {
 		t.Fatalf("expected match")
 	}
 	if result.Dependencies != nil {
 		t.Fatalf("expected no dependencies, got %+v", result.Dependencies)
 	}
-	if result.HasDependencies == nil || *result.HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Analysis)
 	}
 }
 
@@ -75,7 +75,7 @@ func TestPoetryLockParserSkipsMalformedAndFilteredEntries(t *testing.T) {
 		t.Fatalf("newPoetryLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("poetry.lock", []byte(`
+	result, err := parser.Analyze("poetry.lock", []byte(`
 [[package]]
 name = "requests"
 version = "2.32.3"
@@ -118,20 +118,20 @@ content-hash = "mixed"
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if !result.Matched {
+	if !result.Recognized {
 		t.Fatalf("expected match")
 	}
 	if want := []string{"requests==2.32.3", "internal-lib"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
 	}
-	if result.HasDependencies == nil || !*result.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Analysis)
 	}
 }
 
 func TestPoetryLockParserSetsStructuredFieldsForRegistryDep(t *testing.T) {
 	parser, _ := newPoetryLockParser(poetryLockMatcherConfig{})
-	result, _ := parser.Match("poetry.lock", []byte(`
+	result, _ := parser.Analyze("poetry.lock", []byte(`
 [[package]]
 name = "requests"
 version = "2.32.3"
@@ -158,7 +158,7 @@ content-hash = "x"
 
 func TestPoetryLockParserEmitsGitDependencies(t *testing.T) {
 	parser, _ := newPoetryLockParser(poetryLockMatcherConfig{})
-	result, _ := parser.Match("poetry.lock", []byte(`
+	result, _ := parser.Analyze("poetry.lock", []byte(`
 [[package]]
 name = "mylib"
 version = "0.1.0"
@@ -186,14 +186,14 @@ content-hash = "x"
 	if dep.Version != "" {
 		t.Errorf("Version: expected empty, got %q", dep.Version)
 	}
-	if dep.Source != "git" {
-		t.Errorf("Source: got %q", dep.Source)
+	if dep.OriginKind != "git" {
+		t.Errorf("Source: got %q", dep.OriginKind)
 	}
-	if dep.Extras["source_url"] != "https://github.com/org/mylib.git" {
-		t.Errorf("Extras[source_url]: got %q", dep.Extras["source_url"])
+	if dep.Attributes["source_url"] != "https://github.com/org/mylib.git" {
+		t.Errorf("Attributes[source_url]: got %q", dep.Attributes["source_url"])
 	}
-	if dep.Extras["source_ref"] != "abc123" {
-		t.Errorf("Extras[source_ref]: got %q", dep.Extras["source_ref"])
+	if dep.Attributes["source_ref"] != "abc123" {
+		t.Errorf("Attributes[source_ref]: got %q", dep.Attributes["source_ref"])
 	}
 }
 
@@ -203,7 +203,7 @@ func TestPoetryLockParserIncludesNonSelfDirectoryAndDeduplicatesExactEntries(t *
 		t.Fatalf("newPoetryLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("poetry.lock", []byte(`
+	result, err := parser.Analyze("poetry.lock", []byte(`
 [[package]]
 name = "shared-lib"
 version = "0.4.0"
@@ -246,14 +246,14 @@ content-hash = "dupes"
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if !result.Matched {
+	if !result.Recognized {
 		t.Fatalf("expected match")
 	}
 	if want := []string{"shared-lib==0.4.0", "requests==2.32.3", "urllib3==2.2.1", "urllib3==2.2.2"}; !slices.Equal(dependencyNames(result.Dependencies), want) {
 		t.Fatalf("unexpected dependencies: got %+v want %+v", result.Dependencies, want)
 	}
-	if result.HasDependencies == nil || !*result.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Analysis)
 	}
 }
 
@@ -263,7 +263,7 @@ func TestPoetryLockParserReturnsConclusiveEmptyAfterFiltering(t *testing.T) {
 		t.Fatalf("newPoetryLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("poetry.lock", []byte(`
+	result, err := parser.Analyze("poetry.lock", []byte(`
 [[package]]
 name = "my-app"
 version = "0.1.0"
@@ -282,14 +282,14 @@ content-hash = "filtered-empty"
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if !result.Matched {
+	if !result.Recognized {
 		t.Fatalf("expected match")
 	}
 	if result.Dependencies != nil {
 		t.Fatalf("expected no dependencies, got %+v", result.Dependencies)
 	}
-	if result.HasDependencies == nil || *result.HasDependencies {
-		t.Fatalf("expected has_dependencies=false, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != PresenceAbsent {
+		t.Fatalf("expected presence=absent, got %+v", result.Analysis)
 	}
 }
 
@@ -299,18 +299,18 @@ func TestPoetryLockParserReturnsNoMatchForUnstructuredTOML(t *testing.T) {
 		t.Fatalf("newPoetryLockParser failed: %v", err)
 	}
 
-	result, err := parser.Match("poetry.lock", []byte("title = \"not a poetry lock\"\n"))
+	result, err := parser.Analyze("poetry.lock", []byte("title = \"not a poetry lock\"\n"))
 	if err != nil {
 		t.Fatalf("Match failed: %v", err)
 	}
-	if result.Matched {
+	if result.Recognized {
 		t.Fatalf("expected no match, got %+v", result)
 	}
 	if result.Dependencies != nil {
 		t.Fatalf("expected no dependencies, got %+v", result.Dependencies)
 	}
-	if result.HasDependencies != nil {
-		t.Fatalf("expected unknown has_dependencies, got %+v", result.HasDependencies)
+	if result.Analysis.Presence != "" && result.Analysis.Presence != PresenceUnknown {
+		t.Fatalf("expected unknown presence, got %+v", result.Analysis)
 	}
 }
 
@@ -320,7 +320,7 @@ func TestPoetryLockParserRejectsInvalidTOML(t *testing.T) {
 		t.Fatalf("newPoetryLockParser failed: %v", err)
 	}
 
-	_, err = parser.Match("poetry.lock", []byte("[[package]]\nname = \"requests\"\nversion = "))
+	_, err = parser.Analyze("poetry.lock", []byte("[[package]]\nname = \"requests\"\nversion = "))
 	if err == nil {
 		t.Fatalf("expected parse error")
 	}

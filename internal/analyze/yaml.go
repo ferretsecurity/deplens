@@ -30,7 +30,7 @@ type yamlExistsAnyParser struct {
 	queries [][]yamlPathSegment
 }
 
-func newYAMLQueryParser(raw yamlMatcherConfig) (manifestParser, error) {
+func newYAMLQueryParser(raw yamlMatcherConfig) (sourceAnalyzer, error) {
 	modeCount := 0
 	if raw.Query != "" {
 		modeCount++
@@ -99,13 +99,13 @@ func parseYAMLPath(raw string, fieldName string) ([]yamlPathSegment, error) {
 	return segments, nil
 }
 
-func (p yamlQueryParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p yamlQueryParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	current, err := resolveYAMLPath(path, content, p.segments)
 	if err != nil {
-		return manifestParserResult{}, err
+		return sourceAnalyzerResult{}, err
 	}
 	if len(current) == 0 {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
 	dependencies := make([]string, 0, len(current))
@@ -117,37 +117,37 @@ func (p yamlQueryParser) Match(path string, content []byte) (manifestParserResul
 		dependencies = append(dependencies, value)
 	}
 	if len(dependencies) == 0 {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
-	return manifestParserResult{
-		Dependencies:    dependenciesFromStrings(dependencies),
-		HasDependencies: boolPtr(true),
-		Matched:         true,
+	return sourceAnalyzerResult{
+		Dependencies: dependenciesFromStrings(dependencies),
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+		Recognized:   true,
 	}, nil
 }
 
-func (p yamlExistsParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p yamlExistsParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	current, err := resolveYAMLPath(path, content, p.segments)
 	if err != nil {
-		return manifestParserResult{}, err
+		return sourceAnalyzerResult{}, err
 	}
 	if len(current) == 0 {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
-	return manifestParserResult{Matched: true}, nil
+	return sourceAnalyzerResult{Recognized: true, Analysis: identifiedAnalysis()}, nil
 }
 
-func (p yamlExistsAnyParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p yamlExistsAnyParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	for _, query := range p.queries {
 		current, err := resolveYAMLPath(path, content, query)
 		if err != nil {
-			return manifestParserResult{}, err
+			return sourceAnalyzerResult{}, err
 		}
 		if hasNonEmptyYAMLValue(current) {
-			return manifestParserResult{HasDependencies: boolPtr(true), Matched: true}, nil
+			return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}, nil
 		}
 	}
-	return manifestParserResult{HasDependencies: boolPtr(false), Matched: true}, nil
+	return sourceAnalyzerResult{Analysis: presenceAnalysis(false), Recognized: true}, nil
 }
 
 func resolveYAMLPath(path string, content []byte, segments []yamlPathSegment) ([]any, error) {

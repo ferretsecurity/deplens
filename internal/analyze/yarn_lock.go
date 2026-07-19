@@ -31,25 +31,25 @@ func (e *modernYarnLockEntry) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-func newYarnLockParser(_ yarnLockMatcherConfig) (manifestParser, error) {
+func newYarnLockParser(_ yarnLockMatcherConfig) (sourceAnalyzer, error) {
 	return yarnLockParser{}, nil
 }
 
-func (p yarnLockParser) Match(path string, content []byte) (manifestParserResult, error) {
+func (p yarnLockParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	normalizedContent := normalizeClassicYarnLockContent(string(content))
 	if strings.HasPrefix(normalizedContent, yarnClassicHeader) {
 		dependencies := parseClassicYarnLockDependencies(normalizedContent)
 		if len(dependencies) == 0 {
-			return manifestParserResult{
-				Matched:         true,
-				HasDependencies: boolPtr(false),
+			return sourceAnalyzerResult{
+				Recognized: true,
+				Analysis:   SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete},
 			}, nil
 		}
 
-		return manifestParserResult{
-			Dependencies:    dependencies,
-			Matched:         true,
-			HasDependencies: boolPtr(true),
+		return sourceAnalyzerResult{
+			Dependencies: dependencies,
+			Recognized:   true,
+			Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 		}, nil
 	}
 
@@ -57,34 +57,34 @@ func (p yarnLockParser) Match(path string, content []byte) (manifestParserResult
 		normalizedContent = trimLeadingCommentLines(normalizedContent)
 	}
 	if !strings.HasPrefix(normalizedContent, "__metadata:") {
-		return manifestParserResult{}, nil
+		return sourceAnalyzerResult{}, nil
 	}
 
 	dependencies, err := parseModernYarnLockDependencies(path, content)
 	if err != nil {
-		return manifestParserResult{}, err
+		return sourceAnalyzerResult{}, err
 	}
 	if len(dependencies) == 0 {
-		return manifestParserResult{
-			Matched:         true,
-			HasDependencies: boolPtr(false),
+		return sourceAnalyzerResult{
+			Recognized: true,
+			Analysis:   SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete},
 		}, nil
 	}
 
-	return manifestParserResult{
-		Dependencies:    dependencies,
-		Matched:         true,
-		HasDependencies: boolPtr(true),
+	return sourceAnalyzerResult{
+		Dependencies: dependencies,
+		Recognized:   true,
+		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 	}, nil
 }
 
-func parseModernYarnLockDependencies(path string, content []byte) ([]Dependency, error) {
+func parseModernYarnLockDependencies(path string, content []byte) ([]DependencyReference, error) {
 	var entries map[string]modernYarnLockEntry
 	if err := yaml.Unmarshal(content, &entries); err != nil {
 		return nil, fmt.Errorf("parse yarn.lock %q: %w", path, err)
 	}
 
-	dependencies := make([]Dependency, 0, len(entries))
+	dependencies := make([]DependencyReference, 0, len(entries))
 	seen := make(map[string]struct{}, len(entries))
 	for selector, entry := range entries {
 		if selector == "__metadata" {
@@ -104,14 +104,14 @@ func parseModernYarnLockDependencies(path string, content []byte) ([]Dependency,
 			continue
 		}
 		seen[raw] = struct{}{}
-		dep := Dependency{Raw: raw, Name: name}
+		dep := DependencyReference{Raw: raw, Name: name}
 		if entry.Version != "" {
 			dep.Version = entry.Version
 		}
 		dependencies = append(dependencies, dep)
 	}
 
-	slices.SortFunc(dependencies, func(a, b Dependency) int {
+	slices.SortFunc(dependencies, func(a, b DependencyReference) int {
 		if a.Raw < b.Raw {
 			return -1
 		}
@@ -156,9 +156,9 @@ func trimLeadingCommentLines(content string) string {
 	return ""
 }
 
-func parseClassicYarnLockDependencies(content string) []Dependency {
+func parseClassicYarnLockDependencies(content string) []DependencyReference {
 	lines := strings.Split(content, "\n")
-	dependencies := make([]Dependency, 0)
+	dependencies := make([]DependencyReference, 0)
 	seen := make(map[string]struct{})
 
 	var selectors []string
@@ -176,7 +176,7 @@ func parseClassicYarnLockDependencies(content string) []Dependency {
 				continue
 			}
 			seen[raw] = struct{}{}
-			dep := Dependency{Raw: raw, Name: name}
+			dep := DependencyReference{Raw: raw, Name: name}
 			if version != "" {
 				dep.Version = version
 			}

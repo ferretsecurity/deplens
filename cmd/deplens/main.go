@@ -64,8 +64,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if cfg.json {
 		output, err = render.JSON(result)
 	} else {
-		output = []byte(render.Human(result, ruleset.SupportedManifestTypes(), render.HumanOptions{
-			ShowEmpty: cfg.showEmpty,
+		output = []byte(render.Human(result, render.HumanOptions{
+			ShowWithoutDependencies: cfg.showWithoutDependencies,
 		}))
 	}
 	if err != nil {
@@ -85,11 +85,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 }
 
 type config struct {
-	path       string
-	json       bool
-	showEmpty  bool
-	ignoreDirs []string
-	rulesPath  string
+	path                    string
+	json                    bool
+	showWithoutDependencies bool
+	ignoreDirs              []string
+	rulesPath               string
 }
 
 func parseArgs(args []string) (config, string, error) {
@@ -106,7 +106,7 @@ func parseArgs(args []string) (config, string, error) {
 		var usage strings.Builder
 		fmt.Fprintln(&usage, "Usage: deplens [flags] [path]")
 		fmt.Fprintln(&usage)
-		fmt.Fprintln(&usage, "Scan a directory tree and report dependency-related manifests.")
+		fmt.Fprintln(&usage, "Scan a directory tree and report dependency sources.")
 		fmt.Fprintln(&usage)
 		fmt.Fprintln(&usage, "Flags:")
 		fs.SetOutput(&usage)
@@ -115,11 +115,11 @@ func parseArgs(args []string) (config, string, error) {
 		return usage.String()
 	}
 	fs.BoolVar(&cfg.json, "json", false, "emit machine-readable JSON output")
-	fs.BoolVar(&cfg.showEmpty, "show-empty", false, "include matched manifests that were confirmed to have no dependencies")
+	fs.BoolVar(&cfg.showWithoutDependencies, "show-without-dependencies", false, "include dependency sources confirmed to have no dependency references")
 
 	var ignore string
 	fs.StringVar(&ignore, "ignore", "", "comma-separated directory names to skip")
-	fs.StringVar(&cfg.rulesPath, "rules", "", "path to a YAML file with manifest detection rules")
+	fs.StringVar(&cfg.rulesPath, "rules", "", "path to a YAML file with dependency source detection rules")
 
 	if err := fs.Parse(args); err != nil {
 		return config{}, renderUsage(), err

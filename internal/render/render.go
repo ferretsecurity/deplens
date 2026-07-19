@@ -10,40 +10,35 @@ import (
 	"github.com/ferretsecurity/deplens/internal/analyze"
 )
 
-func displayDependency(d analyze.Dependency) string {
+func displayDependency(d analyze.DependencyReference) string {
 	if d.Name != "" && d.Version != "" {
 		return d.Name + "@" + d.Version
 	}
-	if d.Name != "" && d.Constraint != "" {
-		return d.Name + d.Constraint
+	if d.Name != "" && d.VersionConstraint != "" {
+		return d.Name + d.VersionConstraint
 	}
 	if d.Name != "" {
 		return d.Name
 	}
-	if d.Raw != "" {
-		return d.Raw
-	}
-	return d.Name
+	return d.Raw
 }
 
 type HumanOptions struct {
-	ShowEmpty bool
+	ShowWithoutDependencies bool
 }
 
-func Human(result analyze.ScanResult, supportedTypes []analyze.ManifestType, opts HumanOptions) string {
-	if len(result.Manifests) == 0 {
-		return fmt.Sprintf("Root: %s\nNo manifests found.\n", result.Root)
+func Human(result analyze.ScanResult, opts HumanOptions) string {
+	if len(result.Sources) == 0 {
+		return fmt.Sprintf("Root: %s\nNo dependency sources found.\n", result.Root)
 	}
 
-	_ = supportedTypes
-
-	manifests := slices.Clone(result.Manifests)
-	slices.SortFunc(manifests, func(a, b analyze.ManifestMatch) int {
+	sources := slices.Clone(result.Sources)
+	slices.SortFunc(sources, func(a, b analyze.DependencySourceResult) int {
 		if a.Path == b.Path {
 			switch {
-			case a.Type < b.Type:
+			case a.Detector < b.Detector:
 				return -1
-			case a.Type > b.Type:
+			case a.Detector > b.Detector:
 				return 1
 			default:
 				return 0
@@ -55,26 +50,23 @@ func Human(result analyze.ScanResult, supportedTypes []analyze.ManifestType, opt
 		return 1
 	})
 
-	summary := summarizeManifests(manifests)
-	visibleManifests := filterVisibleManifests(manifests, opts)
-
+	visibleSources := filterVisibleSources(sources, opts)
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Root: %s\n", result.Root))
-	b.WriteString("\n")
-	b.WriteString(fmt.Sprintf("Found %d %s:\n", len(manifests), pluralize(len(manifests), "manifest", "manifests")))
-	for _, line := range summary.lines() {
-		b.WriteString(fmt.Sprintf("- %s\n", line))
-	}
-	for _, manifest := range visibleManifests {
+	b.WriteString(fmt.Sprintf("Root: %s\n\n", result.Root))
+	b.WriteString(fmt.Sprintf("Found %d dependency %s:\n", len(sources), pluralize(len(sources), "source", "sources")))
+	for _, source := range visibleSources {
 		b.WriteString("\n")
-		b.WriteString(fmt.Sprintf("%s %s\n", manifest.Path, manifestStatusLabel(manifest)))
-		b.WriteString(renderDependencies(manifest.Dependencies))
-		b.WriteString(renderWarnings(manifest.Warnings))
+		b.WriteString(fmt.Sprintf("%s %s\n", source.Path, sourceStatusLabel(source)))
+		b.WriteString(renderDependencies(source.Dependencies))
+		b.WriteString(renderDiagnostics(source.Diagnostics))
 	}
 	return b.String()
 }
 
 func JSON(result analyze.ScanResult) ([]byte, error) {
+	if result.Sources == nil {
+		result.Sources = make([]analyze.DependencySourceResult, 0)
+	}
 	var b bytes.Buffer
 	encoder := json.NewEncoder(&b)
 	encoder.SetEscapeHTML(false)
@@ -85,86 +77,38 @@ func JSON(result analyze.ScanResult) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-type manifestSummary struct {
-	extracted           int
-	confirmedEmpty      int
-	presentNotExtracted int
-	unknown             int
-}
-
-func summarizeManifests(manifests []analyze.ManifestMatch) manifestSummary {
-	var summary manifestSummary
-	for _, manifest := range manifests {
-		switch manifestState(manifest) {
-		case "extracted":
-			summary.extracted++
-		case "empty":
-			summary.confirmedEmpty++
-		case "present-not-extracted":
-			summary.presentNotExtracted++
-		default:
-			summary.unknown++
-		}
+func sourceStatusLabel(source analyze.DependencySourceResult) string {
+	form := string(source.Form)
+	if source.Analysis.Presence == analyze.PresenceAbsent {
+		return fmt.Sprintf("[%s · no dependency references]", form)
 	}
-	return summary
-}
-
-func (s manifestSummary) lines() []string {
-	lines := make([]string, 0, 4)
-	if s.extracted > 0 {
-		lines = append(lines, fmt.Sprintf("%d with extracted dependencies", s.extracted))
-	}
-	if s.confirmedEmpty > 0 {
-		lines = append(lines, fmt.Sprintf("%d confirmed empty", s.confirmedEmpty))
-	}
-	if s.presentNotExtracted > 0 {
-		lines = append(lines, fmt.Sprintf("%d with dependencies present, not extracted", s.presentNotExtracted))
-	}
-	if s.unknown > 0 {
-		lines = append(lines, fmt.Sprintf("%d with dependency status unknown", s.unknown))
-	}
-	return lines
-}
-
-func manifestStatusLabel(manifest analyze.ManifestMatch) string {
-	switch manifestState(manifest) {
-	case "extracted":
-		return fmt.Sprintf("[%d %s]", len(manifest.Dependencies), pluralize(len(manifest.Dependencies), "dep", "deps"))
-	case "empty":
-		return "[no dependencies]"
-	case "present-not-extracted":
-		return "[dependencies present, not extracted]"
+	switch source.Analysis {
+	case analyze.SourceAnalysis{Presence: analyze.PresencePresent, Extraction: analyze.ExtractionComplete}:
+		return fmt.Sprintf("[%s · %d %s]", form, len(source.Dependencies), pluralize(len(source.Dependencies), "dependency", "dependencies"))
+	case analyze.SourceAnalysis{Presence: analyze.PresencePresent, Extraction: analyze.ExtractionPartial}:
+		return fmt.Sprintf("[%s · %d %s · partial]", form, len(source.Dependencies), pluralize(len(source.Dependencies), "dependency", "dependencies"))
+	case analyze.SourceAnalysis{Presence: analyze.PresencePresent, Extraction: analyze.ExtractionUnsupported}:
+		return fmt.Sprintf("[%s · references present, not extracted]", form)
+	case analyze.SourceAnalysis{Presence: analyze.PresenceUnknown, Extraction: analyze.ExtractionFailed}:
+		return fmt.Sprintf("[%s · analysis failed]", form)
 	default:
-		return "[matched]"
+		return fmt.Sprintf("[%s · identified only]", form)
 	}
 }
 
-func manifestState(manifest analyze.ManifestMatch) string {
-	if len(manifest.Dependencies) > 0 {
-		return "extracted"
-	}
-	if manifest.HasDependencies == nil {
-		return "unknown"
-	}
-	if *manifest.HasDependencies {
-		return "present-not-extracted"
-	}
-	return "empty"
-}
-
-func renderDependencies(dependencies []analyze.Dependency) string {
+func renderDependencies(dependencies []analyze.DependencyReference) string {
 	if len(dependencies) == 0 {
 		return ""
 	}
 
-	allUnsectioned := true
+	allUngrouped := true
 	for _, dependency := range dependencies {
-		if dependency.Section != "" {
-			allUnsectioned = false
+		if dependency.SourceGroup != "" {
+			allUngrouped = false
 			break
 		}
 	}
-	if allUnsectioned {
+	if allUngrouped {
 		var b strings.Builder
 		for _, dependency := range dependencies {
 			b.WriteString(fmt.Sprintf("  - %s\n", displayDependency(dependency)))
@@ -175,7 +119,7 @@ func renderDependencies(dependencies []analyze.Dependency) string {
 	order := make([]string, 0, len(dependencies))
 	grouped := make(map[string][]string, len(dependencies))
 	for _, dependency := range dependencies {
-		groupName := dependency.Section
+		groupName := dependency.SourceGroup
 		if groupName == "" {
 			groupName = "[default group]"
 		}
@@ -199,29 +143,23 @@ func renderDependencies(dependencies []analyze.Dependency) string {
 	return b.String()
 }
 
-func renderWarnings(warnings []string) string {
-	if len(warnings) == 0 {
-		return ""
-	}
-
+func renderDiagnostics(diagnostics []analyze.Diagnostic) string {
 	var b strings.Builder
-	for _, warning := range warnings {
-		b.WriteString(fmt.Sprintf("  warning: %s\n", warning))
+	for _, diagnostic := range diagnostics {
+		b.WriteString(fmt.Sprintf("  %s [%s]: %s\n", diagnostic.Severity, diagnostic.Code, diagnostic.Message))
 	}
 	return b.String()
 }
 
-func filterVisibleManifests(manifests []analyze.ManifestMatch, opts HumanOptions) []analyze.ManifestMatch {
-	if opts.ShowEmpty {
-		return manifests
+func filterVisibleSources(sources []analyze.DependencySourceResult, opts HumanOptions) []analyze.DependencySourceResult {
+	if opts.ShowWithoutDependencies {
+		return sources
 	}
-
-	filtered := make([]analyze.ManifestMatch, 0, len(manifests))
-	for _, manifest := range manifests {
-		if manifestState(manifest) == "empty" {
-			continue
+	filtered := make([]analyze.DependencySourceResult, 0, len(sources))
+	for _, source := range sources {
+		if source.Analysis.Presence != analyze.PresenceAbsent {
+			filtered = append(filtered, source)
 		}
-		filtered = append(filtered, manifest)
 	}
 	return filtered
 }

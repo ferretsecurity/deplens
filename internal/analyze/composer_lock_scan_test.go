@@ -13,22 +13,22 @@ func TestScanComposerLockExtractsDependencies(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(result.Manifests) != 2 {
-		t.Fatalf("expected 2 manifests, got %d", len(result.Manifests))
+	if len(result.Sources) != 2 {
+		t.Fatalf("expected 2 dependency sources, got %d", len(result.Sources))
 	}
 
-	var composerLock *ManifestMatch
-	for i := range result.Manifests {
-		if result.Manifests[i].Type == ManifestType("php-composer-lock") {
-			composerLock = &result.Manifests[i]
+	var composerLock *DependencySourceResult
+	for i := range result.Sources {
+		if result.Sources[i].Detector == DetectorID("php-composer-lock") {
+			composerLock = &result.Sources[i]
 			break
 		}
 	}
 	if composerLock == nil {
-		t.Fatalf("expected php-composer-lock manifest, got %+v", result.Manifests)
+		t.Fatalf("expected php-composer-lock dependency source, got %+v", result.Sources)
 	}
-	if composerLock.HasDependencies == nil || !*composerLock.HasDependencies {
-		t.Fatalf("expected has_dependencies=true, got %+v", composerLock.HasDependencies)
+	if composerLock.Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", composerLock.Analysis)
 	}
 
 	got := dependencyNames(composerLock.Dependencies)

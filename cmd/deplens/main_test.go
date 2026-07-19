@@ -11,8 +11,8 @@ import (
 
 func TestRunDefaultPathWorks(t *testing.T) {
 	tmpDir := t.TempDir()
-	manifestPath := filepath.Join(tmpDir, "package.json")
-	writeFile(t, manifestPath, "{}")
+	sourcePath := filepath.Join(tmpDir, "package.json")
+	writeFile(t, sourcePath, "{}")
 
 	oldWD := mustGetwd(t)
 	t.Cleanup(func() {
@@ -27,11 +27,8 @@ func TestRunDefaultPathWorks(t *testing.T) {
 	if exitCode != 0 {
 		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "Found 1 manifest:") {
-		t.Fatalf("expected output to include manifest summary, got %q", stdout.String())
-	}
-	if !strings.Contains(stdout.String(), "- 1 confirmed empty") {
-		t.Fatalf("expected output to include confirmed empty summary, got %q", stdout.String())
+	if !strings.Contains(stdout.String(), "Found 1 dependency source:") {
+		t.Fatalf("expected output to include dependency source summary, got %q", stdout.String())
 	}
 	if strings.Contains(stdout.String(), "package.json [no dependencies]") {
 		t.Fatalf("expected confirmed-empty package.json to be hidden by default, got %q", stdout.String())
@@ -68,7 +65,7 @@ func TestRunExplicitPathDetectsRequirementsIn(t *testing.T) {
 	}
 }
 
-func TestRunHidesConfirmedEmptyManifestsByDefault(t *testing.T) {
+func TestRunHidesSourcesWithoutDependenciesByDefault(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 
@@ -76,27 +73,24 @@ func TestRunHidesConfirmedEmptyManifestsByDefault(t *testing.T) {
 	if exitCode != 0 {
 		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "Found 1 manifest:") {
-		t.Fatalf("expected summary to include manifest count, got %q", stdout.String())
-	}
-	if !strings.Contains(stdout.String(), "- 1 confirmed empty") {
-		t.Fatalf("expected summary to include confirmed empty count, got %q", stdout.String())
+	if !strings.Contains(stdout.String(), "Found 1 dependency source:") {
+		t.Fatalf("expected summary to include dependency source count, got %q", stdout.String())
 	}
 	if strings.Contains(stdout.String(), "setup.cfg [no dependencies]") {
 		t.Fatalf("expected confirmed-empty manifest to be hidden by default, got %q", stdout.String())
 	}
 }
 
-func TestRunShowEmptyIncludesConfirmedEmptyManifests(t *testing.T) {
+func TestRunShowWithoutDependenciesIncludesAbsentSources(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 
-	exitCode := run([]string{"--show-empty", filepath.Join("..", "..", "testdata", "python", "setup-cfg-inline-comma-unsupported")}, &stdout, &stderr)
+	exitCode := run([]string{"--show-without-dependencies", filepath.Join("..", "..", "testdata", "python", "setup-cfg-inline-comma-unsupported")}, &stdout, &stderr)
 	if exitCode != 0 {
 		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "setup.cfg [no dependencies]") {
-		t.Fatalf("expected confirmed-empty manifest to be shown with --show-empty, got %q", stdout.String())
+	if !strings.Contains(stdout.String(), "setup.cfg [manifest · no dependency references]") {
+		t.Fatalf("expected absent source to be shown with --show-without-dependencies, got %q", stdout.String())
 	}
 }
 
@@ -113,27 +107,34 @@ func TestRunJSONOutput(t *testing.T) {
 	}
 
 	var payload struct {
-		Root      string `json:"root"`
-		Manifests []struct {
-			Type string `json:"type"`
-			Path string `json:"path"`
-		} `json:"manifests"`
+		Root    string `json:"root"`
+		Sources []struct {
+			Detector string `json:"detector"`
+			Path     string `json:"path"`
+		} `json:"sources"`
 	}
 	if err := json.Unmarshal(stdout.Bytes(), &payload); err != nil {
 		t.Fatalf("expected valid JSON output: %v", err)
 	}
-	if len(payload.Manifests) != 1 || payload.Manifests[0].Type != "java" {
-		t.Fatalf("unexpected manifests payload: %+v", payload.Manifests)
+	if len(payload.Sources) != 1 || payload.Sources[0].Detector != "java" {
+		t.Fatalf("unexpected sources payload: %+v", payload.Sources)
 	}
 }
 
-func TestParseArgsShowEmptyFlag(t *testing.T) {
-	cfg, _, err := parseArgs([]string{"--show-empty"})
+func TestParseArgsShowWithoutDependenciesFlag(t *testing.T) {
+	cfg, _, err := parseArgs([]string{"--show-without-dependencies"})
 	if err != nil {
 		t.Fatalf("parseArgs returned error: %v", err)
 	}
-	if !cfg.showEmpty {
-		t.Fatalf("expected showEmpty to be true")
+	if !cfg.showWithoutDependencies {
+		t.Fatalf("expected showWithoutDependencies to be true")
+	}
+}
+
+func TestParseArgsRejectsRemovedShowEmptyFlag(t *testing.T) {
+	_, _, err := parseArgs([]string{"--show-empty"})
+	if err == nil || !strings.Contains(err.Error(), "flag provided but not defined") {
+		t.Fatalf("expected removed flag to be rejected, got %v", err)
 	}
 }
 
@@ -148,8 +149,8 @@ func TestParseArgsDefaults(t *testing.T) {
 	if cfg.json {
 		t.Fatalf("expected json to default to false")
 	}
-	if cfg.showEmpty {
-		t.Fatalf("expected showEmpty to default to false")
+	if cfg.showWithoutDependencies {
+		t.Fatalf("expected showWithoutDependencies to default to false")
 	}
 	if cfg.rulesPath != "" {
 		t.Fatalf("expected rulesPath to default to empty, got %q", cfg.rulesPath)
@@ -204,7 +205,7 @@ func TestRunHelpPrintsUsageToStdout(t *testing.T) {
 	if !strings.Contains(output, "Usage: deplens [flags] [path]") {
 		t.Fatalf("expected usage line in stdout, got %q", output)
 	}
-	if !strings.Contains(output, "-show-empty") {
+	if !strings.Contains(output, "-show-without-dependencies") {
 		t.Fatalf("expected help output to list flags, got %q", output)
 	}
 }
@@ -247,8 +248,8 @@ resource "aws_glue_job" "python_shell_example" {
 	if exitCode != 0 {
 		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "Found 1 manifest:") ||
-		!strings.Contains(stdout.String(), "job.tf [matched]") {
+	if !strings.Contains(stdout.String(), "Found 1 dependency source:") ||
+		!strings.Contains(stdout.String(), "job.tf [source-code · identified only]") {
 		t.Fatalf("expected output to include terraform glue source, got %q", stdout.String())
 	}
 }
@@ -266,7 +267,7 @@ func TestRunDetectsHTMLExternalScripts(t *testing.T) {
 	if exitCode != 0 {
 		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "index.html [1 dep]") ||
+	if !strings.Contains(stdout.String(), "index.html [markup · 1 dependency]") ||
 		!strings.Contains(stdout.String(), "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js") {
 		t.Fatalf("expected output to include html external script dependency, got %q", stdout.String())
 	}
@@ -281,7 +282,7 @@ func TestRunRendersComposerLockSections(t *testing.T) {
 		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
 	output := stdout.String()
-	if !strings.Contains(output, "composer.lock [2 deps]") {
+	if !strings.Contains(output, "composer.lock [lockfile · 2 dependencies]") {
 		t.Fatalf("expected output to include composer.lock summary, got %q", output)
 	}
 	if !strings.Contains(output, "  packages:\n    - monolog/monolog@3.6.0") {
@@ -352,7 +353,7 @@ func TestRunEmptyDirectoryReturnsSuccess(t *testing.T) {
 	if exitCode != 0 {
 		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "No manifests found.") {
+	if !strings.Contains(stdout.String(), "No dependency sources found.") {
 		t.Fatalf("expected empty state output, got %q", stdout.String())
 	}
 }
@@ -362,7 +363,7 @@ func TestRunWithCustomRulesFile(t *testing.T) {
 	projectDir := filepath.Join(tmpDir, "project")
 	writeFile(t, filepath.Join(projectDir, "deps.gradle"), "")
 	rulesPath := filepath.Join(tmpDir, "rules.yaml")
-	writeFile(t, rulesPath, "rules:\n  - name: gradle\n    filename-regex: '^deps\\.gradle$'\n")
+	writeFile(t, rulesPath, "rules:\n  - id: gradle\n    form: build-definition\n    roles: [declaration, constraint]\n    filename-regex: '^deps\\.gradle$'\n")
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer

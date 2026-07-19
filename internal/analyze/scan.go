@@ -9,17 +9,84 @@ import (
 	"strings"
 )
 
-type ManifestMatch struct {
-	Type            ManifestType `json:"type"`
-	Path            string       `json:"path"`
-	Dependencies    []Dependency `json:"dependencies,omitempty"`
-	HasDependencies *bool        `json:"has_dependencies"`
-	Warnings        []string     `json:"warnings,omitempty"`
+type DetectorID string
+type SourceForm string
+type SourceRole string
+type PackageType string
+type DependencyPresence string
+type ExtractionState string
+type Relationship string
+type DependencyScope string
+type OriginKind string
+type DiagnosticSeverity string
+
+const (
+	PresenceUnknown DependencyPresence = "unknown"
+	PresenceAbsent  DependencyPresence = "absent"
+	PresencePresent DependencyPresence = "present"
+
+	ExtractionUnsupported ExtractionState = "unsupported"
+	ExtractionComplete    ExtractionState = "complete"
+	ExtractionPartial     ExtractionState = "partial"
+	ExtractionFailed      ExtractionState = "failed"
+
+	DiagnosticWarning DiagnosticSeverity = "warning"
+	DiagnosticError   DiagnosticSeverity = "error"
+
+	RelationshipDirect       Relationship = "direct"
+	RelationshipTransitive   Relationship = "transitive"
+	RelationshipInconclusive Relationship = "inconclusive"
+
+	ScopeRuntime     DependencyScope = "runtime"
+	ScopeDevelopment DependencyScope = "development"
+	ScopeTest        DependencyScope = "test"
+	ScopeBuild       DependencyScope = "build"
+	ScopeOptional    DependencyScope = "optional"
+
+	OriginRegistry OriginKind = "registry"
+	OriginGit      OriginKind = "git"
+	OriginPath     OriginKind = "path"
+	OriginURL      OriginKind = "url"
+)
+
+type DependencyReference struct {
+	PackageType       PackageType       `json:"package_type,omitempty"`
+	Raw               string            `json:"raw"`
+	Name              string            `json:"name,omitempty"`
+	Version           string            `json:"version,omitempty"`
+	VersionConstraint string            `json:"version_constraint,omitempty"`
+	VERS              string            `json:"vers,omitempty"`
+	SourceGroup       string            `json:"source_group,omitempty"`
+	OriginKind        OriginKind        `json:"origin_kind,omitempty"`
+	Relationship      Relationship      `json:"relationship,omitempty"`
+	Scope             DependencyScope   `json:"scope,omitempty"`
+	Attributes        map[string]string `json:"attributes,omitempty"`
+}
+
+type SourceAnalysis struct {
+	Presence   DependencyPresence `json:"presence"`
+	Extraction ExtractionState    `json:"extraction"`
+}
+
+type Diagnostic struct {
+	Severity DiagnosticSeverity `json:"severity"`
+	Code     string             `json:"code"`
+	Message  string             `json:"message"`
+}
+
+type DependencySourceResult struct {
+	Detector     DetectorID            `json:"detector"`
+	Path         string                `json:"path"`
+	Form         SourceForm            `json:"form"`
+	Roles        []SourceRole          `json:"roles"`
+	Analysis     SourceAnalysis        `json:"analysis"`
+	Dependencies []DependencyReference `json:"dependencies,omitempty"`
+	Diagnostics  []Diagnostic          `json:"diagnostics,omitempty"`
 }
 
 type ScanResult struct {
-	Root      string          `json:"root"`
-	Manifests []ManifestMatch `json:"manifests"`
+	Root    string                   `json:"root"`
+	Sources []DependencySourceResult `json:"sources"`
 }
 
 func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error) {
@@ -39,13 +106,12 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 
 	ignoreSet := make(map[string]struct{}, len(ignoreDirs))
 	for _, dir := range ignoreDirs {
-		if dir == "" {
-			continue
+		if dir != "" {
+			ignoreSet[dir] = struct{}{}
 		}
-		ignoreSet[dir] = struct{}{}
 	}
 
-	result := ScanResult{Root: absRoot}
+	result := ScanResult{Root: absRoot, Sources: make([]DependencySourceResult, 0)}
 	err = filepath.WalkDir(absRoot, func(path string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
@@ -65,30 +131,22 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 		}
 		relPath = normalizeRelativePath(relPath)
 
-		manifestType, dependencies, hasDependencies, warnings, ok, err := ruleset.DetectManifestFileAtRelativePath(path, d.Name(), relPath)
+		source, ok, err := ruleset.AnalyzeDependencySourceAtRelativePath(path, d.Name(), relPath)
 		if err != nil {
 			return err
 		}
-		if !ok {
-			return nil
+		if ok {
+			result.Sources = append(result.Sources, source)
 		}
-
-		result.Manifests = append(result.Manifests, ManifestMatch{
-			Type:            manifestType,
-			Path:            relPath,
-			Dependencies:    dependencies,
-			HasDependencies: hasDependencies,
-			Warnings:        warnings,
-		})
 		return nil
 	})
 	if err != nil {
 		return ScanResult{}, fmt.Errorf("walk root: %w", err)
 	}
 
-	slices.SortFunc(result.Manifests, func(a, b ManifestMatch) int {
+	slices.SortFunc(result.Sources, func(a, b DependencySourceResult) int {
 		if a.Path == b.Path {
-			return compareManifestType(a.Type, b.Type)
+			return compareDetectorID(a.Detector, b.Detector)
 		}
 		if a.Path < b.Path {
 			return -1
@@ -99,7 +157,7 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 	return result, nil
 }
 
-func compareManifestType(a, b ManifestType) int {
+func compareDetectorID(a, b DetectorID) int {
 	if a == b {
 		return 0
 	}
@@ -113,28 +171,47 @@ func normalizeRelativePath(relPath string) string {
 	return strings.ReplaceAll(filepath.ToSlash(relPath), "\\", "/")
 }
 
-type PackageType string
-
-type Dependency struct {
-	Type       PackageType       `json:"type,omitempty"`
-	Raw        string            `json:"raw"`
-	Name       string            `json:"name,omitempty"`
-	Version    string            `json:"version,omitempty"`
-	Constraint string            `json:"constraint,omitempty"`
-	VERS       string            `json:"vers,omitempty"`
-	Section    string            `json:"section,omitempty"`
-	Source     string            `json:"source,omitempty"`
-	Extras     map[string]string `json:"extras,omitempty"`
-}
-
-func dependenciesFromStrings(values []string) []Dependency {
+func dependenciesFromStrings(values []string) []DependencyReference {
 	if len(values) == 0 {
 		return nil
 	}
 
-	dependencies := make([]Dependency, 0, len(values))
+	dependencies := make([]DependencyReference, 0, len(values))
 	for _, value := range values {
-		dependencies = append(dependencies, Dependency{Raw: value})
+		dependencies = append(dependencies, DependencyReference{Raw: value})
 	}
 	return dependencies
+}
+
+func completeAnalysis(dependencies []DependencyReference) SourceAnalysis {
+	if len(dependencies) == 0 {
+		return SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}
+	}
+	return SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}
+}
+
+func presenceAnalysis(present bool) SourceAnalysis {
+	if present {
+		return SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionUnsupported}
+	}
+	return SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionUnsupported}
+}
+
+func identifiedAnalysis() SourceAnalysis {
+	return SourceAnalysis{Presence: PresenceUnknown, Extraction: ExtractionUnsupported}
+}
+
+func failedAnalysis() SourceAnalysis {
+	return SourceAnalysis{Presence: PresenceUnknown, Extraction: ExtractionFailed}
+}
+
+func diagnosticsFromMessages(severity DiagnosticSeverity, code string, messages []string) []Diagnostic {
+	if len(messages) == 0 {
+		return nil
+	}
+	diagnostics := make([]Diagnostic, 0, len(messages))
+	for _, message := range messages {
+		diagnostics = append(diagnostics, Diagnostic{Severity: severity, Code: code, Message: message})
+	}
+	return diagnostics
 }
