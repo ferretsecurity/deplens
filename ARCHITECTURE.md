@@ -109,7 +109,7 @@ type sourceAnalyzerResult struct {
 }
 ```
 
-`Recognized` distinguishes selector matching from semantic recognition. An unrecognized analyzer result allows a later detector to inspect the same file. A recognized result must use one of the valid analysis pairs enforced by analyzer-result validation.
+`Recognized` distinguishes selector matching from semantic recognition. An unrecognized analyzer result allows a later detector to inspect the same file. A recognized result must use one of the valid analysis pairs defined in the glossary.
 
 Dedicated extractors normally return present/complete or absent/complete. Presence-only analyzers return present/unsupported or absent/unsupported. Recoverable extraction problems with usable references return present/partial plus warning diagnostics. Total failures become unknown/failed plus an error diagnostic.
 
