@@ -41,7 +41,8 @@ For each regular file under the scan root:
 8. Convert file-read or total analyzer errors to `unknown` + `failed` with an error diagnostic.
 9. Sort source results by path, then detector ID.
 10. Build ecosystem-specific project and workspace ownership from the immutable source set and normalized paths.
-11. Evaluate configured checks in stable check-ID order, then sort check runs and findings by subject path and check ID.
+11. Parse evaluator-specific policy inputs into repository facts.
+12. Evaluate configured checks in stable check-ID order, then sort check runs and findings by project root and check ID.
 
 Ignored directory names are skipped during traversal. Scanning does not access the network.
 
@@ -150,13 +151,13 @@ checks:
     remediation: Run `npm install` and commit the generated lockfile.
 ```
 
-The five missing-lockfile evaluator types have empty configurations. Manager evidence, dependency gating, workspace ownership, application-role requirements, and ambiguity handling are evaluator invariants implemented in Go. Ambiguous inputs produce skipped check runs; parsing failures produce failed runs; neither produces a policy finding.
+The five missing-lockfile evaluator types have empty configurations. Manager evidence, dependency gating, workspace ownership, Cargo application-role requirements, and ambiguity handling are evaluator invariants implemented in Go. JavaScript package publishability does not affect check eligibility. Ambiguous inputs produce skipped check runs; parsing failures produce failed runs; neither produces a policy finding.
 
 ## Repository relationships and checks
 
-Missing-file checks run after traversal because a file-local analyzer cannot observe absence. JavaScript package workspaces, pnpm workspaces, uv workspaces, and Cargo workspaces attach member manifests to explicit owners. A lockfile only satisfies the compatible owning project; directory ancestry by itself is insufficient.
+Missing-file checks run after traversal because a file-local analyzer cannot observe absence. JavaScript package workspaces, pnpm workspaces, uv workspaces, and Cargo workspaces attach member manifests to explicit owners. A lockfile only satisfies the compatible owning project; directory ancestry by itself is insufficient. Generic source recognition remains separate from policy input collection: when the uv evaluator is configured, `pyproject.toml` content is retained from the scanner's single read and parsed into uv facts even if dependency queries did not recognize it as a dependency source.
 
-The evaluator layer remains offline and does not invoke package managers. Each finding is anchored to the owning manifest and has a fingerprint derived from schema version, check ID, subject identity, and stable evidence. Human wording, severity, and source line movement do not affect the fingerprint.
+The evaluator layer remains offline and does not invoke package managers. A finding subject contains only its normalized `project_root`; concrete manifest anchors live in `locations`. Fingerprints use a dedicated fingerprint-format version plus the check ID, project root, and stable evidence. They are independent of the JSON output schema version, human wording, severity, and source location movement.
 
 ## Adding an analyzer
 

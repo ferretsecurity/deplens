@@ -1,6 +1,5 @@
 {
   "name": "npm-app",
-  "private": true,
   "packageManager": "npm@11.4.2",
   "dependencies": {
     "express": "^5.1.0"

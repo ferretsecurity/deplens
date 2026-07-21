@@ -30,7 +30,7 @@ func TestMissingLockfileDefaultChecks(t *testing.T) {
 				t.Fatalf("expected one finding, got %#v", result.Findings)
 			}
 			finding := result.Findings[0]
-			if finding.CheckID != test.checkID || finding.Subject.Path != test.path || finding.Fingerprint == "" {
+			if finding.CheckID != test.checkID || len(finding.Locations) != 1 || finding.Locations[0].Path != test.path || finding.Fingerprint == "" {
 				t.Fatalf("unexpected finding: %#v", finding)
 			}
 			if len(result.CheckRuns) != 1 || result.CheckRuns[0].Status != CheckCompleted {
@@ -112,7 +112,7 @@ func TestMissingLockfileCheckUsesWorkspaceOwner(t *testing.T) {
 		t.Fatalf("expected one finding, got %#v", result.Findings)
 	}
 	finding := result.Findings[0]
-	if finding.CheckID != "javascript-pnpm-lockfile-missing" || finding.Subject.Key != "." || finding.Subject.Path != "package.json" {
+	if finding.CheckID != "javascript-pnpm-lockfile-missing" || finding.Subject.ProjectRoot != "." || len(finding.Locations) != 1 || finding.Locations[0].Path != "package.json" {
 		t.Fatalf("expected workspace-root finding, got %#v", finding)
 	}
 }
@@ -131,8 +131,13 @@ func TestMissingLockfileChecksUseUVAndCargoWorkspaceOwners(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Scan failed: %v", err)
 			}
-			if len(result.Findings) != 1 || result.Findings[0].CheckID != test.checkID || result.Findings[0].Subject.Key != "." {
+			if len(result.Findings) != 1 || result.Findings[0].CheckID != test.checkID || result.Findings[0].Subject.ProjectRoot != "." {
 				t.Fatalf("expected one workspace-root finding, got %#v", result.Findings)
+			}
+			if test.fixture == "uv-workspace" && slices.ContainsFunc(result.Sources, func(source DependencySourceResult) bool {
+				return source.Path == "pyproject.toml"
+			}) {
+				t.Fatalf("dependency-free workspace root must remain a policy input, not a dependency source: %#v", result.Sources)
 			}
 		})
 	}
@@ -143,16 +148,58 @@ func TestUnrelatedAncestorLockfileDoesNotSatisfyNestedProject(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(result.Findings) != 1 || result.Findings[0].Subject.Key != "nested" || result.Findings[0].Subject.Path != "nested/package.json" {
+	if len(result.Findings) != 1 || result.Findings[0].Subject.ProjectRoot != "nested" || len(result.Findings[0].Locations) != 1 || result.Findings[0].Locations[0].Path != "nested/package.json" {
 		t.Fatalf("expected nested-project finding, got %#v", result.Findings)
 	}
 }
 
 func TestFindingFingerprintDoesNotDependOnSummary(t *testing.T) {
-	subject := projectSubject("apps/web", "apps/web/package.json")
-	first := newMissingLockfileFinding(check{ID: "check", Summary: "first", Severity: SeverityMedium}, subject, "npm", "package-lock.json")
-	second := newMissingLockfileFinding(check{ID: "check", Summary: "changed", Severity: SeverityHigh}, subject, "npm", "package-lock.json")
+	subject := projectSubject("apps/web")
+	first := newMissingLockfileFinding(check{ID: "check", Summary: "first", Severity: SeverityMedium}, subject, "apps/web/package.json", "npm", "package-lock.json")
+	second := newMissingLockfileFinding(check{ID: "check", Summary: "changed", Severity: SeverityHigh}, subject, "apps/web/alternate.json", "npm", "package-lock.json")
 	if first.Fingerprint != second.Fingerprint {
 		t.Fatalf("fingerprint changed with presentation fields: %q != %q", first.Fingerprint, second.Fingerprint)
+	}
+}
+
+func TestJavaScriptMissingLockfileCheckDoesNotRequirePrivatePackage(t *testing.T) {
+	result, err := Scan(filepath.Join("..", "..", "testdata", "findings", "npm-missing"), nil, mustLoadDefaultRules(t))
+	if err != nil {
+		t.Fatalf("Scan failed: %v", err)
+	}
+	if len(result.Findings) != 1 || result.Findings[0].CheckID != "javascript-npm-lockfile-missing" {
+		t.Fatalf("expected public npm project finding, got %#v", result.Findings)
+	}
+}
+
+func TestUVCheckParsesPyprojectPolicyInputWithoutRecognizedSource(t *testing.T) {
+	ruleset, err := loadRules("checks.yaml", []byte(`
+rules:
+  - id: unrelated
+    form: other
+    roles: [inventory]
+    filename-regex: '^unrelated$'
+checks:
+  - id: python-uv-lockfile-missing
+    summary: uv project has dependencies but no uv lockfile
+    severity: medium
+    evaluator:
+      type: uv-lockfile-missing
+    remediation: Run uv lock.
+`))
+	if err != nil {
+		t.Fatalf("loadRules failed: %v", err)
+	}
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "pyproject.toml"), "[project]\ndependencies = [\"httpx\"]\n[tool.uv]\n")
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("Scan failed: %v", err)
+	}
+	if len(result.Sources) != 0 {
+		t.Fatalf("expected no recognized dependency sources, got %#v", result.Sources)
+	}
+	if len(result.Findings) != 1 || result.Findings[0].Subject.ProjectRoot != "." || result.Findings[0].Locations[0].Path != "pyproject.toml" {
+		t.Fatalf("expected uv finding from policy input, got %#v", result.Findings)
 	}
 }

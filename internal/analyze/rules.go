@@ -319,16 +319,20 @@ func (r Ruleset) MatchSelectorOnlySource(name string) (DetectorID, bool) {
 }
 
 func (r Ruleset) AnalyzeDependencySource(path, name string) (DependencySourceResult, bool, error) {
-	return r.analyzeDependencySource(path, name, normalizeRelativePath(name))
+	result, recognized, _, err := r.analyzeDependencySource(path, name, normalizeRelativePath(name))
+	return result, recognized, err
 }
 
 func (r Ruleset) AnalyzeDependencySourceAtRelativePath(path, name, relPath string) (DependencySourceResult, bool, error) {
-	return r.analyzeDependencySource(path, name, normalizeRelativePath(relPath))
+	result, recognized, _, err := r.analyzeDependencySource(path, name, normalizeRelativePath(relPath))
+	return result, recognized, err
 }
 
-func (r Ruleset) analyzeDependencySource(filePath, name, relPath string) (DependencySourceResult, bool, error) {
-	var content []byte
-	contentLoaded := false
+func (r Ruleset) analyzeDependencySource(filePath, name, relPath string) (DependencySourceResult, bool, []byte, error) {
+	return r.analyzeDependencySourceWithContent(filePath, name, relPath, nil, false)
+}
+
+func (r Ruleset) analyzeDependencySourceWithContent(filePath, name, relPath string, content []byte, contentLoaded bool) (DependencySourceResult, bool, []byte, error) {
 
 	for _, d := range r.detectors {
 		if !d.matches(name, relPath) {
@@ -342,11 +346,11 @@ func (r Ruleset) analyzeDependencySource(filePath, name, relPath string) (Depend
 				if err != nil {
 					base.Analysis = failedAnalysis()
 					base.Diagnostics = []Diagnostic{{Severity: DiagnosticError, Code: "source-read-failed", Message: fmt.Sprintf("read candidate file %q: %v", filePath, err)}}
-					return base, true, nil
+					return base, true, nil, nil
 				}
 				base.content = data
 			}
-			return base, true, nil
+			return base, true, base.content, nil
 		}
 		if filePath == "" {
 			continue
@@ -356,7 +360,7 @@ func (r Ruleset) analyzeDependencySource(filePath, name, relPath string) (Depend
 			if err != nil {
 				base.Analysis = failedAnalysis()
 				base.Diagnostics = []Diagnostic{{Severity: DiagnosticError, Code: "source-read-failed", Message: fmt.Sprintf("read candidate file %q: %v", filePath, err)}}
-				return base, true, nil
+				return base, true, nil, nil
 			}
 			content = data
 			contentLoaded = true
@@ -368,11 +372,11 @@ func (r Ruleset) analyzeDependencySource(filePath, name, relPath string) (Depend
 			if needsPolicyContent(d.ID) {
 				base.content = append([]byte(nil), content...)
 			}
-			return base, true, nil
+			return base, true, content, nil
 		}
 		if result.Recognized {
 			if err := validateSourceAnalyzerResult(result); err != nil {
-				return DependencySourceResult{}, false, fmt.Errorf("detector %q returned invalid analysis: %w", d.ID, err)
+				return DependencySourceResult{}, false, content, fmt.Errorf("detector %q returned invalid analysis: %w", d.ID, err)
 			}
 			applyDependencyType(result.Dependencies, d.PackageType)
 			applyDependencyVERS(result.Dependencies)
@@ -382,15 +386,24 @@ func (r Ruleset) analyzeDependencySource(filePath, name, relPath string) (Depend
 			if needsPolicyContent(d.ID) {
 				base.content = append([]byte(nil), content...)
 			}
-			return base, true, nil
+			return base, true, content, nil
 		}
 	}
-	return DependencySourceResult{}, false, nil
+	return DependencySourceResult{}, false, content, nil
+}
+
+func (r Ruleset) hasEvaluator(evaluatorType string) bool {
+	for _, configured := range r.checks {
+		if configured.EvaluatorType == evaluatorType {
+			return true
+		}
+	}
+	return false
 }
 
 func needsPolicyContent(id DetectorID) bool {
 	switch id {
-	case "js", "js-pnpm-workspace", "python-pyproject", "rust-cargo":
+	case "js", "js-pnpm-workspace", "rust-cargo":
 		return true
 	default:
 		return false

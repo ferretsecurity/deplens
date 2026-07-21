@@ -98,9 +98,7 @@ type DependencySourceResult struct {
 }
 
 type FindingSubject struct {
-	Kind string `json:"kind"`
-	Key  string `json:"key"`
-	Path string `json:"path"`
+	ProjectRoot string `json:"project_root"`
 }
 
 type FindingLocation struct {
@@ -158,6 +156,8 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 
 	result := ScanResult{SchemaVersion: 1, Root: absRoot, Sources: make([]DependencySourceResult, 0), CheckRuns: make([]CheckRun, 0), Findings: make([]Finding, 0)}
 	discoveredPaths := make(map[string]struct{})
+	policyInputs := make([]policyInput, 0)
+	collectPyprojects := ruleset.hasEvaluator("uv-lockfile-missing")
 	err = filepath.WalkDir(absRoot, func(path string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
@@ -178,7 +178,19 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 		relPath = normalizeRelativePath(relPath)
 		discoveredPaths[relPath] = struct{}{}
 
-		source, ok, err := ruleset.AnalyzeDependencySourceAtRelativePath(path, d.Name(), relPath)
+		var source DependencySourceResult
+		var ok bool
+		if collectPyprojects && d.Name() == "pyproject.toml" {
+			content, readErr := os.ReadFile(path)
+			policyInputs = append(policyInputs, policyInput{path: relPath, content: content, readError: readErr})
+			if readErr == nil {
+				source, ok, _, err = ruleset.analyzeDependencySourceWithContent(path, d.Name(), relPath, content, true)
+			} else {
+				source, ok, _, err = ruleset.analyzeDependencySource(path, d.Name(), relPath)
+			}
+		} else {
+			source, ok, _, err = ruleset.analyzeDependencySource(path, d.Name(), relPath)
+		}
 		if err != nil {
 			return err
 		}
@@ -201,7 +213,7 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 		return 1
 	})
 
-	result.CheckRuns, result.Findings = evaluateChecks(result.Sources, discoveredPaths, ruleset.checks)
+	result.CheckRuns, result.Findings = evaluateChecks(result.Sources, policyInputs, discoveredPaths, ruleset.checks)
 	for index := range result.Sources {
 		result.Sources[index].content = nil
 	}

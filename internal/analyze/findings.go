@@ -12,11 +12,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const findingFingerprintVersion = "1"
+
 type javascriptManifest struct {
 	path           string
 	root           string
 	hasDeps        bool
-	private        bool
 	manager        string
 	managerInvalid bool
 	workspaces     []string
@@ -51,6 +52,12 @@ type policyParseError struct {
 	detail   string
 }
 
+type policyInput struct {
+	path      string
+	content   []byte
+	readError error
+}
+
 type evaluationContext struct {
 	sourceByPath     map[string]DependencySourceResult
 	javascript       []javascriptManifest
@@ -60,11 +67,11 @@ type evaluationContext struct {
 	parseErrors      []policyParseError
 }
 
-func evaluateChecks(sources []DependencySourceResult, discoveredPaths map[string]struct{}, checks []check) ([]CheckRun, []Finding) {
+func evaluateChecks(sources []DependencySourceResult, policyInputs []policyInput, discoveredPaths map[string]struct{}, checks []check) ([]CheckRun, []Finding) {
 	if len(checks) == 0 {
 		return []CheckRun{}, []Finding{}
 	}
-	ctx := buildEvaluationContext(sources, discoveredPaths)
+	ctx := buildEvaluationContext(sources, policyInputs, discoveredPaths)
 	runs := make([]CheckRun, 0)
 	findings := make([]Finding, 0)
 	for _, configured := range checks {
@@ -90,7 +97,7 @@ func evaluateChecks(sources []DependencySourceResult, discoveredPaths map[string
 	return runs, findings
 }
 
-func buildEvaluationContext(sources []DependencySourceResult, discoveredPaths map[string]struct{}) evaluationContext {
+func buildEvaluationContext(sources []DependencySourceResult, policyInputs []policyInput, discoveredPaths map[string]struct{}) evaluationContext {
 	ctx := evaluationContext{
 		sourceByPath: make(map[string]DependencySourceResult, len(sources)),
 	}
@@ -115,18 +122,23 @@ func buildEvaluationContext(sources []DependencySourceResult, discoveredPaths ma
 				root = ""
 			}
 			ctx.javascriptSpaces = append(ctx.javascriptSpaces, workspaceDefinition{root: root, manager: "yarn"})
-		case "python-pyproject":
-			if manifest, err := readUVManifest(source.content, source); err == nil {
-				ctx.uv = append(ctx.uv, manifest)
-			} else {
-				ctx.parseErrors = append(ctx.parseErrors, policyParseError{detector: source.Detector, path: source.Path, detail: err.Error()})
-			}
 		case "rust-cargo":
 			if manifest, err := readCargoManifest(source.content, source, discoveredPaths); err == nil {
 				ctx.cargo = append(ctx.cargo, manifest)
 			} else {
 				ctx.parseErrors = append(ctx.parseErrors, policyParseError{detector: source.Detector, path: source.Path, detail: err.Error()})
 			}
+		}
+	}
+	for _, input := range policyInputs {
+		if input.readError != nil {
+			ctx.parseErrors = append(ctx.parseErrors, policyParseError{detector: "python-pyproject", path: input.path, detail: input.readError.Error()})
+			continue
+		}
+		if manifest, err := readUVManifest(input.content, input.path); err == nil {
+			ctx.uv = append(ctx.uv, manifest)
+		} else {
+			ctx.parseErrors = append(ctx.parseErrors, policyParseError{detector: "python-pyproject", path: input.path, detail: err.Error()})
 		}
 	}
 	for _, manifest := range ctx.javascript {
@@ -150,7 +162,6 @@ func readJavaScriptManifest(data []byte, source DependencySourceResult) (javascr
 	if manifest.root == "." {
 		manifest.root = ""
 	}
-	_ = json.Unmarshal(raw["private"], &manifest.private)
 	var packageManager string
 	if value, ok := raw["packageManager"]; ok {
 		if err := json.Unmarshal(value, &packageManager); err != nil {
@@ -208,19 +219,19 @@ func readPNPMWorkspace(data []byte, sourcePath string) (workspaceDefinition, err
 	return workspaceDefinition{root: root, patterns: cleanPatterns(raw.Packages), manager: "pnpm"}, nil
 }
 
-func readUVManifest(data []byte, source DependencySourceResult) (uvManifest, error) {
+func readUVManifest(data []byte, sourcePath string) (uvManifest, error) {
 	var raw map[string]any
 	if err := toml.Unmarshal(data, &raw); err != nil {
 		return uvManifest{}, err
 	}
-	root := path.Dir(source.Path)
+	root := path.Dir(sourcePath)
 	if root == "." {
 		root = ""
 	}
 	project, _ := raw["project"].(map[string]any)
 	tool, _ := raw["tool"].(map[string]any)
 	uv, uvManaged := tool["uv"].(map[string]any)
-	manifest := uvManifest{path: source.Path, root: root, managed: uvManaged}
+	manifest := uvManifest{path: sourcePath, root: root, managed: uvManaged}
 	manifest.hasDeps = nonEmptyValue(project["dependencies"]) || nonEmptyValue(project["optional-dependencies"]) || nonEmptyValue(raw["dependency-groups"])
 	if workspace, ok := uv["workspace"].(map[string]any); ok {
 		manifest.workspaces = stringsFromAny(workspace["members"])
@@ -262,7 +273,6 @@ func evaluateJavaScriptLockfile(ctx evaluationContext, configured check, manager
 		root     string
 		manifest string
 		hasDeps  bool
-		private  bool
 		managers map[string]struct{}
 		invalid  bool
 	}
@@ -284,7 +294,6 @@ func evaluateJavaScriptLockfile(ctx evaluationContext, configured check, manager
 			projects[ownerRoot] = current
 		}
 		current.hasDeps = current.hasDeps || manifest.hasDeps
-		current.private = current.private || manifest.private
 		current.invalid = current.invalid || manifest.managerInvalid
 		if manifest.manager != "" {
 			current.managers[manifest.manager] = struct{}{}
@@ -321,13 +330,9 @@ func evaluateJavaScriptLockfile(ctx evaluationContext, configured check, manager
 		if _, selected := project.managers[manager]; !selected {
 			continue
 		}
-		subject := projectSubject(project.root, project.manifest)
+		subject := projectSubject(project.root)
 		if project.invalid || len(project.managers) != 1 {
 			runs = append(runs, skippedRun(configured.ID, subject, "ambiguous-package-manager", "conflicting or unsupported JavaScript package-manager evidence"))
-			continue
-		}
-		if !project.private {
-			runs = append(runs, skippedRun(configured.ID, subject, "project-role-unknown", "JavaScript application role could not be established"))
 			continue
 		}
 		missing := true
@@ -340,7 +345,7 @@ func evaluateJavaScriptLockfile(ctx evaluationContext, configured check, manager
 		runs = append(runs, completedRun(configured.ID, subject))
 		if missing {
 			expected := strings.Join(accepted, " or ")
-			findings = append(findings, newMissingLockfileFinding(configured, subject, manager, expected))
+			findings = append(findings, newMissingLockfileFinding(configured, subject, project.manifest, manager, expected))
 		}
 	}
 	return runs, findings
@@ -373,13 +378,16 @@ func evaluateUVLockfile(ctx evaluationContext, configured check) ([]CheckRun, []
 		}
 		seen[ownerRoot] = struct{}{}
 		ownerManifest := manifest.path
-		if candidate := joinRoot(ownerRoot, "pyproject.toml"); ctx.sourceByPath[candidate].Path != "" {
-			ownerManifest = candidate
+		for _, candidate := range ctx.uv {
+			if candidate.root == ownerRoot {
+				ownerManifest = candidate.path
+				break
+			}
 		}
-		subject := projectSubject(ownerRoot, ownerManifest)
+		subject := projectSubject(ownerRoot)
 		runs = append(runs, completedRun(configured.ID, subject))
 		if _, ok := ctx.sourceByPath[joinRoot(ownerRoot, "uv.lock")]; !ok {
-			findings = append(findings, newMissingLockfileFinding(configured, subject, "uv", "uv.lock"))
+			findings = append(findings, newMissingLockfileFinding(configured, subject, ownerManifest, "uv", "uv.lock"))
 		}
 	}
 	return runs, findings
@@ -399,7 +407,7 @@ func evaluateCargoLockfile(ctx evaluationContext, configured check) ([]CheckRun,
 		}
 		ownerRoot := tomlWorkspaceOwner(manifest.root, workspaces)
 		if !manifest.application {
-			subject := projectSubject(manifest.root, manifest.path)
+			subject := projectSubject(manifest.root)
 			runs = append(runs, skippedRun(configured.ID, subject, "project-role-unknown", "Cargo application role could not be established"))
 			continue
 		}
@@ -411,10 +419,10 @@ func evaluateCargoLockfile(ctx evaluationContext, configured check) ([]CheckRun,
 		if candidate := joinRoot(ownerRoot, "Cargo.toml"); ctx.sourceByPath[candidate].Path != "" {
 			ownerManifest = candidate
 		}
-		subject := projectSubject(ownerRoot, ownerManifest)
+		subject := projectSubject(ownerRoot)
 		runs = append(runs, completedRun(configured.ID, subject))
 		if _, ok := ctx.sourceByPath[joinRoot(ownerRoot, "Cargo.lock")]; !ok {
-			findings = append(findings, newMissingLockfileFinding(configured, subject, "cargo", "Cargo.lock"))
+			findings = append(findings, newMissingLockfileFinding(configured, subject, ownerManifest, "cargo", "Cargo.lock"))
 		}
 	}
 	return runs, findings
@@ -500,12 +508,11 @@ func joinRoot(root, filename string) string {
 	return path.Join(root, filename)
 }
 
-func projectSubject(root, manifest string) FindingSubject {
-	key := root
-	if key == "" {
-		key = "."
+func projectSubject(root string) FindingSubject {
+	if root == "" {
+		root = "."
 	}
-	return FindingSubject{Kind: "project", Key: key, Path: manifest}
+	return FindingSubject{ProjectRoot: root}
 }
 
 func completedRun(id CheckID, subject FindingSubject) CheckRun {
@@ -527,36 +534,36 @@ func failedRunsForDetector(ctx evaluationContext, id CheckID, detector DetectorI
 			root = ""
 		}
 		runs = append(runs, CheckRun{
-			CheckID: id, Subject: projectSubject(root, parseError.path), Status: CheckFailed,
+			CheckID: id, Subject: projectSubject(root), Status: CheckFailed,
 			ReasonCode: "source-analysis-failed", Detail: parseError.detail,
 		})
 	}
 	return runs
 }
 
-func newMissingLockfileFinding(configured check, subject FindingSubject, manager, expected string) Finding {
+func newMissingLockfileFinding(configured check, subject FindingSubject, location, manager, expected string) Finding {
 	evidence := map[string]string{"manager": manager, "expected_lockfile": expected}
 	return Finding{
 		CheckID: configured.ID, Severity: configured.Severity, Summary: configured.Summary, Subject: subject,
-		Locations: []FindingLocation{{Path: subject.Path}}, Evidence: evidence, Remediation: configured.Remediation,
+		Locations: []FindingLocation{{Path: location}}, Evidence: evidence, Remediation: configured.Remediation,
 		Fingerprint: findingFingerprint(configured.ID, subject, manager, expected),
 	}
 }
 
 func findingFingerprint(id CheckID, subject FindingSubject, manager, expected string) string {
-	hash := sha256.Sum256([]byte(fmt.Sprintf("1\x00%s\x00%s\x00%s\x00%s\x00%s", id, subject.Kind, subject.Key, manager, expected)))
+	hash := sha256.Sum256([]byte(fmt.Sprintf("%s\x00%s\x00%s\x00%s\x00%s", findingFingerprintVersion, id, subject.ProjectRoot, manager, expected)))
 	return fmt.Sprintf("%x", hash[:])
 }
 
 func compareCheckRun(a, b CheckRun) int {
-	if value := strings.Compare(a.Subject.Path, b.Subject.Path); value != 0 {
+	if value := strings.Compare(a.Subject.ProjectRoot, b.Subject.ProjectRoot); value != 0 {
 		return value
 	}
 	return strings.Compare(string(a.CheckID), string(b.CheckID))
 }
 
 func compareFinding(a, b Finding) int {
-	if value := strings.Compare(a.Subject.Path, b.Subject.Path); value != 0 {
+	if value := strings.Compare(a.Subject.ProjectRoot, b.Subject.ProjectRoot); value != 0 {
 		return value
 	}
 	return strings.Compare(string(a.CheckID), string(b.CheckID))

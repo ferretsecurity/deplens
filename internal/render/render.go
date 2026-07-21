@@ -93,15 +93,19 @@ func renderFindings(findings []analyze.Finding) string {
 	}
 	ordered := slices.Clone(findings)
 	slices.SortFunc(ordered, func(a, b analyze.Finding) int {
-		if a.Subject.Path != b.Subject.Path {
-			return strings.Compare(a.Subject.Path, b.Subject.Path)
+		if a.Subject.ProjectRoot != b.Subject.ProjectRoot {
+			return strings.Compare(a.Subject.ProjectRoot, b.Subject.ProjectRoot)
 		}
 		return strings.Compare(string(a.CheckID), string(b.CheckID))
 	})
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("\nFound %d policy %s:\n", len(ordered), pluralize(len(ordered), "finding", "findings")))
 	for _, finding := range ordered {
-		b.WriteString(fmt.Sprintf("\n%s [%s] %s\n", finding.Subject.Path, finding.Severity, finding.Summary))
+		location := finding.Subject.ProjectRoot
+		if len(finding.Locations) > 0 {
+			location = finding.Locations[0].Path
+		}
+		b.WriteString(fmt.Sprintf("\n%s [%s] %s\n", location, finding.Severity, finding.Summary))
 		b.WriteString(fmt.Sprintf("  check: %s\n", finding.CheckID))
 		if expected := finding.Evidence["expected_lockfile"]; expected != "" {
 			b.WriteString(fmt.Sprintf("  expected: %s\n", expected))

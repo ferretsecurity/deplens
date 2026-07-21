@@ -47,20 +47,19 @@ The built-in rules include five conservative missing-lockfile checks:
 - `python-uv-lockfile-missing`
 - `rust-cargo-lockfile-missing-for-application`
 
-JavaScript checks require an explicit npm, pnpm, or Yarn signal and a proven application signal such as `private: true`. The uv check requires uv-specific project configuration. The Cargo check requires a binary target such as `src/main.rs`. Dependency-free manifests are not flagged. Explicit workspace ownership is honored, and an unrelated ancestor lockfile does not satisfy a nested independent project. Ambiguous package-manager, workspace, or project-role cases are skipped rather than reported as findings.
+JavaScript checks require explicit npm, pnpm, or Yarn evidence; package publishability (`private`) does not affect eligibility. The uv check requires uv-specific project configuration. The Cargo check requires a binary target such as `src/main.rs`. Dependency-free projects are not flagged. Explicit workspace ownership is honored, and an unrelated ancestor lockfile does not satisfy a nested independent project. Ambiguous package-manager or Cargo project-role cases are skipped rather than reported as findings.
 
 For example, given this `package.json` without a lockfile:
 
 ```json
 {
   "name": "api",
-  "private": true,
   "packageManager": "npm@11.4.2",
   "dependencies": { "express": "^5.1.0" }
 }
 ```
 
-Previous output stopped after inventorying the manifest:
+Previously, the missing-lockfile evaluator skipped this project because `private: true` was absent, so output stopped after inventorying the manifest:
 
 ```text
 Found 1 dependency source:
@@ -84,6 +83,18 @@ package.json [medium] npm project has dependencies but no npm lockfile
 ```
 
 Findings do not change the default exit status. A successful scan exits zero even when findings are present.
+
+For uv workspaces, a dependency-free root such as the following is policy metadata rather than a dependency source:
+
+```toml
+[project]
+dependencies = []
+
+[tool.uv.workspace]
+members = ["packages/*"]
+```
+
+Previously, `recognize-empty: true` caused that root to appear in `sources` with `presence: absent`. It is now omitted from dependency inventory, but the uv evaluator still uses it to attach dependency-bearing members to the workspace root and anchors any missing-`uv.lock` finding at the root `pyproject.toml`.
 
 ## Output model
 
@@ -122,6 +133,17 @@ JSON uses schema version 1. In addition to dependency sources, it exposes check 
   "findings": []
 }
 ```
+
+A finding identifies its logical project only by normalized root; concrete files belong in `locations`:
+
+```json
+{
+  "subject": { "project_root": "." },
+  "locations": [{ "path": "package.json" }]
+}
+```
+
+Finding fingerprints have their own format version, independent of the JSON schema version.
 
 `version` is the selected version. `version_constraint` is a declaration range or exact declaration specifier. The output does not use `resolved_version`.
 
@@ -181,7 +203,7 @@ The old rule shape is rejected. The migration is intentionally atomic:
     exists-any: [dependencies]
 ```
 
-The TOML analyzer supports `recognize-empty: true` for manifests that should remain visible even when configured dependency queries are empty. The built-in `python-pyproject` detector uses this so uv workspace roots can participate in repository relationships without being misclassified as having dependencies.
+Generic TOML rules recognize a source only when their configured queries establish dependency relevance. When the uv check is enabled, the scanner separately retains `pyproject.toml` bytes as policy inputs. The check layer parses uv and workspace facts from those inputs, so a dependency-free workspace root can own members without being emitted as a dependency source or changing generic TOML semantics.
 
 Checks live beside detectors in the same strict document. The MVP evaluator types have no configuration beyond their type discriminator:
 

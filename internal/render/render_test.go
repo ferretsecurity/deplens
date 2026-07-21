@@ -185,6 +185,27 @@ func TestJSONUsesEmptyArrayForNoSources(t *testing.T) {
 	}
 }
 
+func TestJSONUsesProjectRootAsFindingSubject(t *testing.T) {
+	output, err := JSON(analyze.ScanResult{Findings: []analyze.Finding{{
+		CheckID: "check", Subject: analyze.FindingSubject{ProjectRoot: "apps/web"},
+		Locations: []analyze.FindingLocation{{Path: "apps/web/package.json"}},
+	}}})
+	if err != nil {
+		t.Fatalf("JSON failed: %v", err)
+	}
+	var payload struct {
+		Findings []struct {
+			Subject map[string]any `json:"subject"`
+		} `json:"findings"`
+	}
+	if err := json.Unmarshal(output, &payload); err != nil {
+		t.Fatalf("decode JSON: %v", err)
+	}
+	if len(payload.Findings) != 1 || len(payload.Findings[0].Subject) != 1 || payload.Findings[0].Subject["project_root"] != "apps/web" {
+		t.Fatalf("unexpected finding subject: %s", output)
+	}
+}
+
 func TestHumanRendersFindings(t *testing.T) {
 	result := analyze.ScanResult{
 		Root: "/tmp/project",
@@ -196,7 +217,8 @@ func TestHumanRendersFindings(t *testing.T) {
 		Findings: []analyze.Finding{{
 			CheckID: "javascript-npm-lockfile-missing", Severity: analyze.SeverityMedium,
 			Summary:     "npm project has dependencies but no npm lockfile",
-			Subject:     analyze.FindingSubject{Kind: "project", Key: ".", Path: "package.json"},
+			Subject:     analyze.FindingSubject{ProjectRoot: "."},
+			Locations:   []analyze.FindingLocation{{Path: "package.json"}},
 			Evidence:    map[string]string{"expected_lockfile": "package-lock.json"},
 			Remediation: "Run `npm install` and commit the generated lockfile.",
 		}},

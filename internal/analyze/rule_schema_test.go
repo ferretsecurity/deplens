@@ -141,6 +141,23 @@ rules:
 	}
 }
 
+func TestRuleSchemaRejectsRecognizeEmptyTOMLConfiguration(t *testing.T) {
+	_, err := loadRules("invalid.yaml", []byte(`
+rules:
+  - id: python-pyproject
+    form: manifest
+    roles: [declaration]
+    filename-regex: '^pyproject\.toml$'
+    analyzer:
+      type: toml
+      recognize-empty: true
+      queries: [project.dependencies]
+`))
+	if err == nil || !strings.Contains(err.Error(), "field recognize-empty not found") {
+		t.Fatalf("expected strict rejection of recognize-empty, got %v", err)
+	}
+}
+
 func TestRuleSchemaRejectsDuplicateDetectorIDs(t *testing.T) {
 	_, err := loadRules("invalid.yaml", []byte(`
 rules:
