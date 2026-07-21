@@ -39,7 +39,7 @@ desktop.ini
 .cursor/
 .aider*
 .continue/
-docs/
+docs/*.html
 docs/superpowers/
 docs/planning/
 docs/vers-review-helper.html
