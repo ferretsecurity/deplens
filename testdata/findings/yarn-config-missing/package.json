@@ -1,0 +1,7 @@
+{
+  "name": "yarn-configured-app",
+  "private": true,
+  "dependencies": {
+    "react": "^19.1.0"
+  }
+}

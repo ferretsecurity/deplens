@@ -1,0 +1,8 @@
+{
+  "name": "pnpm-app",
+  "private": true,
+  "packageManager": "pnpm@10.13.1",
+  "dependencies": {
+    "fastify": "^5.4.0"
+  }
+}

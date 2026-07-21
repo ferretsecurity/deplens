@@ -15,6 +15,7 @@ type tomlMatcherConfig struct {
 	ExistsAny      []string `yaml:"exists-any"`
 	TableExistsAny []string `yaml:"table-exists-any"`
 	ExcludeKeys    []string `yaml:"exclude-keys"`
+	RecognizeEmpty bool     `yaml:"recognize-empty"`
 }
 
 type tomlSegment struct {
@@ -34,6 +35,7 @@ type tomlQueryParser struct {
 	existsAny      []tomlQuery
 	tableExistsAny []tomlQuery
 	excludeKeys    map[string]struct{}
+	recognizeEmpty bool
 }
 
 type tomlMatchedTable struct {
@@ -102,6 +104,7 @@ func newTOMLQueryParser(raw tomlMatcherConfig) (sourceAnalyzer, error) {
 		existsAny:      existsAny,
 		tableExistsAny: tableExistsAny,
 		excludeKeys:    excludeKeys,
+		recognizeEmpty: raw.RecognizeEmpty,
 	}, nil
 }
 
@@ -138,6 +141,9 @@ func (p tomlQueryParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 				}
 			}
 			return sourceAnalyzerResult{Analysis: presenceAnalysis(false), Recognized: true}, nil
+		}
+		if p.recognizeEmpty {
+			return sourceAnalyzerResult{Analysis: SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}, Recognized: true}, nil
 		}
 		return sourceAnalyzerResult{}, nil
 	}

@@ -128,6 +128,15 @@ func TestJSONUsesDependencySourceSchema(t *testing.T) {
 	if err := json.Unmarshal(output, &payload); err != nil {
 		t.Fatalf("invalid JSON: %v", err)
 	}
+	if payload["schema_version"] != float64(1) {
+		t.Fatalf("unexpected schema version: %#v", payload["schema_version"])
+	}
+	for _, key := range []string{"check_runs", "findings"} {
+		values, ok := payload[key].([]any)
+		if !ok || len(values) != 0 {
+			t.Fatalf("expected empty %s array, got %#v", key, payload[key])
+		}
+	}
 	sources, ok := payload["sources"].([]any)
 	if !ok || len(sources) != 1 {
 		t.Fatalf("unexpected sources: %#v", payload["sources"])
@@ -144,7 +153,7 @@ func TestJSONUsesDependencySourceSchema(t *testing.T) {
 			t.Fatalf("missing dependency key %q in %#v", key, dependency)
 		}
 	}
-	for _, removed := range []string{"manifests", "schema_version", "resolved_version"} {
+	for _, removed := range []string{"manifests", "resolved_version"} {
 		if _, exists := payload[removed]; exists {
 			t.Fatalf("removed key %q is present in %#v", removed, payload)
 		}
@@ -168,6 +177,41 @@ func TestJSONUsesEmptyArrayForNoSources(t *testing.T) {
 	}
 	if !strings.Contains(string(output), `"sources": []`) {
 		t.Fatalf("expected empty sources array, got %s", output)
+	}
+	for _, expected := range []string{`"schema_version": 1`, `"check_runs": []`, `"findings": []`} {
+		if !strings.Contains(string(output), expected) {
+			t.Fatalf("expected %q, got %s", expected, output)
+		}
+	}
+}
+
+func TestHumanRendersFindings(t *testing.T) {
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Sources: []analyze.DependencySourceResult{{
+			Detector: "js", Path: "package.json", Form: analyze.FormManifest,
+			Roles:    []analyze.SourceRole{analyze.RoleDeclaration},
+			Analysis: analyze.SourceAnalysis{Presence: analyze.PresencePresent, Extraction: analyze.ExtractionUnsupported},
+		}},
+		Findings: []analyze.Finding{{
+			CheckID: "javascript-npm-lockfile-missing", Severity: analyze.SeverityMedium,
+			Summary:     "npm project has dependencies but no npm lockfile",
+			Subject:     analyze.FindingSubject{Kind: "project", Key: ".", Path: "package.json"},
+			Evidence:    map[string]string{"expected_lockfile": "package-lock.json"},
+			Remediation: "Run `npm install` and commit the generated lockfile.",
+		}},
+	}
+	output := Human(result, HumanOptions{})
+	for _, expected := range []string{
+		"Found 1 policy finding:",
+		"package.json [medium] npm project has dependencies but no npm lockfile",
+		"check: javascript-npm-lockfile-missing",
+		"expected: package-lock.json",
+		"remediation: Run `npm install` and commit the generated lockfile.",
+	} {
+		if !strings.Contains(output, expected) {
+			t.Fatalf("expected output to contain %q, got:\n%s", expected, output)
+		}
 	}
 }
 

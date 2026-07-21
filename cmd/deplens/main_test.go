@@ -107,17 +107,39 @@ func TestRunJSONOutput(t *testing.T) {
 	}
 
 	var payload struct {
-		Root    string `json:"root"`
-		Sources []struct {
+		SchemaVersion int    `json:"schema_version"`
+		Root          string `json:"root"`
+		Sources       []struct {
 			Detector string `json:"detector"`
 			Path     string `json:"path"`
 		} `json:"sources"`
+		CheckRuns []any `json:"check_runs"`
+		Findings  []any `json:"findings"`
 	}
 	if err := json.Unmarshal(stdout.Bytes(), &payload); err != nil {
 		t.Fatalf("expected valid JSON output: %v", err)
 	}
 	if len(payload.Sources) != 1 || payload.Sources[0].Detector != "java" {
 		t.Fatalf("unexpected sources payload: %+v", payload.Sources)
+	}
+	if payload.SchemaVersion != 1 || payload.CheckRuns == nil || payload.Findings == nil {
+		t.Fatalf("unexpected result contract: %+v", payload)
+	}
+}
+
+func TestRunReportsFindingWithoutFailingScan(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	fixture := filepath.Join("..", "..", "testdata", "findings", "npm-missing")
+
+	exitCode := run([]string{fixture}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected findings to preserve exit code 0, got %d, stderr=%q", exitCode, stderr.String())
+	}
+	for _, expected := range []string{"Found 1 policy finding:", "javascript-npm-lockfile-missing", "package-lock.json or npm-shrinkwrap.json"} {
+		if !strings.Contains(stdout.String(), expected) {
+			t.Fatalf("expected output to contain %q, got %q", expected, stdout.String())
+		}
 	}
 }
 

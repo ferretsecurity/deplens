@@ -61,6 +61,7 @@ rules:
     filename-regex: '^pyproject\.toml$'
     analyzer:
       type: toml
+      recognize-empty: true
       queries:
         - build-system.requires[]
         - project.dependencies[]
@@ -1063,3 +1064,35 @@ rules:
         extract:
           key: --additional-python-modules
           split: comma
+
+checks:
+  - id: javascript-npm-lockfile-missing
+    summary: npm project has dependencies but no npm lockfile
+    severity: medium
+    evaluator:
+      type: npm-lockfile-missing
+    remediation: Run `npm install` and commit the generated lockfile.
+  - id: javascript-pnpm-lockfile-missing
+    summary: pnpm project has dependencies but no pnpm lockfile
+    severity: medium
+    evaluator:
+      type: pnpm-lockfile-missing
+    remediation: Run `pnpm install` at the workspace root and commit pnpm-lock.yaml.
+  - id: javascript-yarn-lockfile-missing
+    summary: Yarn project has dependencies but no Yarn lockfile
+    severity: medium
+    evaluator:
+      type: yarn-lockfile-missing
+    remediation: Run `yarn install` at the workspace root and commit yarn.lock.
+  - id: python-uv-lockfile-missing
+    summary: uv-managed project has dependencies but no uv lockfile
+    severity: medium
+    evaluator:
+      type: uv-lockfile-missing
+    remediation: Run `uv lock` and commit uv.lock.
+  - id: rust-cargo-lockfile-missing-for-application
+    summary: Cargo application has dependencies but no Cargo lockfile
+    severity: medium
+    evaluator:
+      type: cargo-application-lockfile-missing
+    remediation: Run `cargo generate-lockfile` and commit Cargo.lock.

@@ -7,7 +7,7 @@ cmd/deplens
     argument parsing and output selection
         |
 internal/analyze
-    strict detector rules -> selection -> analysis -> normalized results
+    strict rules -> selection -> analysis -> repository relations -> checks
         |
 internal/render
     human and JSON presentation
@@ -21,6 +21,7 @@ internal/analyze/scan.go            directory walker and public result types
 internal/analyze/rules.go           strict rule schema, validation, and dispatch
 internal/analyze/parser_factory.go  nested analyzer configuration factory
 internal/analyze/default_rules.yaml embedded built-in detectors
+internal/analyze/findings.go        project ownership and check evaluators
 internal/analyze/*.go               analyzer implementations
 internal/render/render.go            human and JSON renderers
 testdata/                            integration fixtures
@@ -38,7 +39,9 @@ For each regular file under the scan root:
 6. Continue to later detectors when an analyzer does not recognize the content.
 7. On recognition, apply the rule's default package type, derive VERS where supported, and return the first result.
 8. Convert file-read or total analyzer errors to `unknown` + `failed` with an error diagnostic.
-9. Sort final results by path, then detector ID.
+9. Sort source results by path, then detector ID.
+10. Build ecosystem-specific project and workspace ownership from the immutable source set and normalized paths.
+11. Evaluate configured checks in stable check-ID order, then sort check runs and findings by subject path and check ID.
 
 Ignored directory names are skipped during traversal. Scanning does not access the network.
 
@@ -61,12 +64,15 @@ type SourceAnalysis struct {
 }
 
 type ScanResult struct {
-    Root    string
-    Sources []DependencySourceResult
+    SchemaVersion int
+    Root          string
+    Sources       []DependencySourceResult
+    CheckRuns     []CheckRun
+    Findings      []Finding
 }
 ```
 
-`Sources` is initialized as an empty slice so JSON emits `[]`, not `null`, for an empty scan.
+All result collections are initialized as empty slices so JSON emits `[]`, not `null`, for an empty scan.
 
 Dependency references preserve `Raw` and may add normalized fields:
 
@@ -132,6 +138,26 @@ Validation requires:
 
 The YAML decoder uses strict known-field checking. Legacy `name`, `dependency-type`, and top-level analyzer keys are rejected. There is no compatibility adapter in production.
 
+Checks are compiled from the same strict document:
+
+```yaml
+checks:
+  - id: javascript-npm-lockfile-missing
+    summary: npm project has dependencies but no npm lockfile
+    severity: medium
+    evaluator:
+      type: npm-lockfile-missing
+    remediation: Run `npm install` and commit the generated lockfile.
+```
+
+The five missing-lockfile evaluator types have empty configurations. Manager evidence, dependency gating, workspace ownership, application-role requirements, and ambiguity handling are evaluator invariants implemented in Go. Ambiguous inputs produce skipped check runs; parsing failures produce failed runs; neither produces a policy finding.
+
+## Repository relationships and checks
+
+Missing-file checks run after traversal because a file-local analyzer cannot observe absence. JavaScript package workspaces, pnpm workspaces, uv workspaces, and Cargo workspaces attach member manifests to explicit owners. A lockfile only satisfies the compatible owning project; directory ancestry by itself is insufficient.
+
+The evaluator layer remains offline and does not invoke package managers. Each finding is anchored to the owning manifest and has a fingerprint derived from schema version, check ID, subject identity, and stable evidence. Human wording, severity, and source line movement do not affect the fingerprint.
+
 ## Adding an analyzer
 
 1. Add a configuration type with YAML tags.
@@ -147,7 +173,7 @@ Constructors validate analyzer-specific configuration before scanning starts. Ru
 
 Human rendering reads `SourceAnalysis` directly. It does not infer state from dependency count. Sources with absent presence are hidden by default and shown with `--show-without-dependencies`.
 
-JSON uses the Go struct tags as its sole unversioned contract. Required source fields are detector, path, form, roles, and analysis. Empty dependencies and diagnostics are omitted. No schema-version selector or compatibility output exists.
+JSON schema version 1 includes sources, check runs, and findings. Required source fields are detector, path, form, roles, and analysis. Empty dependencies and diagnostics are omitted. Human output renders findings after dependency sources. Findings do not alter the CLI's default successful exit status.
 
 ## Verification
 
@@ -158,4 +184,4 @@ go test ./...
 go vet ./...
 ```
 
-Rule-schema tests verify strict legacy-field rejection, analyzer-field rejection, unique detector IDs, complete metadata for all 185 built-ins, and successful loading of the embedded rules.
+Rule-schema tests verify strict legacy-field rejection, analyzer/evaluator-field rejection, unique IDs, complete metadata for all 185 detectors and five checks, and successful loading of the embedded rules. Finding tests cover positive, clean, dependency-free, ambiguous, library, workspace, nested-project, and fingerprint-stability cases.

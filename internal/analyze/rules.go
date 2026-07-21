@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"slices"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -56,10 +57,58 @@ type detector struct {
 type Ruleset struct {
 	detectors   []detector
 	detectorIDs []DetectorID
+	checks      []check
 }
 
 type rulesFile struct {
-	Rules []ruleConfig `yaml:"rules"`
+	Rules  []ruleConfig  `yaml:"rules"`
+	Checks []checkConfig `yaml:"checks"`
+}
+
+type CheckID string
+
+type check struct {
+	ID            CheckID
+	Summary       string
+	Severity      FindingSeverity
+	EvaluatorType string
+	Remediation   string
+}
+
+type checkConfig struct {
+	ID          string           `yaml:"id"`
+	Summary     string           `yaml:"summary"`
+	Severity    string           `yaml:"severity"`
+	Evaluator   *evaluatorConfig `yaml:"evaluator"`
+	Remediation string           `yaml:"remediation"`
+}
+
+type evaluatorConfig struct {
+	Type   string
+	config yaml.Node
+}
+
+func (c *evaluatorConfig) UnmarshalYAML(node *yaml.Node) error {
+	if node.Kind != yaml.MappingNode {
+		return fmt.Errorf("must be a mapping")
+	}
+	c.config = yaml.Node{Kind: yaml.MappingNode, Tag: "!!map"}
+	seenType := false
+	for i := 0; i < len(node.Content); i += 2 {
+		key, value := node.Content[i], node.Content[i+1]
+		if key.Value == "type" {
+			if seenType {
+				return fmt.Errorf("type: duplicate field")
+			}
+			seenType = true
+			if err := value.Decode(&c.Type); err != nil {
+				return fmt.Errorf("type: %w", err)
+			}
+			continue
+		}
+		c.config.Content = append(c.config.Content, key, value)
+	}
+	return nil
 }
 
 type ruleConfig struct {
@@ -198,7 +247,62 @@ func loadRules(source string, data []byte) (Ruleset, error) {
 		})
 	}
 
-	return Ruleset{detectors: detectors, detectorIDs: detectorIDsFromDetectors(detectors)}, nil
+	checks, err := compileChecks(source, raw.Checks)
+	if err != nil {
+		return Ruleset{}, err
+	}
+
+	return Ruleset{detectors: detectors, detectorIDs: detectorIDsFromDetectors(detectors), checks: checks}, nil
+}
+
+func compileChecks(source string, configs []checkConfig) ([]check, error) {
+	checks := make([]check, 0, len(configs))
+	seenIDs := make(map[CheckID]struct{}, len(configs))
+	for idx, raw := range configs {
+		fieldPath := fmt.Sprintf("checks[%d]", idx)
+		if strings.TrimSpace(raw.ID) == "" {
+			return nil, fmt.Errorf("%s: %s.id: required", source, fieldPath)
+		}
+		if raw.ID != strings.TrimSpace(raw.ID) {
+			return nil, fmt.Errorf("%s: %s.id: must not have surrounding whitespace", source, fieldPath)
+		}
+		id := CheckID(raw.ID)
+		if _, exists := seenIDs[id]; exists {
+			return nil, fmt.Errorf("%s: %s.id: duplicate value %q", source, fieldPath, id)
+		}
+		seenIDs[id] = struct{}{}
+		if strings.TrimSpace(raw.Summary) == "" {
+			return nil, fmt.Errorf("%s: %s.summary: required", source, fieldPath)
+		}
+		severity := FindingSeverity(raw.Severity)
+		if !validFindingSeverity(severity) {
+			return nil, fmt.Errorf("%s: %s.severity: invalid value %q", source, fieldPath, raw.Severity)
+		}
+		if raw.Evaluator == nil {
+			return nil, fmt.Errorf("%s: %s.evaluator: required", source, fieldPath)
+		}
+		if !validMissingLockfileEvaluator(raw.Evaluator.Type) {
+			return nil, fmt.Errorf("%s: %s.evaluator.type: unsupported value %q", source, fieldPath, raw.Evaluator.Type)
+		}
+		if len(raw.Evaluator.config.Content) != 0 {
+			return nil, fmt.Errorf("%s: %s.evaluator: %s configuration: unknown fields are not supported", source, fieldPath, raw.Evaluator.Type)
+		}
+		if strings.TrimSpace(raw.Remediation) == "" {
+			return nil, fmt.Errorf("%s: %s.remediation: required", source, fieldPath)
+		}
+		checks = append(checks, check{ID: id, Summary: raw.Summary, Severity: severity, EvaluatorType: raw.Evaluator.Type, Remediation: raw.Remediation})
+	}
+	slices.SortFunc(checks, func(a, b check) int { return strings.Compare(string(a.ID), string(b.ID)) })
+	return checks, nil
+}
+
+func validMissingLockfileEvaluator(value string) bool {
+	switch value {
+	case "npm-lockfile-missing", "pnpm-lockfile-missing", "yarn-lockfile-missing", "uv-lockfile-missing", "cargo-application-lockfile-missing":
+		return true
+	default:
+		return false
+	}
 }
 
 func (r Ruleset) DetectorIDs() []DetectorID {
@@ -233,6 +337,15 @@ func (r Ruleset) analyzeDependencySource(filePath, name, relPath string) (Depend
 		base := DependencySourceResult{Detector: d.ID, Path: relPath, Form: d.Form, Roles: append([]SourceRole(nil), d.Roles...)}
 		if d.Analyzer == nil {
 			base.Analysis = identifiedAnalysis()
+			if needsPolicyContent(d.ID) && filePath != "" {
+				data, err := os.ReadFile(filePath)
+				if err != nil {
+					base.Analysis = failedAnalysis()
+					base.Diagnostics = []Diagnostic{{Severity: DiagnosticError, Code: "source-read-failed", Message: fmt.Sprintf("read candidate file %q: %v", filePath, err)}}
+					return base, true, nil
+				}
+				base.content = data
+			}
 			return base, true, nil
 		}
 		if filePath == "" {
@@ -252,6 +365,9 @@ func (r Ruleset) analyzeDependencySource(filePath, name, relPath string) (Depend
 		if err != nil {
 			base.Analysis = failedAnalysis()
 			base.Diagnostics = []Diagnostic{{Severity: DiagnosticError, Code: "source-analysis-failed", Message: err.Error()}}
+			if needsPolicyContent(d.ID) {
+				base.content = append([]byte(nil), content...)
+			}
 			return base, true, nil
 		}
 		if result.Recognized {
@@ -263,10 +379,22 @@ func (r Ruleset) analyzeDependencySource(filePath, name, relPath string) (Depend
 			base.Analysis = result.Analysis
 			base.Dependencies = result.Dependencies
 			base.Diagnostics = result.Diagnostics
+			if needsPolicyContent(d.ID) {
+				base.content = append([]byte(nil), content...)
+			}
 			return base, true, nil
 		}
 	}
 	return DependencySourceResult{}, false, nil
+}
+
+func needsPolicyContent(id DetectorID) bool {
+	switch id {
+	case "js", "js-pnpm-workspace", "python-pyproject", "rust-cargo":
+		return true
+	default:
+		return false
+	}
 }
 
 func validSourceForm(form SourceForm) bool {

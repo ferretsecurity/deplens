@@ -28,7 +28,7 @@ type HumanOptions struct {
 }
 
 func Human(result analyze.ScanResult, opts HumanOptions) string {
-	if len(result.Sources) == 0 {
+	if len(result.Sources) == 0 && len(result.Findings) == 0 {
 		return fmt.Sprintf("Root: %s\nNo dependency sources found.\n", result.Root)
 	}
 
@@ -60,12 +60,22 @@ func Human(result analyze.ScanResult, opts HumanOptions) string {
 		b.WriteString(renderDependencies(source.Dependencies))
 		b.WriteString(renderDiagnostics(source.Diagnostics))
 	}
+	b.WriteString(renderFindings(result.Findings))
 	return b.String()
 }
 
 func JSON(result analyze.ScanResult) ([]byte, error) {
+	if result.SchemaVersion == 0 {
+		result.SchemaVersion = 1
+	}
 	if result.Sources == nil {
 		result.Sources = make([]analyze.DependencySourceResult, 0)
+	}
+	if result.CheckRuns == nil {
+		result.CheckRuns = make([]analyze.CheckRun, 0)
+	}
+	if result.Findings == nil {
+		result.Findings = make([]analyze.Finding, 0)
 	}
 	var b bytes.Buffer
 	encoder := json.NewEncoder(&b)
@@ -75,6 +85,30 @@ func JSON(result analyze.ScanResult) ([]byte, error) {
 		return nil, err
 	}
 	return b.Bytes(), nil
+}
+
+func renderFindings(findings []analyze.Finding) string {
+	if len(findings) == 0 {
+		return ""
+	}
+	ordered := slices.Clone(findings)
+	slices.SortFunc(ordered, func(a, b analyze.Finding) int {
+		if a.Subject.Path != b.Subject.Path {
+			return strings.Compare(a.Subject.Path, b.Subject.Path)
+		}
+		return strings.Compare(string(a.CheckID), string(b.CheckID))
+	})
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("\nFound %d policy %s:\n", len(ordered), pluralize(len(ordered), "finding", "findings")))
+	for _, finding := range ordered {
+		b.WriteString(fmt.Sprintf("\n%s [%s] %s\n", finding.Subject.Path, finding.Severity, finding.Summary))
+		b.WriteString(fmt.Sprintf("  check: %s\n", finding.CheckID))
+		if expected := finding.Evidence["expected_lockfile"]; expected != "" {
+			b.WriteString(fmt.Sprintf("  expected: %s\n", expected))
+		}
+		b.WriteString(fmt.Sprintf("  remediation: %s\n", finding.Remediation))
+	}
+	return b.String()
 }
 
 func sourceStatusLabel(source analyze.DependencySourceResult) string {

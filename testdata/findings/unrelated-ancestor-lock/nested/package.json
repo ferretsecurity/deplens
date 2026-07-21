@@ -1,0 +1,8 @@
+{
+  "name": "independent-inner-project",
+  "private": true,
+  "packageManager": "pnpm@10.13.1",
+  "dependencies": {
+    "react": "^19.1.0"
+  }
+}
