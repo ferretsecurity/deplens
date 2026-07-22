@@ -19,6 +19,8 @@ type Relationship string
 type DependencyScope string
 type OriginKind string
 type DiagnosticSeverity string
+type FindingSeverity string
+type CheckRunStatus string
 
 const (
 	PresenceUnknown DependencyPresence = "unknown"
@@ -32,6 +34,16 @@ const (
 
 	DiagnosticWarning DiagnosticSeverity = "warning"
 	DiagnosticError   DiagnosticSeverity = "error"
+
+	SeverityInfo     FindingSeverity = "info"
+	SeverityLow      FindingSeverity = "low"
+	SeverityMedium   FindingSeverity = "medium"
+	SeverityHigh     FindingSeverity = "high"
+	SeverityCritical FindingSeverity = "critical"
+
+	CheckCompleted CheckRunStatus = "completed"
+	CheckSkipped   CheckRunStatus = "skipped"
+	CheckFailed    CheckRunStatus = "failed"
 
 	RelationshipDirect       Relationship = "direct"
 	RelationshipTransitive   Relationship = "transitive"
@@ -82,11 +94,42 @@ type DependencySourceResult struct {
 	Analysis     SourceAnalysis        `json:"analysis"`
 	Dependencies []DependencyReference `json:"dependencies,omitempty"`
 	Diagnostics  []Diagnostic          `json:"diagnostics,omitempty"`
+	content      []byte
+}
+
+type FindingSubject struct {
+	ProjectRoot string `json:"project_root"`
+}
+
+type FindingLocation struct {
+	Path string `json:"path"`
+}
+
+type Finding struct {
+	CheckID     CheckID           `json:"check_id"`
+	Severity    FindingSeverity   `json:"severity"`
+	Summary     string            `json:"summary"`
+	Subject     FindingSubject    `json:"subject"`
+	Locations   []FindingLocation `json:"locations"`
+	Evidence    map[string]string `json:"evidence,omitempty"`
+	Remediation string            `json:"remediation"`
+	Fingerprint string            `json:"fingerprint"`
+}
+
+type CheckRun struct {
+	CheckID    CheckID        `json:"check_id"`
+	Subject    FindingSubject `json:"subject"`
+	Status     CheckRunStatus `json:"status"`
+	ReasonCode string         `json:"reason_code,omitempty"`
+	Detail     string         `json:"detail,omitempty"`
 }
 
 type ScanResult struct {
-	Root    string                   `json:"root"`
-	Sources []DependencySourceResult `json:"sources"`
+	SchemaVersion int                      `json:"schema_version"`
+	Root          string                   `json:"root"`
+	Sources       []DependencySourceResult `json:"sources"`
+	CheckRuns     []CheckRun               `json:"check_runs"`
+	Findings      []Finding                `json:"findings"`
 }
 
 func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error) {
@@ -111,7 +154,10 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 		}
 	}
 
-	result := ScanResult{Root: absRoot, Sources: make([]DependencySourceResult, 0)}
+	result := ScanResult{SchemaVersion: 1, Root: absRoot, Sources: make([]DependencySourceResult, 0), CheckRuns: make([]CheckRun, 0), Findings: make([]Finding, 0)}
+	discoveredPaths := make(map[string]struct{})
+	policyInputs := make([]policyInput, 0)
+	collectPyprojects := ruleset.hasEvaluator("uv-lockfile-missing")
 	err = filepath.WalkDir(absRoot, func(path string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
@@ -130,8 +176,21 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 			return fmt.Errorf("relative path for %s: %w", path, err)
 		}
 		relPath = normalizeRelativePath(relPath)
+		discoveredPaths[relPath] = struct{}{}
 
-		source, ok, err := ruleset.AnalyzeDependencySourceAtRelativePath(path, d.Name(), relPath)
+		var source DependencySourceResult
+		var ok bool
+		if collectPyprojects && d.Name() == "pyproject.toml" {
+			content, readErr := os.ReadFile(path)
+			policyInputs = append(policyInputs, policyInput{path: relPath, content: content, readError: readErr})
+			if readErr == nil {
+				source, ok, _, err = ruleset.analyzeDependencySourceWithContent(path, d.Name(), relPath, content, true)
+			} else {
+				source, ok, _, err = ruleset.analyzeDependencySource(path, d.Name(), relPath)
+			}
+		} else {
+			source, ok, _, err = ruleset.analyzeDependencySource(path, d.Name(), relPath)
+		}
 		if err != nil {
 			return err
 		}
@@ -154,7 +213,21 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 		return 1
 	})
 
+	result.CheckRuns, result.Findings = evaluateChecks(result.Sources, policyInputs, discoveredPaths, ruleset.checks)
+	for index := range result.Sources {
+		result.Sources[index].content = nil
+	}
+
 	return result, nil
+}
+
+func validFindingSeverity(severity FindingSeverity) bool {
+	switch severity {
+	case SeverityInfo, SeverityLow, SeverityMedium, SeverityHigh, SeverityCritical:
+		return true
+	default:
+		return false
+	}
 }
 
 func compareDetectorID(a, b DetectorID) int {

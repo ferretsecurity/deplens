@@ -1,6 +1,6 @@
 # deplens
 
-`deplens` scans a directory tree and reports dependency sources. A dependency source is any file that can identify, declare, constrain, resolve, configure, use, or inventory dependencies. This includes manifests, requirements files, lockfiles, checksums, version catalogs, workspace and build definitions, automation and deployment files, tool configuration, source code, markup, and vendored files.
+`deplens` scans a directory tree and reports dependency sources and policy findings. A dependency source is any file that can identify, declare, constrain, resolve, configure, use, or inventory dependencies. This includes manifests, requirements files, lockfiles, checksums, version catalogs, workspace and build definitions, automation and deployment files, tool configuration, source code, markup, and vendored files.
 
 The CLI makes no network calls and performs no vulnerability scanning. Its 185 built-in detectors are embedded in the binary, and a complete inventory is available in [DEPENDENCY_COVERAGE.md](DEPENDENCY_COVERAGE.md).
 
@@ -13,7 +13,7 @@ go run ./cmd/deplens [flags] [path]
 Useful flags:
 
 - `--json` emits machine-readable JSON.
-- `--rules rules.yaml` replaces the built-in detector rules.
+- `--rules rules.yaml` replaces the built-in detector and check rules.
 - `--ignore dist,build,vendor` replaces the default ignored directory list.
 - `--show-without-dependencies` includes sources whose analysis found no dependency references.
 
@@ -37,16 +37,76 @@ requirements.txt [requirements · 1 dependency]
 
 Absent sources are counted by `Found N dependency sources` but hidden from the detailed list unless `--show-without-dependencies` is supplied.
 
+### Missing-lockfile findings
+
+The built-in rules include five conservative missing-lockfile checks:
+
+- `javascript-npm-lockfile-missing`
+- `javascript-pnpm-lockfile-missing`
+- `javascript-yarn-lockfile-missing`
+- `python-uv-lockfile-missing`
+- `rust-cargo-lockfile-missing-for-application`
+
+JavaScript checks require explicit npm, pnpm, or Yarn evidence; package publishability (`private`) does not affect eligibility. The uv check requires uv-specific project configuration. The Cargo check requires a binary target such as `src/main.rs`. Dependency-free projects are not flagged. Explicit workspace ownership is honored, and an unrelated ancestor lockfile does not satisfy a nested independent project. Ambiguous package-manager or Cargo project-role cases are skipped rather than reported as findings.
+
+For example, given this `package.json` without a lockfile:
+
+```json
+{
+  "name": "api",
+  "packageManager": "npm@11.4.2",
+  "dependencies": { "express": "^5.1.0" }
+}
+```
+
+Previously, the missing-lockfile evaluator skipped this project because `private: true` was absent, so output stopped after inventorying the manifest:
+
+```text
+Found 1 dependency source:
+
+package.json [manifest · references present, not extracted]
+```
+
+The same scan now adds a concrete finding:
+
+```text
+Found 1 dependency source:
+
+package.json [manifest · references present, not extracted]
+
+Found 1 policy finding:
+
+package.json [medium] npm project has dependencies but no npm lockfile
+  check: javascript-npm-lockfile-missing
+  expected: package-lock.json or npm-shrinkwrap.json
+  remediation: Run `npm install` and commit the generated lockfile.
+```
+
+Findings do not change the default exit status. A successful scan exits zero even when findings are present.
+
+For uv workspaces, a dependency-free root such as the following is policy metadata rather than a dependency source:
+
+```toml
+[project]
+dependencies = []
+
+[tool.uv.workspace]
+members = ["packages/*"]
+```
+
+Previously, `recognize-empty: true` caused that root to appear in `sources` with `presence: absent`. It is now omitted from dependency inventory, but the uv evaluator still uses it to attach dependency-bearing members to the workspace root and anchors any missing-`uv.lock` finding at the root `pyproject.toml`.
+
 ## Output model
 
 Each result names the detector, path, source form, source roles, analysis state, extracted dependency references, and structured diagnostics.
 
 Presence is one of `unknown`, `absent`, or `present`. Extraction is one of `unsupported`, `complete`, `partial`, or `failed`. Only valid combinations are emitted; for example, a selector-only detector produces `unknown` + `unsupported`, while a successfully parsed empty lockfile produces `absent` + `complete`.
 
-JSON has one unversioned contract. There is no `schema_version` field or output-version selector:
+JSON uses schema version 1. In addition to dependency sources, it exposes check execution coverage and findings:
 
 ```json
 {
+  "schema_version": 1,
   "root": "/work/example",
   "sources": [
     {
@@ -68,9 +128,22 @@ JSON has one unversioned contract. There is no `schema_version` field or output-
         }
       ]
     }
-  ]
+  ],
+  "check_runs": [],
+  "findings": []
 }
 ```
+
+A finding identifies its logical project only by normalized root; concrete files belong in `locations`:
+
+```json
+{
+  "subject": { "project_root": "." },
+  "locations": [{ "path": "package.json" }]
+}
+```
+
+Finding fingerprints have their own format version, independent of the JSON schema version.
 
 `version` is the selected version. `version_constraint` is a declaration range or exact declaration specifier. The output does not use `resolved_version`.
 
@@ -129,6 +202,22 @@ The old rule shape is rejected. The migration is intentionally atomic:
     type: json
     exists-any: [dependencies]
 ```
+
+Generic TOML rules recognize a source only when their configured queries establish dependency relevance. When the uv check is enabled, the scanner separately retains `pyproject.toml` bytes as policy inputs. The check layer parses uv and workspace facts from those inputs, so a dependency-free workspace root can own members without being emitted as a dependency source or changing generic TOML semantics.
+
+Checks live beside detectors in the same strict document. The MVP evaluator types have no configuration beyond their type discriminator:
+
+```yaml
+checks:
+  - id: javascript-npm-lockfile-missing
+    summary: npm project has dependencies but no npm lockfile
+    severity: medium
+    evaluator:
+      type: npm-lockfile-missing
+    remediation: Run `npm install` and commit the generated lockfile.
+```
+
+Supported evaluator types are `npm-lockfile-missing`, `pnpm-lockfile-missing`, `yarn-lockfile-missing`, `uv-lockfile-missing`, and `cargo-application-lockfile-missing`. Unknown fields are rejected. Ecosystem semantics and safe ambiguity behavior are built into each evaluator rather than exposed as YAML switches.
 
 ## Capabilities
 

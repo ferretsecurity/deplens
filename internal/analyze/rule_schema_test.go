@@ -13,10 +13,72 @@ func TestDefaultRulesUseCompleteDependencySourceMetadata(t *testing.T) {
 	if len(ruleset.detectors) != 185 {
 		t.Fatalf("expected 185 built-in detectors, got %d", len(ruleset.detectors))
 	}
+	if len(ruleset.checks) != 5 {
+		t.Fatalf("expected 5 built-in checks, got %d", len(ruleset.checks))
+	}
 	for index, detector := range ruleset.detectors {
 		if detector.ID == "" || !validSourceForm(detector.Form) || len(detector.Roles) == 0 {
 			t.Fatalf("detector %d has incomplete metadata: %+v", index, detector)
 		}
+	}
+}
+
+func TestRuleSchemaAcceptsMissingLockfileCheck(t *testing.T) {
+	ruleset, err := loadRules("checks.yaml", []byte(`
+rules:
+  - id: js
+    form: manifest
+    roles: [declaration]
+    filename-regex: '^package\.json$'
+checks:
+  - id: javascript-npm-lockfile-missing
+    summary: npm project has dependencies but no npm lockfile
+    severity: medium
+    evaluator:
+      type: npm-lockfile-missing
+    remediation: Commit package-lock.json.
+`))
+	if err != nil {
+		t.Fatalf("expected check to load: %v", err)
+	}
+	if len(ruleset.checks) != 1 || ruleset.checks[0].EvaluatorType != "npm-lockfile-missing" {
+		t.Fatalf("unexpected checks: %#v", ruleset.checks)
+	}
+}
+
+func TestRuleSchemaRejectsInvalidCheckConfiguration(t *testing.T) {
+	base := `
+rules:
+  - id: js
+    form: manifest
+    roles: [declaration]
+    filename-regex: '^package\.json$'
+checks:
+  - id: check
+    summary: summary
+    severity: medium
+    evaluator:
+      type: npm-lockfile-missing
+    remediation: remediation
+`
+	tests := []struct {
+		name    string
+		yaml    string
+		message string
+	}{
+		{name: "unknown top-level field", yaml: strings.Replace(base, "    summary: summary", "    summary: summary\n    category: reproducibility", 1), message: "field category not found"},
+		{name: "unsupported type", yaml: strings.Replace(base, "npm-lockfile-missing", "generic-lockfile-missing", 1), message: "unsupported value"},
+		{name: "unknown evaluator field", yaml: strings.Replace(base, "      type: npm-lockfile-missing", "      type: npm-lockfile-missing\n      strategy: npm", 1), message: "unknown fields"},
+		{name: "invalid severity", yaml: strings.Replace(base, "severity: medium", "severity: warning", 1), message: "invalid value"},
+		{name: "missing remediation", yaml: strings.Replace(base, "    remediation: remediation\n", "", 1), message: "remediation: required"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := loadRules("invalid.yaml", []byte(test.yaml))
+			if err == nil || !strings.Contains(err.Error(), test.message) {
+				t.Fatalf("expected error containing %q, got %v", test.message, err)
+			}
+		})
 	}
 }
 
@@ -76,6 +138,23 @@ rules:
 `))
 	if err == nil || !strings.Contains(err.Error(), "field typo not found") {
 		t.Fatalf("expected strict rejection of unknown analyzer field, got %v", err)
+	}
+}
+
+func TestRuleSchemaRejectsRecognizeEmptyTOMLConfiguration(t *testing.T) {
+	_, err := loadRules("invalid.yaml", []byte(`
+rules:
+  - id: python-pyproject
+    form: manifest
+    roles: [declaration]
+    filename-regex: '^pyproject\.toml$'
+    analyzer:
+      type: toml
+      recognize-empty: true
+      queries: [project.dependencies]
+`))
+	if err == nil || !strings.Contains(err.Error(), "field recognize-empty not found") {
+		t.Fatalf("expected strict rejection of recognize-empty, got %v", err)
 	}
 }
 

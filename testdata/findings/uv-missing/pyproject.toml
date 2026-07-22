@@ -1,0 +1,6 @@
+[project]
+name = "uv-app"
+version = "0.1.0"
+dependencies = ["httpx>=0.28"]
+
+[tool.uv]
