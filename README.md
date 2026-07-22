@@ -231,7 +231,7 @@ Capabilities describe what a detector can do without forcing unrelated behavior 
 - `relate`: distinguish direct, transitive, or inconclusive relationships.
 - `locate`: preserve where a reference came from within a source.
 
-See [docs/glossary.md](docs/glossary.md) for normative terminology and [docs/dependency-source-terminology-spec.html](docs/dependency-source-terminology-spec.html) for the implemented migration specification.
+See [docs/glossary.md](docs/glossary.md) for normative terminology.
 
 ## Development
 
