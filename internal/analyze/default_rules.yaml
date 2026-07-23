@@ -1083,6 +1083,12 @@ checks:
     evaluator:
       type: yarn-lockfile-missing
     remediation: Run `yarn install` at the workspace root and commit yarn.lock.
+  - id: javascript-conflicting-lockfiles
+    summary: JavaScript project has conflicting package-manager lockfiles
+    severity: medium
+    evaluator:
+      type: javascript-conflicting-lockfiles
+    remediation: Choose one package manager, remove lockfiles from the others, and declare packageManager in package.json.
   - id: python-uv-lockfile-missing
     summary: uv-managed project has dependencies but no uv lockfile
     severity: medium

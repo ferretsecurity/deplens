@@ -37,17 +37,68 @@ requirements.txt [requirements · 1 dependency]
 
 Absent sources are counted by `Found N dependency sources` but hidden from the detailed list unless `--show-without-dependencies` is supplied.
 
-### Missing-lockfile findings
+### Dependency policy findings
 
-The built-in rules include five conservative missing-lockfile checks:
+The built-in rules include six conservative dependency policy checks:
 
 - `javascript-npm-lockfile-missing`
 - `javascript-pnpm-lockfile-missing`
 - `javascript-yarn-lockfile-missing`
+- `javascript-conflicting-lockfiles`
 - `python-uv-lockfile-missing`
 - `rust-cargo-lockfile-missing-for-application`
 
 JavaScript checks require explicit npm, pnpm, or Yarn evidence; package publishability (`private`) does not affect eligibility. The uv check requires uv-specific project configuration. The Cargo check requires a binary target such as `src/main.rs`. Dependency-free projects are not flagged. Explicit workspace ownership is honored, and an unrelated ancestor lockfile does not satisfy a nested independent project. Ambiguous package-manager or Cargo project-role cases are skipped rather than reported as findings.
+
+The conflicting-lockfiles check reports a JavaScript project when its owned root contains lockfiles from at least two package-manager families: npm, pnpm, or Yarn. `package-lock.json` and `npm-shrinkwrap.json` are both npm lockfiles and do not conflict with each other. The check does not require dependency declarations because competing committed lockfiles are independently actionable.
+
+For example, this project contains both npm and pnpm lockfiles:
+
+```text
+.
+├── package.json
+├── package-lock.json
+└── pnpm-lock.yaml
+```
+
+Previously, the three missing-lockfile checks treated the package-manager evidence as ambiguous and emitted no finding:
+
+```text
+Found 3 dependency sources:
+
+package-lock.json [lockfile · 1 dependency]
+  dependencies:
+    - left-pad@1.3.0
+
+package.json [manifest · references present, not extracted]
+
+pnpm-lock.yaml [lockfile · 1 dependency]
+  dependencies:
+    - left-pad@1.3.0
+```
+
+The same scan now reports the conflicting files:
+
+```text
+Found 3 dependency sources:
+
+package-lock.json [lockfile · 1 dependency]
+  dependencies:
+    - left-pad@1.3.0
+
+package.json [manifest · references present, not extracted]
+
+pnpm-lock.yaml [lockfile · 1 dependency]
+  dependencies:
+    - left-pad@1.3.0
+
+Found 1 policy finding:
+
+package.json [medium] JavaScript project has conflicting package-manager lockfiles
+  check: javascript-conflicting-lockfiles
+  conflicting: package-lock.json, pnpm-lock.yaml
+  remediation: Choose one package manager, remove lockfiles from the others, and declare packageManager in package.json.
+```
 
 For example, given this `package.json` without a lockfile:
 

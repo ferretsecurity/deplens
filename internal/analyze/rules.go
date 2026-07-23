@@ -281,7 +281,7 @@ func compileChecks(source string, configs []checkConfig) ([]check, error) {
 		if raw.Evaluator == nil {
 			return nil, fmt.Errorf("%s: %s.evaluator: required", source, fieldPath)
 		}
-		if !validMissingLockfileEvaluator(raw.Evaluator.Type) {
+		if !validEvaluatorType(raw.Evaluator.Type) {
 			return nil, fmt.Errorf("%s: %s.evaluator.type: unsupported value %q", source, fieldPath, raw.Evaluator.Type)
 		}
 		if len(raw.Evaluator.config.Content) != 0 {
@@ -296,9 +296,9 @@ func compileChecks(source string, configs []checkConfig) ([]check, error) {
 	return checks, nil
 }
 
-func validMissingLockfileEvaluator(value string) bool {
+func validEvaluatorType(value string) bool {
 	switch value {
-	case "npm-lockfile-missing", "pnpm-lockfile-missing", "yarn-lockfile-missing", "uv-lockfile-missing", "cargo-application-lockfile-missing":
+	case "npm-lockfile-missing", "pnpm-lockfile-missing", "yarn-lockfile-missing", "javascript-conflicting-lockfiles", "uv-lockfile-missing", "cargo-application-lockfile-missing":
 		return true
 	default:
 		return false

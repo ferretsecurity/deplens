@@ -84,6 +84,8 @@ func evaluateChecks(sources []DependencySourceResult, policyInputs []policyInput
 			checkRuns, checkFindings = evaluateJavaScriptLockfile(ctx, configured, "pnpm", []string{"pnpm-lock.yaml"})
 		case "yarn-lockfile-missing":
 			checkRuns, checkFindings = evaluateJavaScriptLockfile(ctx, configured, "yarn", []string{"yarn.lock"})
+		case "javascript-conflicting-lockfiles":
+			checkRuns, checkFindings = evaluateConflictingJavaScriptLockfiles(ctx, configured)
 		case "uv-lockfile-missing":
 			checkRuns, checkFindings = evaluateUVLockfile(ctx, configured)
 		case "cargo-application-lockfile-missing":
@@ -351,6 +353,45 @@ func evaluateJavaScriptLockfile(ctx evaluationContext, configured check, manager
 	return runs, findings
 }
 
+func evaluateConflictingJavaScriptLockfiles(ctx evaluationContext, configured check) ([]CheckRun, []Finding) {
+	type project struct {
+		root     string
+		manifest string
+	}
+	projects := make(map[string]project)
+	for _, manifest := range ctx.javascript {
+		ownerRoot := javascriptWorkspaceOwner(manifest.root, ctx.javascriptSpaces)
+		current, exists := projects[ownerRoot]
+		if !exists {
+			current = project{root: ownerRoot, manifest: manifest.path}
+		}
+		if candidate := joinRoot(ownerRoot, "package.json"); ctx.sourceByPath[candidate].Path != "" {
+			current.manifest = candidate
+		}
+		projects[ownerRoot] = current
+	}
+
+	keys := make([]string, 0, len(projects))
+	for key := range projects {
+		keys = append(keys, key)
+	}
+	slices.Sort(keys)
+
+	runs := failedRunsForDetector(ctx, configured.ID, "js")
+	findings := make([]Finding, 0)
+	for _, key := range keys {
+		project := projects[key]
+		managers := javascriptLockManagers(project.root, ctx.sourceByPath)
+		subject := projectSubject(project.root)
+		runs = append(runs, completedRun(configured.ID, subject))
+		if len(managers) < 2 {
+			continue
+		}
+		findings = append(findings, newConflictingJavaScriptLockfilesFinding(configured, subject, project.manifest, project.root, managers, ctx.sourceByPath))
+	}
+	return runs, findings
+}
+
 func evaluateUVLockfile(ctx evaluationContext, configured check) ([]CheckRun, []Finding) {
 	runs := failedRunsForDetector(ctx, configured.ID, "python-pyproject")
 	findings := make([]Finding, 0)
@@ -547,6 +588,54 @@ func newMissingLockfileFinding(configured check, subject FindingSubject, locatio
 		CheckID: configured.ID, Severity: configured.Severity, Summary: configured.Summary, Subject: subject,
 		Locations: []FindingLocation{{Path: location}}, Evidence: evidence, Remediation: configured.Remediation,
 		Fingerprint: findingFingerprint(configured.ID, subject, manager, expected),
+	}
+}
+
+func newConflictingJavaScriptLockfilesFinding(configured check, subject FindingSubject, manifest, root string, managers map[string]struct{}, sources map[string]DependencySourceResult) Finding {
+	managerNames := make([]string, 0, len(managers))
+	for manager := range managers {
+		managerNames = append(managerNames, manager)
+	}
+	slices.Sort(managerNames)
+
+	lockfiles := make([]string, 0)
+	for _, manager := range managerNames {
+		for _, name := range javascriptLockfileNames(manager) {
+			location := joinRoot(root, name)
+			if _, ok := sources[location]; ok {
+				lockfiles = append(lockfiles, location)
+			}
+		}
+	}
+	slices.Sort(lockfiles)
+
+	locations := make([]FindingLocation, 0, len(lockfiles)+1)
+	locations = append(locations, FindingLocation{Path: manifest})
+	for _, lockfile := range lockfiles {
+		locations = append(locations, FindingLocation{Path: lockfile})
+	}
+	return Finding{
+		CheckID: configured.ID, Severity: configured.Severity, Summary: configured.Summary, Subject: subject,
+		Locations: locations,
+		Evidence: map[string]string{
+			"lockfile_families":     strings.Join(managerNames, ", "),
+			"conflicting_lockfiles": strings.Join(lockfiles, ", "),
+		},
+		Remediation: configured.Remediation,
+		Fingerprint: findingFingerprint(configured.ID, subject, strings.Join(managerNames, ","), ""),
+	}
+}
+
+func javascriptLockfileNames(manager string) []string {
+	switch manager {
+	case "npm":
+		return []string{"package-lock.json", "npm-shrinkwrap.json"}
+	case "pnpm":
+		return []string{"pnpm-lock.yaml"}
+	case "yarn":
+		return []string{"yarn.lock"}
+	default:
+		return nil
 	}
 }
 

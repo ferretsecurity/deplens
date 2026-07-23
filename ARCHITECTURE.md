@@ -151,7 +151,7 @@ checks:
     remediation: Run `npm install` and commit the generated lockfile.
 ```
 
-The five missing-lockfile evaluator types have empty configurations. Manager evidence, dependency gating, workspace ownership, Cargo application-role requirements, and ambiguity handling are evaluator invariants implemented in Go. JavaScript package publishability does not affect check eligibility. Ambiguous inputs produce skipped check runs; parsing failures produce failed runs; neither produces a policy finding.
+The six dependency-policy evaluator types have empty configurations. Manager evidence, dependency gating, workspace ownership, Cargo application-role requirements, conflicting JavaScript lockfile families, and ambiguity handling are evaluator invariants implemented in Go. JavaScript package publishability does not affect missing-lockfile eligibility. Ambiguous inputs produce skipped check runs; parsing failures produce failed runs; neither produces a policy finding.
 
 ## Repository relationships and checks
 
@@ -185,4 +185,4 @@ go test ./...
 go vet ./...
 ```
 
-Rule-schema tests verify strict legacy-field rejection, analyzer/evaluator-field rejection, unique IDs, complete metadata for all 185 detectors and five checks, and successful loading of the embedded rules. Finding tests cover positive, clean, dependency-free, ambiguous, library, workspace, nested-project, and fingerprint-stability cases.
+Rule-schema tests verify strict legacy-field rejection, analyzer/evaluator-field rejection, unique IDs, complete metadata for all 185 detectors and six checks, and successful loading of the embedded rules. Finding tests cover positive, clean, dependency-free, conflicting-lockfile, ambiguous, library, workspace, nested-project, and fingerprint-stability cases.
