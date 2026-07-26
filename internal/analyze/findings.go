@@ -387,12 +387,22 @@ func readComposerManifest(data []byte, source DependencySourceResult) (composerM
 func composerDependenciesPresent(requirements map[string]json.RawMessage) bool {
 	for name := range requirements {
 		name = strings.ToLower(strings.TrimSpace(name))
-		if name == "" || name == "php" || name == "php-64bit" || name == "php-ipv6" || name == "php-zts" || strings.HasPrefix(name, "ext-") || strings.HasPrefix(name, "lib-") {
+		if name == "" || isComposerPlatformPackage(name) {
 			continue
 		}
 		return true
 	}
 	return false
+}
+
+func isComposerPlatformPackage(name string) bool {
+	switch name {
+	case "php", "php-64bit", "php-debug", "php-ipv6", "php-zts",
+		"composer", "composer-plugin-api", "composer-runtime-api":
+		return true
+	default:
+		return strings.HasPrefix(name, "ext-") || strings.HasPrefix(name, "lib-")
+	}
 }
 
 var rubyGemDeclaration = regexp.MustCompile(`^\s*gem(?:\s+|\s*\()\s*["'][^"']+["']`)

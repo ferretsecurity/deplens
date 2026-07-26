@@ -305,23 +305,38 @@ func TestGoSumCheckHandlesLocalReplacementsAndNestedModules(t *testing.T) {
 			t.Fatalf("expected nested finding, got %#v", result.Findings)
 		}
 	})
+
+	t.Run("malformed module", func(t *testing.T) {
+		root := t.TempDir()
+		mustWriteFile(t, filepath.Join(root, "go.mod"), "module\n")
+		result, err := Scan(root, nil, ruleset)
+		if err != nil {
+			t.Fatalf("Scan failed: %v", err)
+		}
+		runs := filterCheckRuns(result.CheckRuns, "go-sum-missing")
+		if len(result.Findings) != 0 || len(runs) != 1 || runs[0].Status != CheckFailed || runs[0].ReasonCode != "source-analysis-failed" {
+			t.Fatalf("expected failed Go check without a finding, got findings=%#v runs=%#v", result.Findings, runs)
+		}
+	})
 }
 
 func TestComposerLockfileCheckClassifiesApplicationsConservatively(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	tests := []struct {
-		name        string
-		content     string
-		lock        bool
-		status      CheckRunStatus
-		reason      string
-		wantFinding bool
+		name         string
+		content      string
+		lock         bool
+		status       CheckRunStatus
+		reason       string
+		wantFindings int
 	}{
 		{name: "satisfied project", content: `{"type":"project","require":{"vendor/package":"^1"}}`, lock: true, status: CheckCompleted},
-		{name: "platform only", content: `{"type":"project","require":{"php":"^8.3","ext-json":"*"}}`, wantFinding: false},
+		{name: "missing lockfile", content: `{"type":"project","require":{"vendor/package":"^1"}}`, status: CheckCompleted, wantFindings: 1},
+		{name: "platform only", content: `{"type":"project","require":{"php":"^8.3","php-debug":"*","ext-json":"*","lib-curl":"*","composer":"^2","composer-plugin-api":"^2","composer-runtime-api":"^2"}}`},
 		{name: "library", content: `{"type":"library","require":{"vendor/package":"^1"}}`, status: CheckSkipped, reason: "not-application"},
 		{name: "unknown role", content: `{"require":{"vendor/package":"^1"}}`, status: CheckSkipped, reason: "project-role-unknown"},
 		{name: "lock disabled", content: `{"type":"project","config":{"lock":false},"require":{"vendor/package":"^1"}}`, status: CheckSkipped, reason: "lockfile-disabled"},
+		{name: "malformed manifest", content: `{`, status: CheckFailed, reason: "source-analysis-failed"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -336,16 +351,14 @@ func TestComposerLockfileCheckClassifiesApplicationsConservatively(t *testing.T)
 			}
 			runs := filterCheckRuns(result.CheckRuns, "php-composer-lockfile-missing-for-application")
 			if test.status == "" {
-				if len(runs) != 0 || len(result.Findings) != 0 {
-					t.Fatalf("expected no composer check run or finding, got runs=%#v findings=%#v", runs, result.Findings)
+				if len(runs) != 0 {
+					t.Fatalf("expected no composer check run, got %#v", runs)
 				}
-				return
-			}
-			if len(runs) != 1 || runs[0].Status != test.status || runs[0].ReasonCode != test.reason {
+			} else if len(runs) != 1 || runs[0].Status != test.status || runs[0].ReasonCode != test.reason {
 				t.Fatalf("unexpected composer runs: %#v", runs)
 			}
-			if test.wantFinding && len(result.Findings) != 1 {
-				t.Fatalf("expected finding, got %#v", result.Findings)
+			if len(result.Findings) != test.wantFindings {
+				t.Fatalf("expected %d findings, got %#v", test.wantFindings, result.Findings)
 			}
 		})
 	}

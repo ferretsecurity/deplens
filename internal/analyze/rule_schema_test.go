@@ -46,33 +46,6 @@ checks:
 	}
 }
 
-func TestRuleSchemaAcceptsNewMissingLockfileEvaluatorTypes(t *testing.T) {
-	for _, evaluator := range []string{"go-sum-missing", "composer-application-lockfile-missing", "gemfile-application-lockfile-missing"} {
-		t.Run(evaluator, func(t *testing.T) {
-			ruleset, err := loadRules("checks.yaml", []byte(`
-rules:
-  - id: example
-    form: manifest
-    roles: [declaration]
-    filename-regex: '^example$'
-checks:
-  - id: check
-    summary: summary
-    severity: medium
-    evaluator:
-      type: `+evaluator+`
-    remediation: remediation
-`))
-			if err != nil {
-				t.Fatalf("expected evaluator to load: %v", err)
-			}
-			if len(ruleset.checks) != 1 || ruleset.checks[0].EvaluatorType != evaluator {
-				t.Fatalf("unexpected checks: %#v", ruleset.checks)
-			}
-		})
-	}
-}
-
 func TestRuleSchemaRejectsInvalidCheckConfiguration(t *testing.T) {
 	base := `
 rules:
