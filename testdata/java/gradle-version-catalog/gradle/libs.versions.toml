@@ -1,2 +1,5 @@
 [versions]
 spring = "6.1.0"
+
+[libraries]
+spring-core = { module = "org.springframework:spring-core", version.ref = "spring" }

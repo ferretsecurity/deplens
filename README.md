@@ -37,6 +37,36 @@ requirements.txt [requirements · 1 dependency]
 
 Absent sources are counted by `Found N dependency sources` but hidden from the detailed list unless `--show-without-dependencies` is supplied.
 
+### Semantic coverage for common formats
+
+Gradle builds, Gradle lockfiles and version catalogs, Gemfiles and Bundler lockfiles, Dockerfiles, and Docker Compose files have built-in semantic analyzers. Static declarations are normalized into dependency records; executable or interpolated declarations that cannot be resolved without running external tools produce partial analysis warnings.
+
+For example, this Gradle build was previously identified only:
+
+```text
+build.gradle.kts [build-definition · identified only]
+```
+
+Given:
+
+```kotlin
+dependencies {
+    implementation("org.springframework:spring-core:6.1.8")
+    implementation(libs.jackson.databind)
+}
+```
+
+the same source now returns the static Maven dependency and explains the unresolved alias:
+
+```text
+build.gradle.kts [build-definition · 1 dependency · partial]
+  implementation:
+    - org.springframework:spring-core[6.1.8]
+  warning [dependency-extraction-incomplete]: version-catalog alias libs.jackson.databind could not be resolved from this build file
+```
+
+Dockerfile analysis extracts external images from `FROM` and external `COPY --from` instructions, while excluding `scratch` and previously declared stage aliases. Compose analysis extracts `services.*.image`. It does not treat packages installed by `RUN` or local build contexts as package dependencies.
+
 ### Dependency policy findings
 
 The built-in rules include nine conservative dependency policy checks:
@@ -235,6 +265,8 @@ analyzer:
     - dependencies
     - devDependencies
 ```
+
+The configuration-free semantic analyzer types `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, and `docker-compose` can also be used by custom rules. They reject analyzer fields other than `type`.
 
 The old rule shape is rejected. The migration is intentionally atomic:
 

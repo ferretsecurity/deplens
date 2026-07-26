@@ -157,6 +157,13 @@ type pnpmLockMatcherConfig struct{}
 type composerLockMatcherConfig struct{}
 type cargoLockMatcherConfig struct{}
 type yarnLockMatcherConfig struct{}
+type gradleBuildMatcherConfig struct{}
+type gradleLockMatcherConfig struct{}
+type gradleVersionCatalogMatcherConfig struct{}
+type gemfileMatcherConfig struct{}
+type gemfileLockMatcherConfig struct{}
+type dockerfileMatcherConfig struct{}
+type dockerComposeMatcherConfig struct{}
 
 type sourceAnalyzer interface {
 	Analyze(path string, content []byte) (sourceAnalyzerResult, error)

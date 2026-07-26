@@ -141,6 +141,34 @@ rules:
 	}
 }
 
+func TestRuleSchemaRejectsConfigurationForSemanticAnalyzers(t *testing.T) {
+	for _, analyzerType := range []string{
+		"gradle-build",
+		"gradle-lock",
+		"gradle-version-catalog",
+		"gemfile",
+		"gemfile-lock",
+		"dockerfile",
+		"docker-compose",
+	} {
+		t.Run(analyzerType, func(t *testing.T) {
+			_, err := loadRules("invalid.yaml", []byte(`
+rules:
+  - id: semantic
+    form: manifest
+    roles: [declaration]
+    filename-regex: '^deps$'
+    analyzer:
+      type: `+analyzerType+`
+      unexpected: true
+`))
+			if err == nil || !strings.Contains(err.Error(), "field unexpected not found") {
+				t.Fatalf("expected strict unknown-field rejection, got %v", err)
+			}
+		})
+	}
+}
+
 func TestRuleSchemaRejectsRecognizeEmptyTOMLConfiguration(t *testing.T) {
 	_, err := loadRules("invalid.yaml", []byte(`
 rules:

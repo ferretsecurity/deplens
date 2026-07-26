@@ -57,6 +57,20 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newCargoLockParser)
 	case "yarn-lock":
 		return decodeAndCreate(raw.Analyzer, newYarnLockParser)
+	case "gradle-build":
+		return decodeAndCreate(raw.Analyzer, newGradleBuildParser)
+	case "gradle-lock":
+		return decodeAndCreate(raw.Analyzer, newGradleLockParser)
+	case "gradle-version-catalog":
+		return decodeAndCreate(raw.Analyzer, newGradleVersionCatalogParser)
+	case "gemfile":
+		return decodeAndCreate(raw.Analyzer, newGemfileParser)
+	case "gemfile-lock":
+		return decodeAndCreate(raw.Analyzer, newGemfileLockParser)
+	case "dockerfile":
+		return decodeAndCreate(raw.Analyzer, newDockerfileParser)
+	case "docker-compose":
+		return decodeAndCreate(raw.Analyzer, newDockerComposeParser)
 	case "yaml":
 		return decodeAndCreate(raw.Analyzer, newYAMLQueryParser)
 	case "toml":

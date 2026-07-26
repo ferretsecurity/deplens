@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
-	"regexp"
 	"slices"
 	"strings"
 
@@ -405,22 +404,20 @@ func isComposerPlatformPackage(name string) bool {
 	}
 }
 
-var rubyGemDeclaration = regexp.MustCompile(`^\s*gem(?:\s+|\s*\()\s*["'][^"']+["']`)
-var rubyGemspecDeclaration = regexp.MustCompile(`^\s*gemspec(?:\s|\(|$)`)
-
 func readRubyGemfile(data []byte, sourcePath string) rubyGemfile {
 	root := path.Dir(sourcePath)
 	if root == "." {
 		root = ""
 	}
 	gemfile := rubyGemfile{path: sourcePath, root: root}
-	for _, line := range strings.Split(string(data), "\n") {
-		trimmed := strings.TrimSpace(line)
-		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
-			continue
+	if parsed, err := parseGemfile(sourcePath, data); err == nil {
+		gemfile.hasDependencies = len(parsed.dependencies) > 0
+		gemfile.hasGemspec = parsed.hasGemspec
+	} else {
+		for _, line := range strings.Split(string(data), "\n") {
+			gemfile.hasDependencies = gemfile.hasDependencies || gemfileStaticCall.MatchString(line)
+			gemfile.hasGemspec = gemfile.hasGemspec || gemfileGemspecCall.MatchString(line)
 		}
-		gemfile.hasDependencies = gemfile.hasDependencies || rubyGemDeclaration.MatchString(line)
-		gemfile.hasGemspec = gemfile.hasGemspec || rubyGemspecDeclaration.MatchString(line)
 	}
 	return gemfile
 }

@@ -192,7 +192,7 @@
     {
       "type": "java-gradle-lockfile",
       "path": "java-service/gradle.lockfile",
-      "has_dependencies": null
+      "has_dependencies": false
     },
     {
       "type": "java",
@@ -249,12 +249,22 @@
     {
       "type": "ruby-gemfile",
       "path": "ruby-app/Gemfile",
-      "has_dependencies": null
+      "dependencies": [
+        {
+          "type": "gem",
+          "raw": "rails@~\u003e 7.1.3",
+          "name": "rails",
+          "constraint": "~\u003e 7.1.3",
+          "vers": "vers:gem/\u003e=7.1.3|\u003c7.2",
+          "section": "default"
+        }
+      ],
+      "has_dependencies": true
     },
     {
       "type": "ruby-gemfile-lock",
       "path": "ruby-app/Gemfile.lock",
-      "has_dependencies": null
+      "has_dependencies": false
     },
     {
       "type": "rust-cargo-lock",
