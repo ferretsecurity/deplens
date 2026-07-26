@@ -50,3 +50,11 @@ func appendUniqueDependency(dependencies []DependencyReference, seen map[string]
 	seen[key] = struct{}{}
 	return append(dependencies, dependency)
 }
+
+func appendUniqueMessage(messages []string, seen map[string]struct{}, message string) []string {
+	if _, exists := seen[message]; exists {
+		return messages
+	}
+	seen[message] = struct{}{}
+	return append(messages, message)
+}

@@ -13,9 +13,10 @@ type gradleLockParser struct{}
 type gradleVersionCatalogParser struct{}
 
 var (
-	gradleDoubleQuotedCall = regexp.MustCompile(`(?m)\b([A-Za-z_][A-Za-z0-9_.]*)\s*(?:\(\s*)?"([^"\n]+)"`)
-	gradleSingleQuotedCall = regexp.MustCompile(`(?m)\b([A-Za-z_][A-Za-z0-9_.]*)\s*(?:\(\s*)?'([^'\n]+)'`)
-	gradleAliasCall        = regexp.MustCompile(`(?m)\b([A-Za-z_][A-Za-z0-9_.]*)\s*\(?\s*(libs(?:\.[A-Za-z_][A-Za-z0-9_-]*)+)`)
+	gradleDoubleQuotedCall = regexp.MustCompile(`(?m)(?:^|\n|;)\s*([A-Za-z_][A-Za-z0-9_.]*)\s*(?:\(\s*)?"([^"\n]+)"`)
+	gradleSingleQuotedCall = regexp.MustCompile(`(?m)(?:^|\n|;)\s*([A-Za-z_][A-Za-z0-9_.]*)\s*(?:\(\s*)?'([^'\n]+)'`)
+	gradlePlatformCall     = regexp.MustCompile(`(?m)(?:^|\n|;)\s*([A-Za-z_][A-Za-z0-9_.]*)\s*(?:\(\s*)?(?:enforcedPlatform|platform)\s*\(\s*["']([^"'\n]+)["']`)
+	gradleAliasCall        = regexp.MustCompile(`(?m)(?:^|\n|;)\s*([A-Za-z_][A-Za-z0-9_.]*)\s*\(?\s*(libs(?:\.[A-Za-z_][A-Za-z0-9_-]*)+)`)
 	gradleMapCall          = regexp.MustCompile(`(?ms)^\s*([A-Za-z_][A-Za-z0-9_.]*)\s*(?:\(([^)]*)\)|([^\n]+))`)
 	gradleMapPair          = regexp.MustCompile(`\b(group|name|version)\s*[:=]\s*["']([^"']+)["']`)
 	gradleMapKey           = regexp.MustCompile(`\b(group|name|version)\s*[:=]`)
@@ -39,13 +40,17 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 		return sourceAnalyzerResult{}, err
 	}
 
+	dependencyBlocks, err := gradleDependencyBlocks(path, cleaned)
+	if err != nil {
+		return sourceAnalyzerResult{}, err
+	}
 	dependencies := make([]DependencyReference, 0)
 	seen := make(map[string]struct{})
 	incomplete := make([]string, 0)
 	dynamicSeen := make(map[string]struct{})
 
-	for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall} {
-		for _, match := range matcher.FindAllStringSubmatch(cleaned, -1) {
+	for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall, gradlePlatformCall} {
+		for _, match := range matcher.FindAllStringSubmatch(dependencyBlocks, -1) {
 			configuration := lastIdentifier(match[1])
 			coordinate := strings.TrimSpace(match[2])
 			if strings.Count(coordinate, ":") < 2 {
@@ -53,10 +58,7 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 			}
 			if strings.ContainsAny(coordinate, "$") {
 				message := fmt.Sprintf("dynamic Gradle dependency in configuration %s could not be extracted: %s", configuration, coordinate)
-				if _, exists := dynamicSeen[message]; !exists {
-					dynamicSeen[message] = struct{}{}
-					incomplete = append(incomplete, message)
-				}
+				incomplete = appendUniqueMessage(incomplete, dynamicSeen, message)
 				continue
 			}
 			dependency, ok := gradleCoordinateDependency(coordinate, configuration)
@@ -68,7 +70,7 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 		}
 	}
 
-	for _, match := range gradleMapCall.FindAllStringSubmatch(cleaned, -1) {
+	for _, match := range gradleMapCall.FindAllStringSubmatch(dependencyBlocks, -1) {
 		configuration := lastIdentifier(match[1])
 		body := match[2]
 		if body == "" {
@@ -85,10 +87,7 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 		if values["group"] == "" || values["name"] == "" {
 			if len(mapKeys) > 0 {
 				message := fmt.Sprintf("dynamic Gradle map dependency in configuration %s could not be fully extracted", configuration)
-				if _, exists := dynamicSeen[message]; !exists {
-					dynamicSeen[message] = struct{}{}
-					incomplete = append(incomplete, message)
-				}
+				incomplete = appendUniqueMessage(incomplete, dynamicSeen, message)
 			}
 			continue
 		}
@@ -104,24 +103,65 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 		dependencies = appendUniqueDependency(dependencies, seen, key, dependency)
 		if _, declaresVersion := mapKeys["version"]; declaresVersion && values["version"] == "" {
 			message := fmt.Sprintf("dynamic Gradle version in configuration %s could not be extracted", configuration)
-			if _, exists := dynamicSeen[message]; !exists {
-				dynamicSeen[message] = struct{}{}
-				incomplete = append(incomplete, message)
-			}
+			incomplete = appendUniqueMessage(incomplete, dynamicSeen, message)
 		}
 	}
 
-	for _, match := range gradleAliasCall.FindAllStringSubmatch(cleaned, -1) {
+	for _, match := range gradleAliasCall.FindAllStringSubmatch(dependencyBlocks, -1) {
 		message := fmt.Sprintf("version-catalog alias %s could not be resolved from this build file", match[2])
-		if _, exists := dynamicSeen[message]; exists {
-			continue
-		}
-		dynamicSeen[message] = struct{}{}
-		incomplete = append(incomplete, message)
+		incomplete = appendUniqueMessage(incomplete, dynamicSeen, message)
 	}
 
 	sortDependencyReferences(dependencies)
 	return semanticAnalyzerResult(dependencies, incomplete), nil
+}
+
+var gradleDependenciesBlock = regexp.MustCompile(`\bdependencies\s*\{`)
+
+func gradleDependencyBlocks(path, content string) (string, error) {
+	blocks := make([]string, 0)
+	for _, location := range gradleDependenciesBlock.FindAllStringIndex(content, -1) {
+		start := location[1]
+		end, ok := executableDSLMatchingBrace(content, start)
+		if !ok {
+			return "", fmt.Errorf("parse Gradle build %q: unterminated dependencies block", path)
+		}
+		blocks = append(blocks, content[start:end])
+	}
+	return strings.Join(blocks, "\n"), nil
+}
+
+func executableDSLMatchingBrace(content string, start int) (int, bool) {
+	depth := 1
+	var quote byte
+	escaped := false
+	for index := start; index < len(content); index++ {
+		current := content[index]
+		if quote != 0 {
+			if escaped {
+				escaped = false
+			} else if current == '\\' {
+				escaped = true
+			} else if current == quote {
+				quote = 0
+			}
+			continue
+		}
+		if current == '"' || current == '\'' {
+			quote = current
+			continue
+		}
+		switch current {
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return index, true
+			}
+		}
+	}
+	return 0, false
 }
 
 func gradleCoordinateDependency(coordinate, configuration string) (DependencyReference, bool) {

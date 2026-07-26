@@ -90,6 +90,27 @@ func TestGradleBuildParserRejectsUnterminatedStrings(t *testing.T) {
 	}
 }
 
+func TestGradleBuildParserOnlyReadsDependencyBlocksAndKeepsPlatformConfiguration(t *testing.T) {
+	parser, _ := newGradleBuildParser(gradleBuildMatcherConfig{})
+	result, err := parser.Analyze("build.gradle.kts", []byte(`
+tasks.register("log") {
+  doLast { logger.lifecycle("org.example:not-a-dependency:1.0") }
+}
+dependencies {
+  implementation(platform("org.example:platform:1.2.3"))
+}
+`))
+	if err != nil {
+		t.Fatalf("Analyze: %v", err)
+	}
+	if got, want := dependencyNames(result.Dependencies), []string{"org.example:platform:1.2.3"}; !slices.Equal(got, want) {
+		t.Fatalf("dependencies: got %v want %v", got, want)
+	}
+	if dependency := result.Dependencies[0]; dependency.SourceGroup != "implementation" || dependency.Scope != ScopeRuntime {
+		t.Fatalf("unexpected dependency: %+v", dependency)
+	}
+}
+
 func TestGradleLockParserExtractsResolvedModules(t *testing.T) {
 	parser, _ := newGradleLockParser(gradleLockMatcherConfig{})
 	result, err := parser.Analyze("gradle.lockfile", []byte(`

@@ -16,6 +16,7 @@ var (
 	gemfileOption        = regexp.MustCompile(`\b(git|github|path|source)\s*:\s*["']([^"']+)["']`)
 	gemfileAnyOption     = regexp.MustCompile(`\b[A-Za-z_][A-Za-z0-9_]*\s*:`)
 	gemfileGroupBlock    = regexp.MustCompile(`^\s*group\s+(.+?)\s+do\s*$`)
+	gemfileBlockStart    = regexp.MustCompile(`\bdo\s*(?:\|[^|]*\|)?\s*$`)
 	gemfileGroupOption   = regexp.MustCompile(`\bgroups?\s*:\s*(\[[^\]]*\]|:[A-Za-z_][A-Za-z0-9_]*|["'][^"']+["'])`)
 	gemfileSymbol        = regexp.MustCompile(`:([A-Za-z_][A-Za-z0-9_]*)`)
 	gemfileSourceCall    = regexp.MustCompile(`^\s*source\s*(?:\(\s*)?["']([^"']+)["']`)
@@ -57,7 +58,7 @@ func parseGemfile(path string, content []byte) (gemfileParseResult, error) {
 	result := gemfileParseResult{}
 	dependencies := make([]DependencyReference, 0)
 	seen := make(map[string]struct{})
-	groupStack := make([][]string, 0)
+	blockStack := make([][]string, 0)
 	globalSource := ""
 
 	statements, err := executableDSLStatements(path, cleaned)
@@ -71,6 +72,9 @@ func parseGemfile(path string, content []byte) (gemfileParseResult, error) {
 		}
 		if match := gemfileSourceCall.FindStringSubmatch(line); match != nil {
 			globalSource = match[1]
+			if gemfileBlockStart.MatchString(line) {
+				blockStack = append(blockStack, nil)
+			}
 			continue
 		}
 		if gemfileGemspecCall.MatchString(line) {
@@ -82,14 +86,17 @@ func parseGemfile(path string, content []byte) (gemfileParseResult, error) {
 			if len(groups) == 0 {
 				result.incomplete = append(result.incomplete, fmt.Sprintf("Gemfile line %d has a dynamic group declaration", lineNumber+1))
 			}
-			groupStack = append(groupStack, groups)
+			blockStack = append(blockStack, groups)
 			continue
 		}
 		if trimmed == "end" {
-			if len(groupStack) > 0 {
-				groupStack = groupStack[:len(groupStack)-1]
+			if len(blockStack) > 0 {
+				blockStack = blockStack[:len(blockStack)-1]
 			}
 			continue
+		}
+		if gemfileBlockStart.MatchString(line) {
+			blockStack = append(blockStack, nil)
 		}
 		if !gemfileCall.MatchString(line) {
 			continue
@@ -117,7 +124,7 @@ func parseGemfile(path string, content []byte) (gemfileParseResult, error) {
 			constraints = append(constraints, value)
 		}
 
-		groups := flattenGemfileGroups(groupStack)
+		groups := flattenGemfileGroups(blockStack)
 		if match := gemfileGroupOption.FindStringSubmatch(line); match != nil {
 			groups = append(groups, gemfileGroups(match[1])...)
 		}

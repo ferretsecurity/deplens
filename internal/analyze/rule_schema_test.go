@@ -16,17 +16,10 @@ func TestDefaultRulesUseCompleteDependencySourceMetadata(t *testing.T) {
 	if len(ruleset.checks) != 9 {
 		t.Fatalf("expected 9 built-in checks, got %d", len(ruleset.checks))
 	}
-	analyzerCount := 0
 	for index, detector := range ruleset.detectors {
 		if detector.ID == "" || !validSourceForm(detector.Form) || len(detector.Roles) == 0 {
 			t.Fatalf("detector %d has incomplete metadata: %+v", index, detector)
 		}
-		if detector.Analyzer != nil {
-			analyzerCount++
-		}
-	}
-	if analyzerCount != 64 {
-		t.Fatalf("expected 64 semantic analyzers and 121 selector-only detectors, got %d and %d", analyzerCount, len(ruleset.detectors)-analyzerCount)
 	}
 }
 

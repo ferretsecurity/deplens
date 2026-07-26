@@ -27,11 +27,6 @@ func newDockerComposeParser(dockerComposeMatcherConfig) (sourceAnalyzer, error) 
 	return dockerComposeParser{}, nil
 }
 
-type dockerfileImage struct {
-	dependency DependencyReference
-	stage      string
-}
-
 func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	lines, err := dockerfileLogicalLines(path, string(content))
 	if err != nil {
@@ -40,7 +35,7 @@ func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 
 	args := make(map[string]string)
 	stages := make(map[string]struct{})
-	images := make([]dockerfileImage, 0)
+	images := make([]DependencyReference, 0)
 	copyImages := make([]DependencyReference, 0)
 	incomplete := make([]string, 0)
 	finalImageIndex := -1
@@ -128,7 +123,7 @@ func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 				dependency.Attributes["stage"] = stage
 				stages[strings.ToLower(stage)] = struct{}{}
 			}
-			images = append(images, dockerfileImage{dependency: dependency, stage: stage})
+			images = append(images, dependency)
 			finalImageIndex = len(images) - 1
 		case "COPY":
 			match := dockerCopyFrom.FindStringSubmatch(line)
@@ -160,12 +155,12 @@ func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 	}
 
 	if finalImageIndex >= 0 {
-		images[finalImageIndex].dependency.Scope = ScopeRuntime
+		images[finalImageIndex].Scope = ScopeRuntime
 	}
 	dependencies := make([]DependencyReference, 0, len(images)+len(copyImages))
 	indexByRaw := make(map[string]int)
 	for _, image := range images {
-		dependencies = appendOrMergeDockerDependency(dependencies, indexByRaw, image.dependency)
+		dependencies = appendOrMergeDockerDependency(dependencies, indexByRaw, image)
 	}
 	for _, dependency := range copyImages {
 		dependencies = appendOrMergeDockerDependency(dependencies, indexByRaw, dependency)

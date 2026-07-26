@@ -75,6 +75,29 @@ gem(
 	}
 }
 
+func TestGemfileParserKeepsGroupAcrossNestedNonGroupBlocks(t *testing.T) {
+	parser, _ := newGemfileParser(gemfileMatcherConfig{})
+	result, err := parser.Analyze("Gemfile", []byte(`
+group :development, :test do
+  source "https://gems.example.test" do
+    gem "inside"
+  end
+  gem "still-grouped"
+end
+`))
+	if err != nil {
+		t.Fatalf("Analyze: %v", err)
+	}
+	if len(result.Dependencies) != 2 {
+		t.Fatalf("unexpected dependencies: %+v", result.Dependencies)
+	}
+	for _, dependency := range result.Dependencies {
+		if dependency.SourceGroup != "development,test" || dependency.Scope != ScopeTest {
+			t.Fatalf("unexpected dependency: %+v", dependency)
+		}
+	}
+}
+
 func TestGemfileParserRecognizesDependencyFreeGemfile(t *testing.T) {
 	parser, _ := newGemfileParser(gemfileMatcherConfig{})
 	result, err := parser.Analyze("Gemfile", []byte(`source "https://rubygems.org"`))
