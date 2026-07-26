@@ -1,8 +1,8 @@
 # Dependency coverage
 
-This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. The YAML file remains the source of truth for selectors and analyzer configuration.
+This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 64 have semantic analyzers and 121 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
 
-Capabilities are `select`, `recognize`, `assess-presence`, `extract`, and `normalize`. Relationship and location fields are available in the shared model but are only populated when an analyzer has that information.
+Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship and location fields are available in the shared model but are only populated when an analyzer has that information.
 
 | Detector ID | Form | Roles | Analyzer | Capabilities |
 | --- | --- | --- | --- | --- |
@@ -37,12 +37,12 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, and `norma
 | `js-yarnrc` | `tool-config` | `configuration` | — | select |
 | `js-importmap` | `manifest` | `declaration, constraint` | — | select |
 | `java` | `manifest` | `declaration, constraint` | `xml` | select, recognize, assess-presence |
-| `java-gradle-lockfile` | `lockfile` | `resolution, integrity` | — | select |
-| `java-gradle` | `build-definition` | `declaration, constraint, configuration` | — | select |
-| `java-gradle-kts` | `build-definition` | `declaration, constraint, configuration` | — | select |
+| `java-gradle-lockfile` | `lockfile` | `resolution, integrity` | `gradle-lock` | select, recognize, extract, normalize, relate |
+| `java-gradle` | `build-definition` | `declaration, constraint, configuration` | `gradle-build` | select, recognize, extract, normalize, relate |
+| `java-gradle-kts` | `build-definition` | `declaration, constraint, configuration` | `gradle-build` | select, recognize, extract, normalize, relate |
 | `java-gradle-settings` | `workspace-definition` | `workspace, configuration` | — | select |
 | `java-gradle-settings-kts` | `workspace-definition` | `workspace, configuration` | — | select |
-| `java-gradle-version-catalog` | `version-catalog` | `declaration, constraint` | — | select |
+| `java-gradle-version-catalog` | `version-catalog` | `declaration, constraint` | `gradle-version-catalog` | select, recognize, extract, normalize, relate |
 | `java-gradle-wrapper` | `tool-config` | `configuration` | — | select |
 | `scala-sbt-build` | `build-definition` | `declaration, constraint, configuration` | — | select |
 | `scala-sbt-plugins` | `build-definition` | `declaration, constraint, configuration` | — | select |
@@ -52,8 +52,8 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, and `norma
 | `java-ant-build` | `build-definition` | `declaration, constraint, configuration` | — | select |
 | `java-ivy` | `manifest` | `declaration, constraint` | — | select |
 | `java-ivy-settings` | `tool-config` | `configuration` | — | select |
-| `ruby-gemfile` | `manifest` | `declaration, constraint` | — | select |
-| `ruby-gemfile-lock` | `lockfile` | `resolution, integrity` | — | select |
+| `ruby-gemfile` | `manifest` | `declaration, constraint` | `gemfile` | select, recognize, extract, normalize, relate |
+| `ruby-gemfile-lock` | `lockfile` | `resolution, integrity` | `gemfile-lock` | select, recognize, extract, normalize, relate |
 | `ruby-gemspec` | `manifest` | `declaration, constraint` | — | select |
 | `ruby-appraisal` | `manifest` | `declaration, constraint` | — | select |
 | `swift-package` | `manifest` | `declaration, constraint` | — | select |
@@ -145,8 +145,8 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, and `norma
 | `terraform-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `unity-packages-manifest` | `manifest` | `declaration, constraint` | `json` | select, recognize, assess-presence |
 | `unity-packages-lock` | `lockfile` | `resolution, integrity` | — | select |
-| `docker-dockerfile` | `deployment-definition` | `declaration, configuration` | — | select |
-| `docker-compose` | `deployment-definition` | `declaration, configuration` | — | select |
+| `docker-dockerfile` | `deployment-definition` | `declaration, configuration` | `dockerfile` | select, recognize, extract, normalize, relate |
+| `docker-compose` | `deployment-definition` | `declaration, configuration` | `docker-compose` | select, recognize, extract, normalize, relate |
 | `github-actions-action` | `automation-definition` | `configuration, usage` | — | select |
 | `github-actions-workflow` | `automation-definition` | `configuration, usage` | — | select |
 | `bazel-workspace` | `workspace-definition` | `workspace, configuration` | — | select |

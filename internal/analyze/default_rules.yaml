@@ -233,17 +233,26 @@ rules:
       exists-any:
         - project.dependencies.dependency
   - id: java-gradle-lockfile
+    package-type: maven
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^gradle\.lockfile$'
+    analyzer:
+      type: gradle-lock
   - id: java-gradle
+    package-type: maven
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^build\.gradle$'
+    analyzer:
+      type: gradle-build
   - id: java-gradle-kts
+    package-type: maven
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^build\.gradle\.kts$'
+    analyzer:
+      type: gradle-build
   - id: java-gradle-settings
     form: workspace-definition
     roles: [workspace, configuration]
@@ -253,9 +262,12 @@ rules:
     roles: [workspace, configuration]
     filename-regex: '^settings\.gradle\.kts$'
   - id: java-gradle-version-catalog
+    package-type: maven
     form: version-catalog
     roles: [declaration, constraint]
     path-glob: '**/gradle/libs.versions.toml'
+    analyzer:
+      type: gradle-version-catalog
   - id: java-gradle-wrapper
     form: tool-config
     roles: [configuration]
@@ -293,13 +305,19 @@ rules:
     roles: [configuration]
     filename-regex: '^ivysettings\.xml$'
   - id: ruby-gemfile
+    package-type: gem
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Gemfile$'
+    analyzer:
+      type: gemfile
   - id: ruby-gemfile-lock
+    package-type: gem
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Gemfile\.lock$'
+    analyzer:
+      type: gemfile-lock
   - id: ruby-gemspec
     form: manifest
     roles: [declaration, constraint]
@@ -796,13 +814,19 @@ rules:
     roles: [resolution, integrity]
     path-glob: 'Packages/packages-lock.json'
   - id: docker-dockerfile
+    package-type: docker
     form: deployment-definition
     roles: [declaration, configuration]
     filename-regex: '^Dockerfile(\..+)?$'
+    analyzer:
+      type: dockerfile
   - id: docker-compose
+    package-type: docker
     form: deployment-definition
     roles: [declaration, configuration]
     filename-regex: '^(docker-compose|compose)\.ya?ml$'
+    analyzer:
+      type: docker-compose
   - id: github-actions-action
     form: automation-definition
     roles: [configuration, usage]

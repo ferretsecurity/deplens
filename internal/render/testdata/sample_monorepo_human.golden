@@ -1,10 +1,10 @@
 Root: /path/to/sample-monorepo
 
 Found 32 manifests:
-- 10 with extracted dependencies
-- 7 confirmed empty
+- 11 with extracted dependencies
+- 9 confirmed empty
 - 5 with dependencies present, not extracted
-- 10 with dependency status unknown
+- 7 with dependency status unknown
 
 apps/backend/requirements/base.txt [2 deps]
   - requests==2.32.3
@@ -52,8 +52,6 @@ go-service/go.mod [1 dep]
 
 go-service/go.sum [matched]
 
-java-service/gradle.lockfile [matched]
-
 php-app/composer.json [dependencies present, not extracted]
 
 php-app/composer.lock [1 dep]
@@ -66,9 +64,9 @@ requirements.qt6_3.in [1 dep]
 requirements.txt [1 dep]
   - requests==2.32.0
 
-ruby-app/Gemfile [matched]
-
-ruby-app/Gemfile.lock [matched]
+ruby-app/Gemfile [1 dep]
+  default:
+    - rails~> 7.1.3
 
 rust-app/Cargo.lock [1 dep]
   - serde@1.0.217

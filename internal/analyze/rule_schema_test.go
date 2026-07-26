@@ -16,10 +16,17 @@ func TestDefaultRulesUseCompleteDependencySourceMetadata(t *testing.T) {
 	if len(ruleset.checks) != 9 {
 		t.Fatalf("expected 9 built-in checks, got %d", len(ruleset.checks))
 	}
+	analyzerCount := 0
 	for index, detector := range ruleset.detectors {
 		if detector.ID == "" || !validSourceForm(detector.Form) || len(detector.Roles) == 0 {
 			t.Fatalf("detector %d has incomplete metadata: %+v", index, detector)
 		}
+		if detector.Analyzer != nil {
+			analyzerCount++
+		}
+	}
+	if analyzerCount != 64 {
+		t.Fatalf("expected 64 semantic analyzers and 121 selector-only detectors, got %d and %d", analyzerCount, len(ruleset.detectors)-analyzerCount)
 	}
 }
 
@@ -138,6 +145,34 @@ rules:
 `))
 	if err == nil || !strings.Contains(err.Error(), "field typo not found") {
 		t.Fatalf("expected strict rejection of unknown analyzer field, got %v", err)
+	}
+}
+
+func TestRuleSchemaRejectsConfigurationForSemanticAnalyzers(t *testing.T) {
+	for _, analyzerType := range []string{
+		"gradle-build",
+		"gradle-lock",
+		"gradle-version-catalog",
+		"gemfile",
+		"gemfile-lock",
+		"dockerfile",
+		"docker-compose",
+	} {
+		t.Run(analyzerType, func(t *testing.T) {
+			_, err := loadRules("invalid.yaml", []byte(`
+rules:
+  - id: semantic
+    form: manifest
+    roles: [declaration]
+    filename-regex: '^deps$'
+    analyzer:
+      type: `+analyzerType+`
+      unexpected: true
+`))
+			if err == nil || !strings.Contains(err.Error(), "field unexpected not found") {
+				t.Fatalf("expected strict unknown-field rejection, got %v", err)
+			}
+		})
 	}
 }
 
