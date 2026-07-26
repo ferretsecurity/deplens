@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"regexp"
 	"slices"
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"golang.org/x/mod/modfile"
 	"gopkg.in/yaml.v3"
 )
 
@@ -46,6 +48,29 @@ type cargoManifest struct {
 	workspaces  []string
 }
 
+type goModule struct {
+	path                   string
+	root                   string
+	hasRequirements        bool
+	hasExternalRequirement bool
+}
+
+type composerManifest struct {
+	path            string
+	root            string
+	typeValue       string
+	typeKnown       bool
+	lockDisabled    bool
+	hasDependencies bool
+}
+
+type rubyGemfile struct {
+	path            string
+	root            string
+	hasDependencies bool
+	hasGemspec      bool
+}
+
 type policyParseError struct {
 	detector DetectorID
 	path     string
@@ -64,6 +89,9 @@ type evaluationContext struct {
 	javascriptSpaces []workspaceDefinition
 	uv               []uvManifest
 	cargo            []cargoManifest
+	goModules        []goModule
+	composer         []composerManifest
+	ruby             []rubyGemfile
 	parseErrors      []policyParseError
 }
 
@@ -90,6 +118,12 @@ func evaluateChecks(sources []DependencySourceResult, policyInputs []policyInput
 			checkRuns, checkFindings = evaluateUVLockfile(ctx, configured)
 		case "cargo-application-lockfile-missing":
 			checkRuns, checkFindings = evaluateCargoLockfile(ctx, configured)
+		case "go-sum-missing":
+			checkRuns, checkFindings = evaluateGoSum(ctx, configured)
+		case "composer-application-lockfile-missing":
+			checkRuns, checkFindings = evaluateComposerLockfile(ctx, configured)
+		case "gemfile-application-lockfile-missing":
+			checkRuns, checkFindings = evaluateGemfileLockfile(ctx, configured)
 		}
 		runs = append(runs, checkRuns...)
 		findings = append(findings, checkFindings...)
@@ -130,6 +164,20 @@ func buildEvaluationContext(sources []DependencySourceResult, policyInputs []pol
 			} else {
 				ctx.parseErrors = append(ctx.parseErrors, policyParseError{detector: source.Detector, path: source.Path, detail: err.Error()})
 			}
+		case "go-mod":
+			if module, err := readGoModule(source.content, source); err == nil {
+				ctx.goModules = append(ctx.goModules, module)
+			} else {
+				ctx.parseErrors = append(ctx.parseErrors, policyParseError{detector: source.Detector, path: source.Path, detail: err.Error()})
+			}
+		case "php-composer":
+			if manifest, err := readComposerManifest(source.content, source); err == nil {
+				ctx.composer = append(ctx.composer, manifest)
+			} else {
+				ctx.parseErrors = append(ctx.parseErrors, policyParseError{detector: source.Detector, path: source.Path, detail: err.Error()})
+			}
+		case "ruby-gemfile":
+			ctx.ruby = append(ctx.ruby, readRubyGemfile(source.content, source.Path))
 		}
 	}
 	for _, input := range policyInputs {
@@ -152,6 +200,9 @@ func buildEvaluationContext(sources []DependencySourceResult, policyInputs []pol
 	slices.SortFunc(ctx.javascriptSpaces, func(a, b workspaceDefinition) int { return strings.Compare(a.root, b.root) })
 	slices.SortFunc(ctx.uv, func(a, b uvManifest) int { return strings.Compare(a.path, b.path) })
 	slices.SortFunc(ctx.cargo, func(a, b cargoManifest) int { return strings.Compare(a.path, b.path) })
+	slices.SortFunc(ctx.goModules, func(a, b goModule) int { return strings.Compare(a.path, b.path) })
+	slices.SortFunc(ctx.composer, func(a, b composerManifest) int { return strings.Compare(a.path, b.path) })
+	slices.SortFunc(ctx.ruby, func(a, b rubyGemfile) int { return strings.Compare(a.path, b.path) })
 	return ctx
 }
 
@@ -268,6 +319,110 @@ func readCargoManifest(data []byte, source DependencySourceResult, discovered ma
 		manifest.hasDeps = manifest.hasDeps || nonEmptyValue(workspace["dependencies"])
 	}
 	return manifest, nil
+}
+
+func readGoModule(data []byte, source DependencySourceResult) (goModule, error) {
+	parsed, err := modfile.Parse(source.Path, data, nil)
+	if err != nil {
+		return goModule{}, err
+	}
+	root := path.Dir(source.Path)
+	if root == "." {
+		root = ""
+	}
+	module := goModule{path: source.Path, root: root, hasRequirements: len(parsed.Require) > 0}
+	for _, requirement := range parsed.Require {
+		if !goRequirementIsLocallyReplaced(requirement, parsed.Replace) {
+			module.hasExternalRequirement = true
+			break
+		}
+	}
+	return module, nil
+}
+
+func goRequirementIsLocallyReplaced(requirement *modfile.Require, replacements []*modfile.Replace) bool {
+	for _, replacement := range replacements {
+		if replacement.Old.Path != requirement.Mod.Path {
+			continue
+		}
+		if replacement.Old.Version != "" && replacement.Old.Version != requirement.Mod.Version {
+			continue
+		}
+		if replacement.New.Version == "" && isLocalFilesystemPath(replacement.New.Path) {
+			return true
+		}
+	}
+	return false
+}
+
+func isLocalFilesystemPath(value string) bool {
+	return value == "." || value == ".." || strings.HasPrefix(value, "./") || strings.HasPrefix(value, "../") || strings.HasPrefix(value, "/")
+}
+
+func readComposerManifest(data []byte, source DependencySourceResult) (composerManifest, error) {
+	var raw struct {
+		Type   json.RawMessage `json:"type"`
+		Config struct {
+			Lock *bool `json:"lock"`
+		} `json:"config"`
+		Require    map[string]json.RawMessage `json:"require"`
+		RequireDev map[string]json.RawMessage `json:"require-dev"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return composerManifest{}, err
+	}
+	root := path.Dir(source.Path)
+	if root == "." {
+		root = ""
+	}
+	manifest := composerManifest{path: source.Path, root: root, lockDisabled: raw.Config.Lock != nil && !*raw.Config.Lock}
+	if len(raw.Type) > 0 && json.Unmarshal(raw.Type, &manifest.typeValue) == nil {
+		manifest.typeKnown = true
+		manifest.typeValue = strings.ToLower(manifest.typeValue)
+	}
+	manifest.hasDependencies = composerDependenciesPresent(raw.Require) || composerDependenciesPresent(raw.RequireDev)
+	return manifest, nil
+}
+
+func composerDependenciesPresent(requirements map[string]json.RawMessage) bool {
+	for name := range requirements {
+		name = strings.ToLower(strings.TrimSpace(name))
+		if name == "" || isComposerPlatformPackage(name) {
+			continue
+		}
+		return true
+	}
+	return false
+}
+
+func isComposerPlatformPackage(name string) bool {
+	switch name {
+	case "php", "php-64bit", "php-debug", "php-ipv6", "php-zts",
+		"composer", "composer-plugin-api", "composer-runtime-api":
+		return true
+	default:
+		return strings.HasPrefix(name, "ext-") || strings.HasPrefix(name, "lib-")
+	}
+}
+
+var rubyGemDeclaration = regexp.MustCompile(`^\s*gem(?:\s+|\s*\()\s*["'][^"']+["']`)
+var rubyGemspecDeclaration = regexp.MustCompile(`^\s*gemspec(?:\s|\(|$)`)
+
+func readRubyGemfile(data []byte, sourcePath string) rubyGemfile {
+	root := path.Dir(sourcePath)
+	if root == "." {
+		root = ""
+	}
+	gemfile := rubyGemfile{path: sourcePath, root: root}
+	for _, line := range strings.Split(string(data), "\n") {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+			continue
+		}
+		gemfile.hasDependencies = gemfile.hasDependencies || rubyGemDeclaration.MatchString(line)
+		gemfile.hasGemspec = gemfile.hasGemspec || rubyGemspecDeclaration.MatchString(line)
+	}
+	return gemfile
 }
 
 func evaluateJavaScriptLockfile(ctx evaluationContext, configured check, manager string, accepted []string) ([]CheckRun, []Finding) {
@@ -464,6 +619,74 @@ func evaluateCargoLockfile(ctx evaluationContext, configured check) ([]CheckRun,
 		runs = append(runs, completedRun(configured.ID, subject))
 		if _, ok := ctx.sourceByPath[joinRoot(ownerRoot, "Cargo.lock")]; !ok {
 			findings = append(findings, newMissingLockfileFinding(configured, subject, ownerManifest, "cargo", "Cargo.lock"))
+		}
+	}
+	return runs, findings
+}
+
+func evaluateGoSum(ctx evaluationContext, configured check) ([]CheckRun, []Finding) {
+	runs := failedRunsForDetector(ctx, configured.ID, "go-mod")
+	findings := make([]Finding, 0)
+	for _, module := range ctx.goModules {
+		if !module.hasRequirements {
+			continue
+		}
+		subject := projectSubject(module.root)
+		if !module.hasExternalRequirement {
+			runs = append(runs, skippedRun(configured.ID, subject, "local-dependencies-only", "all required Go modules are replaced by local filesystem paths"))
+			continue
+		}
+		runs = append(runs, completedRun(configured.ID, subject))
+		if _, ok := ctx.sourceByPath[joinRoot(module.root, "go.sum")]; !ok {
+			findings = append(findings, newMissingLockfileFinding(configured, subject, module.path, "go", "go.sum"))
+		}
+	}
+	return runs, findings
+}
+
+func evaluateComposerLockfile(ctx evaluationContext, configured check) ([]CheckRun, []Finding) {
+	runs := failedRunsForDetector(ctx, configured.ID, "php-composer")
+	findings := make([]Finding, 0)
+	for _, manifest := range ctx.composer {
+		if !manifest.hasDependencies {
+			continue
+		}
+		subject := projectSubject(manifest.root)
+		if manifest.lockDisabled {
+			runs = append(runs, skippedRun(configured.ID, subject, "lockfile-disabled", "composer.json disables lockfile generation with config.lock=false"))
+			continue
+		}
+		if !manifest.typeKnown {
+			runs = append(runs, skippedRun(configured.ID, subject, "project-role-unknown", "Composer application role requires type: project"))
+			continue
+		}
+		if manifest.typeValue != "project" {
+			runs = append(runs, skippedRun(configured.ID, subject, "not-application", "Composer package type is not project"))
+			continue
+		}
+		runs = append(runs, completedRun(configured.ID, subject))
+		if _, ok := ctx.sourceByPath[joinRoot(manifest.root, "composer.lock")]; !ok {
+			findings = append(findings, newMissingLockfileFinding(configured, subject, manifest.path, "composer", "composer.lock"))
+		}
+	}
+	return runs, findings
+}
+
+func evaluateGemfileLockfile(ctx evaluationContext, configured check) ([]CheckRun, []Finding) {
+	findings := make([]Finding, 0)
+	runs := make([]CheckRun, 0)
+	for _, gemfile := range ctx.ruby {
+		if !gemfile.hasDependencies {
+			continue
+		}
+		subject := projectSubject(gemfile.root)
+		if gemfile.hasGemspec {
+			runs = append(runs, skippedRun(configured.ID, subject, "not-application", "Gemfile declares gemspec and is treated as a Ruby library"))
+			continue
+		}
+		runs = append(runs, completedRun(configured.ID, subject))
+		if _, ok := ctx.sourceByPath[joinRoot(gemfile.root, "Gemfile.lock")]; !ok {
+			findings = append(findings, newMissingLockfileFinding(configured, subject, gemfile.path, "bundler", "Gemfile.lock"))
 		}
 	}
 	return runs, findings

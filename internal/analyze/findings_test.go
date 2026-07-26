@@ -19,6 +19,9 @@ func TestMissingLockfileDefaultChecks(t *testing.T) {
 		{fixture: "yarn-config-missing", checkID: "javascript-yarn-lockfile-missing", path: "package.json"},
 		{fixture: "uv-missing", checkID: "python-uv-lockfile-missing", path: "pyproject.toml"},
 		{fixture: "cargo-missing", checkID: "rust-cargo-lockfile-missing-for-application", path: "Cargo.toml"},
+		{fixture: "go-sum-missing", checkID: "go-sum-missing", path: "go.mod"},
+		{fixture: "composer-lock-missing", checkID: "php-composer-lockfile-missing-for-application", path: "composer.json"},
+		{fixture: "gemfile-lock-missing", checkID: "ruby-gemfile-lockfile-missing-for-application", path: "Gemfile"},
 	}
 	for _, test := range tests {
 		t.Run(test.fixture, func(t *testing.T) {
@@ -261,4 +264,136 @@ checks:
 	if len(result.Findings) != 1 || result.Findings[0].Subject.ProjectRoot != "." || result.Findings[0].Locations[0].Path != "pyproject.toml" {
 		t.Fatalf("expected uv finding from policy input, got %#v", result.Findings)
 	}
+}
+
+func TestGoSumCheckHandlesLocalReplacementsAndNestedModules(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	t.Run("local dependencies only", func(t *testing.T) {
+		root := t.TempDir()
+		mustWriteFile(t, filepath.Join(root, "go.mod"), "module example.com/app\n\ngo 1.25.0\n\nrequire example.com/local v0.0.0\n\nreplace example.com/local => ../local\n")
+		result, err := Scan(root, nil, ruleset)
+		if err != nil {
+			t.Fatalf("Scan failed: %v", err)
+		}
+		if len(result.Findings) != 0 || len(result.CheckRuns) != 1 || result.CheckRuns[0].Status != CheckSkipped || result.CheckRuns[0].ReasonCode != "local-dependencies-only" {
+			t.Fatalf("expected local-only skip, got findings=%#v runs=%#v", result.Findings, result.CheckRuns)
+		}
+	})
+
+	t.Run("external dependency remains eligible", func(t *testing.T) {
+		root := t.TempDir()
+		mustWriteFile(t, filepath.Join(root, "go.mod"), "module example.com/app\n\ngo 1.25.0\n\nrequire (\n\texample.com/local v0.0.0\n\tgithub.com/google/uuid v1.6.0\n)\n\nreplace example.com/local => ../local\n")
+		result, err := Scan(root, nil, ruleset)
+		if err != nil {
+			t.Fatalf("Scan failed: %v", err)
+		}
+		if len(result.Findings) != 1 || result.Findings[0].CheckID != "go-sum-missing" {
+			t.Fatalf("expected go.sum finding, got %#v", result.Findings)
+		}
+	})
+
+	t.Run("ancestor checksum does not satisfy nested module", func(t *testing.T) {
+		root := t.TempDir()
+		mustWriteFile(t, filepath.Join(root, "go.sum"), "github.com/google/uuid v1.6.0 h1:checksum\n")
+		mustWriteFile(t, filepath.Join(root, "nested", "go.mod"), "module example.com/nested\n\ngo 1.25.0\n\nrequire github.com/google/uuid v1.6.0\n")
+		result, err := Scan(root, nil, ruleset)
+		if err != nil {
+			t.Fatalf("Scan failed: %v", err)
+		}
+		if len(result.Findings) != 1 || result.Findings[0].Subject.ProjectRoot != "nested" || result.Findings[0].Locations[0].Path != "nested/go.mod" {
+			t.Fatalf("expected nested finding, got %#v", result.Findings)
+		}
+	})
+
+	t.Run("malformed module", func(t *testing.T) {
+		root := t.TempDir()
+		mustWriteFile(t, filepath.Join(root, "go.mod"), "module\n")
+		result, err := Scan(root, nil, ruleset)
+		if err != nil {
+			t.Fatalf("Scan failed: %v", err)
+		}
+		runs := filterCheckRuns(result.CheckRuns, "go-sum-missing")
+		if len(result.Findings) != 0 || len(runs) != 1 || runs[0].Status != CheckFailed || runs[0].ReasonCode != "source-analysis-failed" {
+			t.Fatalf("expected failed Go check without a finding, got findings=%#v runs=%#v", result.Findings, runs)
+		}
+	})
+}
+
+func TestComposerLockfileCheckClassifiesApplicationsConservatively(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	tests := []struct {
+		name         string
+		content      string
+		lock         bool
+		status       CheckRunStatus
+		reason       string
+		wantFindings int
+	}{
+		{name: "satisfied project", content: `{"type":"project","require":{"vendor/package":"^1"}}`, lock: true, status: CheckCompleted},
+		{name: "missing lockfile", content: `{"type":"project","require":{"vendor/package":"^1"}}`, status: CheckCompleted, wantFindings: 1},
+		{name: "platform only", content: `{"type":"project","require":{"php":"^8.3","php-debug":"*","ext-json":"*","lib-curl":"*","composer":"^2","composer-plugin-api":"^2","composer-runtime-api":"^2"}}`},
+		{name: "library", content: `{"type":"library","require":{"vendor/package":"^1"}}`, status: CheckSkipped, reason: "not-application"},
+		{name: "unknown role", content: `{"require":{"vendor/package":"^1"}}`, status: CheckSkipped, reason: "project-role-unknown"},
+		{name: "lock disabled", content: `{"type":"project","config":{"lock":false},"require":{"vendor/package":"^1"}}`, status: CheckSkipped, reason: "lockfile-disabled"},
+		{name: "malformed manifest", content: `{`, status: CheckFailed, reason: "source-analysis-failed"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := t.TempDir()
+			mustWriteFile(t, filepath.Join(root, "composer.json"), test.content)
+			if test.lock {
+				mustWriteFile(t, filepath.Join(root, "composer.lock"), `{"packages":[]}`)
+			}
+			result, err := Scan(root, nil, ruleset)
+			if err != nil {
+				t.Fatalf("Scan failed: %v", err)
+			}
+			runs := filterCheckRuns(result.CheckRuns, "php-composer-lockfile-missing-for-application")
+			if test.status == "" {
+				if len(runs) != 0 {
+					t.Fatalf("expected no composer check run, got %#v", runs)
+				}
+			} else if len(runs) != 1 || runs[0].Status != test.status || runs[0].ReasonCode != test.reason {
+				t.Fatalf("unexpected composer runs: %#v", runs)
+			}
+			if len(result.Findings) != test.wantFindings {
+				t.Fatalf("expected %d findings, got %#v", test.wantFindings, result.Findings)
+			}
+		})
+	}
+}
+
+func TestGemfileLockfileCheckSkipsLibraries(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	t.Run("satisfied application", func(t *testing.T) {
+		root := t.TempDir()
+		mustWriteFile(t, filepath.Join(root, "Gemfile"), "source 'https://rubygems.org'\ngem 'rack', '~> 3.0'\n")
+		mustWriteFile(t, filepath.Join(root, "Gemfile.lock"), "GEM\n")
+		result, err := Scan(root, nil, ruleset)
+		if err != nil {
+			t.Fatalf("Scan failed: %v", err)
+		}
+		runs := filterCheckRuns(result.CheckRuns, "ruby-gemfile-lockfile-missing-for-application")
+		if len(result.Findings) != 0 || len(runs) != 1 || runs[0].Status != CheckCompleted {
+			t.Fatalf("expected satisfied Gemfile, got findings=%#v runs=%#v", result.Findings, runs)
+		}
+	})
+
+	t.Run("gemspec library", func(t *testing.T) {
+		root := t.TempDir()
+		mustWriteFile(t, filepath.Join(root, "Gemfile"), "gemspec\ngem 'rspec'\n")
+		result, err := Scan(root, nil, ruleset)
+		if err != nil {
+			t.Fatalf("Scan failed: %v", err)
+		}
+		runs := filterCheckRuns(result.CheckRuns, "ruby-gemfile-lockfile-missing-for-application")
+		if len(result.Findings) != 0 || len(runs) != 1 || runs[0].Status != CheckSkipped || runs[0].ReasonCode != "not-application" {
+			t.Fatalf("expected Gemfile library skip, got findings=%#v runs=%#v", result.Findings, runs)
+		}
+	})
+}
+
+func filterCheckRuns(runs []CheckRun, id CheckID) []CheckRun {
+	return slices.DeleteFunc(append([]CheckRun(nil), runs...), func(run CheckRun) bool { return run.CheckID != id })
 }

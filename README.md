@@ -39,7 +39,7 @@ Absent sources are counted by `Found N dependency sources` but hidden from the d
 
 ### Dependency policy findings
 
-The built-in rules include six conservative dependency policy checks:
+The built-in rules include nine conservative dependency policy checks:
 
 - `javascript-npm-lockfile-missing`
 - `javascript-pnpm-lockfile-missing`
@@ -47,8 +47,11 @@ The built-in rules include six conservative dependency policy checks:
 - `javascript-conflicting-lockfiles`
 - `python-uv-lockfile-missing`
 - `rust-cargo-lockfile-missing-for-application`
+- `go-sum-missing`
+- `php-composer-lockfile-missing-for-application`
+- `ruby-gemfile-lockfile-missing-for-application`
 
-JavaScript checks require explicit npm, pnpm, or Yarn evidence; package publishability (`private`) does not affect eligibility. The uv check requires uv-specific project configuration. The Cargo check requires a binary target such as `src/main.rs`. Dependency-free projects are not flagged. Explicit workspace ownership is honored, and an unrelated ancestor lockfile does not satisfy a nested independent project. Ambiguous package-manager or Cargo project-role cases are skipped rather than reported as findings.
+JavaScript checks require explicit npm, pnpm, or Yarn evidence; package publishability (`private`) does not affect eligibility. The uv check requires uv-specific project configuration. The Cargo check requires a binary target such as `src/main.rs`. The Go check requires an external `require` entry; modules whose requirements are all locally replaced are skipped. Composer checks require `type: project` and ignore platform-only requirements. Ruby checks require a static `gem` declaration and skip Gemfiles with a `gemspec` directive. Dependency-free projects are not flagged. Explicit workspace ownership is honored where the ecosystem defines it, and an unrelated ancestor lockfile does not satisfy a nested independent project. Ambiguous package-manager or application-role cases are skipped rather than reported as findings.
 
 The conflicting-lockfiles check reports a JavaScript project when its owned root contains lockfiles from at least two package-manager families: npm, pnpm, or Yarn. `package-lock.json` and `npm-shrinkwrap.json` are both npm lockfiles and do not conflict with each other. The check does not require dependency declarations because competing committed lockfiles are independently actionable.
 
@@ -268,7 +271,7 @@ checks:
     remediation: Run `npm install` and commit the generated lockfile.
 ```
 
-Supported evaluator types are `npm-lockfile-missing`, `pnpm-lockfile-missing`, `yarn-lockfile-missing`, `uv-lockfile-missing`, and `cargo-application-lockfile-missing`. Unknown fields are rejected. Ecosystem semantics and safe ambiguity behavior are built into each evaluator rather than exposed as YAML switches.
+Supported evaluator types are `npm-lockfile-missing`, `pnpm-lockfile-missing`, `yarn-lockfile-missing`, `javascript-conflicting-lockfiles`, `uv-lockfile-missing`, `cargo-application-lockfile-missing`, `go-sum-missing`, `composer-application-lockfile-missing`, and `gemfile-application-lockfile-missing`. Unknown fields are rejected. Ecosystem semantics and safe ambiguity behavior are built into each evaluator rather than exposed as YAML switches.
 
 ## Capabilities
 

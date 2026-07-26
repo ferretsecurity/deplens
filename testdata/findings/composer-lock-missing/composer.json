@@ -1,0 +1,6 @@
+{
+  "type": "project",
+  "require": {
+    "monolog/monolog": "^3.0"
+  }
+}

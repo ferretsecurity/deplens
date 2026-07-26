@@ -13,8 +13,8 @@ func TestDefaultRulesUseCompleteDependencySourceMetadata(t *testing.T) {
 	if len(ruleset.detectors) != 185 {
 		t.Fatalf("expected 185 built-in detectors, got %d", len(ruleset.detectors))
 	}
-	if len(ruleset.checks) != 6 {
-		t.Fatalf("expected 6 built-in checks, got %d", len(ruleset.checks))
+	if len(ruleset.checks) != 9 {
+		t.Fatalf("expected 9 built-in checks, got %d", len(ruleset.checks))
 	}
 	for index, detector := range ruleset.detectors {
 		if detector.ID == "" || !validSourceForm(detector.Form) || len(detector.Roles) == 0 {
