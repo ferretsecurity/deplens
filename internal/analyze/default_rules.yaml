@@ -1101,3 +1101,21 @@ checks:
     evaluator:
       type: cargo-application-lockfile-missing
     remediation: Run `cargo generate-lockfile` and commit Cargo.lock.
+  - id: go-sum-missing
+    summary: Go module has external dependencies but no go.sum
+    severity: medium
+    evaluator:
+      type: go-sum-missing
+    remediation: Run `go mod tidy` (or `go mod download`) and commit go.sum.
+  - id: php-composer-lockfile-missing-for-application
+    summary: Composer application has dependencies but no composer.lock
+    severity: medium
+    evaluator:
+      type: composer-application-lockfile-missing
+    remediation: Run `composer update` and commit composer.lock.
+  - id: ruby-gemfile-lockfile-missing-for-application
+    summary: Ruby application has dependencies but no Gemfile.lock
+    severity: medium
+    evaluator:
+      type: gemfile-application-lockfile-missing
+    remediation: Run `bundle install` and commit Gemfile.lock.

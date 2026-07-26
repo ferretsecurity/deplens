@@ -298,7 +298,7 @@ func compileChecks(source string, configs []checkConfig) ([]check, error) {
 
 func validEvaluatorType(value string) bool {
 	switch value {
-	case "npm-lockfile-missing", "pnpm-lockfile-missing", "yarn-lockfile-missing", "javascript-conflicting-lockfiles", "uv-lockfile-missing", "cargo-application-lockfile-missing":
+	case "npm-lockfile-missing", "pnpm-lockfile-missing", "yarn-lockfile-missing", "javascript-conflicting-lockfiles", "uv-lockfile-missing", "cargo-application-lockfile-missing", "go-sum-missing", "composer-application-lockfile-missing", "gemfile-application-lockfile-missing":
 		return true
 	default:
 		return false
@@ -403,7 +403,7 @@ func (r Ruleset) hasEvaluator(evaluatorType string) bool {
 
 func needsPolicyContent(id DetectorID) bool {
 	switch id {
-	case "js", "js-pnpm-workspace", "rust-cargo":
+	case "js", "js-pnpm-workspace", "rust-cargo", "go-mod", "php-composer", "ruby-gemfile":
 		return true
 	default:
 		return false
