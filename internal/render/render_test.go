@@ -60,6 +60,29 @@ func TestHumanRendersDependencySourceStatesInPathOrder(t *testing.T) {
 	}
 }
 
+func TestHumanRendersConflictingLockfileEvidence(t *testing.T) {
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Findings: []analyze.Finding{{
+			CheckID:   "javascript-conflicting-lockfiles",
+			Severity:  analyze.SeverityMedium,
+			Summary:   "JavaScript project has conflicting package-manager lockfiles",
+			Subject:   analyze.FindingSubject{ProjectRoot: "."},
+			Locations: []analyze.FindingLocation{{Path: "package.json"}, {Path: "package-lock.json"}, {Path: "pnpm-lock.yaml"}},
+			Evidence: map[string]string{
+				"lockfile_families":     "npm, pnpm",
+				"conflicting_lockfiles": "package-lock.json, pnpm-lock.yaml",
+			},
+			Remediation: "Choose one package manager.",
+			Fingerprint: "fingerprint",
+		}},
+	}
+	output := Human(result, HumanOptions{})
+	if !strings.Contains(output, "  conflicting: package-lock.json, pnpm-lock.yaml") {
+		t.Fatalf("expected conflicting lockfiles in human output, got:\n%s", output)
+	}
+}
+
 func TestHumanEmptyState(t *testing.T) {
 	output := Human(analyze.ScanResult{Root: "/tmp/project"}, HumanOptions{})
 	if output != "Root: /tmp/project\nNo dependency sources found.\n" {

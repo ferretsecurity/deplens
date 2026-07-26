@@ -110,6 +110,9 @@ func renderFindings(findings []analyze.Finding) string {
 		if expected := finding.Evidence["expected_lockfile"]; expected != "" {
 			b.WriteString(fmt.Sprintf("  expected: %s\n", expected))
 		}
+		if conflicting := finding.Evidence["conflicting_lockfiles"]; conflicting != "" {
+			b.WriteString(fmt.Sprintf("  conflicting: %s\n", conflicting))
+		}
 		b.WriteString(fmt.Sprintf("  remediation: %s\n", finding.Remediation))
 	}
 	return b.String()

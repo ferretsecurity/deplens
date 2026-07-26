@@ -33,7 +33,9 @@ func TestMissingLockfileDefaultChecks(t *testing.T) {
 			if finding.CheckID != test.checkID || len(finding.Locations) != 1 || finding.Locations[0].Path != test.path || finding.Fingerprint == "" {
 				t.Fatalf("unexpected finding: %#v", finding)
 			}
-			if len(result.CheckRuns) != 1 || result.CheckRuns[0].Status != CheckCompleted {
+			if !slices.ContainsFunc(result.CheckRuns, func(run CheckRun) bool {
+				return run.CheckID == test.checkID && run.Status == CheckCompleted
+			}) {
 				t.Fatalf("unexpected check runs: %#v", result.CheckRuns)
 			}
 		})
@@ -83,6 +85,63 @@ func TestMissingLockfileChecksSkipAmbiguousManager(t *testing.T) {
 	}
 }
 
+func TestConflictingJavaScriptLockfilesCheckReportsDifferentFamilies(t *testing.T) {
+	result, err := Scan(filepath.Join("..", "..", "testdata", "findings", "js-conflicting-lockfiles"), nil, mustLoadDefaultRules(t))
+	if err != nil {
+		t.Fatalf("Scan failed: %v", err)
+	}
+	if len(result.Findings) != 1 {
+		t.Fatalf("expected one finding, got %#v", result.Findings)
+	}
+	finding := result.Findings[0]
+	if finding.CheckID != "javascript-conflicting-lockfiles" || finding.Subject.ProjectRoot != "." {
+		t.Fatalf("unexpected finding: %#v", finding)
+	}
+	wantLocations := []FindingLocation{{Path: "package.json"}, {Path: "package-lock.json"}, {Path: "pnpm-lock.yaml"}}
+	if !slices.Equal(finding.Locations, wantLocations) {
+		t.Fatalf("locations: got %#v want %#v", finding.Locations, wantLocations)
+	}
+	if finding.Evidence["lockfile_families"] != "npm, pnpm" || finding.Evidence["conflicting_lockfiles"] != "package-lock.json, pnpm-lock.yaml" {
+		t.Fatalf("unexpected evidence: %#v", finding.Evidence)
+	}
+	if finding.Fingerprint == "" {
+		t.Fatal("expected stable finding fingerprint")
+	}
+	if !slices.ContainsFunc(result.CheckRuns, func(run CheckRun) bool {
+		return run.CheckID == "javascript-conflicting-lockfiles" && run.Status == CheckCompleted
+	}) {
+		t.Fatalf("expected completed check run, got %#v", result.CheckRuns)
+	}
+}
+
+func TestConflictingJavaScriptLockfilesCheckTreatsNPMFilesAsOneFamily(t *testing.T) {
+	result, err := Scan(filepath.Join("..", "..", "testdata", "findings", "js-same-family-lockfiles"), nil, mustLoadDefaultRules(t))
+	if err != nil {
+		t.Fatalf("Scan failed: %v", err)
+	}
+	if slices.ContainsFunc(result.Findings, func(finding Finding) bool {
+		return finding.CheckID == "javascript-conflicting-lockfiles"
+	}) {
+		t.Fatalf("expected package-lock.json and npm-shrinkwrap.json to be one family, got %#v", result.Findings)
+	}
+}
+
+func TestConflictingJavaScriptLockfilesCheckUsesWorkspaceOwner(t *testing.T) {
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "package.json"), `{"name":"workspace","workspaces":["packages/*"]}`)
+	mustWriteFile(t, filepath.Join(root, "package-lock.json"), `{"name":"workspace","lockfileVersion":3,"packages":{}}`)
+	mustWriteFile(t, filepath.Join(root, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\nimporters: {}\n")
+	mustWriteFile(t, filepath.Join(root, "packages", "app", "package.json"), `{"name":"app","dependencies":{"left-pad":"1.3.0"}}`)
+
+	result, err := Scan(root, nil, mustLoadDefaultRules(t))
+	if err != nil {
+		t.Fatalf("Scan failed: %v", err)
+	}
+	if len(result.Findings) != 1 || result.Findings[0].CheckID != "javascript-conflicting-lockfiles" || result.Findings[0].Subject.ProjectRoot != "." {
+		t.Fatalf("expected one workspace-root conflict, got %#v", result.Findings)
+	}
+}
+
 func TestMissingLockfileChecksReportFailedRunsForMalformedManifest(t *testing.T) {
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "package.json"), `{"private":`)
@@ -93,7 +152,7 @@ func TestMissingLockfileChecksReportFailedRunsForMalformedManifest(t *testing.T)
 	if len(result.Findings) != 0 {
 		t.Fatalf("expected no findings, got %#v", result.Findings)
 	}
-	if len(result.CheckRuns) != 3 {
+	if len(result.CheckRuns) != 4 {
 		t.Fatalf("expected one failed run for each JavaScript check, got %#v", result.CheckRuns)
 	}
 	for _, run := range result.CheckRuns {
