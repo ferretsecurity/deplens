@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Choose>
+    <When Condition="'$(OS)' == 'Unix'">
+      <ItemGroup>
+        <PackageReference Include="Contoso.Client" VersionOverride="[2.3.4]" />
+      </ItemGroup>
+    </When>
+  </Choose>
+</Project>

@@ -166,10 +166,7 @@ func dotnetProperties(root *dotnetXMLNode) map[string]string {
 func dotnetMSBuildItems(root *dotnetXMLNode, itemName string, defaultRelationship Relationship, properties map[string]string) ([]DependencyReference, []string) {
 	dependencies := make([]DependencyReference, 0)
 	incomplete := make([]string, 0)
-	for _, group := range root.children {
-		if group.name != "ItemGroup" {
-			continue
-		}
+	for _, group := range dotnetItemGroups(root) {
 		for _, item := range group.children {
 			if item.name != itemName {
 				continue
@@ -189,7 +186,7 @@ func dotnetMSBuildItems(root *dotnetXMLNode, itemName string, defaultRelationshi
 				continue
 			}
 
-			rawVersion := dotnetItemValue(item, "Version")
+			rawVersion := dotnetItemVersion(item, itemName)
 			dependency := DependencyReference{
 				Raw:          name,
 				Name:         name,
@@ -211,7 +208,7 @@ func dotnetMSBuildItems(root *dotnetXMLNode, itemName string, defaultRelationshi
 			if operation == "Update" {
 				attributes["item_operation"] = operation
 			}
-			if condition := combineMSBuildConditions(group.attributes["Condition"], item.attributes["Condition"]); condition != "" {
+			if condition := combineMSBuildConditions(group.condition, item.attributes["Condition"]); condition != "" {
 				attributes["condition"] = condition
 			}
 			for _, field := range []string{"IncludeAssets", "PrivateAssets", "ExcludeAssets"} {
@@ -227,6 +224,34 @@ func dotnetMSBuildItems(root *dotnetXMLNode, itemName string, defaultRelationshi
 	}
 	sortDependencyReferences(dependencies)
 	return dependencies, incomplete
+}
+
+type dotnetItemGroup struct {
+	children  []*dotnetXMLNode
+	condition string
+}
+
+func dotnetItemGroups(root *dotnetXMLNode) []dotnetItemGroup {
+	groups := make([]dotnetItemGroup, 0)
+	var visit func(*dotnetXMLNode, string)
+	visit = func(node *dotnetXMLNode, condition string) {
+		for _, child := range node.children {
+			childCondition := combineMSBuildConditions(condition, child.attributes["Condition"])
+			if child.name == "ItemGroup" {
+				groups = append(groups, dotnetItemGroup{children: child.children, condition: childCondition})
+			}
+			visit(child, childCondition)
+		}
+	}
+	visit(root, "")
+	return groups
+}
+
+func dotnetItemVersion(item *dotnetXMLNode, itemName string) string {
+	if version := dotnetItemValue(item, "Version"); version != "" || itemName != "PackageReference" {
+		return version
+	}
+	return dotnetItemValue(item, "VersionOverride")
 }
 
 func dotnetItemValue(node *dotnetXMLNode, field string) string {

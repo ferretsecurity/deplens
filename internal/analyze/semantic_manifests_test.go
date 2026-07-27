@@ -131,6 +131,15 @@ func TestDotnetSemanticFixtures(t *testing.T) {
 		t.Fatalf("project detector coverage = %+v", project.Sources)
 	}
 
+	msbuildShapes, err := Scan(filepath.Join("..", "..", "testdata", "dotnet", "project-msbuild-shapes"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("Scan MSBuild shapes: %v", err)
+	}
+	shapeDependency := dependenciesForSource(t, msbuildShapes, "app.csproj")[0]
+	if shapeDependency.VersionConstraint != "[2.3.4]" || shapeDependency.Attributes["condition"] != "'$(OS)' == 'Unix'" {
+		t.Fatalf("MSBuild shape dependency = %+v", shapeDependency)
+	}
+
 	central, err := Scan(filepath.Join("..", "..", "testdata", "dotnet", "central-packages-semantic"), nil, ruleset)
 	if err != nil {
 		t.Fatalf("Scan central packages: %v", err)
@@ -190,6 +199,34 @@ func TestDotnetProjectSupportsChildVersionsUpdatesAndConditions(t *testing.T) {
 	update := dependencyByName(t, result.Dependencies, "Build.Tasks")
 	if update.Relationship != RelationshipInconclusive || update.Attributes["item_operation"] != "Update" {
 		t.Fatalf("updated dependency = %+v", update)
+	}
+}
+
+func TestDotnetProjectSupportsVersionOverrideAndNestedItemGroups(t *testing.T) {
+	parser, err := newDotnetProjectParser(dotnetProjectMatcherConfig{})
+	if err != nil {
+		t.Fatalf("newDotnetProjectParser: %v", err)
+	}
+	result, err := parser.Analyze("app.csproj", []byte(`
+<Project>
+  <Choose>
+    <When Condition="'$(OS)' == 'Unix'">
+      <ItemGroup>
+        <PackageReference Include="Contoso.Client" VersionOverride="[2.3.4]" />
+        <PackageReference Include="Fabrikam.Tool"><VersionOverride>[1.0.0]</VersionOverride></PackageReference>
+      </ItemGroup>
+    </When>
+  </Choose>
+</Project>`))
+	if err != nil {
+		t.Fatalf("Analyze: %v", err)
+	}
+	client := dependencyByName(t, result.Dependencies, "Contoso.Client")
+	if client.VersionConstraint != "[2.3.4]" || client.Attributes["condition"] != "'$(OS)' == 'Unix'" {
+		t.Fatalf("client dependency = %+v", client)
+	}
+	if tool := dependencyByName(t, result.Dependencies, "Fabrikam.Tool"); tool.VersionConstraint != "[1.0.0]" {
+		t.Fatalf("tool dependency = %+v", tool)
 	}
 }
 
