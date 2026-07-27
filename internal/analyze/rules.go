@@ -153,6 +153,7 @@ type uvLockMatcherConfig struct{}
 type poetryLockMatcherConfig struct{}
 type pipfileLockMatcherConfig struct{}
 type packageLockMatcherConfig struct{}
+type packageJSONMatcherConfig struct{}
 type pnpmLockMatcherConfig struct{}
 type composerLockMatcherConfig struct{}
 type cargoLockMatcherConfig struct{}

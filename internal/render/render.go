@@ -11,6 +11,9 @@ import (
 )
 
 func displayDependency(d analyze.DependencyReference) string {
+	if d.PackageType == "npm" && d.Relationship == analyze.RelationshipDirect && d.Raw != "" {
+		return d.Raw
+	}
 	if d.Name != "" && d.Version != "" {
 		return d.Name + "@" + d.Version
 	}

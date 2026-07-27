@@ -129,16 +129,12 @@ rules:
     roles: [constraint]
     filename-regex: '^constraints\.txt$'
   - id: js
+    package-type: npm
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^package\.json$'
     analyzer:
-      type: json
-      exists-any:
-        - dependencies
-        - devDependencies
-        - peerDependencies
-        - optionalDependencies
+      type: package-json
   - id: js-bower
     form: manifest
     roles: [declaration, constraint]

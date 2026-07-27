@@ -816,8 +816,11 @@ func TestScanFindsPackageJSONFixtureWithOneMatchingSection(t *testing.T) {
 	if result.Sources[0].Analysis.Presence != PresencePresent {
 		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if len(result.Sources[0].Dependencies) != 0 {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
+	if len(result.Sources[0].Dependencies) != 1 ||
+		result.Sources[0].Dependencies[0].Raw != "react@^19.0.0" ||
+		result.Sources[0].Dependencies[0].PackageType != "npm" ||
+		result.Sources[0].Dependencies[0].VERS != "vers:npm/>=19.0.0|<20.0.0" {
+		t.Fatalf("expected extracted React dependency, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
@@ -836,6 +839,9 @@ func TestScanFindsPackageJSONFixtureWithTwoMatchingSections(t *testing.T) {
 	}
 	if result.Sources[0].Analysis.Presence != PresencePresent {
 		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
+	}
+	if got := result.Sources[0].Dependencies; len(got) != 2 || got[0].Raw != "react@^19.0.0" || got[1].Raw != "vitest@^3.0.0" {
+		t.Fatalf("expected extracted runtime and development dependencies, got %+v", got)
 	}
 }
 

@@ -2,7 +2,7 @@
 
 This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 64 have semantic analyzers and 121 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
 
-Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship and location fields are available in the shared model but are only populated when an analyzer has that information.
+Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
 | Detector ID | Form | Roles | Analyzer | Capabilities |
 | --- | --- | --- | --- | --- |
@@ -20,7 +20,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `python-setup-py` | `manifest` | `declaration, constraint` | `python` | select, recognize, extract, normalize |
 | `python-setup-cfg` | `manifest` | `declaration, constraint` | `ini` | select, recognize, extract, normalize |
 | `python-constraints` | `constraint-file` | `constraint` | — | select |
-| `js` | `manifest` | `declaration, constraint` | `json` | select, recognize, assess-presence |
+| `js` | `manifest` | `declaration, constraint` | `package-json` | select, recognize, extract, normalize, relate |
 | `js-bower` | `manifest` | `declaration, constraint` | `json` | select, recognize, assess-presence |
 | `js-npm-shrinkwrap` | `lockfile` | `resolution, integrity` | `package-lock` | select, recognize, extract, normalize |
 | `js-npm-lock` | `lockfile` | `resolution, integrity` | `package-lock` | select, recognize, extract, normalize |

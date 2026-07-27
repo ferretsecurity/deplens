@@ -55,10 +55,11 @@ const (
 	ScopeBuild       DependencyScope = "build"
 	ScopeOptional    DependencyScope = "optional"
 
-	OriginRegistry OriginKind = "registry"
-	OriginGit      OriginKind = "git"
-	OriginPath     OriginKind = "path"
-	OriginURL      OriginKind = "url"
+	OriginRegistry  OriginKind = "registry"
+	OriginGit       OriginKind = "git"
+	OriginPath      OriginKind = "path"
+	OriginURL       OriginKind = "url"
+	OriginWorkspace OriginKind = "workspace"
 )
 
 type DependencyReference struct {

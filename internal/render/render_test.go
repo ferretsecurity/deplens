@@ -60,6 +60,37 @@ func TestHumanRendersDependencySourceStatesInPathOrder(t *testing.T) {
 	}
 }
 
+func TestHumanPreservesRawManifestSpecifiers(t *testing.T) {
+	tests := []struct {
+		dependency analyze.DependencyReference
+		want       string
+	}{
+		{
+			dependency: analyze.DependencyReference{
+				PackageType: "npm", Raw: "server@npm:@acme/server@^3.2.0", Name: "@acme/server",
+				VersionConstraint: "^3.2.0", Relationship: analyze.RelationshipDirect,
+			},
+			want: "server@npm:@acme/server@^3.2.0",
+		},
+		{
+			dependency: analyze.DependencyReference{
+				PackageType: "npm", Raw: "@acme/ui@workspace:^", Name: "@acme/ui",
+				VersionConstraint: "^", Relationship: analyze.RelationshipDirect,
+			},
+			want: "@acme/ui@workspace:^",
+		},
+		{
+			dependency: analyze.DependencyReference{Raw: "requests (>=2)", Name: "requests", VersionConstraint: ">=2"},
+			want:       "requests>=2",
+		},
+	}
+	for _, test := range tests {
+		if got := displayDependency(test.dependency); got != test.want {
+			t.Errorf("displayDependency(%q) = %q, want %q", test.dependency.Raw, got, test.want)
+		}
+	}
+}
+
 func TestHumanRendersConflictingLockfileEvidence(t *testing.T) {
 	result := analyze.ScanResult{
 		Root: "/tmp/project",

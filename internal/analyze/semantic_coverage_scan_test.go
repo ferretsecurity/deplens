@@ -15,6 +15,14 @@ func TestDefaultRulesExtractCommonSemanticCoverageFixtures(t *testing.T) {
 		extraction   ExtractionState
 	}{
 		{
+			name:         "package.json manifest",
+			fixture:      filepath.Join("javascript", "package-json-versatile"),
+			path:         "package.json",
+			detector:     "js",
+			dependencies: 7,
+			extraction:   ExtractionComplete,
+		},
+		{
 			name:         "Gradle Groovy build",
 			fixture:      filepath.Join("java", "gradle-build"),
 			path:         "build.gradle",
