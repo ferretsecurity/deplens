@@ -165,6 +165,12 @@ type gemfileMatcherConfig struct{}
 type gemfileLockMatcherConfig struct{}
 type dockerfileMatcherConfig struct{}
 type dockerComposeMatcherConfig struct{}
+type mavenPOMMatcherConfig struct{}
+type cargoManifestMatcherConfig struct{}
+type composerManifestMatcherConfig struct{}
+type dotnetProjectMatcherConfig struct{}
+type dotnetCentralPackagesMatcherConfig struct{}
+type dotnetPackagesConfigMatcherConfig struct{}
 
 type sourceAnalyzer interface {
 	Analyze(path string, content []byte) (sourceAnalyzerResult, error)

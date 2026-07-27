@@ -221,13 +221,12 @@ rules:
     roles: [declaration, constraint]
     filename-regex: '^importmap\.json$'
   - id: java
+    package-type: maven
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^pom\.xml$'
     analyzer:
-      type: xml
-      exists-any:
-        - project.dependencies.dependency
+      type: maven-pom
   - id: java-gradle-lockfile
     package-type: maven
     form: lockfile
@@ -343,14 +342,12 @@ rules:
     roles: [resolution, integrity]
     filename-regex: '^Cartfile\.resolved$'
   - id: php-composer
+    package-type: composer
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^composer\.json$'
     analyzer:
-      type: json
-      exists-any:
-        - require
-        - require-dev
+      type: composer-manifest
   - id: php-composer-lock
     form: lockfile
     roles: [resolution, integrity]
@@ -425,13 +422,12 @@ rules:
       exists-any:
         - dependencies
   - id: dotnet-packages-config
+    package-type: nuget
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^packages\.config$'
     analyzer:
-      type: xml
-      exists-any:
-        - packages.package
+      type: dotnet-packages-config
   - id: dotnet-packages-lock
     form: lockfile
     roles: [resolution, integrity]
@@ -441,13 +437,12 @@ rules:
       exists-any:
         - dependencies
   - id: dotnet-directory-packages-props
+    package-type: nuget
     form: version-catalog
     roles: [declaration, constraint]
     filename-regex: '^Directory\.Packages\.props$'
     analyzer:
-      type: xml
-      exists-any:
-        - Project.ItemGroup.PackageVersion
+      type: dotnet-central-packages
   - id: dotnet-paket-dependencies
     form: requirements
     roles: [declaration, constraint]
@@ -457,13 +452,19 @@ rules:
     roles: [resolution, integrity]
     filename-regex: '^paket\.lock$'
   - id: dotnet-fsproj
+    package-type: nuget
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '.*\.fsproj$'
+    analyzer:
+      type: dotnet-project
   - id: dotnet-vbproj
+    package-type: nuget
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '.*\.vbproj$'
+    analyzer:
+      type: dotnet-project
   - id: dotnet-directory-build
     form: build-definition
     roles: [declaration, constraint, configuration]
@@ -509,19 +510,12 @@ rules:
     roles: [declaration, constraint]
     path-glob: '**/Godeps/Godeps.json'
   - id: rust-cargo
+    package-type: cargo
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Cargo\.toml$'
     analyzer:
-      type: toml
-      table-exists-any:
-        - dependencies
-        - dev-dependencies
-        - build-dependencies
-        - workspace.dependencies
-        - target.*.dependencies
-        - target.*.dev-dependencies
-        - target.*.build-dependencies
+      type: cargo-manifest
   - id: rust-cargo-lock
     form: lockfile
     roles: [resolution, integrity]
@@ -546,13 +540,12 @@ rules:
     roles: [resolution, integrity]
     filename-regex: '^glide\.lock$'
   - id: dotnet-csproj
+    package-type: nuget
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '.*\.csproj$'
     analyzer:
-      type: xml
-      exists-any:
-        - Project.ItemGroup.PackageReference
+      type: dotnet-project
   - id: cpp-conanfile
     form: manifest
     roles: [declaration, constraint]

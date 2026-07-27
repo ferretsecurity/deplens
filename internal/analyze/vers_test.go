@@ -109,6 +109,8 @@ func TestDependencyVERSOmitsUnsupportedAndInvalidConstraints(t *testing.T) {
 		{packageType: "composer", versionConstraint: "^1.2.3"},
 		{packageType: "docker", versionConstraint: "^1.2.3"},
 		{packageType: "npm", versionConstraint: ""},
+		{packageType: "maven", versionConstraint: "${revision}"},
+		{packageType: "nuget", versionConstraint: "$(PackageVersion)"},
 	} {
 		if got := dependencyVERS(tc.packageType, tc.versionConstraint); got != "" {
 			t.Errorf("dependencyVERS(%q, %q) = %q, want empty", tc.packageType, tc.versionConstraint, got)

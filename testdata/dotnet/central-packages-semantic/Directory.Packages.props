@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <LoggingVersion>[8.0.0,9.0.0)</LoggingVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Extensions.Logging"
+                    Version="$(LoggingVersion)" />
+  </ItemGroup>
+</Project>

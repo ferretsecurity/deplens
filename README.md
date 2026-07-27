@@ -41,7 +41,7 @@ Absent sources are counted by `Found N dependency sources` but hidden from the d
 
 ### Semantic coverage for common formats
 
-`package.json` manifests, Gradle builds, Gradle lockfiles and version catalogs, Gemfiles and Bundler lockfiles, Dockerfiles, and Docker Compose files have built-in semantic analyzers. Static declarations are normalized into dependency records; executable or interpolated declarations that cannot be resolved without running external tools produce partial analysis warnings.
+`package.json`, Maven POM, Cargo, Composer, and .NET manifests; Gradle builds, lockfiles, and version catalogs; Gemfiles and Bundler lockfiles; Dockerfiles; and Docker Compose files have built-in semantic analyzers. Static declarations are normalized into dependency records; executable or interpolated declarations that cannot be resolved without running external tools produce partial analysis warnings.
 
 For example, `package.json` was previously limited to presence assessment:
 
@@ -103,6 +103,24 @@ build.gradle.kts [build-definition · 1 dependency · partial]
 ```
 
 Dockerfile analysis extracts external images from `FROM` and external `COPY --from` instructions, while excluding `scratch` and previously declared stage aliases. Compose analysis extracts `services.*.image`. It does not treat packages installed by `RUN` or local build contexts as package dependencies.
+
+Maven POMs, Cargo manifests, Composer manifests, and .NET project or central-package files also preserve source groups, constraints, scopes, and relationships. Consuming declarations are direct; non-consuming catalogs such as Maven `dependencyManagement`, Cargo `workspace.dependencies`, and .NET `PackageVersion` entries are inconclusive:
+
+```text
+pom.xml [manifest · 2 dependencies]
+  dependencies:
+    - org.slf4j:slf4j-api[2.0,3.0)
+  dependencyManagement:
+    - org.springframework.boot:spring-boot-dependencies[3.3.2]
+
+Cargo.toml [manifest · 2 dependencies]
+  dependencies:
+    - serde^1.0.0
+  workspace.dependencies:
+    - anyhow^1.0
+```
+
+Maven and MSBuild properties declared unconditionally in the same file are resolved while their original expressions remain in JSON `raw`. Unresolved expressions preserve the dependency name and raw constraint, mark extraction partial, and emit `dependency-extraction-incomplete`. Composer platform requirements such as `php`, `ext-*`, and `lib-*` are not emitted as package dependencies.
 
 ### Dependency policy findings
 
@@ -307,7 +325,7 @@ analyzer:
     - devDependencies
 ```
 
-The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, and `docker-compose` can also be used by custom rules. They reject analyzer fields other than `type`.
+The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `maven-pom`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, and `dotnet-packages-config` can also be used by custom rules. They reject analyzer fields other than `type`.
 
 The old rule shape is rejected. The migration is intentionally atomic:
 
