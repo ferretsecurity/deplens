@@ -138,31 +138,12 @@ func buildEvaluationContext(sources []DependencySourceResult, policyInputs []pol
 	}
 	for _, source := range sources {
 		ctx.sourceByPath[source.Path] = source
-		for _, rawFact := range source.facts {
-			switch fact := rawFact.(type) {
-			case javascriptProjectFact:
-				root := path.Dir(source.Path)
-				if root == "." {
-					root = ""
-				}
-				ctx.javascript = append(ctx.javascript, javascriptManifest{
-					path:           source.Path,
-					root:           root,
-					hasDeps:        fact.hasDependencies,
-					manager:        fact.manager,
-					managerInvalid: fact.managerInvalid,
-					workspaces:     append([]string(nil), fact.workspaces...),
-				})
-			}
-		}
 		switch source.Detector {
 		case "js":
-			if source.Analysis.Extraction == ExtractionFailed {
-				detail := "package.json analysis failed"
-				if len(source.Diagnostics) > 0 {
-					detail = source.Diagnostics[0].Message
-				}
-				ctx.parseErrors = append(ctx.parseErrors, policyParseError{detector: source.Detector, path: source.Path, detail: detail})
+			if manifest, err := readJavaScriptManifest(source.content, source); err == nil {
+				ctx.javascript = append(ctx.javascript, manifest)
+			} else {
+				ctx.parseErrors = append(ctx.parseErrors, policyParseError{detector: source.Detector, path: source.Path, detail: err.Error()})
 			}
 		case "js-pnpm-workspace":
 			if workspace, err := readPNPMWorkspace(source.content, source.Path); err == nil {
@@ -222,6 +203,28 @@ func buildEvaluationContext(sources []DependencySourceResult, policyInputs []pol
 	slices.SortFunc(ctx.composer, func(a, b composerManifest) int { return strings.Compare(a.path, b.path) })
 	slices.SortFunc(ctx.ruby, func(a, b rubyGemfile) int { return strings.Compare(a.path, b.path) })
 	return ctx
+}
+
+func readJavaScriptManifest(data []byte, source DependencySourceResult) (javascriptManifest, error) {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return javascriptManifest{}, err
+	}
+	manifest := javascriptManifest{path: source.Path, root: path.Dir(source.Path), hasDeps: source.Analysis.Presence == PresencePresent}
+	if manifest.root == "." {
+		manifest.root = ""
+	}
+	var packageManager string
+	if value, ok := raw["packageManager"]; ok {
+		if err := json.Unmarshal(value, &packageManager); err != nil {
+			manifest.managerInvalid = true
+		} else if packageManager != "" {
+			manifest.manager = normalizeJavaScriptManager(packageManager)
+			manifest.managerInvalid = manifest.manager == ""
+		}
+	}
+	manifest.workspaces = decodeJavaScriptWorkspaces(raw["workspaces"])
+	return manifest, nil
 }
 
 func normalizeJavaScriptManager(value string) string {

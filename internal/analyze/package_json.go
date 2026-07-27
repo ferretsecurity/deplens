@@ -3,22 +3,9 @@ package analyze
 import (
 	"encoding/json"
 	"fmt"
-	"slices"
+	"regexp"
 	"strings"
 )
-
-type sourceFact interface {
-	sourceFact()
-}
-
-type javascriptProjectFact struct {
-	hasDependencies bool
-	manager         string
-	managerInvalid  bool
-	workspaces      []string
-}
-
-func (javascriptProjectFact) sourceFact() {}
 
 type packageJSONParser struct{}
 
@@ -47,7 +34,6 @@ func (packageJSONParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 	optionalPeers := packageJSONOptionalPeers(root["peerDependenciesMeta"])
 	dependencies := make([]DependencyReference, 0)
 	incomplete := make([]string, 0)
-	hasDependencyLikeContent := false
 
 	for _, group := range packageJSONGroups {
 		raw, exists := root[group.name]
@@ -56,17 +42,13 @@ func (packageJSONParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 		}
 		var entries map[string]json.RawMessage
 		if err := json.Unmarshal(raw, &entries); err != nil {
-			hasDependencyLikeContent = true
 			incomplete = append(incomplete, fmt.Sprintf("%s: expected an object of dependency specifiers", group.name))
 			continue
 		}
-		names := make([]string, 0, len(entries))
-		for name := range entries {
-			names = append(names, name)
+		if _, exists := entries[""]; exists {
+			incomplete = append(incomplete, fmt.Sprintf("%s: dependency name must not be empty", group.name))
 		}
-		slices.Sort(names)
-		for _, name := range names {
-			hasDependencyLikeContent = true
+		for _, name := range sortedStringKeys(entries) {
 			var specifier string
 			if err := json.Unmarshal(entries[name], &specifier); err != nil {
 				incomplete = append(incomplete, fmt.Sprintf("%s.%s: expected a string dependency specifier", group.name, name))
@@ -80,41 +62,7 @@ func (packageJSONParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 		}
 	}
 
-	fact := packageJSONProjectFact(root, hasDependencyLikeContent)
-	result := sourceAnalyzerResult{
-		Recognized:   true,
-		Dependencies: dependencies,
-		Facts:        []sourceFact{fact},
-	}
-	switch {
-	case len(dependencies) > 0 && len(incomplete) > 0:
-		result.Analysis = SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionPartial}
-	case len(dependencies) > 0:
-		result.Analysis = SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}
-	case len(incomplete) > 0:
-		result.Analysis = SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionUnsupported}
-	default:
-		result.Analysis = SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}
-	}
-	result.Diagnostics = diagnosticsFromMessages(DiagnosticWarning, incompleteExtractionCode, incomplete)
-	return result, nil
-}
-
-func packageJSONProjectFact(root map[string]json.RawMessage, hasDependencies bool) javascriptProjectFact {
-	fact := javascriptProjectFact{
-		hasDependencies: hasDependencies,
-		workspaces:      decodeJavaScriptWorkspaces(root["workspaces"]),
-	}
-	if raw, ok := root["packageManager"]; ok && !isJSONNull(raw) {
-		var manager string
-		if err := json.Unmarshal(raw, &manager); err != nil {
-			fact.managerInvalid = true
-		} else if manager != "" {
-			fact.manager = normalizeJavaScriptManager(manager)
-			fact.managerInvalid = fact.manager == ""
-		}
-	}
-	return fact
+	return semanticAnalyzerResult(dependencies, incomplete), nil
 }
 
 func packageJSONOptionalPeers(raw json.RawMessage) map[string]bool {
@@ -139,7 +87,6 @@ func packageJSONOptionalPeers(raw json.RawMessage) map[string]bool {
 
 func packageJSONDependency(declaredName, specifier, group string, scope DependencyScope) DependencyReference {
 	dependency := DependencyReference{
-		PackageType:       PackageType("npm"),
 		Raw:               declaredName + "@" + specifier,
 		Name:              declaredName,
 		VersionConstraint: specifier,
@@ -158,18 +105,25 @@ func packageJSONDependency(declaredName, specifier, group string, scope Dependen
 		}
 		dependency.Attributes = map[string]string{
 			"declared_name": declaredName,
-			"specifier":     specifier,
 		}
 	case strings.HasPrefix(specifier, "workspace:"):
 		dependency.OriginKind = OriginWorkspace
 		dependency.VersionConstraint = strings.TrimPrefix(specifier, "workspace:")
-		dependency.Attributes = map[string]string{"specifier": specifier}
 	case strings.HasPrefix(specifier, "file:"), strings.HasPrefix(specifier, "link:"):
 		protocol, value, _ := strings.Cut(specifier, ":")
 		dependency.OriginKind = OriginPath
 		dependency.VersionConstraint = ""
 		dependency.Attributes = map[string]string{"protocol": protocol, "path": value}
-	case isPackageJSONGitSpecifier(specifier):
+	case isLocalFilesystemPath(specifier),
+		strings.HasPrefix(specifier, "~/"),
+		strings.HasPrefix(specifier, ".\\"),
+		strings.HasPrefix(specifier, "..\\"),
+		strings.HasPrefix(specifier, "\\"),
+		isWindowsAbsolutePath(specifier):
+		dependency.OriginKind = OriginPath
+		dependency.VersionConstraint = ""
+		dependency.Attributes = map[string]string{"path": specifier}
+	case isPackageJSONGitSpecifier(specifier), isPackageJSONHostedGitShorthand(specifier):
 		dependency.OriginKind = OriginGit
 		dependency.VersionConstraint = ""
 		source, ref, _ := strings.Cut(specifier, "#")
@@ -181,11 +135,10 @@ func packageJSONDependency(declaredName, specifier, group string, scope Dependen
 		dependency.OriginKind = OriginURL
 		dependency.VersionConstraint = ""
 		dependency.Attributes = map[string]string{"source_url": specifier}
-	case strings.Contains(specifier, ":"):
-		dependency.VersionConstraint = ""
-		dependency.Attributes = map[string]string{"specifier": specifier}
-	default:
+	case isPackageJSONRegistrySpecifier(specifier):
 		dependency.OriginKind = OriginRegistry
+	default:
+		dependency.VersionConstraint = ""
 	}
 	return dependency
 }
@@ -194,20 +147,14 @@ func parseNPMAlias(value string) (string, string) {
 	if value == "" {
 		return "", ""
 	}
-	if strings.HasPrefix(value, "@") {
-		slash := strings.Index(value, "/")
-		if slash < 0 {
-			return value, ""
-		}
-		if separator := strings.LastIndex(value, "@"); separator > slash {
-			return value[:separator], value[separator+1:]
-		}
+	separator := strings.LastIndex(value, "@")
+	if separator <= 0 {
 		return value, ""
 	}
-	if separator := strings.LastIndex(value, "@"); separator > 0 {
-		return value[:separator], value[separator+1:]
+	if strings.HasPrefix(value, "@") && separator < strings.Index(value, "/") {
+		return value, ""
 	}
-	return value, ""
+	return value[:separator], value[separator+1:]
 }
 
 func isPackageJSONGitSpecifier(value string) bool {
@@ -220,6 +167,30 @@ func isPackageJSONGitSpecifier(value string) bool {
 		}
 	}
 	return false
+}
+
+func isWindowsAbsolutePath(value string) bool {
+	return len(value) >= 3 &&
+		((value[0] >= 'A' && value[0] <= 'Z') || (value[0] >= 'a' && value[0] <= 'z')) &&
+		value[1] == ':' && (value[2] == '/' || value[2] == '\\')
+}
+
+func isPackageJSONHostedGitShorthand(value string) bool {
+	source, _, _ := strings.Cut(value, "#")
+	if strings.HasPrefix(source, "@") || strings.ContainsAny(source, `\ :`) {
+		return false
+	}
+	parts := strings.Split(source, "/")
+	return len(parts) == 2 && parts[0] != "" && parts[1] != ""
+}
+
+var packageJSONRegistryTag = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
+
+func isPackageJSONRegistrySpecifier(value string) bool {
+	if strings.ContainsAny(value, `:/\`) {
+		return false
+	}
+	return dependencyVERS(PackageType("npm"), value) != "" || packageJSONRegistryTag.MatchString(value)
 }
 
 func isJSONNull(raw json.RawMessage) bool {

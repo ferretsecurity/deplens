@@ -1,7 +1,6 @@
 package analyze
 
 import (
-	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -23,9 +22,9 @@ func TestPackageJSONExtractsGroupsAliasesAndOrigins(t *testing.T) {
     "theme": "https://packages.example.com/theme.tgz",
     "toolkit": "github:acme/toolkit#v2.4.0"
   },
-  "devDependencies": {"typescript": "~5.8.0"},
-  "peerDependencies": {"react-dom": "^19.0.0"},
-  "peerDependenciesMeta": {"react-dom": {"optional": true}},
+  "devDependencies": {"react": "^18.0.0", "typescript": "~5.8.0"},
+  "peerDependencies": {"loose-peer": "^1.0.0", "react-dom": "^19.0.0"},
+  "peerDependenciesMeta": {"loose-peer": "invalid", "react-dom": {"optional": true}},
   "optionalDependencies": {"fsevents": "^2.3.3"}
 }`))
 	if err != nil {
@@ -36,25 +35,20 @@ func TestPackageJSONExtractsGroupsAliasesAndOrigins(t *testing.T) {
 	}
 
 	want := []DependencyReference{
-		{PackageType: "npm", Raw: "@acme/ui@workspace:^", Name: "@acme/ui", VersionConstraint: "^", SourceGroup: "dependencies", OriginKind: OriginWorkspace, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"specifier": "workspace:^"}},
-		{PackageType: "npm", Raw: "local-plugin@file:../local-plugin", Name: "local-plugin", SourceGroup: "dependencies", OriginKind: OriginPath, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"path": "../local-plugin", "protocol": "file"}},
-		{PackageType: "npm", Raw: "react@^19.0.0", Name: "react", VersionConstraint: "^19.0.0", SourceGroup: "dependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime},
-		{PackageType: "npm", Raw: "server@npm:@acme/server@^3.2.0", Name: "@acme/server", VersionConstraint: "^3.2.0", SourceGroup: "dependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"declared_name": "server", "specifier": "npm:@acme/server@^3.2.0"}},
-		{PackageType: "npm", Raw: "theme@https://packages.example.com/theme.tgz", Name: "theme", SourceGroup: "dependencies", OriginKind: OriginURL, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"source_url": "https://packages.example.com/theme.tgz"}},
-		{PackageType: "npm", Raw: "toolkit@github:acme/toolkit#v2.4.0", Name: "toolkit", SourceGroup: "dependencies", OriginKind: OriginGit, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"source_ref": "v2.4.0", "source_url": "github:acme/toolkit"}},
-		{PackageType: "npm", Raw: "typescript@~5.8.0", Name: "typescript", VersionConstraint: "~5.8.0", SourceGroup: "devDependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeDevelopment},
-		{PackageType: "npm", Raw: "react-dom@^19.0.0", Name: "react-dom", VersionConstraint: "^19.0.0", SourceGroup: "peerDependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeOptional},
-		{PackageType: "npm", Raw: "fsevents@^2.3.3", Name: "fsevents", VersionConstraint: "^2.3.3", SourceGroup: "optionalDependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeOptional},
+		{Raw: "@acme/ui@workspace:^", Name: "@acme/ui", VersionConstraint: "^", SourceGroup: "dependencies", OriginKind: OriginWorkspace, Relationship: RelationshipDirect, Scope: ScopeRuntime},
+		{Raw: "local-plugin@file:../local-plugin", Name: "local-plugin", SourceGroup: "dependencies", OriginKind: OriginPath, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"path": "../local-plugin", "protocol": "file"}},
+		{Raw: "react@^19.0.0", Name: "react", VersionConstraint: "^19.0.0", SourceGroup: "dependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime},
+		{Raw: "server@npm:@acme/server@^3.2.0", Name: "@acme/server", VersionConstraint: "^3.2.0", SourceGroup: "dependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"declared_name": "server"}},
+		{Raw: "theme@https://packages.example.com/theme.tgz", Name: "theme", SourceGroup: "dependencies", OriginKind: OriginURL, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"source_url": "https://packages.example.com/theme.tgz"}},
+		{Raw: "toolkit@github:acme/toolkit#v2.4.0", Name: "toolkit", SourceGroup: "dependencies", OriginKind: OriginGit, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"source_ref": "v2.4.0", "source_url": "github:acme/toolkit"}},
+		{Raw: "react@^18.0.0", Name: "react", VersionConstraint: "^18.0.0", SourceGroup: "devDependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeDevelopment},
+		{Raw: "typescript@~5.8.0", Name: "typescript", VersionConstraint: "~5.8.0", SourceGroup: "devDependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeDevelopment},
+		{Raw: "loose-peer@^1.0.0", Name: "loose-peer", VersionConstraint: "^1.0.0", SourceGroup: "peerDependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime},
+		{Raw: "react-dom@^19.0.0", Name: "react-dom", VersionConstraint: "^19.0.0", SourceGroup: "peerDependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeOptional},
+		{Raw: "fsevents@^2.3.3", Name: "fsevents", VersionConstraint: "^2.3.3", SourceGroup: "optionalDependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeOptional},
 	}
 	if !reflect.DeepEqual(result.Dependencies, want) {
 		t.Fatalf("dependencies mismatch:\n got: %#v\nwant: %#v", result.Dependencies, want)
-	}
-	if len(result.Facts) != 1 {
-		t.Fatalf("expected one JavaScript project fact, got %#v", result.Facts)
-	}
-	fact, ok := result.Facts[0].(javascriptProjectFact)
-	if !ok || fact.manager != "pnpm" || fact.managerInvalid || !fact.hasDependencies || !reflect.DeepEqual(fact.workspaces, []string{"apps/*", "packages/*"}) {
-		t.Fatalf("unexpected JavaScript project fact: %#v", result.Facts[0])
 	}
 }
 
@@ -105,13 +99,55 @@ func TestPackageJSONHandlesEmptyMalformedAndUnknownSpecifiers(t *testing.T) {
 			analysis: SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionUnsupported},
 		},
 		{
+			name:     "empty dependency name",
+			content:  `{"dependencies":{"":"^1.0.0"}}`,
+			analysis: SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionUnsupported},
+		},
+		{
+			name:     "exact registry version",
+			content:  `{"dependencies":{"exact":"1.2.3"}}`,
+			analysis: SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+			dependency: &DependencyReference{
+				Raw: "exact@1.2.3", Name: "exact", VersionConstraint: "1.2.3", SourceGroup: "dependencies",
+				OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime,
+			},
+		},
+		{
+			name:     "registry tag",
+			content:  `{"dependencies":{"tagged":"latest"}}`,
+			analysis: SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+			dependency: &DependencyReference{
+				Raw: "tagged@latest", Name: "tagged", VersionConstraint: "latest", SourceGroup: "dependencies",
+				OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime,
+			},
+		},
+		{
 			name:     "unknown protocol",
 			content:  `{"dependencies":{"catalogued":"catalog:frontend"}}`,
 			analysis: SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 			dependency: &DependencyReference{
-				PackageType: "npm", Raw: "catalogued@catalog:frontend", Name: "catalogued",
+				Raw: "catalogued@catalog:frontend", Name: "catalogued",
 				SourceGroup: "dependencies", Relationship: RelationshipDirect, Scope: ScopeRuntime,
-				Attributes: map[string]string{"specifier": "catalog:frontend"},
+			},
+		},
+		{
+			name:     "relative path",
+			content:  `{"dependencies":{"local":"../local-package"}}`,
+			analysis: SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+			dependency: &DependencyReference{
+				Raw: "local@../local-package", Name: "local", SourceGroup: "dependencies",
+				OriginKind: OriginPath, Relationship: RelationshipDirect, Scope: ScopeRuntime,
+				Attributes: map[string]string{"path": "../local-package"},
+			},
+		},
+		{
+			name:     "hosted Git shorthand",
+			content:  `{"dependencies":{"hosted":"owner/repository#v1"}}`,
+			analysis: SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+			dependency: &DependencyReference{
+				Raw: "hosted@owner/repository#v1", Name: "hosted", SourceGroup: "dependencies",
+				OriginKind: OriginGit, Relationship: RelationshipDirect, Scope: ScopeRuntime,
+				Attributes: map[string]string{"source_ref": "v1", "source_url": "owner/repository"},
 			},
 		},
 	}
@@ -149,29 +185,5 @@ func TestPackageJSONRejectsInvalidJSONAndConfiguration(t *testing.T) {
 `))
 	if err == nil || !strings.Contains(err.Error(), "field groups not found") {
 		t.Fatalf("expected strict package-json configuration error, got %v", err)
-	}
-}
-
-func TestPackageJSONVersatileFixtureIntegratesWithDefaultRules(t *testing.T) {
-	result, err := Scan(
-		filepath.Join("..", "..", "testdata", "javascript", "package-json-versatile"),
-		nil,
-		mustLoadDefaultRules(t),
-	)
-	if err != nil {
-		t.Fatalf("Scan failed: %v", err)
-	}
-	if len(result.Sources) != 1 {
-		t.Fatalf("expected one source, got %+v", result.Sources)
-	}
-	source := result.Sources[0]
-	if source.Detector != "js" || source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
-		t.Fatalf("unexpected source: %+v", source)
-	}
-	if len(source.Dependencies) != 7 {
-		t.Fatalf("expected seven extracted dependencies, got %+v", source.Dependencies)
-	}
-	if len(result.Findings) != 1 || result.Findings[0].CheckID != "javascript-pnpm-lockfile-missing" {
-		t.Fatalf("expected the existing pnpm lockfile finding, got %+v", result.Findings)
 	}
 }

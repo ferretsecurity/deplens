@@ -96,7 +96,6 @@ type DependencySourceResult struct {
 	Dependencies []DependencyReference `json:"dependencies,omitempty"`
 	Diagnostics  []Diagnostic          `json:"diagnostics,omitempty"`
 	content      []byte
-	facts        []sourceFact
 }
 
 type FindingSubject struct {
@@ -218,7 +217,6 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 	result.CheckRuns, result.Findings = evaluateChecks(result.Sources, policyInputs, discoveredPaths, ruleset.checks)
 	for index := range result.Sources {
 		result.Sources[index].content = nil
-		result.Sources[index].facts = nil
 	}
 
 	return result, nil

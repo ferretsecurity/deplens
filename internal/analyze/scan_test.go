@@ -816,7 +816,10 @@ func TestScanFindsPackageJSONFixtureWithOneMatchingSection(t *testing.T) {
 	if result.Sources[0].Analysis.Presence != PresencePresent {
 		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if len(result.Sources[0].Dependencies) != 1 || result.Sources[0].Dependencies[0].Raw != "react@^19.0.0" {
+	if len(result.Sources[0].Dependencies) != 1 ||
+		result.Sources[0].Dependencies[0].Raw != "react@^19.0.0" ||
+		result.Sources[0].Dependencies[0].PackageType != "npm" ||
+		result.Sources[0].Dependencies[0].VERS != "vers:npm/>=19.0.0|<20.0.0" {
 		t.Fatalf("expected extracted React dependency, got %+v", result.Sources[0].Dependencies)
 	}
 }

@@ -76,7 +76,7 @@ package.json [manifest · 4 dependencies]
     - typescript@~5.8.0
 ```
 
-JSON additionally normalizes registry constraints, npm aliases, direct relationships, runtime/development/optional scopes, and registry, workspace, path, Git, or URL origins. Package-manager and workspace metadata is parsed once and retained internally for policy evaluation; it is not emitted as a dependency.
+JSON additionally normalizes registry constraints, npm aliases, direct relationships, runtime/development/optional scopes, and registry, workspace, path, Git, or URL origins. Package-manager and workspace metadata remains available to policy evaluation; it is not emitted as a dependency.
 
 For example, this Gradle build was previously identified only:
 
