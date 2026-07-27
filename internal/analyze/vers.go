@@ -1,6 +1,10 @@
 package analyze
 
-import "github.com/git-pkgs/vers"
+import (
+	"strings"
+
+	"github.com/git-pkgs/vers"
+)
 
 // applyDependencyVERS derives canonical VERS URIs from extracted native
 // constraints. Constraints that cannot be represented are intentionally left
@@ -12,6 +16,9 @@ func applyDependencyVERS(dependencies []DependencyReference) {
 }
 
 func dependencyVERS(packageType PackageType, versionConstraint string) string {
+	if strings.Contains(versionConstraint, "${") || strings.Contains(versionConstraint, "$(") {
+		return ""
+	}
 	nativeScheme, outputScheme, ok := versSchemeForPackageType(packageType)
 	if !ok || versionConstraint == "" {
 		return ""
