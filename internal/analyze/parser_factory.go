@@ -73,6 +73,18 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newDockerfileParser)
 	case "docker-compose":
 		return decodeAndCreate(raw.Analyzer, newDockerComposeParser)
+	case "maven-pom":
+		return decodeAndCreate(raw.Analyzer, newMavenPOMParser)
+	case "cargo-manifest":
+		return decodeAndCreate(raw.Analyzer, newCargoManifestParser)
+	case "composer-manifest":
+		return decodeAndCreate(raw.Analyzer, newComposerManifestParser)
+	case "dotnet-project":
+		return decodeAndCreate(raw.Analyzer, newDotnetProjectParser)
+	case "dotnet-central-packages":
+		return decodeAndCreate(raw.Analyzer, newDotnetCentralPackagesParser)
+	case "dotnet-packages-config":
+		return decodeAndCreate(raw.Analyzer, newDotnetPackagesConfigParser)
 	case "yaml":
 		return decodeAndCreate(raw.Analyzer, newYAMLQueryParser)
 	case "toml":

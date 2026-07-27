@@ -110,8 +110,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "configure.ac", want: DetectorID("cpp-autotools")},
 		{name: "configure.in", want: DetectorID("cpp-autotools")},
 		// Group 1e: .NET ecosystem extensions
-		{name: "demo.fsproj", want: DetectorID("dotnet-fsproj")},
-		{name: "demo.vbproj", want: DetectorID("dotnet-vbproj")},
 		{name: "Directory.Build.props", want: DetectorID("dotnet-directory-build")},
 		{name: "Directory.Build.targets", want: DetectorID("dotnet-directory-build")},
 		{name: "paket.references", want: DetectorID("dotnet-paket-references")},
@@ -861,8 +859,10 @@ func TestScanMatchesComposerJSONWithRequireSections(t *testing.T) {
 	if result.Sources[0].Analysis.Presence != PresencePresent {
 		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if len(result.Sources[0].Dependencies) != 0 {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
+	dependencies := result.Sources[0].Dependencies
+	if len(dependencies) != 2 || dependencies[0].Name != "monolog/monolog" || dependencies[0].Scope != ScopeRuntime ||
+		dependencies[1].Name != "phpunit/phpunit" || dependencies[1].Scope != ScopeDevelopment {
+		t.Fatalf("expected extracted require groups, got %+v", dependencies)
 	}
 }
 
@@ -933,8 +933,10 @@ func TestScanMatchesCargoTOMLWithDependencies(t *testing.T) {
 	if result.Sources[0].Analysis.Presence != PresencePresent {
 		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if len(result.Sources[0].Dependencies) != 0 {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
+	dependencies := result.Sources[0].Dependencies
+	if len(dependencies) != 1 || dependencies[0].Name != "nix" || dependencies[0].Relationship != RelationshipDirect ||
+		dependencies[0].Scope != ScopeRuntime || dependencies[0].Attributes["target"] != "cfg(unix)" {
+		t.Fatalf("expected extracted target dependency, got %+v", dependencies)
 	}
 }
 
@@ -1002,8 +1004,10 @@ func TestScanMatchesMavenPOMWithDependencies(t *testing.T) {
 	if result.Sources[0].Analysis.Presence != PresencePresent {
 		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if len(result.Sources[0].Dependencies) != 0 {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
+	dependencies := result.Sources[0].Dependencies
+	if len(dependencies) != 1 || dependencies[0].Name != "org.slf4j:slf4j-api" ||
+		dependencies[0].VersionConstraint != "[2.0.17]" || dependencies[0].Relationship != RelationshipDirect {
+		t.Fatalf("expected extracted Maven dependency, got %+v", dependencies)
 	}
 }
 
@@ -1037,7 +1041,7 @@ func TestScanMatchesNamespacedMavenPOMWithDependencies(t *testing.T) {
 	}
 }
 
-func TestScanMatchesMavenPOMWithDependencyManagementOnlyAsNoDependencies(t *testing.T) {
+func TestScanMatchesMavenPOMWithDependencyManagementAsInconclusiveConstraint(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	result, err := Scan(filepath.Join("..", "..", "testdata", "xml", "pom-dependency-management-only"), nil, ruleset)
@@ -1047,8 +1051,13 @@ func TestScanMatchesMavenPOMWithDependencyManagementOnlyAsNoDependencies(t *test
 	if len(result.Sources) != 1 {
 		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
 	}
-	if result.Sources[0].Analysis.Presence != PresenceAbsent {
-		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	if result.Sources[0].Analysis.Presence != PresencePresent {
+		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
+	}
+	dependencies := result.Sources[0].Dependencies
+	if len(dependencies) != 1 || dependencies[0].Relationship != RelationshipInconclusive ||
+		dependencies[0].SourceGroup != "dependencyManagement" || dependencies[0].Scope != ScopeBuild {
+		t.Fatalf("expected inconclusive managed constraint, got %+v", dependencies)
 	}
 }
 
@@ -1331,10 +1340,11 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 	ruleset := mustLoadDefaultRules(t)
 
 	testCases := []struct {
-		name string
-		root string
-		path string
-		typ  DetectorID
+		name      string
+		root      string
+		path      string
+		typ       DetectorID
+		extracted bool
 	}{
 		{
 			name: "helm chart",
@@ -1367,22 +1377,25 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			typ:  DetectorID("gleam"),
 		},
 		{
-			name: "dotnet csproj",
-			root: filepath.Join("..", "..", "testdata", "sample-monorepo", "dotnet-app"),
-			path: "app.csproj",
-			typ:  DetectorID("dotnet-csproj"),
+			name:      "dotnet csproj",
+			root:      filepath.Join("..", "..", "testdata", "sample-monorepo", "dotnet-app"),
+			path:      "app.csproj",
+			typ:       DetectorID("dotnet-csproj"),
+			extracted: true,
 		},
 		{
-			name: "directory packages props",
-			root: filepath.Join("..", "..", "testdata", "dotnet", "directory-packages-props-with-deps"),
-			path: "Directory.Packages.props",
-			typ:  DetectorID("dotnet-directory-packages-props"),
+			name:      "directory packages props",
+			root:      filepath.Join("..", "..", "testdata", "dotnet", "directory-packages-props-with-deps"),
+			path:      "Directory.Packages.props",
+			typ:       DetectorID("dotnet-directory-packages-props"),
+			extracted: true,
 		},
 		{
-			name: "packages config",
-			root: filepath.Join("..", "..", "testdata", "dotnet", "packages-config-with-deps"),
-			path: "packages.config",
-			typ:  DetectorID("dotnet-packages-config"),
+			name:      "packages config",
+			root:      filepath.Join("..", "..", "testdata", "dotnet", "packages-config-with-deps"),
+			path:      "packages.config",
+			typ:       DetectorID("dotnet-packages-config"),
+			extracted: true,
 		},
 		{
 			name: "unity packages manifest",
@@ -1439,7 +1452,10 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			if source.Analysis.Presence != PresencePresent {
 				t.Fatalf("expected presence=present, got %+v", source.Analysis)
 			}
-			if source.Dependencies != nil {
+			if tc.extracted && len(source.Dependencies) == 0 {
+				t.Fatalf("expected extracted dependencies, got %+v", source.Dependencies)
+			}
+			if !tc.extracted && source.Dependencies != nil {
 				t.Fatalf("expected no extracted dependencies, got %+v", source.Dependencies)
 			}
 		})
@@ -1715,7 +1731,7 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFilesWithoutDependencies(t *te
 			if source.Analysis.Presence != PresenceAbsent {
 				t.Fatalf("expected presence=absent, got %+v", source.Analysis)
 			}
-			if source.Dependencies != nil {
+			if len(source.Dependencies) != 0 {
 				t.Fatalf("expected no extracted dependencies, got %+v", source.Dependencies)
 			}
 		})

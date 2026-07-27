@@ -150,6 +150,12 @@ func TestRuleSchemaRejectsConfigurationForSemanticAnalyzers(t *testing.T) {
 		"gemfile-lock",
 		"dockerfile",
 		"docker-compose",
+		"maven-pom",
+		"cargo-manifest",
+		"composer-manifest",
+		"dotnet-project",
+		"dotnet-central-packages",
+		"dotnet-packages-config",
 	} {
 		t.Run(analyzerType, func(t *testing.T) {
 			_, err := loadRules("invalid.yaml", []byte(`

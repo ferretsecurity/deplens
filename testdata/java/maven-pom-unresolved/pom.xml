@@ -1,0 +1,10 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <dependencies>
+    <dependency>
+      <groupId>com.acme</groupId>
+      <artifactId>client</artifactId>
+      <version>${revision}</version>
+    </dependency>
+  </dependencies>
+</project>

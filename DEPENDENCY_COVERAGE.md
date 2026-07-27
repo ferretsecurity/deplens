@@ -1,6 +1,6 @@
 # Dependency coverage
 
-This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 64 have semantic analyzers and 121 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
+This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 66 have semantic analyzers and 119 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
@@ -36,7 +36,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `js-npmrc` | `tool-config` | `configuration` | — | select |
 | `js-yarnrc` | `tool-config` | `configuration` | — | select |
 | `js-importmap` | `manifest` | `declaration, constraint` | — | select |
-| `java` | `manifest` | `declaration, constraint` | `xml` | select, recognize, assess-presence |
+| `java` | `manifest` | `declaration, constraint` | `maven-pom` | select, recognize, extract, normalize, relate |
 | `java-gradle-lockfile` | `lockfile` | `resolution, integrity` | `gradle-lock` | select, recognize, extract, normalize, relate |
 | `java-gradle` | `build-definition` | `declaration, constraint, configuration` | `gradle-build` | select, recognize, extract, normalize, relate |
 | `java-gradle-kts` | `build-definition` | `declaration, constraint, configuration` | `gradle-build` | select, recognize, extract, normalize, relate |
@@ -61,7 +61,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `ios-cartfile` | `manifest` | `declaration, constraint` | — | select |
 | `ios-podspec` | `manifest` | `declaration, constraint` | — | select |
 | `ios-cartfile-resolved` | `lockfile` | `resolution, integrity` | — | select |
-| `php-composer` | `manifest` | `declaration, constraint` | `json` | select, recognize, assess-presence |
+| `php-composer` | `manifest` | `declaration, constraint` | `composer-manifest` | select, recognize, extract, normalize, relate |
 | `php-composer-lock` | `lockfile` | `resolution, integrity` | `composer-lock` | select, recognize, extract, normalize |
 | `dart-pubspec` | `manifest` | `declaration, constraint` | `yaml` | select, recognize, assess-presence |
 | `dart-pubspec-lock` | `lockfile` | `resolution, integrity` | `yaml` | select, recognize, assess-presence |
@@ -76,13 +76,13 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `haskell-cabal-project-freeze` | `lockfile` | `resolution, integrity` | — | select |
 | `haskell-cabal` | `manifest` | `declaration, constraint` | — | select |
 | `haskell-package-yaml` | `manifest` | `declaration, constraint` | `yaml` | select, recognize, assess-presence |
-| `dotnet-packages-config` | `manifest` | `declaration, constraint` | `xml` | select, recognize, assess-presence |
+| `dotnet-packages-config` | `manifest` | `declaration, constraint` | `dotnet-packages-config` | select, recognize, extract, normalize, relate |
 | `dotnet-packages-lock` | `lockfile` | `resolution, integrity` | `json` | select, recognize, assess-presence |
-| `dotnet-directory-packages-props` | `version-catalog` | `declaration, constraint` | `xml` | select, recognize, assess-presence |
+| `dotnet-directory-packages-props` | `version-catalog` | `declaration, constraint` | `dotnet-central-packages` | select, recognize, extract, normalize, relate |
 | `dotnet-paket-dependencies` | `requirements` | `declaration, constraint` | — | select |
 | `dotnet-paket-lock` | `lockfile` | `resolution, integrity` | — | select |
-| `dotnet-fsproj` | `build-definition` | `declaration, constraint, configuration` | — | select |
-| `dotnet-vbproj` | `build-definition` | `declaration, constraint, configuration` | — | select |
+| `dotnet-fsproj` | `build-definition` | `declaration, constraint, configuration` | `dotnet-project` | select, recognize, extract, normalize, relate |
+| `dotnet-vbproj` | `build-definition` | `declaration, constraint, configuration` | `dotnet-project` | select, recognize, extract, normalize, relate |
 | `dotnet-directory-build` | `build-definition` | `declaration, constraint, configuration` | — | select |
 | `dotnet-paket-references` | `requirements` | `declaration, constraint` | — | select |
 | `dotnet-tools-manifest` | `manifest` | `declaration, constraint` | — | select |
@@ -92,12 +92,12 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `go-gopkg-toml` | `manifest` | `declaration, constraint` | — | select |
 | `go-glide-yaml` | `manifest` | `declaration, constraint` | `yaml` | select, recognize, assess-presence |
 | `go-godep` | `manifest` | `declaration, constraint` | — | select |
-| `rust-cargo` | `manifest` | `declaration, constraint` | `toml` | select, recognize, assess-presence |
+| `rust-cargo` | `manifest` | `declaration, constraint` | `cargo-manifest` | select, recognize, extract, normalize, relate |
 | `rust-cargo-lock` | `lockfile` | `resolution, integrity` | `cargo-lock` | select, recognize, extract, normalize |
 | `rust-cargo-config` | `tool-config` | `configuration` | — | select |
 | `go-gopkg-lock` | `lockfile` | `resolution, integrity` | `toml` | select, recognize, assess-presence |
 | `go-glide-lock` | `lockfile` | `resolution, integrity` | — | select |
-| `dotnet-csproj` | `build-definition` | `declaration, constraint, configuration` | `xml` | select, recognize, assess-presence |
+| `dotnet-csproj` | `build-definition` | `declaration, constraint, configuration` | `dotnet-project` | select, recognize, extract, normalize, relate |
 | `cpp-conanfile` | `manifest` | `declaration, constraint` | — | select |
 | `cpp-conan-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `cpp-vcpkg` | `manifest` | `declaration, constraint` | `json` | select, recognize, assess-presence |

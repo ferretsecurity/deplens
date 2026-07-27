@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json"
+                      Version="[13.0.3,14.0.0)" />
+    <PackageReference Include="coverlet.collector"
+                      Version="[6.0.0]"
+                      IncludeAssets="build;analyzers"
+                      PrivateAssets="all" />
+  </ItemGroup>
+</Project>

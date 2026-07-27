@@ -86,6 +86,38 @@ func TestDefaultRulesExtractCommonSemanticCoverageFixtures(t *testing.T) {
 			dependencies: 1,
 			extraction:   ExtractionComplete,
 		},
+		{
+			name:         "Maven POM",
+			fixture:      filepath.Join("java", "maven-pom-semantic"),
+			path:         "pom.xml",
+			detector:     "java",
+			dependencies: 3,
+			extraction:   ExtractionComplete,
+		},
+		{
+			name:         "Cargo manifest",
+			fixture:      filepath.Join("rust", "cargo-manifest-semantic"),
+			path:         "Cargo.toml",
+			detector:     "rust-cargo",
+			dependencies: 5,
+			extraction:   ExtractionComplete,
+		},
+		{
+			name:         "Composer manifest",
+			fixture:      filepath.Join("php", "composer-json-semantic"),
+			path:         "composer.json",
+			detector:     "php-composer",
+			dependencies: 2,
+			extraction:   ExtractionComplete,
+		},
+		{
+			name:         ".NET central package catalog",
+			fixture:      filepath.Join("dotnet", "central-packages-semantic"),
+			path:         "Directory.Packages.props",
+			detector:     "dotnet-directory-packages-props",
+			dependencies: 1,
+			extraction:   ExtractionComplete,
+		},
 	}
 
 	ruleset := mustLoadDefaultRules(t)
