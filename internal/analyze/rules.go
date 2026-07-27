@@ -153,6 +153,7 @@ type uvLockMatcherConfig struct{}
 type poetryLockMatcherConfig struct{}
 type pipfileLockMatcherConfig struct{}
 type packageLockMatcherConfig struct{}
+type packageJSONMatcherConfig struct{}
 type pnpmLockMatcherConfig struct{}
 type composerLockMatcherConfig struct{}
 type cargoLockMatcherConfig struct{}
@@ -174,6 +175,7 @@ type sourceAnalyzerResult struct {
 	Analysis     SourceAnalysis
 	Dependencies []DependencyReference
 	Diagnostics  []Diagnostic
+	Facts        []sourceFact
 }
 
 func LoadDefaultRules() (Ruleset, error) {
@@ -390,6 +392,7 @@ func (r Ruleset) analyzeDependencySourceWithContent(filePath, name, relPath stri
 			base.Analysis = result.Analysis
 			base.Dependencies = result.Dependencies
 			base.Diagnostics = result.Diagnostics
+			base.facts = result.Facts
 			if needsPolicyContent(d.ID) {
 				base.content = append([]byte(nil), content...)
 			}
@@ -410,7 +413,7 @@ func (r Ruleset) hasEvaluator(evaluatorType string) bool {
 
 func needsPolicyContent(id DetectorID) bool {
 	switch id {
-	case "js", "js-pnpm-workspace", "rust-cargo", "go-mod", "php-composer", "ruby-gemfile":
+	case "js-pnpm-workspace", "rust-cargo", "go-mod", "php-composer", "ruby-gemfile":
 		return true
 	default:
 		return false

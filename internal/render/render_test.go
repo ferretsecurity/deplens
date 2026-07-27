@@ -60,6 +60,36 @@ func TestHumanRendersDependencySourceStatesInPathOrder(t *testing.T) {
 	}
 }
 
+func TestHumanPreservesRawManifestSpecifiers(t *testing.T) {
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		Sources: []analyze.DependencySourceResult{{
+			Detector: "js", Path: "package.json", Form: analyze.FormManifest,
+			Roles:    []analyze.SourceRole{analyze.RoleDeclaration, analyze.RoleConstraint},
+			Analysis: analyze.SourceAnalysis{Presence: analyze.PresencePresent, Extraction: analyze.ExtractionComplete},
+			Dependencies: []analyze.DependencyReference{
+				{
+					PackageType: "npm", Raw: "server@npm:@acme/server@^3.2.0", Name: "@acme/server",
+					VersionConstraint: "^3.2.0", SourceGroup: "dependencies", Relationship: analyze.RelationshipDirect,
+				},
+				{
+					PackageType: "npm", Raw: "@acme/ui@workspace:^", Name: "@acme/ui",
+					VersionConstraint: "^", SourceGroup: "dependencies", Relationship: analyze.RelationshipDirect,
+				},
+			},
+		}},
+	}
+	output := Human(result, HumanOptions{})
+	for _, expected := range []string{
+		"server@npm:@acme/server@^3.2.0",
+		"@acme/ui@workspace:^",
+	} {
+		if !strings.Contains(output, expected) {
+			t.Fatalf("expected raw specifier %q in output:\n%s", expected, output)
+		}
+	}
+}
+
 func TestHumanRendersConflictingLockfileEvidence(t *testing.T) {
 	result := analyze.ScanResult{
 		Root: "/tmp/project",

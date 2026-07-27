@@ -49,6 +49,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newGoModMatcher)
 	case "package-lock":
 		return decodeAndCreate(raw.Analyzer, newPackageLockParser)
+	case "package-json":
+		return decodeAndCreate(raw.Analyzer, newPackageJSONParser)
 	case "pnpm-lock":
 		return decodeAndCreate(raw.Analyzer, newPNPMLockParser)
 	case "composer-lock":

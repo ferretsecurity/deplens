@@ -96,7 +96,7 @@ The logical source section or group, such as `dependencies`, `devDependencies`, 
 
 ### `origin_kind`
 
-How a dependency is obtained: `registry`, `git`, `path`, or `url`.
+How a dependency is obtained: `registry`, `git`, `path`, `url`, or `workspace`.
 
 ### `relationship`
 

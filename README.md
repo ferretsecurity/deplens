@@ -30,7 +30,9 @@ frontend/package-lock.json [lockfile · 2 dependencies]
   dependencies:
     - react@18.3.1
 
-package.json [manifest · references present, not extracted]
+package.json [manifest · 1 dependency]
+  dependencies:
+    - express@^5.1.0
 requirements.txt [requirements · 1 dependency]
   - requests==2.32.3
 ```
@@ -39,7 +41,42 @@ Absent sources are counted by `Found N dependency sources` but hidden from the d
 
 ### Semantic coverage for common formats
 
-Gradle builds, Gradle lockfiles and version catalogs, Gemfiles and Bundler lockfiles, Dockerfiles, and Docker Compose files have built-in semantic analyzers. Static declarations are normalized into dependency records; executable or interpolated declarations that cannot be resolved without running external tools produce partial analysis warnings.
+`package.json` manifests, Gradle builds, Gradle lockfiles and version catalogs, Gemfiles and Bundler lockfiles, Dockerfiles, and Docker Compose files have built-in semantic analyzers. Static declarations are normalized into dependency records; executable or interpolated declarations that cannot be resolved without running external tools produce partial analysis warnings.
+
+For example, `package.json` was previously limited to presence assessment:
+
+```text
+package.json [manifest · references present, not extracted]
+```
+
+Given:
+
+```json
+{
+  "dependencies": {
+    "react": "^19.0.0",
+    "server": "npm:@acme/server@^3.2.0",
+    "@acme/ui": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.0"
+  }
+}
+```
+
+the dedicated analyzer now preserves the declarations and their source groups:
+
+```text
+package.json [manifest · 4 dependencies]
+  dependencies:
+    - @acme/ui@workspace:^
+    - react@^19.0.0
+    - server@npm:@acme/server@^3.2.0
+  devDependencies:
+    - typescript@~5.8.0
+```
+
+JSON additionally normalizes registry constraints, npm aliases, direct relationships, runtime/development/optional scopes, and registry, workspace, path, Git, or URL origins. Package-manager and workspace metadata is parsed once and retained internally for policy evaluation; it is not emitted as a dependency.
 
 For example, this Gradle build was previously identified only:
 
@@ -119,7 +156,9 @@ package-lock.json [lockfile · 1 dependency]
   dependencies:
     - left-pad@1.3.0
 
-package.json [manifest · references present, not extracted]
+package.json [manifest · 1 dependency]
+  dependencies:
+    - left-pad@^1.3.0
 
 pnpm-lock.yaml [lockfile · 1 dependency]
   dependencies:
@@ -156,7 +195,9 @@ The same scan now adds a concrete finding:
 ```text
 Found 1 dependency source:
 
-package.json [manifest · references present, not extracted]
+package.json [manifest · 1 dependency]
+  dependencies:
+    - express@^5.1.0
 
 Found 1 policy finding:
 
@@ -266,7 +307,7 @@ analyzer:
     - devDependencies
 ```
 
-The configuration-free semantic analyzer types `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, and `docker-compose` can also be used by custom rules. They reject analyzer fields other than `type`.
+The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, and `docker-compose` can also be used by custom rules. They reject analyzer fields other than `type`.
 
 The old rule shape is rejected. The migration is intentionally atomic:
 
@@ -285,8 +326,7 @@ The old rule shape is rejected. The migration is intentionally atomic:
   roles: [declaration, constraint]
   filename-regex: '^package\.json$'
   analyzer:
-    type: json
-    exists-any: [dependencies]
+    type: package-json
 ```
 
 Generic TOML rules recognize a source only when their configured queries establish dependency relevance. When the uv check is enabled, the scanner separately retains `pyproject.toml` bytes as policy inputs. The check layer parses uv and workspace facts from those inputs, so a dependency-free workspace root can own members without being emitted as a dependency source or changing generic TOML semantics.

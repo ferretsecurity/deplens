@@ -107,10 +107,13 @@ type sourceAnalyzerResult struct {
     Analysis     SourceAnalysis
     Dependencies []DependencyReference
     Diagnostics  []Diagnostic
+    Facts        []sourceFact
 }
 ```
 
 `Recognized` distinguishes selector matching from semantic recognition. An unrecognized analyzer result allows a later detector to inspect the same file. A recognized result must use one of the valid analysis pairs defined in the glossary.
+
+Facts are typed, internal-only repository metadata produced during the same parse as dependency extraction. They allow later policy evaluation to consume package-manager and workspace information without decoding a source twice. Facts are never serialized in JSON and are discarded after checks run.
 
 Dedicated extractors normally return present/complete or absent/complete. Presence-only analyzers return present/unsupported or absent/unsupported. Recoverable extraction problems with usable references return present/partial plus warning diagnostics. Total failures become unknown/failed plus an error diagnostic.
 
