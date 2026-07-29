@@ -68,11 +68,12 @@ type rulesFile struct {
 type CheckID string
 
 type check struct {
-	ID            CheckID
-	Summary       string
-	Severity      FindingSeverity
-	EvaluatorType string
-	Remediation   string
+	ID                 CheckID
+	Summary            string
+	Severity           FindingSeverity
+	EvaluatorType      string
+	CodeownersPlatform codeownersPlatform
+	Remediation        string
 }
 
 type checkConfig struct {
@@ -298,13 +299,23 @@ func compileChecks(source string, configs []checkConfig) ([]check, error) {
 		if !validEvaluatorType(raw.Evaluator.Type) {
 			return nil, fmt.Errorf("%s: %s.evaluator.type: unsupported value %q", source, fieldPath, raw.Evaluator.Type)
 		}
-		if len(raw.Evaluator.config.Content) != 0 {
+		codeownersPlatform := codeownersPlatform("")
+		if raw.Evaluator.Type == "dependency-source-codeowners" {
+			platform, err := compileCodeownersEvaluatorConfig(raw.Evaluator.config)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s.evaluator: %w", source, fieldPath, err)
+			}
+			codeownersPlatform = platform
+		} else if len(raw.Evaluator.config.Content) != 0 {
 			return nil, fmt.Errorf("%s: %s.evaluator: %s configuration: unknown fields are not supported", source, fieldPath, raw.Evaluator.Type)
 		}
 		if strings.TrimSpace(raw.Remediation) == "" {
 			return nil, fmt.Errorf("%s: %s.remediation: required", source, fieldPath)
 		}
-		checks = append(checks, check{ID: id, Summary: raw.Summary, Severity: severity, EvaluatorType: raw.Evaluator.Type, Remediation: raw.Remediation})
+		checks = append(checks, check{
+			ID: id, Summary: raw.Summary, Severity: severity, EvaluatorType: raw.Evaluator.Type,
+			CodeownersPlatform: codeownersPlatform, Remediation: raw.Remediation,
+		})
 	}
 	slices.SortFunc(checks, func(a, b check) int { return strings.Compare(string(a.ID), string(b.ID)) })
 	return checks, nil
@@ -312,7 +323,7 @@ func compileChecks(source string, configs []checkConfig) ([]check, error) {
 
 func validEvaluatorType(value string) bool {
 	switch value {
-	case "npm-lockfile-missing", "pnpm-lockfile-missing", "yarn-lockfile-missing", "javascript-conflicting-lockfiles", "uv-lockfile-missing", "cargo-application-lockfile-missing", "go-sum-missing", "composer-application-lockfile-missing", "gemfile-application-lockfile-missing":
+	case "npm-lockfile-missing", "pnpm-lockfile-missing", "yarn-lockfile-missing", "javascript-conflicting-lockfiles", "uv-lockfile-missing", "cargo-application-lockfile-missing", "go-sum-missing", "composer-application-lockfile-missing", "gemfile-application-lockfile-missing", "dependency-source-codeowners":
 		return true
 	default:
 		return false

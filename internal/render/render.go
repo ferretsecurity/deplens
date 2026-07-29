@@ -32,7 +32,7 @@ type HumanOptions struct {
 
 func Human(result analyze.ScanResult, opts HumanOptions) string {
 	if len(result.Sources) == 0 && len(result.Findings) == 0 {
-		return fmt.Sprintf("Root: %s\nNo dependency sources found.\n", result.Root)
+		return fmt.Sprintf("Root: %s\nNo dependency sources found.\n%s", result.Root, renderFailedChecks(result.CheckRuns))
 	}
 
 	sources := slices.Clone(result.Sources)
@@ -63,6 +63,7 @@ func Human(result analyze.ScanResult, opts HumanOptions) string {
 		b.WriteString(renderDependencies(source.Dependencies))
 		b.WriteString(renderDiagnostics(source.Diagnostics))
 	}
+	b.WriteString(renderFailedChecks(result.CheckRuns))
 	b.WriteString(renderFindings(result.Findings))
 	return b.String()
 }
@@ -99,7 +100,17 @@ func renderFindings(findings []analyze.Finding) string {
 		if a.Subject.ProjectRoot != b.Subject.ProjectRoot {
 			return strings.Compare(a.Subject.ProjectRoot, b.Subject.ProjectRoot)
 		}
-		return strings.Compare(string(a.CheckID), string(b.CheckID))
+		if a.CheckID != b.CheckID {
+			return strings.Compare(string(a.CheckID), string(b.CheckID))
+		}
+		aPath, bPath := "", ""
+		if len(a.Locations) > 0 {
+			aPath = a.Locations[0].Path
+		}
+		if len(b.Locations) > 0 {
+			bPath = b.Locations[0].Path
+		}
+		return strings.Compare(aPath, bPath)
 	})
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("\nFound %d policy %s:\n", len(ordered), pluralize(len(ordered), "finding", "findings")))
@@ -117,6 +128,35 @@ func renderFindings(findings []analyze.Finding) string {
 			b.WriteString(fmt.Sprintf("  conflicting: %s\n", conflicting))
 		}
 		b.WriteString(fmt.Sprintf("  remediation: %s\n", finding.Remediation))
+	}
+	return b.String()
+}
+
+func renderFailedChecks(runs []analyze.CheckRun) string {
+	failed := slices.DeleteFunc(slices.Clone(runs), func(run analyze.CheckRun) bool {
+		return run.Status != analyze.CheckFailed
+	})
+	if len(failed) == 0 {
+		return ""
+	}
+	slices.SortFunc(failed, func(a, b analyze.CheckRun) int {
+		if a.Subject.ProjectRoot != b.Subject.ProjectRoot {
+			return strings.Compare(a.Subject.ProjectRoot, b.Subject.ProjectRoot)
+		}
+		return strings.Compare(string(a.CheckID), string(b.CheckID))
+	})
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("\nFound %d failed policy %s:\n", len(failed), pluralize(len(failed), "check", "checks")))
+	for _, run := range failed {
+		subject := run.Subject.ProjectRoot
+		if subject == "" {
+			subject = "."
+		}
+		b.WriteString(fmt.Sprintf("\n%s [failed] %s\n", subject, run.CheckID))
+		b.WriteString(fmt.Sprintf("  reason: %s\n", run.ReasonCode))
+		if run.Detail != "" {
+			b.WriteString(fmt.Sprintf("  detail: %s\n", run.Detail))
+		}
 	}
 	return b.String()
 }

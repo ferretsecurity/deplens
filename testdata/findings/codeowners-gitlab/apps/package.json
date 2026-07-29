@@ -1,0 +1,6 @@
+{
+  "name": "codeowners-gitlab",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

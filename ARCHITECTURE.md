@@ -151,11 +151,11 @@ checks:
     remediation: Run `npm install` and commit the generated lockfile.
 ```
 
-The nine dependency-policy evaluator types have empty configurations. Manager evidence, dependency gating, workspace ownership, application-role requirements, conflicting JavaScript lockfile families, local Go replacements, and ambiguity handling are evaluator invariants implemented in Go. JavaScript package publishability does not affect missing-lockfile eligibility. Ambiguous inputs produce skipped check runs; parsing failures produce failed runs; neither produces a policy finding.
+Nine dependency-policy evaluator types have empty configurations. The CODEOWNERS evaluator additionally accepts `platform: auto|github|gitlab`. Manager evidence, dependency gating, workspace ownership, application-role requirements, conflicting JavaScript lockfile families, local Go replacements, ownership matching, and ambiguity handling are evaluator invariants implemented in Go. JavaScript package publishability does not affect missing-lockfile eligibility. Ambiguous inputs produce skipped or failed check runs as appropriate; parsing failures produce failed runs; neither produces a policy finding.
 
 ## Repository relationships and checks
 
-Missing-file checks run after traversal because a file-local analyzer cannot observe absence. JavaScript package workspaces, pnpm workspaces, uv workspaces, and Cargo workspaces attach member manifests to explicit owners. A lockfile only satisfies the compatible owning project; directory ancestry by itself is insufficient. Generic source recognition remains separate from policy input collection: when the uv evaluator is configured, `pyproject.toml` content is retained from the scanner's single read and parsed into uv facts even if dependency queries did not recognize it as a dependency source.
+Missing-file and ownership checks run after traversal because a file-local analyzer cannot observe repository-wide policy. JavaScript package workspaces, pnpm workspaces, uv workspaces, and Cargo workspaces attach member manifests to explicit owners. A lockfile only satisfies the compatible owning project; directory ancestry by itself is insufficient. Generic source recognition remains separate from policy input collection: when the uv evaluator is configured, `pyproject.toml` content is retained from the scanner's single read and parsed into uv facts even if dependency queries did not recognize it as a dependency source. When dependency sources exist, regular-file CODEOWNERS candidates are read directly from their standard root-relative locations so directory-ignore settings affect source discovery without disabling repository ownership policy.
 
 The evaluator layer remains offline and does not invoke package managers. A finding subject contains only its normalized `project_root`; concrete manifest anchors live in `locations`. Fingerprints use a dedicated fingerprint-format version plus the check ID, project root, and stable evidence. They are independent of the JSON output schema version, human wording, severity, and source location movement.
 
@@ -185,4 +185,4 @@ go test ./...
 go vet ./...
 ```
 
-Rule-schema tests verify strict legacy-field rejection, analyzer/evaluator-field rejection, unique IDs, complete metadata for all 185 detectors and nine checks, and successful loading of the embedded rules. Finding tests cover positive, clean, dependency-free, conflicting-lockfile, ambiguous, library, workspace, nested-project, and fingerprint-stability cases.
+Rule-schema tests verify strict legacy-field rejection, analyzer/evaluator-field rejection, unique IDs, complete metadata for all 185 detectors and ten checks, and successful loading of the embedded rules. Finding tests cover positive, clean, dependency-free, conflicting-lockfile, CODEOWNERS coverage, ambiguous, library, workspace, nested-project, and fingerprint-stability cases.

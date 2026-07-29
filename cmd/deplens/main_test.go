@@ -113,8 +113,15 @@ func TestRunJSONOutput(t *testing.T) {
 			Detector string `json:"detector"`
 			Path     string `json:"path"`
 		} `json:"sources"`
-		CheckRuns []any `json:"check_runs"`
-		Findings  []any `json:"findings"`
+		CheckRuns []struct {
+			CheckID string `json:"check_id"`
+			Status  string `json:"status"`
+		} `json:"check_runs"`
+		Findings []struct {
+			CheckID   string            `json:"check_id"`
+			Locations []map[string]any  `json:"locations"`
+			Evidence  map[string]string `json:"evidence"`
+		} `json:"findings"`
 	}
 	if err := json.Unmarshal(stdout.Bytes(), &payload); err != nil {
 		t.Fatalf("expected valid JSON output: %v", err)
@@ -124,6 +131,13 @@ func TestRunJSONOutput(t *testing.T) {
 	}
 	if payload.SchemaVersion != 1 || payload.CheckRuns == nil || payload.Findings == nil {
 		t.Fatalf("unexpected result contract: %+v", payload)
+	}
+	if len(payload.CheckRuns) != 1 || payload.CheckRuns[0].CheckID != "dependency-source-codeowners-missing" || payload.CheckRuns[0].Status != "completed" {
+		t.Fatalf("unexpected CODEOWNERS check run: %+v", payload.CheckRuns)
+	}
+	if len(payload.Findings) != 1 || payload.Findings[0].CheckID != "dependency-source-codeowners-missing" ||
+		payload.Findings[0].Evidence["reason"] != "codeowners-file-missing" {
+		t.Fatalf("unexpected CODEOWNERS finding: %+v", payload.Findings)
 	}
 }
 
@@ -136,7 +150,7 @@ func TestRunReportsFindingWithoutFailingScan(t *testing.T) {
 	if exitCode != 0 {
 		t.Fatalf("expected findings to preserve exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
-	for _, expected := range []string{"Found 1 policy finding:", "javascript-npm-lockfile-missing", "package-lock.json or npm-shrinkwrap.json"} {
+	for _, expected := range []string{"Found 2 policy findings:", "dependency-source-codeowners-missing", "javascript-npm-lockfile-missing", "package-lock.json or npm-shrinkwrap.json"} {
 		if !strings.Contains(stdout.String(), expected) {
 			t.Fatalf("expected output to contain %q, got %q", expected, stdout.String())
 		}

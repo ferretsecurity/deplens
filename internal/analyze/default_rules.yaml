@@ -1132,3 +1132,10 @@ checks:
     evaluator:
       type: gemfile-application-lockfile-missing
     remediation: Run `bundle install` and commit Gemfile.lock.
+  - id: dependency-source-codeowners-missing
+    summary: Dependency source has no code owner
+    severity: medium
+    evaluator:
+      type: dependency-source-codeowners
+      platform: auto
+    remediation: Create or update CODEOWNERS so the dependency source matches at least one valid owner.

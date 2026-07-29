@@ -29,10 +29,11 @@ func TestMissingLockfileDefaultChecks(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Scan failed: %v", err)
 			}
-			if len(result.Findings) != 1 {
-				t.Fatalf("expected one finding, got %#v", result.Findings)
+			findings := findingsForCheck(result.Findings, test.checkID)
+			if len(findings) != 1 {
+				t.Fatalf("expected one %s finding, got %#v", test.checkID, result.Findings)
 			}
-			finding := result.Findings[0]
+			finding := findings[0]
 			if finding.CheckID != test.checkID || len(finding.Locations) != 1 || finding.Locations[0].Path != test.path || finding.Fingerprint == "" {
 				t.Fatalf("unexpected finding: %#v", finding)
 			}
@@ -53,8 +54,8 @@ func TestMissingLockfileChecksDoNotFlagSatisfiedOrDependencyFreeProjects(t *test
 			if err != nil {
 				t.Fatalf("Scan failed: %v", err)
 			}
-			if len(result.Findings) != 0 {
-				t.Fatalf("expected no findings, got %#v", result.Findings)
+			if findings := findingsWithoutCheck(result.Findings, "dependency-source-codeowners-missing"); len(findings) != 0 {
+				t.Fatalf("expected no missing-lockfile findings, got %#v", findings)
 			}
 		})
 	}
@@ -65,11 +66,12 @@ func TestCargoMissingLockfileCheckSkipsLibrary(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(result.Findings) != 0 {
-		t.Fatalf("expected no findings, got %#v", result.Findings)
+	if findings := findingsForCheck(result.Findings, "rust-cargo-lockfile-missing-for-application"); len(findings) != 0 {
+		t.Fatalf("expected no Cargo finding, got %#v", findings)
 	}
-	if len(result.CheckRuns) != 1 || result.CheckRuns[0].Status != CheckSkipped || result.CheckRuns[0].ReasonCode != "project-role-unknown" {
-		t.Fatalf("expected role skip, got %#v", result.CheckRuns)
+	runs := filterCheckRuns(result.CheckRuns, "rust-cargo-lockfile-missing-for-application")
+	if len(runs) != 1 || runs[0].Status != CheckSkipped || runs[0].ReasonCode != "project-role-unknown" {
+		t.Fatalf("expected role skip, got %#v", runs)
 	}
 }
 
@@ -78,8 +80,8 @@ func TestMissingLockfileChecksSkipAmbiguousManager(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(result.Findings) != 0 {
-		t.Fatalf("expected no findings, got %#v", result.Findings)
+	if findings := findingsWithoutCheck(result.Findings, "dependency-source-codeowners-missing"); len(findings) != 0 {
+		t.Fatalf("expected no missing-lockfile findings, got %#v", findings)
 	}
 	if !slices.ContainsFunc(result.CheckRuns, func(run CheckRun) bool {
 		return run.CheckID == "javascript-pnpm-lockfile-missing" && run.Status == CheckSkipped && run.ReasonCode == "ambiguous-package-manager"
@@ -93,10 +95,11 @@ func TestConflictingJavaScriptLockfilesCheckReportsDifferentFamilies(t *testing.
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(result.Findings) != 1 {
-		t.Fatalf("expected one finding, got %#v", result.Findings)
+	findings := findingsForCheck(result.Findings, "javascript-conflicting-lockfiles")
+	if len(findings) != 1 {
+		t.Fatalf("expected one conflict finding, got %#v", result.Findings)
 	}
-	finding := result.Findings[0]
+	finding := findings[0]
 	if finding.CheckID != "javascript-conflicting-lockfiles" || finding.Subject.ProjectRoot != "." {
 		t.Fatalf("unexpected finding: %#v", finding)
 	}
@@ -140,7 +143,8 @@ func TestConflictingJavaScriptLockfilesCheckUsesWorkspaceOwner(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(result.Findings) != 1 || result.Findings[0].CheckID != "javascript-conflicting-lockfiles" || result.Findings[0].Subject.ProjectRoot != "." {
+	findings := findingsForCheck(result.Findings, "javascript-conflicting-lockfiles")
+	if len(findings) != 1 || findings[0].Subject.ProjectRoot != "." {
 		t.Fatalf("expected one workspace-root conflict, got %#v", result.Findings)
 	}
 }
@@ -152,13 +156,16 @@ func TestMissingLockfileChecksReportFailedRunsForMalformedManifest(t *testing.T)
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(result.Findings) != 0 {
-		t.Fatalf("expected no findings, got %#v", result.Findings)
+	if findings := findingsWithoutCheck(result.Findings, "dependency-source-codeowners-missing"); len(findings) != 0 {
+		t.Fatalf("expected no lockfile findings, got %#v", findings)
 	}
-	if len(result.CheckRuns) != 4 {
-		t.Fatalf("expected one failed run for each JavaScript check, got %#v", result.CheckRuns)
+	failed := slices.DeleteFunc(slices.Clone(result.CheckRuns), func(run CheckRun) bool {
+		return run.ReasonCode != "source-analysis-failed"
+	})
+	if len(failed) != 4 {
+		t.Fatalf("expected one failed run for each JavaScript check, got %#v", failed)
 	}
-	for _, run := range result.CheckRuns {
+	for _, run := range failed {
 		if run.Status != CheckFailed || run.ReasonCode != "source-analysis-failed" {
 			t.Fatalf("unexpected failed run: %#v", run)
 		}
@@ -170,10 +177,11 @@ func TestMissingLockfileCheckUsesWorkspaceOwner(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(result.Findings) != 1 {
-		t.Fatalf("expected one finding, got %#v", result.Findings)
+	findings := findingsForCheck(result.Findings, "javascript-pnpm-lockfile-missing")
+	if len(findings) != 1 {
+		t.Fatalf("expected one pnpm finding, got %#v", result.Findings)
 	}
-	finding := result.Findings[0]
+	finding := findings[0]
 	if finding.CheckID != "javascript-pnpm-lockfile-missing" || finding.Subject.ProjectRoot != "." || len(finding.Locations) != 1 || finding.Locations[0].Path != "package.json" {
 		t.Fatalf("expected workspace-root finding, got %#v", finding)
 	}
@@ -193,7 +201,8 @@ func TestMissingLockfileChecksUseUVAndCargoWorkspaceOwners(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Scan failed: %v", err)
 			}
-			if len(result.Findings) != 1 || result.Findings[0].CheckID != test.checkID || result.Findings[0].Subject.ProjectRoot != "." {
+			findings := findingsForCheck(result.Findings, test.checkID)
+			if len(findings) != 1 || findings[0].Subject.ProjectRoot != "." {
 				t.Fatalf("expected one workspace-root finding, got %#v", result.Findings)
 			}
 			if test.fixture == "uv-workspace" && slices.ContainsFunc(result.Sources, func(source DependencySourceResult) bool {
@@ -210,7 +219,8 @@ func TestUnrelatedAncestorLockfileDoesNotSatisfyNestedProject(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(result.Findings) != 1 || result.Findings[0].Subject.ProjectRoot != "nested" || len(result.Findings[0].Locations) != 1 || result.Findings[0].Locations[0].Path != "nested/package.json" {
+	findings := findingsForCheck(result.Findings, "javascript-pnpm-lockfile-missing")
+	if len(findings) != 1 || findings[0].Subject.ProjectRoot != "nested" || len(findings[0].Locations) != 1 || findings[0].Locations[0].Path != "nested/package.json" {
 		t.Fatalf("expected nested-project finding, got %#v", result.Findings)
 	}
 }
@@ -229,7 +239,7 @@ func TestJavaScriptMissingLockfileCheckDoesNotRequirePrivatePackage(t *testing.T
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(result.Findings) != 1 || result.Findings[0].CheckID != "javascript-npm-lockfile-missing" {
+	if findings := findingsForCheck(result.Findings, "javascript-npm-lockfile-missing"); len(findings) != 1 {
 		t.Fatalf("expected public npm project finding, got %#v", result.Findings)
 	}
 }
@@ -276,8 +286,10 @@ func TestGoSumCheckHandlesLocalReplacementsAndNestedModules(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Scan failed: %v", err)
 		}
-		if len(result.Findings) != 0 || len(result.CheckRuns) != 1 || result.CheckRuns[0].Status != CheckSkipped || result.CheckRuns[0].ReasonCode != "local-dependencies-only" {
-			t.Fatalf("expected local-only skip, got findings=%#v runs=%#v", result.Findings, result.CheckRuns)
+		findings := findingsForCheck(result.Findings, "go-sum-missing")
+		runs := filterCheckRuns(result.CheckRuns, "go-sum-missing")
+		if len(findings) != 0 || len(runs) != 1 || runs[0].Status != CheckSkipped || runs[0].ReasonCode != "local-dependencies-only" {
+			t.Fatalf("expected local-only skip, got findings=%#v runs=%#v", findings, runs)
 		}
 	})
 
@@ -288,7 +300,7 @@ func TestGoSumCheckHandlesLocalReplacementsAndNestedModules(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Scan failed: %v", err)
 		}
-		if len(result.Findings) != 1 || result.Findings[0].CheckID != "go-sum-missing" {
+		if findings := findingsForCheck(result.Findings, "go-sum-missing"); len(findings) != 1 {
 			t.Fatalf("expected go.sum finding, got %#v", result.Findings)
 		}
 	})
@@ -301,7 +313,8 @@ func TestGoSumCheckHandlesLocalReplacementsAndNestedModules(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Scan failed: %v", err)
 		}
-		if len(result.Findings) != 1 || result.Findings[0].Subject.ProjectRoot != "nested" || result.Findings[0].Locations[0].Path != "nested/go.mod" {
+		findings := findingsForCheck(result.Findings, "go-sum-missing")
+		if len(findings) != 1 || findings[0].Subject.ProjectRoot != "nested" || findings[0].Locations[0].Path != "nested/go.mod" {
 			t.Fatalf("expected nested finding, got %#v", result.Findings)
 		}
 	})
@@ -314,8 +327,9 @@ func TestGoSumCheckHandlesLocalReplacementsAndNestedModules(t *testing.T) {
 			t.Fatalf("Scan failed: %v", err)
 		}
 		runs := filterCheckRuns(result.CheckRuns, "go-sum-missing")
-		if len(result.Findings) != 0 || len(runs) != 1 || runs[0].Status != CheckFailed || runs[0].ReasonCode != "source-analysis-failed" {
-			t.Fatalf("expected failed Go check without a finding, got findings=%#v runs=%#v", result.Findings, runs)
+		findings := findingsForCheck(result.Findings, "go-sum-missing")
+		if len(findings) != 0 || len(runs) != 1 || runs[0].Status != CheckFailed || runs[0].ReasonCode != "source-analysis-failed" {
+			t.Fatalf("expected failed Go check without a finding, got findings=%#v runs=%#v", findings, runs)
 		}
 	})
 }
@@ -357,8 +371,9 @@ func TestComposerLockfileCheckClassifiesApplicationsConservatively(t *testing.T)
 			} else if len(runs) != 1 || runs[0].Status != test.status || runs[0].ReasonCode != test.reason {
 				t.Fatalf("unexpected composer runs: %#v", runs)
 			}
-			if len(result.Findings) != test.wantFindings {
-				t.Fatalf("expected %d findings, got %#v", test.wantFindings, result.Findings)
+			findings := findingsForCheck(result.Findings, "php-composer-lockfile-missing-for-application")
+			if len(findings) != test.wantFindings {
+				t.Fatalf("expected %d Composer findings, got %#v", test.wantFindings, findings)
 			}
 		})
 	}
@@ -375,8 +390,9 @@ func TestGemfileLockfileCheckSkipsLibraries(t *testing.T) {
 			t.Fatalf("Scan failed: %v", err)
 		}
 		runs := filterCheckRuns(result.CheckRuns, "ruby-gemfile-lockfile-missing-for-application")
-		if len(result.Findings) != 0 || len(runs) != 1 || runs[0].Status != CheckCompleted {
-			t.Fatalf("expected satisfied Gemfile, got findings=%#v runs=%#v", result.Findings, runs)
+		findings := findingsForCheck(result.Findings, "ruby-gemfile-lockfile-missing-for-application")
+		if len(findings) != 0 || len(runs) != 1 || runs[0].Status != CheckCompleted {
+			t.Fatalf("expected satisfied Gemfile, got findings=%#v runs=%#v", findings, runs)
 		}
 	})
 
@@ -388,12 +404,17 @@ func TestGemfileLockfileCheckSkipsLibraries(t *testing.T) {
 			t.Fatalf("Scan failed: %v", err)
 		}
 		runs := filterCheckRuns(result.CheckRuns, "ruby-gemfile-lockfile-missing-for-application")
-		if len(result.Findings) != 0 || len(runs) != 1 || runs[0].Status != CheckSkipped || runs[0].ReasonCode != "not-application" {
-			t.Fatalf("expected Gemfile library skip, got findings=%#v runs=%#v", result.Findings, runs)
+		findings := findingsForCheck(result.Findings, "ruby-gemfile-lockfile-missing-for-application")
+		if len(findings) != 0 || len(runs) != 1 || runs[0].Status != CheckSkipped || runs[0].ReasonCode != "not-application" {
+			t.Fatalf("expected Gemfile library skip, got findings=%#v runs=%#v", findings, runs)
 		}
 	})
 }
 
 func filterCheckRuns(runs []CheckRun, id CheckID) []CheckRun {
 	return slices.DeleteFunc(append([]CheckRun(nil), runs...), func(run CheckRun) bool { return run.CheckID != id })
+}
+
+func findingsWithoutCheck(findings []Finding, id CheckID) []Finding {
+	return slices.DeleteFunc(slices.Clone(findings), func(finding Finding) bool { return finding.CheckID == id })
 }

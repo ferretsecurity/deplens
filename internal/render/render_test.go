@@ -121,6 +121,30 @@ func TestHumanEmptyState(t *testing.T) {
 	}
 }
 
+func TestHumanRendersFailedPolicyChecks(t *testing.T) {
+	result := analyze.ScanResult{
+		Root: "/tmp/project",
+		CheckRuns: []analyze.CheckRun{{
+			CheckID: "dependency-source-codeowners-missing",
+			Subject: analyze.FindingSubject{ProjectRoot: "."},
+			Status:  analyze.CheckFailed, ReasonCode: "codeowners-platform-ambiguous",
+			Detail: "GitHub and GitLab semantics disagree",
+		}},
+	}
+	output := Human(result, HumanOptions{})
+	for _, expected := range []string{
+		"No dependency sources found.",
+		"Found 1 failed policy check:",
+		". [failed] dependency-source-codeowners-missing",
+		"reason: codeowners-platform-ambiguous",
+		"detail: GitHub and GitLab semantics disagree",
+	} {
+		if !strings.Contains(output, expected) {
+			t.Fatalf("expected output to contain %q, got:\n%s", expected, output)
+		}
+	}
+}
+
 func TestHumanFiltersAbsentSourcesByDefault(t *testing.T) {
 	result := analyze.ScanResult{
 		Root: "/tmp/project",
