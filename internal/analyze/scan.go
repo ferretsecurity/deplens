@@ -158,6 +158,7 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 	result := ScanResult{SchemaVersion: 1, Root: absRoot, Sources: make([]DependencySourceResult, 0), CheckRuns: make([]CheckRun, 0), Findings: make([]Finding, 0)}
 	discoveredPaths := make(map[string]struct{})
 	policyInputs := make([]policyInput, 0)
+	codeownersInputs := make(map[string]policyInput)
 	collectPyprojects := ruleset.hasEvaluator("uv-lockfile-missing")
 	err = filepath.WalkDir(absRoot, func(path string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
@@ -214,7 +215,10 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 		return 1
 	})
 
-	result.CheckRuns, result.Findings = evaluateChecks(result.Sources, policyInputs, discoveredPaths, ruleset.checks)
+	if len(result.Sources) > 0 && ruleset.hasEvaluator("dependency-source-codeowners") {
+		codeownersInputs = collectCodeownersPolicyInputs(absRoot)
+	}
+	result.CheckRuns, result.Findings = evaluateChecks(result.Sources, policyInputs, codeownersInputs, discoveredPaths, ruleset.checks)
 	for index := range result.Sources {
 		result.Sources[index].content = nil
 	}

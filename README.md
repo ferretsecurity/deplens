@@ -4,6 +4,8 @@
 
 The CLI makes no network calls and performs no vulnerability scanning. Its 185 built-in detectors are embedded in the binary, and a complete inventory is available in [DEPENDENCY_COVERAGE.md](DEPENDENCY_COVERAGE.md).
 
+Unless an example is demonstrating ownership behavior, its dependency sources are assumed to be covered by a catch-all CODEOWNERS rule.
+
 ## Usage
 
 ```bash
@@ -124,7 +126,7 @@ Maven and MSBuild properties declared unconditionally in the same file are resol
 
 ### Dependency policy findings
 
-The built-in rules include nine conservative dependency policy checks:
+The built-in rules include ten conservative dependency policy checks:
 
 - `javascript-npm-lockfile-missing`
 - `javascript-pnpm-lockfile-missing`
@@ -135,10 +137,40 @@ The built-in rules include nine conservative dependency policy checks:
 - `go-sum-missing`
 - `php-composer-lockfile-missing-for-application`
 - `ruby-gemfile-lockfile-missing-for-application`
+- `dependency-source-codeowners-missing`
 
 JavaScript checks require explicit npm, pnpm, or Yarn evidence; package publishability (`private`) does not affect eligibility. The uv check requires uv-specific project configuration. The Cargo check requires a binary target such as `src/main.rs`. The Go check requires an external `require` entry; modules whose requirements are all locally replaced are skipped. Composer checks require `type: project` and ignore platform-only requirements. Ruby checks require a static `gem` declaration and skip Gemfiles with a `gemspec` directive. Dependency-free projects are not flagged. Explicit workspace ownership is honored where the ecosystem defines it, and an unrelated ancestor lockfile does not satisfy a nested independent project. Ambiguous package-manager or application-role cases are skipped rather than reported as findings.
 
 The conflicting-lockfiles check reports a JavaScript project when its owned root contains lockfiles from at least two package-manager families: npm, pnpm, or Yarn. `package-lock.json` and `npm-shrinkwrap.json` are both npm lockfiles and do not conflict with each other. The check does not require dependency declarations because competing committed lockfiles are independently actionable.
+
+The CODEOWNERS check reports every dependency source that does not resolve to at least one syntactically valid owner. It includes sources confirmed to contain no dependency references, because those files can gain dependencies later. A repository without a usable CODEOWNERS file receives one finding per source. The check operates offline: it validates owner syntax, but cannot verify that a user or team exists or has repository access.
+
+GitHub repositories use `.github/CODEOWNERS`, root `CODEOWNERS`, then `docs/CODEOWNERS`; GitLab repositories use root `CODEOWNERS`, `docs/CODEOWNERS`, then `.gitlab/CODEOWNERS`. Candidates must be readable regular files; symlinks and other non-regular files fail the check. Auto mode recognizes provider-specific locations. It evaluates root and `docs` files with both dialects and accepts them only when source coverage agrees. If both providers are signaled or their interpretations differ, the check fails with `codeowners-platform-ambiguous` instead of emitting uncertain findings. Failed policy checks and their reasons are included in human output as well as JSON.
+
+For example, this CODEOWNERS file does not cover the detected `package.json`:
+
+```text
+# CODEOWNERS
+*.go @backend-team
+```
+
+The default scan reports the ownership gap:
+
+```text
+Found 1 dependency source:
+
+package.json [manifest · 1 dependency]
+  dependencies:
+    - express@^5.1.0
+
+Found 1 policy finding:
+
+package.json [medium] Dependency source has no code owner
+  check: dependency-source-codeowners-missing
+  remediation: Create or update CODEOWNERS so the dependency source matches at least one valid owner.
+```
+
+Adding `/package.json @dependency-team` removes the policy finding without changing the dependency inventory.
 
 For example, this project contains both npm and pnpm lockfiles:
 
@@ -272,7 +304,13 @@ JSON uses schema version 1. In addition to dependency sources, it exposes check 
       ]
     }
   ],
-  "check_runs": [],
+  "check_runs": [
+    {
+      "check_id": "dependency-source-codeowners-missing",
+      "subject": { "project_root": "." },
+      "status": "completed"
+    }
+  ],
   "findings": []
 }
 ```
@@ -361,7 +399,20 @@ checks:
     remediation: Run `npm install` and commit the generated lockfile.
 ```
 
-Supported evaluator types are `npm-lockfile-missing`, `pnpm-lockfile-missing`, `yarn-lockfile-missing`, `javascript-conflicting-lockfiles`, `uv-lockfile-missing`, `cargo-application-lockfile-missing`, `go-sum-missing`, `composer-application-lockfile-missing`, and `gemfile-application-lockfile-missing`. Unknown fields are rejected. Ecosystem semantics and safe ambiguity behavior are built into each evaluator rather than exposed as YAML switches.
+Supported evaluator types are `npm-lockfile-missing`, `pnpm-lockfile-missing`, `yarn-lockfile-missing`, `javascript-conflicting-lockfiles`, `uv-lockfile-missing`, `cargo-application-lockfile-missing`, `go-sum-missing`, `composer-application-lockfile-missing`, `gemfile-application-lockfile-missing`, and `dependency-source-codeowners`. Unknown fields are rejected. Other evaluator semantics and safe ambiguity behavior remain built-in invariants.
+
+The CODEOWNERS evaluator accepts one optional platform selector. `auto` is the default; use an explicit provider for mixed-host or otherwise ambiguous repositories:
+
+```yaml
+checks:
+  - id: dependency-source-codeowners-missing
+    summary: Dependency source has no code owner
+    severity: medium
+    evaluator:
+      type: dependency-source-codeowners
+      platform: gitlab # auto, github, or gitlab
+    remediation: Create or update CODEOWNERS so the dependency source matches at least one valid owner.
+```
 
 ## Capabilities
 

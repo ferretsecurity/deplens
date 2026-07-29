@@ -94,7 +94,7 @@ type evaluationContext struct {
 	parseErrors      []policyParseError
 }
 
-func evaluateChecks(sources []DependencySourceResult, policyInputs []policyInput, discoveredPaths map[string]struct{}, checks []check) ([]CheckRun, []Finding) {
+func evaluateChecks(sources []DependencySourceResult, policyInputs []policyInput, codeownersInputs map[string]policyInput, discoveredPaths map[string]struct{}, checks []check) ([]CheckRun, []Finding) {
 	if len(checks) == 0 {
 		return []CheckRun{}, []Finding{}
 	}
@@ -123,6 +123,8 @@ func evaluateChecks(sources []DependencySourceResult, policyInputs []policyInput
 			checkRuns, checkFindings = evaluateComposerLockfile(ctx, configured)
 		case "gemfile-application-lockfile-missing":
 			checkRuns, checkFindings = evaluateGemfileLockfile(ctx, configured)
+		case "dependency-source-codeowners":
+			checkRuns, checkFindings = evaluateDependencySourceCodeowners(sources, codeownersInputs, configured)
 		}
 		runs = append(runs, checkRuns...)
 		findings = append(findings, checkFindings...)
@@ -875,7 +877,17 @@ func compareFinding(a, b Finding) int {
 	if value := strings.Compare(a.Subject.ProjectRoot, b.Subject.ProjectRoot); value != 0 {
 		return value
 	}
-	return strings.Compare(string(a.CheckID), string(b.CheckID))
+	if value := strings.Compare(string(a.CheckID), string(b.CheckID)); value != 0 {
+		return value
+	}
+	return strings.Compare(firstFindingLocation(a), firstFindingLocation(b))
+}
+
+func firstFindingLocation(finding Finding) string {
+	if len(finding.Locations) == 0 {
+		return ""
+	}
+	return finding.Locations[0].Path
 }
 
 func cleanPatterns(values []string) []string {
