@@ -1,0 +1,11 @@
+# carton snapshot format: version 1.0
+
+DISTRIBUTIONS
+  AnyEvent-7.17
+    pathname: M/ML/MLEHMANN/AnyEvent-7.17.tar.gz
+    provides:
+      AE undef
+      AnyEvent 7.17
+      AnyEvent::Loop undef
+    requirements:
+      ExtUtils::MakeMaker 0

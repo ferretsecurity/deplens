@@ -1,0 +1,17 @@
+platform :ios, '15.0'
+
+pod 'RootInheritedKit', '~> 1.0'
+
+abstract_target 'Shared' do
+  pod 'SnapKit', :configurations => ['Debug', 'Beta']
+
+  target 'ClientApp' do
+    pod 'Sentry', :configuration => 'Release'
+  end
+
+  target 'ClientAppTests' do
+    inherit! :search_paths
+    pod 'Quick'
+    pod 'Nimble'
+  end
+end

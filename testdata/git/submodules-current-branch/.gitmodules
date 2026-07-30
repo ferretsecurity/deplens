@@ -1,0 +1,5 @@
+[submodule "release-tools"]
+	path = tools/release
+	url = ssh://git@example.test/acme/release-tools.git
+	branch = .
+	update = merge

@@ -1,0 +1,14 @@
+{
+  "name": "esy-opam-repository",
+  "version": "1.0.0",
+  "esy": {
+    "opamRepositories": [
+      { "type": "remote", "location": "https://github.com/ocaml/opam-repository.git#master" },
+      { "type": "remote", "location": "https://github.com/example/private-opam-repository.git#release" }
+    ]
+  },
+  "dependencies": {
+    "@opam/base": "v0.16.4",
+    "@opam/ppxlib": ">=0.30.0 <0.36.0"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "version": "0.5",
+  "requires": ["fmt/10.2.1#e747928f85b03f48aaf227ff897d9634%1675126490.952"],
+  "build_requires": ["cmake/3.29.6#c0ffee1234567890c0ffee1234567890%1717000000.0"],
+  "python_requires": ["recipe_helpers/1.0@company/stable#44444444444444444444444444444444%1710000003.0"],
+  "config_requires": ["company_config/2.0@company/stable#55555555555555555555555555555555%1710000004.0"]
+}

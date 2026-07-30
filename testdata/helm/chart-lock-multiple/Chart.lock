@@ -1,0 +1,9 @@
+dependencies:
+- name: nginx
+  repository: https://charts.bitnami.com/bitnami
+  version: 18.3.2
+- name: memcached
+  repository: https://charts.bitnami.com/bitnami
+  version: 7.6.1
+digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+generated: "2026-07-29T12:00:00Z"

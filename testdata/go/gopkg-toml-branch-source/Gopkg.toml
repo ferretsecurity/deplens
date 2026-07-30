@@ -1,0 +1,8 @@
+[[constraint]]
+  name = "github.com/acme/forked-library"
+  branch = "release/next"
+  source = "https://github.com/acme-forks/forked-library.git"
+
+[[constraint]]
+  name = "github.com/acme/pinned-library"
+  revision = "93f38093f8e24875c1d015e67311853756bdb27e"

@@ -1,0 +1,18 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {
+    "": {"name": "workspace-root", "workspaces": ["packages/**", "!packages/**/test/**"], "dependencies": {"@fixture/core": "workspace:*", "@fixture/compat": "workspace:^", "@fixture/patch": "workspace:~", "@fixture/pinned": "workspace:1.0.2"}},
+    "packages/core": {"name": "@fixture/core", "version": "1.2.0", "dependencies": {"nanoid": "^5.0.0"}},
+    "packages/compat": {"name": "@fixture/compat", "version": "1.2.0"},
+    "packages/patch": {"name": "@fixture/patch", "version": "1.2.0"},
+    "packages/pinned": {"name": "@fixture/pinned", "version": "1.0.2"}
+  },
+  "packages": {
+    "@fixture/core": ["@fixture/core@workspace:packages/core", "packages/core", {"dependencies": {"nanoid": "^5.0.0"}}],
+    "@fixture/compat": ["@fixture/compat@workspace:packages/compat", "packages/compat", {}],
+    "@fixture/patch": ["@fixture/patch@workspace:packages/patch", "packages/patch", {}],
+    "@fixture/pinned": ["@fixture/pinned@workspace:packages/pinned", "packages/pinned", {}],
+    "nanoid": ["nanoid@5.0.7", "", {}, "sha512-d29ya3NwYWNlUGxhY2Vob2xkZXI="]
+  }
+}

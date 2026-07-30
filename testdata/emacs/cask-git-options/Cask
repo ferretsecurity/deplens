@@ -1,0 +1,5 @@
+(source melpa)
+
+(depends-on "consult" :git "https://github.com/minad/consult.git" :ref "e3418f7a7f111a8aa2d3c967e9a5d1c60795b175")
+(depends-on "transient" :git "https://github.com/magit/transient.git" :branch "main")
+(depends-on "package-build" :git "https://github.com/melpa/package-build.git" :files ("*.el" (:exclude "test")))

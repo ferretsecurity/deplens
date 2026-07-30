@@ -1,0 +1,13 @@
+<project name="ivy-inline-retrieve" default="retrieve" xmlns:ivy="antlib:org.apache.ivy.ant">
+  <target name="retrieve">
+    <ivy:retrieve organisation="com.fasterxml.jackson.core"
+                  module="jackson-databind"
+                  revision="2.17.2"
+                  inline="true"
+                  conf="runtime"
+                  pattern="lib/[orgPath]/[artifact]-[revision].[ext]"
+                  sync="false"
+                  pathId="runtime.classpath"
+                  setId="runtime.files"/>
+  </target>
+</project>

@@ -1,0 +1,9 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {"": {"name": "tarball-fixture", "dependencies": {"remote-tarball": "https://packages.example.test/remote-tarball-1.0.0.tgz", "local-package": "file:../local-package"}}},
+  "packages": {
+    "remote-tarball": ["remote-tarball@https://packages.example.test/remote-tarball-1.0.0.tgz", "", {}, "sha512-dGFyYmFsbFBsYWNlaG9sZGVy"],
+    "local-package": ["local-package@file:../local-package", "../local-package", {}, "local-package@file:../local-package"]
+  }
+}

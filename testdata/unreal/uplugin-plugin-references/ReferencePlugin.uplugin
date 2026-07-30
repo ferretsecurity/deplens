@@ -1,0 +1,16 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "FriendlyName": "Reference Plugin",
+  "Description": "Plugin reference dependency fixture.",
+  "Category": "Tools",
+  "Modules": [
+    { "Name": "ReferencePlugin", "Type": "Runtime", "LoadingPhase": "Default" }
+  ],
+  "Plugins": [
+    { "Name": "EnhancedInput", "Enabled": true },
+    { "Name": "OnlineSubsystem", "Enabled": true, "Optional": true, "RequestedVersion": 1 },
+    { "Name": "GameFeatures", "Enabled": true, "Activate": true }
+  ]
+}

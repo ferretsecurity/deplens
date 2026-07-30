@@ -1,0 +1,2 @@
+lib/lib_1/:@openzeppelin/=lib/lib_1/node_modules/@openzeppelin/
+lib/lib_2/:@openzeppelin/=lib/lib_2/node_modules/@openzeppelin/

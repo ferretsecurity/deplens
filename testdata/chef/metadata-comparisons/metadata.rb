@@ -1,0 +1,11 @@
+name 'compatibility'
+maintainer 'Example'
+license 'Apache-2.0'
+description 'Compatibility cookbook'
+version '1.0.0'
+
+depends 'legacy', '< 1.0'
+depends 'bounded', '<= 2.0.0'
+depends 'exact', '= 3.1.4'
+depends 'minimum', '>= 4.0.0'
+depends 'newer', '> 5.0.0'

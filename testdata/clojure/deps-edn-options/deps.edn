@@ -1,0 +1,4 @@
+{:mvn/repos {"internal" {:url "https://maven.example.test/releases"}}
+ :deps {org.clojure/tools.reader {:mvn/version "1.4.0"
+                                  :exclusions [org.clojure/clojure]}
+        com.example/library$tests {:mvn/version "2.0.0-SNAPSHOT"}}}

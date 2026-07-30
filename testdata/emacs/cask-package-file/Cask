@@ -1,0 +1,2 @@
+(source gnu)
+(package-file "fixture.el")

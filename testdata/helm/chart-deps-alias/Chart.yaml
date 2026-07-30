@@ -1,0 +1,12 @@
+apiVersion: v2
+name: alias-example
+version: 0.1.0
+dependencies:
+  - name: redis
+    version: 20.2.1
+    repository: "@bitnami"
+    alias: cache
+  - name: redis
+    version: 20.2.1
+    repository: "@bitnami"
+    alias: session

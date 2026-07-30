@@ -1,0 +1,7 @@
+{:deps {my.dev/project {:local/root "../project"
+                        :deps/manifest :pom}
+        my.driver/jar {:local/root "../libs/driver.jar"}
+        example/monorepo {:git/url "https://github.com/example/monorepo.git"
+                          :git/sha "0123456789abcdef0123456789abcdef01234567"
+                          :deps/root "libs/example"
+                          :deps/manifest :deps}}}

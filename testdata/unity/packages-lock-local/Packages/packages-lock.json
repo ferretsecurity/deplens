@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "com.example.local-package": {
+      "version": "file:../Packages/com.example.local-package",
+      "depth": 0,
+      "source": "local",
+      "dependencies": { "com.unity.modules.jsonserialize": "1.0.0" }
+    }
+  }
+}

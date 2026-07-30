@@ -1,0 +1,19 @@
+{
+  "lockfileVersion": 2,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "catalog-fixture",
+      "catalog": { "zod": "^3.24.0" },
+      "catalogs": { "testing": { "vitest": "^2.1.0" } },
+      "dependencies": {
+        "zod": "catalog:",
+        "vitest": "catalog:testing",
+      },
+    },
+  },
+  "packages": {
+    "zod": ["zod@3.24.1", "", {}, "sha512-YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXo="],
+    "vitest": ["vitest@2.1.9", "", { "peerDependencies": { "@types/node": "^18 || ^20 || ^22" } }, "sha512-cXdlcnR5dWlvcGFzZGZnaGprbHoyeGN2Yg=="],
+  },
+}

@@ -1,0 +1,4 @@
+{:deps {io.github.clojure/tools.build {:git/url "https://github.com/clojure/tools.build.git"
+                                       :git/sha "ba1a2bf421838802e7bdefc541b41f57582e53b6"}
+        io.github.example/inferred {:git/tag "v1.2.3"
+                                    :git/sha "0123456"}}}

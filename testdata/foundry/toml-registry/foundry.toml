@@ -1,0 +1,8 @@
+[profile.default]
+src = "src"
+libs = ["lib", "dependencies"]
+
+[dependencies]
+"@openzeppelin-contracts" = { version = "5.0.2" }
+"@uniswap-universal-router" = { version = "1.6.0" }
+forge-std = { version = "1.8.1" }

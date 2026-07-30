@@ -1,0 +1,6 @@
+version: v2
+modules: [{ path: . }]
+deps:
+  # A quoted label is still a BSR module reference.
+  - "buf.build/acme/weather:stable"
+  - 'buf.build/googleapis/googleapis'

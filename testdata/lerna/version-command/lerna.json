@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+  "version": "2.1.0",
+  "command": {
+    "version": {
+      "allowBranch": ["main", "release/*"],
+      "conventionalCommits": true,
+      "forcePublish": ["@acme/core", "@acme/cli"],
+      "ignoreChanges": ["**/*.md", "**/__fixtures__/**"]
+    }
+  }
+}

@@ -1,0 +1,12 @@
+platform :ios, '15.0'
+
+target 'DemoApp' do
+  pod 'Alamofire'
+  pod 'Kingfisher', '7.10.0'
+  pod 'RealmSwift', '>= 10.0', '< 11.0'
+  pod 'RxSwift', '~> 6.7.0'
+  pod 'ExactConstraintKit', '= 1.2.3'
+  pod 'StrictlyNewerKit', '> 2.0'
+  pod 'MaximumVersionKit', '<= 4.5'
+  pod 'PrereleaseKit', '~> 1.2.3-beta.0'
+end

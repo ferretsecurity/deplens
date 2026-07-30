@@ -1,0 +1,9 @@
+<ivy-module version="2.0">
+  <info organisation="com.example" module="basic-and-dynamic"/>
+  <dependencies>
+    <dependency org="org.apache.commons" name="commons-lang3" rev="3.14.0"/>
+    <dependency org="org.slf4j" name="slf4j-api" rev="latest.integration"/>
+    <dependency org="com.example" name="compatible-api" rev="2.+"/>
+    <dependency name="same-organisation-api" rev="1.0.0"/>
+  </dependencies>
+</ivy-module>

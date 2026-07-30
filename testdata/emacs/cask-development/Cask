@@ -1,0 +1,7 @@
+(source melpa)
+(depends-on "use-package" "2.4.6")
+
+(development
+ (depends-on "buttercup" "1.36.0")
+ (depends-on "ecukes")
+ (depends-on "ert-async" "0.1.2"))

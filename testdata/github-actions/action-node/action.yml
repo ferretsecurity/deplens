@@ -1,0 +1,6 @@
+name: Node action
+description: A JavaScript action runtime
+runs:
+  using: node24
+  main: main.js
+  pre: pre.js

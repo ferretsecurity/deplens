@@ -1,0 +1,7 @@
+Newtonsoft.Json copy_local: false specific_version: false
+Microsoft.Bcl.Build import_targets: false
+Fody content: once
+DotNetZip framework: >= net45
+FSharp.Core redirects: on
+Suave license_download: true
+Interop.Library embed_interop_types: true

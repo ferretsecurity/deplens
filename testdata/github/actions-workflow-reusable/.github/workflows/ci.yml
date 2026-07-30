@@ -1,0 +1,12 @@
+name: reusable
+on: push
+jobs:
+  remote:
+    uses: octo-org/another-repo/.github/workflows/release.yml@172239021f7ba04fe7327647b213799853a9eb89
+  local:
+    uses: ./.github/workflows/test.yml
+  tagged:
+    uses: octo-org/another-repo/.github/workflows/release.yml@v1
+    with:
+      environment: staging
+    secrets: inherit

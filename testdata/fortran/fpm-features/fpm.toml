@@ -1,0 +1,10 @@
+name = "feature_dependencies"
+version = "0.1.0"
+
+[dependencies]
+mpi-library = { git = "https://github.com/example/mpi-library.git", features = ["mpi", "optimized"] }
+release-library = { path = "vendor/release-library", profile = "release" }
+
+[features]
+testing.dev-dependencies.test-drive = { git = "https://github.com/fortran-lang/test-drive.git", tag = "v0.4.0" }
+windows-support.windows.dependencies.win32api = { path = "external/win32" }

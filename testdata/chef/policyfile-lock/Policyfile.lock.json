@@ -1,11 +1,17 @@
 {
-  "revision_id": "abc123def456",
+  "revision_id": "37f9b658cdd1d9319bac8920581723efcc2014304",
   "name": "myapp",
   "run_list": ["recipe[apt]", "recipe[nginx]"],
   "cookbook_locks": {
     "apt": {
       "version": "7.4.0",
-      "identifier": "abc123"
+      "identifier": "16c57abbd056543f7d5a15dabbb03261024a9c5e",
+      "dotted_decimal_identifier": "6409580415309396.17870749399956400.55392231660638",
+      "cache_key": "apt-7.4.0-supermarket.chef.io",
+      "origin": "https://supermarket.chef.io/api/v1/cookbooks/apt/versions/7.4.0/download",
+      "source_options": {"artifactserver": "https://supermarket.chef.io/api/v1/cookbooks/apt/versions/7.4.0/download", "version": "7.4.0"}
     }
-  }
+  },
+  "default_attributes": {},
+  "override_attributes": {}
 }

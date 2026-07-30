@@ -1,0 +1,9 @@
+version: v2
+modules:
+  - path: proto/public
+    name: buf.build/acme/public
+  - path: proto/internal
+    name: buf.build/acme/internal
+deps:
+  - buf.build/envoyproxy/protoc-gen-validate
+  - buf.build/googleapis/googleapis:v1.0.0

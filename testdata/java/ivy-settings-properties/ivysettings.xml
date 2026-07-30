@@ -1,0 +1,11 @@
+<ivysettings>
+  <properties file="${ivy.settings.dir}/ivysettings.properties"/>
+  <property name="repository.dir" value="${ivy.settings.dir}/repository" overwrite="false"/>
+  <settings defaultResolver="property-repo"/>
+  <resolvers>
+    <filesystem name="property-repo">
+      <ivy pattern="${repository.dir}/[organisation]/[module]/ivy-[revision].xml"/>
+      <artifact pattern="${repository.dir}/[organisation]/[module]/[artifact]-[revision].[ext]"/>
+    </filesystem>
+  </resolvers>
+</ivysettings>

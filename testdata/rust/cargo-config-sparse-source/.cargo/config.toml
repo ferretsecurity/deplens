@@ -1,0 +1,5 @@
+[source.sparse-mirror]
+registry = "sparse+https://mirror.example/crates-index/"
+
+[source.crates-io]
+replace-with = "sparse-mirror"

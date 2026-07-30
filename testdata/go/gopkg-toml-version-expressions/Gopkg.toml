@@ -1,0 +1,15 @@
+[[constraint]]
+  name = "github.com/acme/tagged-library"
+  version = "release-2024-09"
+
+[[constraint]]
+  name = "github.com/acme/wildcard-library"
+  version = "1.2.x"
+
+[[constraint]]
+  name = "github.com/acme/hyphen-library"
+  version = "1.2 - 1.4.5"
+
+[[constraint]]
+  name = "github.com/acme/excluded-library"
+  version = ">=1.2.0, !=1.3.0, <2.0.0"

@@ -1,6 +1,7 @@
 version: v1
 deps:
   - remote: buf.build
-    owner: googleapis
-    repository: googleapis
-    commit: abc123def456
+    owner: acme
+    repository: paymentapis
+    commit: 9a877cf260e1488d869a31fce3bea26d
+    digest: b4:4af5b88c9a1d9b36421ad84a2cff211fc74995040188dafc1c8508d36406140e40eb0ab82d21e761961e4a71631d4474e3d0608b987ca3d02d5d19012edff21d

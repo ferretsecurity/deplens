@@ -1,0 +1,18 @@
+<project name="nested-classpaths" default="run">
+  <target name="compile">
+    <javac srcdir="src" destdir="build/classes" includeantruntime="false">
+      <classpath>
+        <pathelement location="lib/jakarta.servlet-api-6.1.0.jar"/>
+        <fileset dir="lib/compile" includes="*.jar"/>
+      </classpath>
+    </javac>
+  </target>
+  <target name="run" depends="compile">
+    <java classname="com.example.Main" fork="true">
+      <classpath>
+        <pathelement location="build/classes"/>
+        <fileset dir="lib/runtime" includes="*.jar"/>
+      </classpath>
+    </java>
+  </target>
+</project>

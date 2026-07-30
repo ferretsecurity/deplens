@@ -1,0 +1,12 @@
+source https://api.nuget.org/v3/index.json
+
+nuget Unconstrained.Package
+nuget Exact.Implicit 1.2.3
+nuget Exact.Explicit = 1.2.3
+nuget Conflict.Override == 2.0.0
+nuget Compound.Range >= 1.2.3 < 1.5
+nuget Pessimistic.Range ~> 4.2.1
+nuget Preview.Channel >= 3 beta rc
+nuget Strategy.Package @>= 2.0
+nuget Override.Strategy !>= 1.0
+clitool dotnetsay 2.1.7

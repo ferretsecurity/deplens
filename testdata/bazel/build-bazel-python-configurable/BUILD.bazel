@@ -1,0 +1,23 @@
+config_setting(
+    name = "linux",
+    constraint_values = ["@platforms//os:linux"],
+)
+
+py_library(
+    name = "client",
+    srcs = ["client.py"],
+    deps = select({
+        ":linux": ["@pypi//requests"],
+        "//conditions:default": ["@pypi//urllib3"],
+    }),
+    data = ["//testdata:client_config"],
+    imports = ["."],
+    pyi_srcs = ["client.pyi"],
+    pyi_deps = ["@pypi_typing_extensions//:typing_extensions"],
+)
+
+py_binary(
+    name = "client_cli",
+    srcs = ["main.py"],
+    deps = [":client", "@pypi//click"],
+)

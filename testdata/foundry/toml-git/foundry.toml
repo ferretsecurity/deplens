@@ -1,0 +1,7 @@
+[profile.default]
+libs = ["dependencies"]
+
+[dependencies]
+solmate = { version = "6.8.0", git = "https://github.com/transmissions11/solmate.git", rev = "89365b880c4f3c786bdd453d4b8e8fe410344a69" }
+solady = { version = "0.0.47", git = "https://github.com/Vectorized/solady.git", tag = "v0.0.47", project_root = "src" }
+forge-std = { version = "1.8.1", git = "https://github.com/foundry-rs/forge-std.git", branch = "master" }

@@ -1,0 +1,7 @@
+target 'GitReferences' do
+  pod 'DefaultBranchKit', :git => 'https://example.test/default-branch.git'
+  pod 'FeatureBranchKit', :git => 'https://example.test/feature-branch.git', :branch => 'next'
+  pod 'TaggedKit', :git => 'https://example.test/tagged.git', :tag => '2.1.0'
+  pod 'PinnedKit', :git => 'https://example.test/pinned.git', :commit => '082f8319af'
+  pod 'ModernGitPod', git: 'https://example.test/modern.git', branch: 'main'
+end

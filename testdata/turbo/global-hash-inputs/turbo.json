@@ -1,0 +1,10 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [".env", "tsconfig.json", "config/**/*.json"],
+  "globalEnv": ["GITHUB_TOKEN", "PACKAGE_VERSION", "NODE_ENV"],
+  "globalPassThroughEnv": ["AWS_SECRET_KEY"],
+  "envMode": "strict",
+  "tasks": {
+    "lint": { "outputs": [] }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "versionPolicies": [
+    {
+      "policyName": "acme-lockstep",
+      "definitionName": "lockStepVersion",
+      "version": "2.0.0",
+      "nextBump": "patch"
+    }
+  ]
+}

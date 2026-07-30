@@ -1,0 +1,4 @@
+source 'https://supermarket.chef.io'
+
+cookbook 'library-cookbook', '~> 0.1.1', path: '../library-cookbook'
+cookbook 'test-helper', path: 'test/fixtures/test-helper'

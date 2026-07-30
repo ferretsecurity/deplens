@@ -1,0 +1,8 @@
+packages = [
+  { name = "git_tool", version = "1.2.3", build_tools = ["gleam"], requirements = [], source = "git", repo = "https://github.com/example/git-tool.git", commit = "0123456789abcdef0123456789abcdef01234567" },
+  { name = "local_tool", version = "0.1.0", build_tools = ["gleam"], requirements = [], source = "local", path = "../local-tool" },
+]
+
+[requirements]
+git_tool = { git = "https://github.com/example/git-tool.git", ref = "main" }
+local_tool = { path = "../local-tool" }

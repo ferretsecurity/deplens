@@ -1,0 +1,33 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "FriendlyName": "Targeted References",
+  "Description": "Platform and target-scoped plugin reference fixture.",
+  "Category": "Runtime",
+  "SupportedTargetPlatforms": ["Win64", "Linux"],
+  "Modules": [
+    { "Name": "TargetedReferences", "Type": "Runtime", "LoadingPhase": "Default" }
+  ],
+  "Plugins": [
+    {
+      "Name": "OculusXR",
+      "Enabled": true,
+      "PlatformAllowList": ["Win64"],
+      "PlatformDenyList": ["Linux"],
+      "SupportedTargetPlatforms": ["Win64"],
+      "TargetAllowList": ["Game", "Editor"],
+      "TargetDenyList": ["Server"],
+      "TargetConfigurationAllowList": ["Development", "Shipping"],
+      "TargetConfigurationDenyList": ["Debug"],
+      "TargetsToExplicitlyLoad": ["Game"]
+    },
+    {
+      "Name": "PlatformExtension",
+      "Enabled": true,
+      "HasExplicitPlatforms": true,
+      "PlatformAllowList": [],
+      "SupportedTargetPlatforms": []
+    }
+  ]
+}

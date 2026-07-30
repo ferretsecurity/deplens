@@ -1,0 +1,8 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {"": {"name": "registry-fixture", "dependencies": {"chalk": "^5.3.0"}}},
+  "packages": {
+    "chalk": ["chalk@5.3.0", "", {}, "sha512-kJb7T0IYqf8wJkPf6gMB2nt9FoHWnzJ2klUDmDkdV3Ix8Fd6gmG6ayBb0ub10amGnLX38Agf8zRfrQEXAHDv4g=="]
+  }
+}

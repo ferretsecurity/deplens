@@ -1,0 +1,7 @@
+{
+  "name": "@acme/library",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@acme/toolchain": "workspace:^1.0.0"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "esy-vcs-file",
+  "version": "1.0.0",
+  "dependencies": {
+    "local-helper": "file:../local-helper",
+    "linked-helper": "link:../linked-helper",
+    "git-helper": "git+https://github.com/example/git-helper.git#v1.2.3",
+    "github-helper": "example/github-helper#0123456789abcdef"
+  }
+}

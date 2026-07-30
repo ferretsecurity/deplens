@@ -1,0 +1,5 @@
+snapshot: lts-24.43
+extra-deps:
+- url: https://example.test/archive/package.tar.gz
+  subdirs: [lib, app]
+- ./vendor/local-package

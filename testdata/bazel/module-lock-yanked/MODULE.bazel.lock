@@ -1,0 +1,9 @@
+{
+  "lockFileVersion": 10,
+  "registryFileHashes": {
+    "https://bcr.bazel.build/bazel_registry.json": "8a28e4af1db396ce91c6712eb99213a53fb7713bb90d8e32f55e1b475d5b3497"
+  },
+  "selectedYankedVersions": {
+    "rules_go@0.49.0": "Withdrawn because of a compiler regression"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//", "@acme/turbo-config"],
+  "tags": ["frontend"],
+  "tasks": {
+    "build": {
+      "outputs": ["$TURBO_EXTENDS$", ".next/**", "!.next/cache/**"],
+      "env": ["NEXT_PUBLIC_*"],
+      "dependsOn": ["$TURBO_EXTENDS$", "@acme/ui#build"]
+    },
+    "lint": {
+      "extends": false,
+      "outputs": []
+    }
+  }
+}

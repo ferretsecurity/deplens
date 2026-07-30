@@ -1,0 +1,12 @@
+# Clone-ready URL transport variants and a quoted display name.
+[submodule "local cache"]
+	path = vendor/local-cache
+	url = file:///srv/git/local-cache.git
+	update = checkout
+	ignore = none
+	fetchRecurseSubmodules = true
+
+[submodule "git-protocol"]
+	path = vendor/git-protocol
+	url = git://git.example.test/acme/git-protocol.git
+	fetchRecurseSubmodules = false

@@ -1,0 +1,8 @@
+name = "git_table"
+version = "0.1.0"
+
+[dependencies]
+
+[dependencies.ford]
+git = "https://github.com/Fortran-FOSS-Programmers/ford.git"
+rev = "0123456789abcdef0123456789abcdef01234567"

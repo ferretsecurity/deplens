@@ -1,0 +1,15 @@
+[[constraint]]
+  name = "github.com/prometheus/client_golang"
+  version = "1.19.1"
+
+[[override]]
+  name = "github.com/prometheus/common"
+  version = "=0.53.0"
+
+[[override]]
+  name = "github.com/acme/transitive-fork"
+  branch = "stable"
+  source = "https://github.com/acme-forks/transitive-fork.git"
+
+  [override.metadata]
+  reason = "temporary-transitive-fix"

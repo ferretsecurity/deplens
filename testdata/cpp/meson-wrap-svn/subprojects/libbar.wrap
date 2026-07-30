@@ -1,0 +1,5 @@
+[wrap-svn]
+directory = libbar
+url = https://svn.example.test/repos/libbar/trunk
+revision = 4821
+patch_directory = libbar-overlay

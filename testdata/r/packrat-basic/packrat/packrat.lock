@@ -1,0 +1,11 @@
+PackratFormat: 1.4
+PackratVersion: 0.9.2
+RVersion: 4.3.2
+Repos: CRAN=https://cloud.r-project.org
+Packages:
+  ggplot2:
+    Package: ggplot2
+    Version: 3.5.1
+    Source: CRAN
+    Repository: CRAN
+    Hash: a1b2c3d4

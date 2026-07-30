@@ -1,0 +1,26 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.5",
+  "Category": "Games",
+  "Description": "Platform-scoped plugin reference fixture.",
+  "Plugins": [
+    {
+      "Name": "OculusXR",
+      "Enabled": true,
+      "PlatformAllowList": ["Win64", "Android"],
+      "SupportedTargetPlatforms": ["Win64", "Android"]
+    },
+    {
+      "Name": "AppleARKit",
+      "Enabled": true,
+      "PlatformDenyList": ["Win64", "Linux"]
+    },
+    {
+      "Name": "PlatformExtension",
+      "Enabled": true,
+      "HasExplicitPlatforms": true,
+      "PlatformAllowList": [],
+      "SupportedTargetPlatforms": []
+    }
+  ]
+}

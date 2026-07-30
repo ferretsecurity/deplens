@@ -1,0 +1,4 @@
+configure_requires 'ExtUtils::MakeMaker', '>= 7.00';
+build_requires 'Module::Build::Tiny', '0.047';
+test_requires 'Test2::V0', '0.000162';
+author_requires 'Dist::Zilla', '6.032';

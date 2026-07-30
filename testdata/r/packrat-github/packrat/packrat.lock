@@ -1,0 +1,13 @@
+PackratFormat: 1.4
+RVersion: 4.3.2
+Packages:
+  rmarkdown:
+    Package: rmarkdown
+    Version: 2.28
+    Source: GitHub
+    RemoteHost: api.github.com
+    RemoteUsername: rstudio
+    RemoteRepo: rmarkdown
+    RemoteRef: main
+    RemoteSha: 0123456789abcdef0123456789abcdef01234567
+    Hash: d4e5f6a7

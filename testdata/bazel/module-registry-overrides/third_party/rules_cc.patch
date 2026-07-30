@@ -1,0 +1,5 @@
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -1 +1 @@
+-module(name = "rules_cc")
++module(name = "rules_cc", version = "0.0.10")

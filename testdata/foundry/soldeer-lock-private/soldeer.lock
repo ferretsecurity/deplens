@@ -1,0 +1,5 @@
+[[dependencies]]
+name = "private-contracts"
+version = "1.0.0"
+checksum = "0290ef84c693dc9086f98f6a9b4a69dc5c2b6aa1cfe10a989bd1def1a456c099"
+integrity = "84aa7d32f8c7329468cf16f31f0f74e68072e634fdbde98f3bb00c6b136103b2"

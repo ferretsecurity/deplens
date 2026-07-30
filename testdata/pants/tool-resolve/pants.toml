@@ -1,0 +1,13 @@
+[GLOBAL]
+pants_version = "2.32.0"
+backend_packages = ["pants.backend.python", "pants.backend.python.test.pytest"]
+
+[python]
+enable_resolves = true
+
+[python.resolves]
+pytest = "3rdparty/python/pytest.lock"
+
+[pytest]
+install_from_resolve = "pytest"
+requirements = ["//3rdparty/python:pytest", "//3rdparty/python:pytest-cov"]

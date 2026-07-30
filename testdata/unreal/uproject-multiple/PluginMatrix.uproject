@@ -1,0 +1,11 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.3",
+  "Category": "Games",
+  "Description": "Multiple plugin reference fixture.",
+  "Plugins": [
+    { "Name": "EnhancedInput", "Enabled": true },
+    { "Name": "OnlineSubsystemSteam", "Enabled": true },
+    { "Name": "SteamVR", "Enabled": false }
+  ]
+}

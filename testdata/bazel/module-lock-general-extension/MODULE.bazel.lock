@@ -1,0 +1,32 @@
+{
+  "lockFileVersion": 10,
+  "registryFileHashes": {},
+  "moduleExtensions": {
+    "@@rules_jvm_external~//:extensions.bzl%maven": {
+      "general": {
+        "bzlTransitiveDigest": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+        "usagesDigest": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "recordedRepoMappingEntries": [],
+        "generatedRepoSpecs": {
+          "maven": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
+            "ruleClassName": "http_archive",
+            "attributes": {
+              "name": "maven",
+              "urls": ["https://github.com/bazelbuild/bazel-skylib/archive/refs/tags/1.6.1.tar.gz"],
+              "sha256": "7cd0312e0e8a0dc36f6cd98beebc574738c84c3710f9c59749c8ef0e5c96ace2"
+            }
+          }
+        },
+        "moduleExtensionMetadata": {
+          "reproducible": false,
+          "rootModuleDirectDeps": ["maven"],
+          "rootModuleDirectDevDeps": []
+        }
+      }
+    }
+  }
+}

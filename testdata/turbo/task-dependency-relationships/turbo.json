@@ -1,0 +1,12 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build", "generate", "@acme/shared#compile"],
+      "outputs": ["dist/**", "!.next/cache/**"]
+    },
+    "test": {
+      "dependsOn": ["build"]
+    }
+  }
+}

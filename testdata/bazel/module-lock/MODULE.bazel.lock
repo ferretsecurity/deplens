@@ -1,4 +1,7 @@
 {
   "lockFileVersion": 10,
-  "registryFileHash": {}
+  "registryFileHashes": {
+    "https://bcr.bazel.build/bazel_registry.json": "8a28e4af1db396ce91c6712eb99213a53fb7713bb90d8e32f55e1b475d5b3497",
+    "https://bcr.bazel.build/modules/bazel_skylib/1.6.1/MODULE.bazel": "7cd0312e0e8a0dc36f6cd98beebc574738c84c3710f9c59749c8ef0e5c96ace2"
+  }
 }

@@ -1,0 +1,11 @@
+buildscript {
+    repositories {
+        maven { url = uri('https://repo.example.test/plugins') }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.example:legacy-settings-plugin:2.5.0'
+    }
+}
+
+rootProject.name = 'settings-buildscript'

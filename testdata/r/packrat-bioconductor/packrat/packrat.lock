@@ -1,0 +1,10 @@
+PackratFormat: 1.4
+RVersion: 4.4.1
+Repos: CRAN=https://cloud.r-project.org,BioCsoft=https://bioconductor.org/packages/3.20/bioc
+Packages:
+  BiocGenerics:
+    Package: BiocGenerics
+    Version: 0.52.0
+    Source: Bioconductor
+    Repository: BioCsoft
+    Hash: f6a7b8c9

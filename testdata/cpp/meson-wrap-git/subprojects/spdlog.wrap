@@ -1,0 +1,11 @@
+[wrap-git]
+directory = spdlog
+url = https://github.com/gabime/spdlog.git
+revision = HEAD
+depth = 1
+clone-recursive = true
+push-url = git@github.com:example/spdlog-fork.git
+method = cmake
+
+[provide]
+spdlog = spdlog::spdlog

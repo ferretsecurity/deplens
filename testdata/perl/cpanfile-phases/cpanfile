@@ -1,0 +1,20 @@
+on 'configure' => sub {
+  requires 'ExtUtils::MakeMaker', '7.70';
+};
+
+on 'build' => sub {
+  requires 'Module::Build', '0.4234';
+};
+
+on 'test' => sub {
+  requires 'Test::More', '>= 1.302190';
+  recommends 'Test::TCP', '2.22';
+};
+
+on 'runtime' => sub {
+  requires 'Log::Any', '1.717';
+};
+
+on 'develop' => sub {
+  recommends 'Devel::Cover', '1.40';
+};

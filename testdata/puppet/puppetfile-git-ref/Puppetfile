@@ -1,0 +1,7 @@
+mod 'apache',
+    :git => 'https://github.com/puppetlabs/puppetlabs-apache.git',
+    :ref => '8.3.1'
+
+mod 'profile',
+    :git => 'ssh://git@git.example.test/infrastructure/puppet-profile.git',
+    :ref => 'release/2025.01'

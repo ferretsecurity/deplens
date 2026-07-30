@@ -1,0 +1,8 @@
+{
+  "version": "5",
+  "specifiers": {"npm:plugin@^1.0.0": "1.0.0", "npm:host@^2.0.0": "2.1.0"},
+  "npm": {
+    "plugin@1.0.0_host@2.1.0": {"integrity": "sha512-cGx1Z2luQnl0ZXNQbGFjZWhvbGRlclN1ZmZpeA==", "dependencies": ["host@2.1.0"], "optionalPeers": ["host"]},
+    "host@2.1.0": {"integrity": "sha512-aG9zdEJ5dGVzUGxhY2Vob2xkZXJTdWZmaXg="}
+  }
+}

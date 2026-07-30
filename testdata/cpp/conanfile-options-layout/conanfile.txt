@@ -1,0 +1,14 @@
+[requires]
+poco/1.13.3
+openssl/3.3.1
+
+[options]
+poco/*:shared=True
+openssl/*:shared=False
+*:fPIC=True
+
+[generators]
+VirtualRunEnv
+
+[layout]
+cmake_layout

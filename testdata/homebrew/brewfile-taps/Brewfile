@@ -1,0 +1,10 @@
+tap "homebrew/cask"
+tap "user/tap-repository", "https://user@bitbucket.org/user/homebrew-tap-repository.git"
+tap "trusted/repository", trusted: true
+tap "granular/repository", trusted: {
+  formula: "formula",
+  casks: ["cask"],
+  commands: ["command"],
+}
+brew "user/tap-repository/private-formula", trusted: true
+cask "trusted/repository/private-cask", trusted: true

@@ -1,0 +1,6 @@
+go 1.23.0
+
+replace (
+  golang.org/x/net v0.25.0 => example.com/fork/net v0.26.0
+  golang.org/x/text => example.com/fork/text v0.16.0
+)

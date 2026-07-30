@@ -4,11 +4,13 @@
     {
       "source": {
         "git": {
-          "remote": "https://github.com/grafana/grafonnet-lib.git",
-          "subdir": "grafonnet"
+          "remote": "https://github.com/jsonnet-bundler/jsonnet-bundler.git",
+          "subdir": ""
         }
       },
-      "version": "abc123def456"
+      "version": "080f157c7fb85ad0281ea78f6c641eaa570a582f",
+      "sum": "W1uI550rQ66axRpPXA2EZDquyPg/5PHZlvUz1NEzefg="
     }
-  ]
+  ],
+  "legacyImports": false
 }

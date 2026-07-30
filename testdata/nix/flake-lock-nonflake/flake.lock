@@ -1,0 +1,1 @@
+{"version":7,"root":"root","nodes":{"root":{"inputs":{"source":"source"}},"source":{"flake":false,"locked":{"type":"git","url":"https://github.com/acme/source.git","rev":"841fcbd04755c7a2865c51c1e2d3b045976b7452","narHash":"sha256-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC="},"original":{"type":"git","url":"https://github.com/acme/source.git","ref":"main"}}}}

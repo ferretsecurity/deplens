@@ -1,0 +1,13 @@
+<project name="fileset-classpath" default="compile">
+  <path id="runtime.classpath">
+    <fileset dir="lib">
+      <include name="*.jar"/>
+      <exclude name="*-sources.jar"/>
+      <exclude name="*-javadoc.jar"/>
+    </fileset>
+    <fileset dir="vendor" includes="**/*.jar" excludes="**/*-tests.jar"/>
+  </path>
+  <target name="compile">
+    <javac srcdir="src" destdir="build/classes" classpathref="runtime.classpath" includeantruntime="false"/>
+  </target>
+</project>

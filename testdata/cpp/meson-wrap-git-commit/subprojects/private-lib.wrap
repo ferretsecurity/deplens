@@ -1,0 +1,13 @@
+[wrap-git]
+directory = private-lib
+url = ssh://git@example.test/platform/private-lib.git
+revision = 0123456789abcdef0123456789abcdef01234567
+depth = 50
+patch_url = https://example.test/private-lib-meson.zip
+patch_filename = private-lib-meson.zip
+patch_hash = 2c9e7b3a510d8f43b6a412e0c9d7f6a5e4b3c2d1f0e9a8b7c6d5e4f3a2b1c0d9
+diff_files = private-lib-fix.diff
+method = cargo
+
+[provide]
+private-lib = private_lib_dep

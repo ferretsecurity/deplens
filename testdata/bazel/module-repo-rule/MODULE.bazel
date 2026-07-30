@@ -1,0 +1,9 @@
+module(name = "module_repo_rule", version = "1.0.0")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "direct_http_archive",
+    urls = ["https://example.test/direct-http-archive-1.0.tar.gz"],
+    sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    dev_dependency = True,
+)

@@ -1,0 +1,4 @@
+mas "Refined GitHub", id: 1519867270
+winget "Steam", id: "Valve.Steam"
+winget "PowerToys", id: "XP89DCGQ3K6VLD", source: "msstore"
+vscode "editorconfig.editorconfig"

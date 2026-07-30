@@ -1,0 +1,7 @@
+<ivysettings>
+  <settings defaultResolver="central"/>
+  <caches defaultCacheDir="${ivy.settings.dir}/cache" checkUpToDate="false"/>
+  <resolvers>
+    <ibiblio name="central" m2compatible="true" usepoms="true"/>
+  </resolvers>
+</ivysettings>

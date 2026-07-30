@@ -1,0 +1,6 @@
+[submodule "api-client"]
+	path = packages/api-client
+	url = https://github.com/acme/api-client.git
+	branch = main
+	update = rebase
+	fetchRecurseSubmodules = on-demand

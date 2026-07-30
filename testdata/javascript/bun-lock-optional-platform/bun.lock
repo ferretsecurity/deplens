@@ -1,0 +1,11 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {"": {"name": "platform-fixture", "dependencies": {"native-host": "1.0.0"}}},
+  "packages": {
+    "native-host": ["native-host@1.0.0", "", {"optionalDependencies": {"native-linux": "1.0.0", "native-darwin": "1.0.0", "native-win32": "1.0.0"}}, "sha512-aG9zdFBsYXRmb3JtUGxhY2Vob2xkZXI="],
+    "native-linux": ["native-linux@1.0.0", "", {"os": "linux", "cpu": "x64"}, "sha512-bGludXhQbGF0Zm9ybVBsYWNlaG9sZGVy"],
+    "native-darwin": ["native-darwin@1.0.0", "", {"os": "darwin", "cpu": "arm64"}, "sha512-ZGFyd2luUGxhdGZvcm1QbGFjZWhvbGRlcg=="],
+    "native-win32": ["native-win32@1.0.0", "", {"os": "win32", "cpu": "x64"}, "sha512-d2luMzJQbGF0Zm9ybVBsYWNlaG9sZGVy"]
+  }
+}

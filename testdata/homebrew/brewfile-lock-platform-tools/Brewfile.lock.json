@@ -1,0 +1,23 @@
+{
+  "entries": {
+    "brew": {
+      "kubectl": {
+        "version": "1.31.2"
+      }
+    },
+    "mas": {
+      "Xcode": {
+        "id": "497799835",
+        "version": "16.1"
+      }
+    }
+  },
+  "system": {
+    "macos": {
+      "sequoia": {
+        "HOMEBREW_VERSION": "4.4.0",
+        "HOMEBREW_PREFIX": "/opt/homebrew"
+      }
+    }
+  }
+}

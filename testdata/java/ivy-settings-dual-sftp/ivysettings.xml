@@ -1,0 +1,15 @@
+<ivysettings>
+  <settings defaultResolver="dual-repository"/>
+  <resolvers>
+    <url name="ivy-metadata">
+      <ivy pattern="https://metadata.example.test/ivy/[organisation]/[module]/ivy-[revision].xml"/>
+    </url>
+    <sftp name="artifact-store" host="sftp.example.test" user="fixture-user" keyFile="${ivy.settings.dir}/fixture.key">
+      <artifact pattern="/repository/[organisation]/[module]/[artifact]-[revision].[ext]"/>
+    </sftp>
+    <dual name="dual-repository">
+      <ivy ref="ivy-metadata"/>
+      <artifact ref="artifact-store"/>
+    </dual>
+  </resolvers>
+</ivysettings>

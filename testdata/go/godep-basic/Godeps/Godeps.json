@@ -1,0 +1,15 @@
+{
+  "ImportPath": "github.com/acme/service",
+  "GoVersion": "go1.7.6",
+  "GodepVersion": "v80",
+  "Deps": [
+    {
+      "ImportPath": "github.com/pkg/errors",
+      "Rev": "645ef00459ed84a119197bfb8d8205042c6df63d"
+    },
+    {
+      "ImportPath": "golang.org/x/net/context",
+      "Rev": "ee05b128a739a0fb76c7ebd3ae4810c1de808d6d"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.100.0",
+  "pnpmVersion": "8.15.0",
+  "allowedProjectTags": ["frontend-team", "tools", "1.0.0-release"],
+  "approvedPackagesPolicy": {
+    "reviewCategories": ["production", "tools"],
+    "ignoredNpmScopes": ["@types"]
+  },
+  "projects": [
+    {
+      "packageName": "@acme/app",
+      "projectFolder": "apps/app",
+      "reviewCategory": "production",
+      "tags": ["frontend-team", "1.0.0-release"]
+    }
+  ]
+}

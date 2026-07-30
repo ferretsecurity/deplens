@@ -1,0 +1,7 @@
+apiVersion: v2
+name: registry-example
+version: 0.1.0
+dependencies:
+  - name: nginx
+    version: ~1.2.3
+    repository: https://charts.bitnami.com/bitnami

@@ -1,0 +1,13 @@
+moduledir 'thirdparty'
+
+mod 'puppetlabs-ntp', '10.0.0'
+
+mod 'hieradata',
+    :git => 'https://git.example.test/configuration/hieradata.git',
+    :branch => 'production',
+    :install_path => 'site-data'
+
+mod 'root_content',
+    :git => 'https://git.example.test/configuration/root_content.git',
+    :branch => 'production',
+    :install_path => ''

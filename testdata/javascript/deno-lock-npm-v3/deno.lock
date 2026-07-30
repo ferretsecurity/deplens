@@ -1,0 +1,10 @@
+{
+  "version": "3",
+  "packages": {
+    "specifiers": {"npm:chalk@^5.3.0": "npm:chalk@5.3.0"},
+    "npm": {
+      "chalk@5.3.0": {"integrity": "sha512-kJb7T0IYqf8wJkPf6gMB2nt9FoHWnzJ2klUDmDkdV3Ix8Fd6gmG6ayBb0ub10amGnLX38Agf8zRfrQEXAHDv4g==", "dependencies": {"#ansi-styles@6.2.1": "ansi-styles@6.2.1"}},
+      "ansi-styles@6.2.1": {"integrity": "sha512-zlCEfT8DRyWSKj0WOPg00FOm/Y3vR99exE6nLIZD0rtCEkWoXm4TIH0sScnMXrZLwWJy/CcgSwM8SO3aN4N9wQ=="}
+    }
+  }
+}

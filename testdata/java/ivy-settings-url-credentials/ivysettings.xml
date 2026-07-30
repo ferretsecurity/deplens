@@ -1,0 +1,10 @@
+<ivysettings>
+  <credentials host="packages.example.test" realm="Private Ivy" username="fixture-user" passwd="fixture-password"/>
+  <settings defaultResolver="private"/>
+  <resolvers>
+    <url name="private" m2compatible="true">
+      <ivy pattern="https://packages.example.test/ivy/[organisation]/[module]/[revision]/ivy.xml"/>
+      <artifact pattern="https://packages.example.test/ivy/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"/>
+    </url>
+  </resolvers>
+</ivysettings>

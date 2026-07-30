@@ -1,0 +1,5 @@
+{
+  "name": "workspace-inheritance-fixture",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"]
+}

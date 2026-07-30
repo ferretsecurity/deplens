@@ -1,0 +1,5 @@
+[source.mirror]
+registry = "ssh://git@registry.example/crates-index.git"
+
+[source.crates-io]
+replace-with = "mirror"

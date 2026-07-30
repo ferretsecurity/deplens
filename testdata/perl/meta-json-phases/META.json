@@ -1,0 +1,18 @@
+{
+  "meta-spec": {"version": 2},
+  "name": "Example-Phases",
+  "version": "0.001",
+  "abstract": "Phase metadata fixture",
+  "author": ["Example Author <author@example.test>"],
+  "license": ["perl_5"],
+  "release_status": "stable",
+  "dynamic_config": false,
+  "generated_by": "deplens fixture",
+  "prereqs": {
+    "configure": {"requires": {"ExtUtils::MakeMaker": "7.64"}},
+    "build": {"requires": {"ExtUtils::CBuilder": "0.280236"}},
+    "test": {"requires": {"Test::More": "1.302190"}, "recommends": {"Test::Deep": "1.204"}},
+    "runtime": {"requires": {"HTTP::Tiny": ">= 0.080, != 0.082"}, "conflicts": {"HTTP::Tiny::Legacy": "< 1.0"}},
+    "develop": {"requires": {"Test::Pod": "1.52"}}
+  }
+}

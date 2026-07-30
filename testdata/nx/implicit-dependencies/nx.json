@@ -1,0 +1,7 @@
+{
+  "implicitDependencies": {
+    "global-config.json": ["api", "web"],
+    "docs/**": ["docs-site"],
+    "package.json": ["api", "web", "shared-*"]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.100.0",
+  "pnpmVersion": "8.15.0",
+  "nodeSupportedVersionRange": ">=18.18.0 <23.0.0",
+  "projects": [
+    {
+      "packageName": "@acme/web",
+      "projectFolder": "apps/web",
+      "tags": ["frontend", "production"]
+    },
+    {
+      "packageName": "@acme/shared",
+      "projectFolder": "libraries/shared",
+      "tags": ["shared"]
+    }
+  ]
+}

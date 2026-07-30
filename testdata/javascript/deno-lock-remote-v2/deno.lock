@@ -1,0 +1,6 @@
+{
+  "version": "2",
+  "remote": {
+    "https://deno.land/std@0.177.0/path/mod.ts": "a8d4fd1c4c9ff446ac3ee4a1be29c0e8f371d0a9d1e3d45b44a8800000000000"
+  }
+}

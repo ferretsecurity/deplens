@@ -1,0 +1,9 @@
+opam-version: "2.2"
+synopsis: "Build and test dependencies"
+depends: [
+  "dune" {>= "3.0" & build}
+  "runtime-hook" {post}
+  "alcotest" {with-test}
+  "odoc" {with-doc}
+  "ocamlformat" {with-dev-setup}
+]

@@ -1,0 +1,10 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {"": {"name": "peer-fixture", "dependencies": {"plugin": "^1.0.0", "host": "^2.0.0"}}},
+  "packages": {
+    "plugin": ["plugin@1.0.0", "", {"dependencies": {"utility": "1.2.0"}, "peerDependencies": {"host": "^2.0.0"}, "optionalPeers": ["host"]}, "sha512-cGx1Z2luQnl0ZXNQbGFjZWhvbGRlclN1ZmZpeA=="],
+    "host": ["host@2.1.0", "", {}, "sha512-aG9zdEJ5dGVzUGxhY2Vob2xkZXJTdWZmaXg="],
+    "utility": ["utility@1.2.0", "", {}, "sha512-dXRpbGl0eUJ5dGVzUGxhY2Vob2xkZXI="]
+  }
+}

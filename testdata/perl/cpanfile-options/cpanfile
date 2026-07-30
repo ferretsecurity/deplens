@@ -1,0 +1,2 @@
+requires 'Plack', '1.0050', dist => 'MIYAGAWA/Plack-1.0050.tar.gz';
+requires 'Private::Client', '>= 2.0', mirror => 'https://cpan.example.test/';

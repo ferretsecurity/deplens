@@ -1,0 +1,6 @@
+.{
+    .name = .paths,
+    .version = "0.1.0",
+    .paths = .{ "build.zig", "build.zig.zon", "src" },
+    .dependencies = .{ .lib = .{ .url = "https://example.test/lib.tar.gz", .hash = "1220eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" } },
+}

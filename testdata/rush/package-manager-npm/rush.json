@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.100.0",
+  "npmVersion": "10.8.2",
+  "projects": [
+    {
+      "packageName": "@acme/npm-project",
+      "projectFolder": "packages/npm-project"
+    }
+  ]
+}

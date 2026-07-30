@@ -1,0 +1,5 @@
+[wrap-hg]
+directory = libfoo
+url = https://hg.example.test/libs/libfoo
+revision = stable-2.4
+method = meson

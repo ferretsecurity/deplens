@@ -1,0 +1,21 @@
+workspace(name = "http_build_content")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file", "http_jar")
+
+http_archive(
+    name = "openssl_source",
+    url = "https://example.test/openssl-3.3.1.tar.gz",
+    sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    build_file_content = "exports_files([\"openssl.h\"])",
+)
+http_file(
+    name = "custom_rules_deb",
+    urls = ["https://example.test/custom-rules.deb"],
+    sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    downloaded_file_path = "custom-rules.deb",
+)
+http_jar(
+    name = "ssl_jar",
+    url = "https://example.test/openssl-0.2.jar",
+    sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+)

@@ -1,0 +1,5 @@
+// Versions belong in paket.lock, not this file.
+# Comments are allowed in Paket reference files.
+
+Serilog
+Serilog.Sinks.Console

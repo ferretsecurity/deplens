@@ -1,0 +1,13 @@
+(lang dune 3.17)
+(name constrained_project)
+
+(package
+ (name constrained-project)
+ (allow_empty)
+ (depends
+  (ocaml (>= 4.14))
+  (fmt (and (>= 0.9.0) (< 1.0.0)))
+  (yojson (= 2.2.2))
+  (legacy-api (<> 1.5.0))
+  (new-api (> 2.0.0))
+  (capped-api (<= 4.0.0))))

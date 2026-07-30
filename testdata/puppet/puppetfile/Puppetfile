@@ -1,3 +1,4 @@
+# Legacy Librarian-Puppet Forge setting and hyphenated module names.
 forge 'https://forgehub.puppet.com'
 
 mod 'puppetlabs-stdlib', '9.0.0'

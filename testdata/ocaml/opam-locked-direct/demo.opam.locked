@@ -1,0 +1,9 @@
+opam-version: "2.0"
+name: "locked-direct"
+version: "1.0"
+# Representative output of `opam lock --direct-only`.
+depends: [
+  "ocaml" {= "5.2.0"}
+  "dune" {= "3.17.2"}
+  "fmt" {= "0.9.0"}
+]

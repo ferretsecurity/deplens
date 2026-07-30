@@ -1,0 +1,6 @@
+name 'enterprise-sources'
+run_list 'recipe[internal_app]'
+default_source :chef_repo, 'path/to/repo/cookbooks'
+default_source :artifactory, 'https://artifactory.example.test/api/chef/my-supermarket'
+default_source :chef_server, 'https://chef-server.example.test/organizations/example'
+cookbook 'internal_app', '~> 2.1'

@@ -1,0 +1,7 @@
+opam-version: "2.0"
+synopsis: "Version formulas"
+depends: [
+  "ocaml" {>= "4.14" & < "5.3"}
+  "yojson" {= "2.2.2"}
+  "fmt" {>= "0.9.0" | = "0.8.10"}
+]

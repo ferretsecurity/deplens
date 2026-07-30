@@ -1,0 +1,4 @@
+# Historical Berkshelf syntax; retained for legacy compatibility only.
+site :opscode
+
+cookbook 'apt', '~> 7.0'

@@ -1,0 +1,22 @@
+module(name = "nonregistry_overrides", version = "1.0.0")
+
+bazel_dep(name = "rules_java", version = "6.1.1")
+bazel_dep(name = "bazel_skylib", version = "1.6.1")
+bazel_dep(name = "local_helpers", version = "1.0.0")
+
+archive_override(
+    module_name = "rules_java",
+    urls = ["https://github.com/bazelbuild/rules_java/releases/download/6.1.1/rules_java-6.1.1.tar.gz"],
+    integrity = "sha256-dkAqUK5oWdUL167YwbjvCdrlwQNbs8p9J29/POZZgYo=",
+    strip_prefix = "rules_java-6.1.1",
+)
+git_override(
+    module_name = "bazel_skylib",
+    remote = "https://github.com/bazelbuild/bazel-skylib.git",
+    tag = "1.6.1",
+    init_submodules = False,
+)
+local_path_override(
+    module_name = "local_helpers",
+    path = "third_party/local_helpers",
+)

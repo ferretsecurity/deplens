@@ -1,0 +1,11 @@
+workspace(name = "legacy_new_git_repository")
+
+# Legacy repository rule retained only to cover old WORKSPACE declarations.
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
+
+new_git_repository(
+    name = "legacy_bazel_git",
+    remote = "https://github.com/bazelbuild/bazel.git",
+    commit = "93f38093f8e24875c1d015e67311853756bdb27e",
+    build_file_content = "exports_files([\"README.md\"])",
+)

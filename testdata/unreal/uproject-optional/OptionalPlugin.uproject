@@ -1,0 +1,16 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.4",
+  "Category": "Games",
+  "Description": "Optional plugin with a syntactic Epic Games Launcher marketplace URI.",
+  "Plugins": [
+    {
+      "Name": "ModelingToolsEditorMode",
+      "Enabled": true,
+      "Optional": true,
+      "Description": "Optional modeling tools dependency.",
+      "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/example",
+      "RequestedVersion": 2
+    }
+  ]
+}

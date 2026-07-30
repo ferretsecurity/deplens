@@ -1,0 +1,17 @@
+[GLOBAL]
+pants_version = "2.32.0"
+backend_packages = ["pants.backend.python", "pants.backend.experimental.python.packaging.pyoxidizer"]
+
+[python]
+enable_resolves = true
+interpreter_constraints = ["CPython>=3.10,<3.13"]
+
+[python.resolves]
+tools = "3rdparty/python/tools.lock"
+
+[pex-binary-defaults]
+emit_warnings = false
+
+[pyoxidizer]
+install_from_resolve = "tools"
+requirements = ["//3rdparty/python:pyoxidizer"]

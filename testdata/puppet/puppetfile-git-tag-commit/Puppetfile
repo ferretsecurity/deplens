@@ -1,0 +1,7 @@
+mod 'apache',
+    :git => 'https://github.com/puppetlabs/puppetlabs-apache.git',
+    :tag => '0.9.0'
+
+mod 'site_security',
+    :git => 'https://git.example.test/security/site_security.git',
+    :commit => '8df51aa'

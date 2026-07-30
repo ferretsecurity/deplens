@@ -1,0 +1,23 @@
+name = "target_dependencies"
+version = "0.1.0"
+
+[[executable]]
+name = "cli"
+source-dir = "app"
+
+[executable.dependencies]
+cli-support = { git = "https://github.com/example/cli-support.git", branch = "next" }
+
+[[test]]
+name = "unit"
+source-dir = "test"
+
+[test.dependencies]
+test-support = { path = "test/support" }
+
+[[example]]
+name = "example"
+source-dir = "example"
+
+[example.dependencies]
+example-support = { git = "https://github.com/example/example-support.git", tag = "v1.0.0" }

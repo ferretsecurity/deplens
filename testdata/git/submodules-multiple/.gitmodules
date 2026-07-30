@@ -1,0 +1,7 @@
+[submodule "libfoo"]
+	path = include/foo
+	url = https://github.com/acme/libfoo.git
+
+[submodule "libbar"]
+	path = include/bar
+	url = git@github.com:acme/libbar.git

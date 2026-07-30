@@ -1,0 +1,22 @@
+{
+  "FileVersion": 3,
+  "Version": 2,
+  "VersionName": "2.0.0",
+  "FriendlyName": "Module Dependencies",
+  "Description": "Module additional dependency fixture.",
+  "Category": "Runtime",
+  "Modules": [
+    {
+      "Name": "ModuleDependencies",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "AdditionalDependencies": ["Core", "CoreUObject", "Engine", "EnhancedInput"]
+    },
+    {
+      "Name": "ModuleDependenciesEditor",
+      "Type": "Editor",
+      "LoadingPhase": "PostEngineInit",
+      "AdditionalDependencies": ["UnrealEd", "ToolMenus"]
+    }
+  ]
+}

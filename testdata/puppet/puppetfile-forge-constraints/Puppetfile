@@ -1,0 +1,6 @@
+# Forge modules with exact and ranged version constraints.
+forge 'https://forge.puppet.com'
+
+mod 'puppetlabs-stdlib', '9.6.0'
+mod 'puppetlabs-concat', '>= 8.0.0 < 10.0.0'
+mod 'puppetlabs-apt', '~> 9.0'

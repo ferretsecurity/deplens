@@ -1,0 +1,7 @@
+version: v2
+modules:
+  - path: proto
+    name: buf.build/acme/weather
+deps:
+  - buf.build/googleapis/googleapis
+  - buf.build/bufbuild/protovalidate:b983156c5e994cc9892e0ce3e64e17e0

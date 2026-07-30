@@ -1,0 +1,3 @@
+module(name = "module_includes", version = "1.0.0")
+
+include("//:dependencies.MODULE.bazel")

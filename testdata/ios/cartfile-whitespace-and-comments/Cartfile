@@ -1,0 +1,6 @@
+
+// A Cartfile is OGDL; comments and blank lines may surround dependencies.
+
+github "owner/commented-kit" ~> 1.2 // inline comment
+
+git "https://git.example.test/mobile/spaced-kit.git"    >= 0.9.0

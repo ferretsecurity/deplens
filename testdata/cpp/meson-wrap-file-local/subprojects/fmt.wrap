@@ -1,0 +1,6 @@
+[wrap-file]
+directory = fmt-11.1.0
+source_filename = fmt-11.1.0.tar.xz
+patch_filename = fmt-11.1.0-meson.zip
+lead_directory_missing = false
+method = meson

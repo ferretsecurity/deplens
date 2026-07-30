@@ -1,0 +1,1 @@
+{"R":{"Version":"4.4.0","Repositories":[{"Name":"CRAN","URL":"https://cran.example.test"},{"Name":"WORK","URL":"https://work.example.test"}]},"Packages":{"dplyr":{"Package":"dplyr","Version":"1.1.4","Source":"Repository","Repository":"CRAN","Hash":"d4e5f6a7"},"company":{"Package":"company","Version":"2.0.0","Source":"Repository","Repository":"WORK","Hash":"e5f6a7b8"}}}

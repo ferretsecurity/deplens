@@ -1,0 +1,5 @@
+{
+  "name": "turbo-package-configuration-fixture",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"]
+}

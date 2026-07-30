@@ -1,0 +1,15 @@
+[GLOBAL]
+pants_version = "2.32.0"
+backend_packages = ["pants.backend.python"]
+
+[python]
+enable_resolves = true
+default_resolve = "web"
+
+[python.resolves]
+web = "3rdparty/python/web.lock"
+data-science = "3rdparty/python/data-science.lock"
+
+[python.resolves_to_constraints_file]
+web = "3rdparty/python/web-constraints.txt"
+data-science = "3rdparty/python/data-science-constraints.txt"

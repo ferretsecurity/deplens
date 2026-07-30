@@ -1,0 +1,25 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "FriendlyName": "Platform Module",
+  "Description": "Platform-scoped module dependency fixture.",
+  "Category": "Runtime",
+  "Modules": [
+    {
+      "Name": "PlatformModule",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "PlatformAllowList": ["Win64", "Linux"],
+      "AdditionalDependencies": ["Core", "Projects"]
+    },
+    {
+      "Name": "ExtensionModule",
+      "Type": "Runtime",
+      "LoadingPhase": "None",
+      "HasExplicitPlatforms": true,
+      "PlatformAllowList": [],
+      "AdditionalDependencies": ["Core"]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+snapshot: lts-24.43
+extra-deps:
+- git: https://github.com/example-user/my-repo.git
+  commit: '08c9b4cdf977d5bcd1baba046a007940c1940758'
+  subdirs: [my-package]
+- github: example-user/other-repo
+  commit: '0123456789abcdef0123456789abcdef01234567'

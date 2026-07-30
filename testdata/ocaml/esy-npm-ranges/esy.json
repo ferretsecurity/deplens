@@ -1,0 +1,10 @@
+{
+  "name": "esy-npm-ranges",
+  "version": "1.0.0",
+  "dependencies": {
+    "ocaml": "5.2.0",
+    "reason": "~3.13.0",
+    "@opam/menhir": ">=20220210",
+    "@opam/alcotest": "*"
+  }
+}

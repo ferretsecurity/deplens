@@ -1,0 +1,8 @@
+paths = ["../shared/crates", "overrides/local-util"]
+
+[patch.crates-io]
+serde = { git = "https://github.com/serde-rs/serde.git", tag = "v1.0.219" }
+local-helper = { path = "../local-helper" }
+
+[patch."https://github.com/example/private-index"]
+internal-api = { git = "ssh://git@git.example/platform/internal-api.git", branch = "stable" }

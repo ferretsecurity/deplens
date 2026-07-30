@@ -1,0 +1,15 @@
+GROUP Runtime
+  STRATEGY: MIN
+  RESTRICTION: || (== net8.0)
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    Microsoft.Extensions.Logging (8.0.0) - restriction: || (== net8.0)
+      Microsoft.Extensions.DependencyInjection (>= 8.0.0) - restriction: || (== net8.0)
+    Microsoft.Extensions.DependencyInjection (8.0.0) - restriction: || (== net8.0)
+
+GROUP Tools
+  STRATEGY: MAX
+  RESTRICTION: || (>= net6.0)
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    NuGet.CommandLine (6.10.0) - restriction: || (>= net6.0)

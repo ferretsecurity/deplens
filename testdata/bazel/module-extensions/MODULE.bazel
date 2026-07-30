@@ -1,0 +1,16 @@
+module(name = "module_extensions", version = "1.0.0")
+
+bazel_dep(name = "rules_jvm_external", version = "4.5")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(artifacts = ["org.junit:junit:4.13.2"])
+maven.artifact(
+    group = "com.google.guava",
+    artifact = "guava",
+    version = "27.0-jre",
+    exclusions = ["com.google.j2objc:j2objc-annotations"],
+)
+use_repo(maven, "maven", local_maven = "maven")
+
+dev_maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
+use_repo(dev_maven, **{"maven.2": "maven"})

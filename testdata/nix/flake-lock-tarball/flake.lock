@@ -1,0 +1,1 @@
+{"version":7,"root":"root","nodes":{"root":{"inputs":{"tarball":"tarball"}},"tarball":{"inputs":{},"locked":{"type":"tarball","url":"https://example.test/source/841fcbd.tar.gz","narHash":"sha256-DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD=","lastModified":1730000000},"original":{"type":"tarball","url":"https://example.test/source/latest.tar.gz"}}}}

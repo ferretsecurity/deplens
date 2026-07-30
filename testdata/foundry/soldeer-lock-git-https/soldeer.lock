@@ -1,0 +1,5 @@
+[[dependencies]]
+name = "solmate"
+version = "6.8.0"
+git = "https://github.com/transmissions11/solmate.git"
+rev = "89365b880c4f3c786bdd453d4b8e8fe410344a69"

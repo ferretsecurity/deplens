@@ -1,0 +1,6 @@
+packages:
+- completed: {hackage: alpha-1.0@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,1, pantry-tree: {sha256: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, size: 10}}
+  original: alpha-1.0
+- completed: {hackage: beta-2.0@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc,2, pantry-tree: {sha256: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, size: 20}}
+  original: beta-2.0
+snapshots: []

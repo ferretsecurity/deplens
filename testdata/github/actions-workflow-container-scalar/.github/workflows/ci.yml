@@ -1,0 +1,11 @@
+name: scalar container
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: node:22
+    services:
+      postgres:
+        image: postgres:17
+    steps:
+      - uses: actions/checkout@v6

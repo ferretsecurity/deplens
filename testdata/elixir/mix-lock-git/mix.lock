@@ -1,0 +1,4 @@
+%{
+  "gettext" => {:git, "https://github.com/elixir-gettext/gettext.git", "e3a766b4f1a0e8d2602747be6a0eed2d76cb1e0d", [tag: "v0.26.2"]},
+  "nimble_parsec" => {:git, "https://github.com/dashbitco/nimble_parsec.git", "d1c9e3ac9f1de8c81d957f36c93ef3c82a0f7441", [branch: "main"]}
+}

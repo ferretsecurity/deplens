@@ -1,0 +1,17 @@
+# carton snapshot format: version 1.0
+
+DISTRIBUTIONS
+  JSON-MaybeXS-1.004008
+    pathname: H/HA/HAARG/JSON-MaybeXS-1.004008.tar.gz
+    provides:
+      JSON::MaybeXS 1.004008
+    requirements:
+      Cpanel::JSON::XS 4.37
+      JSON::PP 2.27300
+  Moo-2.005005
+    pathname: H/HA/HAARG/Moo-2.005005.tar.gz
+    provides:
+      Moo 2.005005
+      Moo::Object 2.005005
+    requirements:
+      Role::Tiny 2.002004

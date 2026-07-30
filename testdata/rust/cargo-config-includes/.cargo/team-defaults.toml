@@ -1,0 +1,5 @@
+[source.team-vendor]
+directory = "vendor/team"
+
+[source.crates-io]
+replace-with = "team-vendor"

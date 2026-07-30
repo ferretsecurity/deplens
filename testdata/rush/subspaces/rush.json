@@ -1,0 +1,16 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.100.0",
+  "pnpmVersion": "8.15.0",
+  "projects": [
+    {
+      "packageName": "@acme/default-package",
+      "projectFolder": "packages/default-package"
+    },
+    {
+      "packageName": "@acme/frontend-package",
+      "projectFolder": "apps/frontend-package",
+      "subspaceName": "frontend"
+    }
+  ]
+}

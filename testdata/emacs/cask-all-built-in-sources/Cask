@@ -1,0 +1,5 @@
+(source marmalade)
+(source SC)
+(source org)
+
+(depends-on "org-plus-contrib")

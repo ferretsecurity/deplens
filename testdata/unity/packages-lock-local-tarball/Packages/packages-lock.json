@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "com.example.local-tarball": {
+      "version": "file:../Packages/com.example.local-tarball-1.0.0.tgz",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    }
+  }
+}

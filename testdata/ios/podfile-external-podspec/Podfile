@@ -1,0 +1,6 @@
+source 'https://cdn.cocoapods.org/'
+
+target 'ExternalPodspec' do
+  pod 'JSONKit', :podspec => 'https://example.test/specs/JSONKit.podspec'
+  pod 'ModernSpecPod', podspec: 'https://example.test/specs/ModernSpecPod.podspec'
+end

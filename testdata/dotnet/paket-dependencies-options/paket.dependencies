@@ -1,0 +1,14 @@
+source https://api.nuget.org/v3/index.json
+version 8.0.0 --prefer-nuget
+storage: symlink
+strategy: min
+lowest_matching: true
+redirects: force
+references: strict
+framework: auto-detect
+generate_load_scripts: true
+simplify: never
+
+# Keep generated content out of project output.
+nuget Serilog >= 3.1 redirects: off import_targets: false
+nuget System.Text.Json 8.* copy_local: false content: none copy_content_to_output_dir: never

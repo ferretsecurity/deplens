@@ -1,0 +1,5 @@
+AC_INIT([libsimple], [1.0])
+AC_CONFIG_SRCDIR([configure.in])
+AC_CHECK_LIB([m], [cos])
+AC_CONFIG_SUBDIRS([plugins/helper])
+AC_OUTPUT

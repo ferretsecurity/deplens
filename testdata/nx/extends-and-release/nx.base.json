@@ -1,0 +1,10 @@
+{
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*"]
+  },
+  "targetDefaults": {
+    "lint": {
+      "dependsOn": ["^build"]
+    }
+  }
+}

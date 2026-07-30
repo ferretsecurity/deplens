@@ -1,0 +1,4 @@
+{
+  "runtime": {"requires": {"HTTP::Tiny": "0.080"}},
+  "test": {"requires": {"Test::More": "1.302190"}}
+}

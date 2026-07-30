@@ -1,0 +1,6 @@
+[profile.default]
+libs = ["lib", "dependencies"]
+
+[sdependencies]
+"@openzeppelin~v4.9.3" = "https://github.com/OpenZeppelin/openzeppelin-contracts/archive/refs/tags/v4.9.3.zip"
+"@solady~v0.0.47" = "https://github.com/Vectorized/solady/archive/refs/tags/v0.0.47.zip"

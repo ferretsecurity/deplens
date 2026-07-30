@@ -1,0 +1,13 @@
+DEPENDENCIES
+  branch-cookbook
+    git: https://github.com/RiotGames/berkshelf-cookbook-fixture.git
+    revision: a97b9447cbd41a5fe58eee2026e48ccb503bd3bc
+    branch: master
+  tagged-cookbook
+    git: https://github.com/RiotGames/berkshelf-cookbook-fixture.git
+    revision: 70a527e17d91f01f031204562460ad1c17f972ee
+    tag: v0.2.0
+
+GRAPH
+  branch-cookbook (1.1.0)
+  tagged-cookbook (0.2.0)

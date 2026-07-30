@@ -1,0 +1,11 @@
+[submodule "large-history"]
+	path = third_party/large-history
+	url = https://github.com/acme/large-history.git
+	shallow = true
+	ignore = dirty
+
+[submodule "vendored-docs"]
+	path = docs/vendor
+	url = https://github.com/acme/docs.git
+	update = none
+	ignore = all

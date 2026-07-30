@@ -1,0 +1,3 @@
+%{
+  "company_client" => {:hex, :company_api, "2.0.1", "3e8b6a9d15509a6d4ee4fc88a49f1f1f14cad84614c044d1f3848de1f159d02d", [:rebar3], [{:telemetry, "~> 1.0", [hex: :telemetry, repo: "hexpm", optional: true]}], "hexpm:acme", "4c0c8a91491052f3f4ce2cbf726d67d33b5ec55f699ef5c53c2b483d0b1a93bf"}
+}

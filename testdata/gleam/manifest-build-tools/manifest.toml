@@ -1,0 +1,8 @@
+packages = [
+  { name = "base32", version = "1.0.0", build_tools = ["rebar3"], requirements = [], otp_app = "base32", source = "hex", outer_checksum = "0449285348ED0C4CD83C7198E76C5FD5A0451C4EF18695B9FD43792A503E551A" },
+  { name = "gleam_stdlib", version = "0.67.1", build_tools = ["gleam"], requirements = [], otp_app = "gleam_stdlib", source = "hex", outer_checksum = "6CE3E4189A8B8EC2F73AB61A2FBDE49F159D6C9C61C49E3B3082E439F260D3D0" },
+]
+
+[requirements]
+base32 = { version = ">= 1.0.0 and < 2.0.0" }
+gleam_stdlib = { version = ">= 0.60.0 and < 1.0.0" }

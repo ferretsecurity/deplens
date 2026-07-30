@@ -1,0 +1,11 @@
+version: 2.0
+shards:
+  kemal:
+    git: https://github.com/kemalcr/kemal.git
+    version: 1.6.0
+  radix:
+    git: https://github.com/luislavena/radix.git
+    version: 0.4.1
+  athena:
+    git: https://github.com/athena-framework/framework.git
+    version: 0.21.1

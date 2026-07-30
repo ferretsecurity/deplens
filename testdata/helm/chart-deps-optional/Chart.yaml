@@ -1,0 +1,13 @@
+apiVersion: v2
+name: optional-example
+version: 0.1.0
+dependencies:
+  - name: subchart
+    version: ~1.2.3-0
+    repository: https://example.test/charts
+    condition: subchart.enabled,global.subchart.enabled
+    tags: [webaccelerator]
+    import-values:
+      - data
+      - child: exports.settings
+        parent: settings

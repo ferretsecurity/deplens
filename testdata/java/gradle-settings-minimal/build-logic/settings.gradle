@@ -1,0 +1,3 @@
+// A nested, declaration-free settings file is still a supported source.
+
+rootProject.name = 'build-logic'

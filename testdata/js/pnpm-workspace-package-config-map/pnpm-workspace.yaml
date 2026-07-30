@@ -1,0 +1,6 @@
+packages: ['packages/project-1', 'packages/project-2']
+packageConfigs:
+  project-1:
+    saveExact: true
+  project-2:
+    savePrefix: '~'

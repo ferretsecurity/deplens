@@ -1,0 +1,22 @@
+{
+  "entries": {
+    "tap": {
+      "acme/tools": {
+        "revision": "0123456789abcdef0123456789abcdef01234567"
+      }
+    },
+    "brew": {
+      "acme/tools/internal-cli": {
+        "version": "1.2.3"
+      }
+    }
+  },
+  "system": {
+    "macos": {
+      "sonoma": {
+        "HOMEBREW_VERSION": "4.4.0",
+        "HOMEBREW_PREFIX": "/opt/homebrew"
+      }
+    }
+  }
+}

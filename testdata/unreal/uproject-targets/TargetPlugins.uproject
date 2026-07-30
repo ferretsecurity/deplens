@@ -1,0 +1,17 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.5",
+  "Category": "Games",
+  "Description": "Target-scoped plugin reference fixture.",
+  "Plugins": [
+    {
+      "Name": "GameplayAbilities",
+      "Enabled": true,
+      "TargetAllowList": ["Game", "Editor"],
+      "TargetDenyList": ["Server"],
+      "TargetConfigurationAllowList": ["Development", "Shipping"],
+      "TargetConfigurationDenyList": ["Debug"],
+      "TargetsToExplicitlyLoad": ["Game"]
+    }
+  ]
+}

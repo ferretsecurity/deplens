@@ -1,0 +1,8 @@
+version: 1.0
+shards:
+  amber_router:
+    github: amberframework/amber
+    version: 0.3.2
+  radix:
+    github: luislavena/radix
+    version: 0.3.9

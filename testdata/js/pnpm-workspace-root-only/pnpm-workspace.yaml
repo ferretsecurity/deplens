@@ -1,0 +1,3 @@
+# With packages omitted, the root package is the only workspace package.
+catalog:
+  typescript: ^5.7.0

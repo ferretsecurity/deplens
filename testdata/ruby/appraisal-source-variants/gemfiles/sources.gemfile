@@ -1,0 +1,8 @@
+source "https://rubygems.org"
+
+source "https://gems.example.test" do
+  gem "private_extension", "~> 2.0"
+end
+gem "api_client", bitbucket: "example/api_client", branch: "stable"
+gem "release_notes", gist: "0123456789abcdef0123456789abcdef"
+gem "native_extension", git: "https://github.com/example/native_extension.git", submodules: true

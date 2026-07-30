@@ -1,0 +1,7 @@
+name: Composite Docker
+description: Uses Docker registry actions
+runs:
+  using: composite
+  steps:
+    - uses: docker://alpine:3.21
+    - uses: docker://gcr.io/cloud-builders/gradle:8.10

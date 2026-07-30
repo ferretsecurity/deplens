@@ -1,0 +1,13 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.8",
+  "Category": "Games",
+  "Description": "Game Feature plugin activation fixture.",
+  "Plugins": [
+    {
+      "Name": "GameFeatures",
+      "Enabled": true,
+      "Activate": true
+    }
+  ]
+}

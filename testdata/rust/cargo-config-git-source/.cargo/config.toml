@@ -1,0 +1,7 @@
+[source.internal-fork]
+git = "ssh://git@git.example/internal/important-crate.git"
+rev = "0123456789abcdef0123456789abcdef01234567"
+
+[source.upstream]
+git = "https://github.com/example/important-crate.git"
+replace-with = "internal-fork"

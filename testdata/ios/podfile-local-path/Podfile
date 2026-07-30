@@ -1,0 +1,5 @@
+target 'LocalDevelopment' do
+  pod 'SharedUI', :path => '../SharedUI'
+  pod 'WorkspaceKit', :path => '../../WorkspaceKit'
+  pod 'ModernPathPod', path: '~/Documents/ModernPathPod'
+end

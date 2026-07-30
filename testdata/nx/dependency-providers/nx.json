@@ -1,0 +1,13 @@
+{
+  "sync": {
+    "globalGenerators": ["@acme/nx-plugin:sync-workspace"],
+    "disabledTaskSyncGenerators": ["@nx/js:tsc-sync"]
+  },
+  "conformance": {
+    "rules": [
+      { "rule": "@acme/nx-rules:enforce-boundaries" },
+      { "rule": "./tools/nx-rules/enforce-tags" },
+      { "rule": "nx-cloud://acme/compliance-rules/no-private-imports" }
+    ]
+  }
+}

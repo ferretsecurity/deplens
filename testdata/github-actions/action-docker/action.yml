@@ -1,0 +1,7 @@
+name: Docker action
+description: A Dockerfile-backed action
+runs:
+  using: docker
+  image: docker://debian:stretch-slim
+  args:
+    - --verbose

@@ -1,0 +1,4 @@
+AC_INIT([helper], [1.0])
+AC_CONFIG_SRCDIR([configure.in])
+AC_CHECK_HEADER([helper/api.h])
+AC_OUTPUT

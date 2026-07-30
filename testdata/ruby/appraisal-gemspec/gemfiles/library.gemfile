@@ -1,0 +1,4 @@
+source "https://rubygems.org"
+
+gemspec path: "../my_library.gemspec", development_group: :development
+gem "rake", "~> 13.2", group: :development

@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "com.unity.cinemachine": {
+      "version": "2.10.4",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": { "com.unity.timeline": "1.7.6" },
+      "url": "https://packages.unity.com"
+    },
+    "com.example.editor-tools": {
+      "version": "https://github.com/example/editor-tools.git?path=/Package#6c6d4b9a3e2f1d0c9b8a7e6d5c4b3a2918171615",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "6c6d4b9a3e2f1d0c9b8a7e6d5c4b3a2918171615"
+    },
+    "com.unity.timeline": {
+      "version": "1.7.6",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    }
+  }
+}

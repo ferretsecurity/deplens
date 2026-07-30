@@ -1,0 +1,8 @@
+feature 'sqlite', 'SQLite support' => sub {
+  requires 'DBD::SQLite', '1.76';
+  recommends 'DBI', '1.643';
+};
+
+feature 'metrics' => sub {
+  suggests 'Net::Prometheus', '0.12';
+};

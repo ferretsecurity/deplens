@@ -1,0 +1,7 @@
+{
+  "ImportPath": "github.com/acme/no-external-deps",
+  "GoVersion": "go1.9.7",
+  "GodepVersion": "v80",
+  "Packages": ["."],
+  "Deps": []
+}

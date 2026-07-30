@@ -1,0 +1,7 @@
+requires 'Moo', '2.005005';
+on 'test' => sub {
+  requires 'Test::More', '1.302190';
+};
+feature 'sqlite', 'SQLite support' => sub {
+  requires 'DBD::SQLite', '1.76';
+};

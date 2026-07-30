@@ -1,0 +1,8 @@
+AC_INIT([tool_requirements], [1.0])
+AC_CONFIG_SRCDIR([configure.in])
+AC_PROG_CC
+AC_PATH_PROG([DOXYGEN], [doxygen], [no])
+AC_CHECK_TOOL([AR], [ar])
+AC_CHECK_PROGS([PROTOC], [protoc protoc-c])
+PKG_PROG_PKG_CONFIG([0.29])
+AC_OUTPUT

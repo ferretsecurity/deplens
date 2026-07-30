@@ -1,0 +1,7 @@
+packages:
+- completed:
+    git: https://github.com/example-user/my-repo.git
+    commit: 08c9b4cdf977d5bcd1baba046a007940c1940758
+    pantry-tree: {sha256: 614bc0cca76937507ea0a5ccc17a504c997ce458d7f2f9e43b15a10c8eaeb033, size: 226}
+  original: {git: https://github.com/example-user/my-repo.git, commit: 08c9b4cdf977d5bcd1baba046a007940c1940758}
+snapshots: []

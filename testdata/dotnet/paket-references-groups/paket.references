@@ -1,0 +1,10 @@
+Newtonsoft.Json
+UnionArgParser
+DotNetZip
+
+group Test
+  NUnit copy_local: false
+  NUnit.Runners
+
+group Build
+  FAKE

@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "com.unity.timeline": {
+      "version": "1.7.6",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": { "com.unity.modules.director": "1.0.0" },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.modules.director": {
+      "version": "1.0.0",
+      "depth": 1,
+      "source": "builtin",
+      "dependencies": {}
+    }
+  }
+}

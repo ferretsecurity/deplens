@@ -1,0 +1,15 @@
+{
+  "imports": {
+    "lit": "/vendor/lit-3.2.0.js",
+    "@app/": "/assets/app/"
+  },
+  "scopes": {
+    "/legacy/": {
+      "lit": "/vendor/lit-2.8.0.js",
+      "@app/": "/legacy/assets/app/"
+    },
+    "/legacy/admin/": {
+      "lit": "/vendor/lit-2.7.5.js"
+    }
+  }
+}

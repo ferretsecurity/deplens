@@ -1,0 +1,7 @@
+<ivy-module version="2.0" xmlns:e="http://ant.apache.org/ivy/extra">
+  <info organisation="com.example" module="optional-and-extra"/>
+  <dependencies>
+    <dependency org="com.example" name="feature-preview" rev="4.0.0" e:optional="true" e:classifier="tests"/>
+    <dependency org="com.example" name="platform-api" rev="[3.0,4.0[" e:target="jvm-21"/>
+  </dependencies>
+</ivy-module>

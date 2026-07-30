@@ -1,0 +1,10 @@
+opam-version: "2.0"
+synopsis: "In-source development pins"
+depends: [
+  "my-local-library" {>= "0.1.0"}
+  "experimental-parser" {>= "0.3.0"}
+]
+pin-depends: [
+  [ "my-local-library" "git+https://github.com/example/my-local-library.git#main" ]
+  [ "experimental-parser" "https://github.com/example/experimental-parser/archive/0123456789abcdef.tar.gz" ]
+]

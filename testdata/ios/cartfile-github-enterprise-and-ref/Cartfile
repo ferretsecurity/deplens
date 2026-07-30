@@ -1,0 +1,7 @@
+# GitHub Enterprise accepts a full enterprise URL.
+github "https://enterprise.example.test/ghe/mobile/enterprise-kit"
+
+# Git origins can follow any object understood by git rev-parse.
+github "owner/branch-kit" "release/next"
+github "owner/tag-kit" "v2.4.0"
+github "owner/commit-kit" "9fceb02d0ae598e95dc970b74767f19372d61af8"

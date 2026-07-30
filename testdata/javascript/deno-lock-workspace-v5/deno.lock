@@ -1,0 +1,7 @@
+{
+  "version": "5",
+  "specifiers": {"npm:chalk@^5.6.2": "5.6.2", "jsr:@std/assert@^1.0.0": "1.0.6"},
+  "jsr": {"@std/assert@1.0.6": {"integrity": "9f11e9761a45f6c836f52b60d5d881b31c84ca1e9c73a495f9c8352c1692d7d0"}},
+  "npm": {"chalk@5.6.2": {"integrity": "sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA=="}},
+  "workspace": {"dependencies": ["npm:chalk@^5.6.2", "jsr:@std/assert@^1.0.0"]}
+}

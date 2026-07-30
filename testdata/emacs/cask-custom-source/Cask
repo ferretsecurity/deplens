@@ -1,0 +1,5 @@
+(source "gnu-mirror" "https://elpa.gnu.org/packages/")
+(source melpa)
+
+(depends-on "dash" "2.19.1")
+(depends-on "company" "1.0.2")

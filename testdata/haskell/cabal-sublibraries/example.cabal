@@ -1,0 +1,15 @@
+cabal-version: 3.6
+name: example-sublibraries
+version: 0.1.0.0
+build-type: Simple
+
+library internal
+  exposed-modules: Internal
+  build-depends: base, unordered-containers >=0.2
+  default-language: Haskell2010
+
+library
+  exposed-modules: Example
+  build-depends: base, example-sublibraries:internal, servant:{servant,servant-server} ^>=0.20
+  mixins: servant (Servant.API as API)
+  default-language: Haskell2010

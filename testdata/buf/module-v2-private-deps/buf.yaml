@@ -1,0 +1,7 @@
+version: v2
+modules:
+  - path: proto
+    name: buf.example.test/team/service
+deps:
+  - buf.example.test/team/common:stable
+  - buf.build/grpc/grpc

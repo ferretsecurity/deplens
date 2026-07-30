@@ -1,0 +1,1 @@
+(depends-on "package-build" :git "https://github.com/melpa/package-build.git" :files (:defaults "*.el" ("resources" ("snippets" "*.snippet"))))

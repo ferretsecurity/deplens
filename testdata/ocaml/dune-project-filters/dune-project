@@ -1,0 +1,13 @@
+(lang dune 3.17)
+(name filtered_project)
+
+(package
+ (name filtered-project)
+ (allow_empty)
+ (depends
+  (lwt (>= 5.6.0))
+  (alcotest (and :with-test (>= 1.8.0)))
+  (odoc :with-doc)
+  (ocamlformat :with-dev-setup)
+  (runtime-hook :post)
+  (build-tool :build)))

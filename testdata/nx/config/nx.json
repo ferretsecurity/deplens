@@ -1,4 +1,6 @@
 {
-  "version": 2,
-  "projects": {}
+  "defaultBase": "main",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*"]
+  }
 }

@@ -1,0 +1,4 @@
+# Current Code Manager/r10k Forge declarations use slash-qualified names.
+mod 'puppetlabs/stdlib', '9.6.0'
+mod 'puppetlabs/apache'
+mod 'puppetlabs/ntp', :latest

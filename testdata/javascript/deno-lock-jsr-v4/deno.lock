@@ -1,0 +1,8 @@
+{
+  "version": "4",
+  "specifiers": {"jsr:@std/assert@^1.0.0": "jsr:@std/assert@1.0.6"},
+  "jsr": {
+    "@std/assert@1.0.6": {"integrity": "9f11e9761a45f6c836f52b60d5d881b31c84ca1e9c73a495f9c8352c1692d7d0", "dependencies": ["jsr:@std/internal@^1.0.0"]},
+    "@std/internal@1.0.6": {"integrity": "79b9b53f18ef32bbd1b9e5a5d1d5ee5034265cebdcce4fd36f3cf09f93d949c5"}
+  }
+}

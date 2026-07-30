@@ -1,0 +1,5 @@
+[submodule "web-ui-source"]
+	path = apps/web-ui
+	url = https://github.com/acme/web-ui.git
+	branch = release/2026
+	ignore = untracked

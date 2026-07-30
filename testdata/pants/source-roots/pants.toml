@@ -1,0 +1,7 @@
+[GLOBAL]
+pants_version = "2.32.0"
+backend_packages = ["pants.backend.python", "pants.backend.plugin_development"]
+
+[source]
+root_patterns = ["/", "src/python", "tests/python", "pants-plugins"]
+marker_filenames = ["SOURCE_ROOT", "pyproject.toml"]

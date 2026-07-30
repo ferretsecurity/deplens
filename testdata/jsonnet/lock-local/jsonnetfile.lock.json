@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "dependencies": [
+    {
+      "source": {
+        "local": {
+          "directory": "jsonnet/overlays"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "legacyImports": false
+}

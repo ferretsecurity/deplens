@@ -1,0 +1,3 @@
+git "https://git.example.test/mobile/remote-kit.git" "development"
+git "ssh://git@git.example.test/mobile/ssh-kit.git" == 3.2.1
+git "file:///opt/checkouts/local-kit" "feature/local-api"

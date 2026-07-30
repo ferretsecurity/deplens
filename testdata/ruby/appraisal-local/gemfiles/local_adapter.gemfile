@@ -1,0 +1,4 @@
+source "https://rubygems.org"
+
+gem "my_adapter", path: "../my_adapter"
+gem "plugin_fixture", git: "file:///tmp/plugin_fixture", tag: "v1.2.3"

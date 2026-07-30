@@ -1,0 +1,9 @@
+<project name="ivy-resolve" default="resolve" xmlns:ivy="antlib:org.apache.ivy.ant">
+  <target name="resolve">
+    <ivy:resolve conf="default" transitive="true" keep="true">
+      <dependency org="org.apache.commons" name="commons-lang3" rev="3.14.0"/>
+      <dependency org="org.slf4j" name="slf4j-api" rev="2.0.13" conf="default"/>
+      <exclude org="commons-logging" module="commons-logging"/>
+    </ivy:resolve>
+  </target>
+</project>

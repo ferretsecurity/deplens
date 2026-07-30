@@ -1,0 +1,9 @@
+opam-version: "2.0"
+name: "locked-filters"
+version: "1.0"
+depends: [
+  "ocaml" {= "5.2.0"}
+  "dune" {= "3.17.2"}
+  "alcotest" {= "1.8.0" & with-test}
+  "odoc" {= "2.4.4" & with-doc}
+]

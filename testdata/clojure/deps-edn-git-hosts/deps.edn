@@ -1,0 +1,6 @@
+{:deps {company/private-lib {:git/url "ssh://git@example.test/team/private-lib.git"
+                             :git/sha "0123456789abcdef0123456789abcdef01234567"}
+        io.gitlab.example/tools {:git/tag "v2.0.0"
+                                 :git/sha "a1b2c3d"}
+        io.codeberg.example/utility {:git/tag "v1.0.1"
+                                     :git/sha "b2c3d4e"}}}

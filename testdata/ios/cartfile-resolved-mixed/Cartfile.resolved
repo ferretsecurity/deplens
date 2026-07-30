@@ -1,0 +1,3 @@
+binary "file:///opt/carthage/OfflineFramework.json" "2.0.0"
+git "file:///Users/build/SharedFramework.git" "release-2025-01"
+github "realm/realm-swift" "10.55.0"

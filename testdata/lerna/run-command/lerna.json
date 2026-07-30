@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+  "version": "1.0.0",
+  "command": {
+    "run": {
+      "stream": true,
+      "includeDependencies": true,
+      "scope": ["@acme/app-*"],
+      "ignore": ["@acme/legacy"]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+PackageA
+  exclude A1.dll
+  exclude A2.dll
+  alias A1.dll Name2,Name3
+  alias A2.dll MyAlias1
+Dapper
+NUnit
+  exclude nunit.framework.dll

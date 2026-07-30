@@ -1,0 +1,6 @@
+dependencies:
+- name: mychart
+  repository: oci://registry.example.test/helm
+  version: 2.7.0
+digest: sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+generated: "2026-07-29T12:00:00Z"

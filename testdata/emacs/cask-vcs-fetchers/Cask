@@ -1,0 +1,6 @@
+;; Cask supports every package-build VCS fetcher documented by its DSL.
+(depends-on "emacs-bzr" :bzr "https://bazaar.launchpad.net/~emacs-variants/emacs/trunk/")
+(depends-on "mercurial" :hg "https://www.mercurial-scm.org/repo/hg" :branch "stable")
+(depends-on "darcs" :darcs "http://darcs.net/" :ref "release-2")
+(depends-on "subversion" :svn "https://svn.apache.org/repos/asf/subversion/trunk")
+(depends-on "emacs-cvs" :cvs ":pserver:anonymous@cvs.savannah.gnu.org:/sources/emacs")

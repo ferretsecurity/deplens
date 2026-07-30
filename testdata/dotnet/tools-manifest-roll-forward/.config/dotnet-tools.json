@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "isRoot": false,
+  "tools": {
+    "incrementalist.cmd": {
+      "version": "1.0.0",
+      "commands": ["incrementalist"],
+      "rollForward": true
+    },
+    "reportgenerator": {
+      "version": "5.4.1",
+      "commands": ["reportgenerator"],
+      "rollForward": false
+    }
+  }
+}

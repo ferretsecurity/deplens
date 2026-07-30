@@ -1,0 +1,7 @@
+# Sources are consulted in order, so private content takes precedence.
+source 'https://supermarket.example.test'
+source 'https://supermarket.chef.io'
+
+metadata
+cookbook 'apt'
+cookbook 'nginx', '~> 12.0'

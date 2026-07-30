@@ -1,0 +1,9 @@
+cookbook 'library-cookbook', '~> 0.1.1',
+  git: 'https://github.com/example/library-cookbook.git', branch: 'smartos-dev'
+
+cookbook 'tagged-cookbook', '~> 1.2',
+  git: 'https://github.com/example/tagged-cookbook.git', tag: '1.2.3'
+
+cookbook 'pinned-cookbook',
+  git: 'https://github.com/example/pinned-cookbook.git',
+  ref: 'eef7e65806e7ff3bdbe148e27c447ef4a8bc3881'

@@ -1,0 +1,10 @@
+{
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "git@github.com:example/private-vcpkg-registry.git",
+      "baseline": "768f6a3ad9f9b6c4c2ff390137690cf26e3c3453",
+      "packages": ["private-lib", "private-*"]
+    }
+  ]
+}

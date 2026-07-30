@@ -1,0 +1,16 @@
+{
+  "ImportPath": "github.com/acme/cli",
+  "GoVersion": "go1.6.4",
+  "Deps": [
+    {
+      "ImportPath": "github.com/cloudfoundry/cli/plugin",
+      "Comment": "v6.14.0-149-gc259ad5",
+      "Rev": "c259ad5d253425ce5e37aab076e49573495fd069"
+    },
+    {
+      "ImportPath": "github.com/spf13/cobra",
+      "Comment": "v1.0",
+      "Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+    }
+  ]
+}

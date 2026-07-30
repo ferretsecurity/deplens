@@ -1,0 +1,12 @@
+{
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": ["default", "!{projectRoot}/**/*.spec.ts", "^production"],
+    "sharedGlobals": ["{workspaceRoot}/global-config.json"]
+  },
+  "targetDefaults": {
+    "build": {
+      "inputs": ["...", "{workspaceRoot}/babel.config.json"]
+    }
+  }
+}

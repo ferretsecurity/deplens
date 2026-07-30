@@ -1,0 +1,20 @@
+[metadata]
+  owner = "platform-team"
+  compliance = "reviewed"
+
+[prune]
+  unused-packages = true
+  non-go = true
+  go-tests = true
+
+[[prune.project]]
+  name = "github.com/acme/generated-assets"
+  non-go = false
+  go-tests = true
+
+[[constraint]]
+  name = "github.com/acme/tooling"
+  version = "~1.4.2"
+
+  [constraint.metadata]
+  purpose = "code-generation"

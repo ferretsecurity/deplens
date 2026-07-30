@@ -1,0 +1,10 @@
+HTTP
+  remote: http://www.fssnip.net/raw/1M/test1.fs
+    test1.fs
+  remote: https://raw.githubusercontent.com/fsprojects/Paket/main/README.md
+    docs/Paket.md
+  remote: file:///c:/artifacts/local.dll
+    lib/local.dll
+  remote: https://example.invalid/releases/tools.zip
+    tools.zip
+      path: tools

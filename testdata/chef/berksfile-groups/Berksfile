@@ -1,0 +1,10 @@
+source 'https://supermarket.chef.io'
+
+group :test do
+  cookbook 'test-cookbook', path: 'test/fixtures/test'
+end
+
+cookbook 'lint-cookbook', path: 'test/fixtures/lint', group: :test
+cookbook 'production-cookbook', '~> 3.0'
+
+solver :gecode

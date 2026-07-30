@@ -1,0 +1,5 @@
+<ivysettings>
+  <resolvers>
+    <ibiblio name="shared" root="https://repo.example.test/maven2/" m2compatible="true"/>
+  </resolvers>
+</ivysettings>

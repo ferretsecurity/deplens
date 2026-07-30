@@ -1,0 +1,12 @@
+{
+  "meta-version": 1,
+  "name": "Demo::Packaged",
+  "version": "0.1.0",
+  "description": "A distribution with provided modules and resources",
+  "raku": "6.d",
+  "depends": ["MIME::Base64"],
+  "provides": {
+    "Demo::Packaged": "lib/Demo/Packaged.rakumod"
+  },
+  "resources": ["resources/default.json"]
+}

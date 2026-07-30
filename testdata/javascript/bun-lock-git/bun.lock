@@ -1,0 +1,8 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {"": {"name": "git-fixture", "dependencies": {"fixture-git": "github:example/fixture-git#4d2c8a1"}}},
+  "packages": {
+    "fixture-git": ["fixture-git@git+https://github.com/example/fixture-git.git#4d2c8a1", "", {}, "fixture-git@git+https://github.com/example/fixture-git.git#4d2c8a1"]
+  }
+}

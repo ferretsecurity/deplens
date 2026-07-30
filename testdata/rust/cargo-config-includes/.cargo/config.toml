@@ -1,0 +1,7 @@
+include = [
+  "team-defaults.toml",
+  { path = "developer-overrides.toml", optional = true },
+]
+
+[registries.partner]
+index = "https://git.example/partner/crates-index"

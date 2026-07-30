@@ -1,0 +1,6 @@
+dependencies:
+- name: private-chart
+  repository: s3://helm-charts/releases
+  version: 1.0.0
+digest: sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+generated: "2026-07-29T12:00:00Z"

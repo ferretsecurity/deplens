@@ -1,0 +1,9 @@
+.{
+    .name = .multiple,
+    .version = "0.1.0",
+    .paths = .{ "build.zig", "build.zig.zon", "src" },
+    .dependencies = .{
+        .foo = .{ .url = "https://example.test/foo.tar.xz", .hash = "1220bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+        .bar = .{ .url = "https://example.test/bar.tar.gz", .hash = "1220cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" },
+    },
+}

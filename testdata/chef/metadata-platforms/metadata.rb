@@ -1,0 +1,11 @@
+name 'cross_platform'
+maintainer 'Example'
+license 'Apache-2.0'
+description 'Cross-platform cookbook'
+version '1.0.0'
+
+depends 'windows', '>= 8.0'
+chef_version '>= 17.2', '< 19.0'
+ohai_version '~> 18.0'
+supports 'ubuntu', '>= 20.04'
+supports 'windows', '= 2022'

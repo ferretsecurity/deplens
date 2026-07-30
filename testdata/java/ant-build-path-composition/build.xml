@@ -1,0 +1,10 @@
+<project name="composed-paths" default="compile">
+  <path id="base.classpath" location="lib/base-library-1.0.0.jar"/>
+  <path id="compile.classpath">
+    <path refid="base.classpath"/>
+    <pathelement path="lib/extension-one-2.0.0.jar${path.separator}lib/extension-two-2.0.0.jar"/>
+  </path>
+  <target name="compile">
+    <javac srcdir="src" destdir="build/classes" classpathref="compile.classpath" includeantruntime="false"/>
+  </target>
+</project>

@@ -1,0 +1,6 @@
+[profile.default]
+libs = ["dependencies"]
+
+[dependencies]
+forge-std = "1.8.1"
+"@openzeppelin-contracts" = ">=1.9.3 || ^2.0.0"

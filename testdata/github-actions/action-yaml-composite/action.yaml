@@ -1,0 +1,6 @@
+name: YAML composite action
+description: Uses an action from a repository subdirectory
+runs:
+  using: composite
+  steps:
+    - uses: actions/aws/ec2@main

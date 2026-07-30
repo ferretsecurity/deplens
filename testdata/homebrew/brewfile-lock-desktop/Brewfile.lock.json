@@ -1,0 +1,26 @@
+{
+  "entries": {
+    "cask": {
+      "firefox": {
+        "version": "131.0"
+      },
+      "wezterm": {
+        "version": "20240203-110809-5046fc22"
+      }
+    },
+    "mas": {
+      "Refined GitHub": {
+        "id": "1519867270",
+        "version": "1.2.0"
+      }
+    }
+  },
+  "system": {
+    "macos": {
+      "sonoma": {
+        "HOMEBREW_VERSION": "4.4.0",
+        "HOMEBREW_PREFIX": "/opt/homebrew"
+      }
+    }
+  }
+}

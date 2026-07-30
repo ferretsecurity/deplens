@@ -1,8 +1,8 @@
 {
   "FileVersion": 3,
   "EngineAssociation": "5.3",
-  "Category": "",
-  "Description": "",
+  "Category": "Games",
+  "Description": "Baseline Unreal project plugin fixture.",
   "Plugins": [
     {
       "Name": "OnlineSubsystem",

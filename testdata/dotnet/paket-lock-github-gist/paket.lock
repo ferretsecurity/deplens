@@ -1,0 +1,21 @@
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    Microsoft.Bcl (1.1.9)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Microsoft.Bcl.Build (1.0.21)
+    Microsoft.Net.Http (2.2.28)
+      Microsoft.Bcl (>= 1.1.9)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Octokit (0.4.1)
+      Microsoft.Net.Http (>= 0)
+GITHUB
+  remote: forki/FsUnit
+    FsUnit.fs (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)
+  remote: fsharp/FAKE
+    modules/Octokit/Octokit.fsx (a25c2f256a99242c1106b5a3478aae6bb68c7a93)
+      Octokit (>= 0)
+GIST
+  remote: Thorium/1972308
+    gistfile1.fs (4368713d0b2c0c969be01e9309db818f67a65d53)
+  remote: Thorium/6088882
+    FULLPROJECT

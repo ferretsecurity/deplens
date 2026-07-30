@@ -1,0 +1,10 @@
+[GLOBAL]
+pants_version = "2.32.0"
+backend_packages = ["pants.backend.experimental.java"]
+
+[jvm]
+default_resolve = "default"
+
+[jvm.resolves]
+default = "3rdparty/jvm/default.lock"
+analytics = "3rdparty/jvm/analytics.lock"

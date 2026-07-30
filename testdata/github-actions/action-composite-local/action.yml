@@ -1,0 +1,8 @@
+name: Composite local
+description: Uses a repository-local action
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup
+    - run: ./build.sh
+      shell: bash

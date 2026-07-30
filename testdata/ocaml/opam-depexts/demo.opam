@@ -1,0 +1,8 @@
+opam-version: "2.0"
+synopsis: "Platform-dependent external dependencies"
+depends: [ "ctypes" {>= "0.20.0"} ]
+depexts: [
+  [ "libssl-dev" ] {os-family = "debian"}
+  [ "openssl" ] {os = "macos"}
+  [ "openssl-devel" ] {os-family = "fedora"}
+]

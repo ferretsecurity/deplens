@@ -1,0 +1,7 @@
+name = "git_refs"
+version = "0.1.0"
+
+[dependencies]
+stdlib = { git = "https://github.com/fortran-lang/stdlib.git", branch = "main" }
+toml-f = { git = "https://github.com/toml-f/toml-f", tag = "v0.4.2" }
+json-fortran = { git = "https://github.com/jacobwilliams/json-fortran", rev = "2f5eaba864ff630ba0c3791126a3f811b6e437f3" }

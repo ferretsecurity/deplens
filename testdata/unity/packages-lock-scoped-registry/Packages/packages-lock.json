@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "com.example.scoped-package": {
+      "version": "1.4.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.example.com"
+    }
+  }
+}

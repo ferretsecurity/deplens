@@ -1,0 +1,12 @@
+workspace(name = "git_repository_dependencies")
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "bazel_pinned_git",
+    remote = "https://github.com/bazelbuild/bazel.git",
+    commit = "93f38093f8e24875c1d015e67311853756bdb27e",
+    init_submodules = False,
+    sparse_checkout_patterns = ["src", "tools"],
+    build_file = "//third_party:bazel_pinned_git.BUILD",
+)

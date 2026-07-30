@@ -1,0 +1,8 @@
+include(FindPackageHandleStandardArgs)
+
+find_path(AcmeCodec_INCLUDE_DIR NAMES acme/codec.h)
+find_library(AcmeCodec_LIBRARY NAMES acmecodec acme-codec)
+
+find_package_handle_standard_args(AcmeCodec
+  REQUIRED_VARS AcmeCodec_LIBRARY AcmeCodec_INCLUDE_DIR)
+mark_as_advanced(AcmeCodec_INCLUDE_DIR AcmeCodec_LIBRARY)

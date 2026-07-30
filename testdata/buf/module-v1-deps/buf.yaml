@@ -1,0 +1,6 @@
+version: v1
+name: buf.build/acme/weather
+deps:
+  - buf.build/googleapis/googleapis
+  - buf.build/acme/paymentapis:47b927cbb41c4fdea1292bafadb8976f
+  - buf.build/acme/labels:v1beta1.1.0

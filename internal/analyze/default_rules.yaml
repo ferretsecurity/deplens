@@ -320,7 +320,7 @@ rules:
   - id: ruby-appraisal
     form: manifest
     roles: [declaration, constraint]
-    path-glob: '**/gemfiles/*.gemfile'
+    path-glob: '**/gemfiles/**/*.gemfile'
   - id: swift-package
     form: manifest
     roles: [declaration, constraint]
@@ -472,11 +472,11 @@ rules:
   - id: dotnet-paket-references
     form: requirements
     roles: [declaration, constraint]
-    filename-regex: '^paket\.references$'
+    filename-regex: '^(.+\.)?paket\.references$'
   - id: dotnet-tools-manifest
     form: manifest
     roles: [declaration, constraint]
-    path-glob: '**/.config/dotnet-tools.json'
+    path-glob: '**/dotnet-tools.json'
   - id: go-mod
     form: manifest
     roles: [declaration, constraint, resolution]
@@ -526,7 +526,8 @@ rules:
   - id: rust-cargo-config
     form: tool-config
     roles: [configuration]
-    path-glob: '**/.cargo/config.toml'
+    filename-regex: '^config(?:\.toml)?$'
+    path-glob: '**/.cargo/*'
   - id: go-gopkg-lock
     form: lockfile
     roles: [resolution, integrity]
@@ -823,7 +824,7 @@ rules:
   - id: github-actions-workflow
     form: automation-definition
     roles: [configuration, usage]
-    path-glob: '**/.github/workflows/*.yml'
+    path-glob: '**/.github/workflows/*.y*ml'
   - id: bazel-workspace
     form: workspace-definition
     roles: [workspace, configuration]

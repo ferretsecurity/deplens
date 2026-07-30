@@ -1,0 +1,8 @@
+version: 2.0
+shards:
+  local_engine:
+    path: ../engine
+    version: 0.8.0
+  sibling_tools:
+    path: ../../tools
+    version: 1.0.0-dev

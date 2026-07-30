@@ -1,0 +1,18 @@
+{
+  "default-registry": null,
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://github.com/microsoft/vcpkg",
+      "baseline": "e79c0d2b5d72eb3063cf32a1f7de1a9cf19930f3",
+      "packages": ["*", "qt-advanced-docking-system", "qtkeychain"]
+    },
+    {
+      "kind": "git",
+      "repository": "https://github.com/example/private-qt-registry",
+      "reference": "release/2026-q1",
+      "baseline": "adfc4de488094a384ca2c202b923ccc097956e0c",
+      "packages": ["qt*"]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "targetDefaults": {
+    "@nx/js:tsc": {
+      "inputs": ["production", "^production"],
+      "options": { "generateExportsField": true }
+    },
+    "e2e-ci--**/**": {
+      "options": { "headless": true }
+    },
+    "test": [
+      {
+        "filter": { "executor": "@nx/jest:jest" },
+        "dependsOn": ["^build"]
+      }
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+[registries.acme]
+index = "sparse+https://crates.acme.example/index/"
+
+[registry]
+default = "acme"

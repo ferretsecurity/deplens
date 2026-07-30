@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "./foo/../js/app.js": "/vendor/app-1.0.0.js",
+    "modules/shapes/": "./modules/src/shapes/",
+    "modules/square": "./modules/src/other/shapes/square.js"
+  }
+}

@@ -1,0 +1,3 @@
+packages: app/*.cabal libraries/core
+optional-packages: vendor/*/*.cabal
+extra-packages: hspec >=2.11

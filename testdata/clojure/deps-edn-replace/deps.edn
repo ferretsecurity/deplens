@@ -1,0 +1,4 @@
+{:aliases {:minimal {:replace-deps {org.clojure/clojure {:mvn/version "1.11.3"}}
+                     :replace-paths ["minimal-src"]}
+           :tool {:deps {io.github.clojure/tools.build {:mvn/version "0.10.6"}}
+                  :exec-fn build/main}}}

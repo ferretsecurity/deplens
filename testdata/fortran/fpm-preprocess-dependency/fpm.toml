@@ -1,0 +1,5 @@
+name = "preprocess_dependency"
+version = "0.1.0"
+
+[dependencies]
+fftpack = { git = "https://github.com/fortran-lang/fftpack.git", preprocess.cpp.macros = ["REAL32", "USE_FAST_MATH=1"] }

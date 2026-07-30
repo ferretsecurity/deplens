@@ -1,0 +1,2 @@
+{"1.1.0",[{<<"cowboy">>,{pkg,<<"cowboy">>,<<"2.12.0">>},0},{<<"ranch">>,{pkg,<<"ranch">>,<<"2.1.0">>},1}]}.
+[{pkg_hash,[{<<"cowboy">>,<<"A9FA9A625F1D2025FE6B462CB865881329B5CAFF8F1854D1CBC9F9533F00E1E1">>},{<<"ranch">>,<<"B17556DB683000BA50370B16C0619DF1337EAF7ECBF7D64FBF8D1D6BCE3109B">>}]}].

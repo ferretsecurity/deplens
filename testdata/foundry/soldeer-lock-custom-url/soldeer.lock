@@ -1,0 +1,6 @@
+[[dependencies]]
+name = "forge-std-custom"
+version = "1.9.2"
+url = "https://github.com/foundry-rs/forge-std/archive/4695fac44b2934aaa6d7150e2eaf0256fdc566a7.zip"
+checksum = "43f7457bd1d83c9f7f0d83158a54fc0d84f8e40b923bd33d4c48540e8518dceb"
+integrity = "4a787b195c45bfc7204d5bcf98f6da4a6d6400b419119bb2608f4cb8e39a4dea"

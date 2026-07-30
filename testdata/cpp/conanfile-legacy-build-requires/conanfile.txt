@@ -1,0 +1,9 @@
+[requires]
+boost/1.82.0@conan/stable
+
+[build_requires]
+cmake/3.22.6@conan/stable
+7zip/16.00@conan/stable
+
+[generators]
+cmake

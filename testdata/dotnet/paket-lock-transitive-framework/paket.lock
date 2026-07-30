@@ -1,0 +1,9 @@
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    Microsoft.Bcl (1.1.10)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Microsoft.Bcl.Async (1.0.168) - >= net40 < net45
+      Microsoft.Bcl (>= 1.1.8)
+    Microsoft.Bcl.Build (1.0.21)
+    NUnit (3.0.0-alpha-4)
+      Microsoft.Bcl.Async (>= 1.0.165) - >= net40 < net45

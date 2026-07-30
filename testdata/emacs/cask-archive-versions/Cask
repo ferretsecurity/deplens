@@ -1,0 +1,7 @@
+(package "fixture-archive" "0.1.0" "Archive dependency fixture.")
+(source gnu)
+(source melpa-stable)
+
+(depends-on "dash" "2.19.1")
+(depends-on "s" "1.12.0")
+(depends-on "compat")

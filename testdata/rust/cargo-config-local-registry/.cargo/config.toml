@@ -1,0 +1,5 @@
+[source.local-cache]
+local-registry = "cache/crates"
+
+[source.crates-io]
+replace-with = "local-cache"

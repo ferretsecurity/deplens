@@ -1,0 +1,4 @@
+source "https://rubygems.org"
+
+eval_gemfile "shared/testing.gemfile"
+gem "bundler-audit", "~> 0.9.2", group: :audit

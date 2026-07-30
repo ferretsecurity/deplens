@@ -1,0 +1,7 @@
+name = "config_git_refs"
+version = "0.1.0"
+
+[dependencies]
+tagged_lib = { git = "https://github.com/example/tagged-lib.git", ref = "v1.2.3" }
+branch_lib = { git = "https://github.com/example/branch-lib.git", ref = "main" }
+commit_lib = { git = "https://github.com/example/commit-lib.git", ref = "0123456789abcdef0123456789abcdef01234567" }

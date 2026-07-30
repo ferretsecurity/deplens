@@ -1,0 +1,9 @@
+(lang dune 3.17)
+(name alternative_project)
+
+(package
+ (name alternative-project)
+ (allow_empty)
+ (depends
+  (backend-a (or (= 1.0.0) (>= 2.0.0)))
+  (platform-library :os)))

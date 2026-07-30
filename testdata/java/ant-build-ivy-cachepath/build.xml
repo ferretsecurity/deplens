@@ -1,0 +1,10 @@
+<project name="ivy-inline-cachepath" default="compile" xmlns:ivy="antlib:org.apache.ivy.ant">
+  <target name="resolve-tools">
+    <ivy:cachepath organisation="org.apache.ivy" module="ivy" revision="2.5.2" inline="true" conf="default" pathid="ivy.classpath"/>
+    <taskdef resource="fr/jayasoft/ivy/ant/antlib.xml" classpathref="ivy.classpath"/>
+  </target>
+  <target name="compile" depends="resolve-tools">
+    <ivy:cachepath organisation="org.slf4j" module="slf4j-api" revision="2.0.13" inline="true" conf="default" pathid="compile.classpath"/>
+    <javac srcdir="src" destdir="build/classes" classpathref="compile.classpath" includeantruntime="false"/>
+  </target>
+</project>

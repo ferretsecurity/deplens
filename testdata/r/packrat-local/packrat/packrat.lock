@@ -1,0 +1,10 @@
+PackratFormat: 1.4
+RVersion: 4.1.3
+Repos: LOCAL=file:///srv/r/packages
+Packages:
+  internalpkg:
+    Package: internalpkg
+    Version: 0.4.0
+    Source: Local
+    Repository: LOCAL
+    Hash: e5f6a7b8

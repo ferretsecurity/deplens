@@ -1,0 +1,28 @@
+cc_library(
+    name = "library",
+    srcs = ["library.cc", "private.h"],
+    hdrs = ["library.h"],
+    textual_hdrs = ["macros.inc"],
+    deps = [
+        "@abseil_cpp//absl/strings",
+        "//third_party/zlib:zlib",
+    ],
+    implementation_deps = ["@fmt//:fmt"],
+    data = ["//testdata:runtime_config"],
+    includes = ["include"],
+    linkopts = ["-pthread"],
+)
+
+cc_binary(
+    name = "application",
+    srcs = ["main.cc"],
+    deps = [":library"],
+    malloc = "@bazel_tools//tools/cpp:malloc",
+    toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
+)
+
+cc_shared_library(
+    name = "shared_api",
+    deps = [":library"],
+    dynamic_deps = ["@grpc//:grpc++"],
+)

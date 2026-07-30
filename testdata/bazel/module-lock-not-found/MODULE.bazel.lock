@@ -1,0 +1,7 @@
+{
+  "lockFileVersion": 10,
+  "registryFileHashes": {
+    "https://registry.example.test/modules/private_rules/1.2.3/MODULE.bazel": "not found",
+    "https://bcr.bazel.build/modules/private_rules/1.2.3/MODULE.bazel": "e2893eecf08b19421cf0fe8e017b96a91629d35f4a1ad7d5e6d5a9d4a9ba3ebd"
+  }
+}

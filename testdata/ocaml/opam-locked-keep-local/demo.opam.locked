@@ -1,0 +1,11 @@
+opam-version: "2.0"
+name: "locked-keep-local"
+version: "1.0"
+# `opam lock --keep-local` preserves a local pin source.
+depends: [
+  "ocaml" {= "5.2.0"}
+  "in-tree-helper" {= "0.1.0"}
+]
+pin-depends: [
+  [ "in-tree-helper.0.1.0" "file:///opt/workspaces/in-tree-helper" ]
+]

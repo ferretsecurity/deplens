@@ -1,0 +1,13 @@
+dependencies:
+- name: metrics
+  repository: https://charts.example.test/observability
+  version: 1.4.0
+  condition: metrics.enabled,global.metrics.enabled
+  tags:
+  - observability
+  - optional
+  import-values:
+  - child: exports.data
+    parent: metrics
+digest: sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+generated: "2026-07-29T12:00:00Z"

@@ -1,0 +1,15 @@
+[source.internal-branch]
+git = "https://git.example/internal/branch-crate.git"
+branch = "stable"
+
+[source.upstream-branch]
+git = "https://github.com/example/branch-crate.git"
+replace-with = "internal-branch"
+
+[source.internal-tag]
+git = "https://git.example/internal/tag-crate.git"
+tag = "v2.4.0"
+
+[source.upstream-tag]
+git = "https://github.com/example/tag-crate.git"
+replace-with = "internal-tag"

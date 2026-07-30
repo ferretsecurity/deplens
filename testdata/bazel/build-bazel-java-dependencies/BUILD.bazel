@@ -1,0 +1,23 @@
+java_library(
+    name = "service",
+    srcs = ["Service.java"],
+    deps = ["@maven//:com_google_guava_guava"],
+    exports = ["@maven//:org_jspecify_jspecify"],
+    runtime_deps = ["@maven//:org_slf4j_slf4j_api"],
+    plugins = ["@maven//:com_google_auto_value_auto_value"],
+    exported_plugins = ["@maven//:com_google_errorprone_error_prone_core"],
+    resources = ["service.properties"],
+)
+
+java_binary(
+    name = "service_runner",
+    main_class = "example.ServiceMain",
+    runtime_deps = [":service"],
+    deploy_env = [":host_application"],
+)
+
+java_binary(
+    name = "host_application",
+    main_class = "example.HostMain",
+    runtime_deps = ["@maven//:org_slf4j_slf4j_api"],
+)

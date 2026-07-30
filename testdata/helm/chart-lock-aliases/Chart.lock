@@ -1,0 +1,11 @@
+dependencies:
+- name: redis
+  alias: cache-primary
+  repository: "@bitnami"
+  version: 20.1.0
+- name: redis
+  alias: cache-secondary
+  repository: "alias:bitnami"
+  version: 20.1.0
+digest: sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+generated: "2026-07-29T12:00:00Z"

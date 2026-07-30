@@ -1,0 +1,4 @@
+packages:
+  - 'packages/*'
+catalog:
+  '@fixture/shared': ^1.2.3

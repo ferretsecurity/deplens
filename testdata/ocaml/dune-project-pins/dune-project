@@ -1,0 +1,19 @@
+(lang dune 3.17)
+(name pinned_project)
+
+(package
+ (name pinned-project)
+ (allow_empty)
+ (depends local-format remote-parser))
+
+(pin
+ (url "file:///opt/workspaces/local-format")
+ (package
+  (name local-format)
+  (version "0.9.0")))
+
+(pin
+ (url "git+https://github.com/example/remote-parser.git")
+ (package
+  (name remote-parser)
+  (version "1.2.3")))

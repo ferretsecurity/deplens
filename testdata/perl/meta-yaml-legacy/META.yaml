@@ -1,0 +1,19 @@
+meta-spec:
+  version: 1.4
+name: Example-YAML-Legacy
+version: '0.001'
+abstract: Legacy YAML metadata fixture
+author:
+  - Example Author <author@example.test>
+license: perl
+dynamic_config: 0
+generated_by: Module::Build version 0.4234
+requires:
+  perl: '5.010'
+  Class::Accessor: '0.51'
+build_requires:
+  Test::More: '0.98'
+configure_requires:
+  Module::Build: '0.4004'
+recommends:
+  JSON::MaybeXS: '1.004008'

@@ -1,0 +1,1 @@
+{"R":{"Version":"4.4.1","Repositories":[{"Name":"CRAN","URL":"https://cloud.r-project.org"},{"Name":"Bioconductor","URL":"https://bioconductor.org/packages/3.20/bioc"}]},"Bioconductor":{"Version":"3.20"},"Packages":{"BiocGenerics":{"Package":"BiocGenerics","Version":"0.52.0","Source":"Bioconductor","BioconductorVersion":"3.20","Hash":"b2c3d4e5"}}}

@@ -1,0 +1,10 @@
+<ivy-module version="2.0">
+  <info organisation="com.example" module="exclusion-rules"/>
+  <dependencies>
+    <dependency org="org.springframework" name="spring-context" rev="6.1.11">
+      <exclude org="org.slf4j" module="slf4j-api"/>
+      <exclude module="spring-jcl" type="jar"/>
+    </dependency>
+    <exclude org="commons-logging" module="commons-logging"/>
+  </dependencies>
+</ivy-module>

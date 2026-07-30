@@ -1,0 +1,4 @@
+packages: []
+snapshots:
+- completed: {url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/43.yaml, size: 729011, sha256: 3c412a7c13dba6d3d808455a458e0776c58b6cf99b8a7961a2f5e55589d6f1d6}
+  original: lts-24.43

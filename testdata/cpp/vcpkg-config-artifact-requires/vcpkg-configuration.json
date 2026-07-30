@@ -1,0 +1,6 @@
+{
+  "requires": {
+    "microsoft/llvm": "18.1.8",
+    "microsoft/ninja": "1.12.1"
+  }
+}

@@ -1,0 +1,5 @@
+# Binary specifications support HTTPS, file URLs, and filesystem paths.
+binary "https://downloads.example.test/BinaryKit.json" ~> 2.3
+binary "file:///opt/artifacts/FileBinaryKit.json" == 1.2.0
+binary "vendor/RelativeBinaryKit.json"
+binary "/opt/artifacts/AbsoluteBinaryKit.json" >= 4.0

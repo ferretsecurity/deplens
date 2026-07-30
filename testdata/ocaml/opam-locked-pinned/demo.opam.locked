@@ -1,0 +1,10 @@
+opam-version: "2.0"
+name: "locked-pinned"
+version: "1.0"
+depends: [
+  "ocaml" {= "5.2.0"}
+  "local-parser" {= "0.4.0"}
+]
+pin-depends: [
+  [ "local-parser.0.4.0" "git+https://github.com/example/local-parser.git#0123456789abcdef" ]
+]

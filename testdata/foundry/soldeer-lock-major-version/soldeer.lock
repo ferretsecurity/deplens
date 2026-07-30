@@ -1,0 +1,6 @@
+[[dependencies]]
+name = "uniswap-v4-core"
+version = "4"
+url = "https://soldeer-revisions.s3.amazonaws.com/uniswap-v4-core/4_28-02-2025_23:27:23_uniswap-v4-core-4.zip"
+checksum = "cd91c1b34ad73028bddaeb9fd676a957962f7e4ab671998f4439aa1f474010c8"
+integrity = "859f1409f40b591e2cf337d02591d4ec53013631d2e958a9f03b84af88410abb"

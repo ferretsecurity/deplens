@@ -1,0 +1,7 @@
+name = "config_erlang"
+version = "0.1.0"
+target = "erlang"
+
+[dependencies]
+gleam_erlang = ">= 1.0.0 and < 2.0.0"
+gleam_otp = ">= 1.0.0 and < 2.0.0"

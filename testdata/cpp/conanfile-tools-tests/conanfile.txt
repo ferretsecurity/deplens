@@ -1,0 +1,10 @@
+[requires]
+openssl/3.3.1
+
+[tool_requires]
+cmake/3.29.6
+ninja/1.12.1
+
+[test_requires]
+gtest/1.14.0
+catch2/3.7.0

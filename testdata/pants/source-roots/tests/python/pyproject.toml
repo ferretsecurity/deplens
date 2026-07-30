@@ -1,0 +1,3 @@
+[project]
+name = "pants-source-root-marker"
+version = "0.0.0"

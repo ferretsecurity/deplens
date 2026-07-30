@@ -1,0 +1,8 @@
+{
+  "version": "4",
+  "specifiers": {"npm:lodash@^4.17.0": "npm:lodash@4.17.21"},
+  "remote": {"https://deno.land/x/example@v1.0.0/mod.ts": "bd4ef6ec50d1cab17e1e701e783d05ad8b33fcf26b34d0730f01c521312cad83"},
+  "npm": {
+    "lodash@4.17.21": {"integrity": "sha512-v2kDEe57lecTulaDjeWIMdyYe7C8K7G/WuR6mE6S0F8McL6fRhJYMWvFx0D5VZ8GZqNQ/rNeqNAKThC6hsV+Kg=="}
+  }
+}

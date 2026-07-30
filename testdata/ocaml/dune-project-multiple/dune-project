@@ -1,0 +1,13 @@
+(lang dune 3.17)
+(name multiple_packages)
+(generate_opam_files)
+
+(package
+ (name core-package)
+ (allow_empty)
+ (depends (ocaml (= :version)) fmt))
+
+(package
+ (name cli-package)
+ (allow_empty)
+ (depends core-package cmdliner))

@@ -1,0 +1,5 @@
+go "github.com/charmbracelet/crush"
+cargo "ripgrep"
+npm "typescript"
+uv "mkdocs"
+uv "ruff", source: "git+https://github.com/astral-sh/ruff.git"

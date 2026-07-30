@@ -1,0 +1,17 @@
+{
+  "plugins": [
+    "@nx/webpack/plugin",
+    {
+      "plugin": "@nx/vite/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "serveTargetName": "serve"
+      }
+    },
+    {
+      "plugin": "@nx/jest/plugin",
+      "include": ["packages/*"],
+      "exclude": ["packages/legacy"]
+    }
+  ]
+}

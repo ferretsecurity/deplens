@@ -1,0 +1,4 @@
+%{
+  "plug" => {:hex, :plug, "1.16.1", "ce1c07e0cc0f0f1a1ba8f44de8e7a10e1f40d4a2d334ed3d04ee4b3a377d1d8c", [:mix], [{:mime, "~> 1.0 or ~> 2.0", [hex: :mime, repo: "hexpm", optional: false]}, {:plug_crypto, "~> 2.0", [hex: :plug_crypto, repo: "hexpm", optional: false]}], "hexpm", "b3e1f6be5d4b339d6ffbd73564a2bb9862bfd3e8e7c06bda7ee2fa1be4e7b2a4"},
+  "mime" => {:hex, :mime, "2.0.6", "7407c8e35b7cc33b8d02f8e3b3879c3dcc2cfcff5ce07c82ab4f4e1caee4fa37", [:mix], [], "hexpm", "55bf8f2d96ac245d74d184fdccdc5cb96055b0aef9d18758e2b8c3187861d9c5"}
+}

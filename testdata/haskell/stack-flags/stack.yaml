@@ -1,0 +1,5 @@
+snapshot: lts-24.43
+extra-deps: [unordered-containers-0.2.20]
+flags:
+  unordered-containers: {debug: true}
+drop-packages: [Cabal, wai-extra]

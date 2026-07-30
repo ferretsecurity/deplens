@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "react": "/vendor/react-19.1.0.js",
+    "@acme/ui": "./vendor/acme-ui/index.js",
+    "@acme/ui/": "./vendor/acme-ui/",
+    "lodash/": "/vendor/lodash-es/"
+  }
+}

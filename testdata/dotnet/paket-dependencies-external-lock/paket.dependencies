@@ -1,0 +1,4 @@
+source https://api.nuget.org/v3/index.json
+external_lock https://example.invalid/azure-functions.paket.lock
+
+nuget Microsoft.Azure.WebJobs.Extensions >= 5.0

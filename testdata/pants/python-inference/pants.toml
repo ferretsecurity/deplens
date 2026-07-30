@@ -1,0 +1,10 @@
+[GLOBAL]
+pants_version = "2.32.0"
+backend_packages = ["pants.backend.python"]
+
+[python-infer]
+imports = true
+assets = true
+ambiguity_resolution = "by_source_root"
+unowned_dependency_behavior = "error"
+ignored_unowned_imports = ["src.generated.app", "src.generated.client.connect"]

@@ -1,0 +1,11 @@
+opam-version: "2.0"
+synopsis: "Optional dependencies"
+depends: [ "dune" ]
+depopts: [
+  "lwt" {>= "5.6.0"}
+  "async" {= "v0.17.0"}
+]
+conflicts: [
+  "legacy-http" {< "2.0"}
+  "incompatible-backend"
+]

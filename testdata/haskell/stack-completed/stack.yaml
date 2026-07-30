@@ -1,0 +1,8 @@
+snapshot: {url: https://example.test/snapshot.yaml, size: 100, sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+extra-deps:
+- hackage: acme-missiles-0.3@sha256:2ba66a092a32593880a87fb00f3213762d7bca65a687d45965778deb8694c5d1,613
+  pantry-tree: {sha256: 614bc0cca76937507ea0a5ccc17a504c997ce458d7f2f9e43b15a10c8eaeb033, size: 226}
+- hg: https://hg.example.test/repo
+  commit: '0123456789abcdef0123456789abcdef01234567'
+  subdirs: [., library]
+- ./package-0.1

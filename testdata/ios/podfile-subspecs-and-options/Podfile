@@ -1,0 +1,6 @@
+target 'FeatureApp' do
+  pod 'QueryKit/Attribute'
+  pod 'QueryKit', :subspecs => ['Attribute', 'QuerySet']
+  pod 'AFNetworking', :testspecs => ['UnitTests'], :modular_headers => true
+  pod 'PonyDebugger', :source => 'https://cdn.cocoapods.org/'
+end

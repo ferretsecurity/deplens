@@ -1,0 +1,11 @@
+{
+  "scopes": {
+    "https://app.example.test/features/": {
+      "feature-api": "https://cdn.example.test/feature-api-1.0.0.js",
+      "feature-api/": "https://cdn.example.test/feature-api-1.0.0/"
+    },
+    "/admin/": {
+      "auth": "./modules/admin-auth.js"
+    }
+  }
+}

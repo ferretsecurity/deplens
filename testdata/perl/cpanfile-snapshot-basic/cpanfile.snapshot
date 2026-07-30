@@ -1,0 +1,10 @@
+# carton snapshot format: version 1.0
+CARTON: 1.0.35
+
+DISTRIBUTIONS
+  Plack-1.0050
+    pathname: M/MI/MIYAGAWA/Plack-1.0050.tar.gz
+    provides:
+      Plack 1.0050
+    requirements:
+      perl 5.008001

@@ -1,0 +1,9 @@
+(lang dune 3.17)
+(name basic_project)
+(generate_opam_files)
+
+(package
+ (name basic-project)
+ (synopsis "Basic package dependencies")
+ (allow_empty)
+ (depends ocaml fmt cmdliner))

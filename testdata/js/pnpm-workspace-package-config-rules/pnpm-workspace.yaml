@@ -1,0 +1,5 @@
+packages: ['packages/project-1', 'packages/project-2']
+packageConfigs:
+  - match: ['project-1', 'project-2']
+    modulesDir: node_modules
+    saveExact: true

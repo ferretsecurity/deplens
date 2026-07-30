@@ -1,0 +1,7 @@
+apiVersion: v2
+name: oci-example
+version: 0.1.0
+dependencies:
+  - name: metrics-server
+    version: 3.12.1
+    repository: oci://registry.example.test/helm

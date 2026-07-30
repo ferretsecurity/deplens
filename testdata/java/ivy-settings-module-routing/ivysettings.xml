@@ -1,0 +1,13 @@
+<ivysettings>
+  <settings defaultResolver="central"/>
+  <resolvers>
+    <ibiblio name="central" m2compatible="true"/>
+    <url name="partner">
+      <ivy pattern="https://partner.example.test/ivy/[organisation]/[module]/ivy-[revision].xml"/>
+      <artifact pattern="https://partner.example.test/ivy/[organisation]/[module]/[artifact]-[revision].[ext]"/>
+    </url>
+  </resolvers>
+  <modules>
+    <module organisation="com.example.partner" name=".*" resolver="partner"/>
+  </modules>
+</ivysettings>

@@ -1,0 +1,4 @@
+go 1.23.0 // workspace version
+
+use "./modules/with space" // local module
+replace example.com/old v1.0.0 => "./fork/with space"

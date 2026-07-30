@@ -1,0 +1,1 @@
+{"version":1,"dependencies":[{"name":"prometheus","source":{"git":{"remote":"https://github.com/prometheus/prometheus.git","subdir":"documentation/prometheus-mixin"}},"version":"7c039a6b3b4b2a9d7c613ac8bd3fc16e8ca79684","sum":"bVGOsq3hLOw2irNPAS91a5dZJqQlBUNWy3pVwM4+kIY="}],"legacyImports":false}

@@ -1,0 +1,14 @@
+<ivysettings>
+  <settings defaultResolver="public-chain"/>
+  <resolvers>
+    <filesystem name="local">
+      <ivy pattern="${ivy.settings.dir}/local/[module]/ivy-[revision].xml"/>
+      <artifact pattern="${ivy.settings.dir}/local/[module]/[artifact]-[revision].[ext]"/>
+    </filesystem>
+    <ibiblio name="maven-central" m2compatible="true"/>
+    <chain name="public-chain" returnFirst="true" dual="true">
+      <resolver ref="local"/>
+      <resolver ref="maven-central"/>
+    </chain>
+  </resolvers>
+</ivysettings>

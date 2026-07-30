@@ -1,0 +1,6 @@
+name = "local"
+version = "0.1.0"
+
+[dependencies]
+utilities = { path = "../utilities" }
+subproject = { path = "vendor/subproject" }

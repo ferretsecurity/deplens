@@ -1,0 +1,15 @@
+genrule(
+    name = "generated_version",
+    srcs = ["VERSION"],
+    outs = ["version.txt"],
+    cmd = "$(location :version_tool) $(SRCS) > $@",
+    tools = [":version_tool"],
+    toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
+    output_to_bindir = True,
+)
+
+sh_binary(
+    name = "version_tool",
+    srcs = ["version_tool.sh"],
+    data = ["@bazel_tools//tools/bash/runfiles"],
+)

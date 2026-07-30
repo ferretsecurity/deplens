@@ -1,12 +1,17 @@
 {
-  "entries": [
-    {
-      "name": "git",
-      "type": "brew",
-      "version": "2.43.0"
+  "entries": {
+    "brew": {
+      "git": {
+        "version": "2.43.0"
+      }
     }
-  ],
-  "homebrew": {
-    "version": "4.0.0"
+  },
+  "system": {
+    "macos": {
+      "sonoma": {
+        "HOMEBREW_VERSION": "4.0.0",
+        "HOMEBREW_PREFIX": "/opt/homebrew"
+      }
+    }
   }
 }

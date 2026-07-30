@@ -1,0 +1,6 @@
+apiVersion: v2
+name: vendored-example
+version: 0.1.0
+dependencies:
+  - name: supplied-chart
+    version: 1.0.0

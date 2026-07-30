@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "https://cdn.example.test/lib/widget.js": "./vendor/widget-2.0.0.js",
+    "/legacy/": "../legacy-modules/",
+    "./feature/": "https://cdn.example.test/features/v3/",
+    "../shared/logger.js": "/assets/logger-1.4.0.js"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "esy-dev",
+  "version": "1.0.0",
+  "dependencies": {
+    "ocaml": "^5.1.0",
+    "@opam/lwt": "^5.8.0"
+  },
+  "devDependencies": {
+    "@opam/merlin": "^5.1.0",
+    "@opam/ocamlformat": "^0.27.0",
+    "@opam/lwt": "^5.7.0"
+  }
+}

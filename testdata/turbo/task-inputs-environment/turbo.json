@@ -1,0 +1,11 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "inputs": ["$TURBO_DEFAULT$", "!README.md", "$TURBO_ROOT$/tsconfig.json", "src/**/*.ts", "!src/**/*.test.ts"],
+      "env": ["NODE_ENV", "MY_API_*", "!MY_API_URL"],
+      "passThroughEnv": ["AWS_SECRET_ACCESS_KEY"],
+      "outputs": ["dist/**"]
+    }
+  }
+}

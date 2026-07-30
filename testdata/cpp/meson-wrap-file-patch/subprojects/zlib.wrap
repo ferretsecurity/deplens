@@ -1,0 +1,12 @@
+[wrap-file]
+directory = zlib-1.3.1
+source_url = https://zlib.net/zlib-1.3.1.tar.gz
+source_fallback_url = https://zlib.net/fossils/zlib-1.3.1.tar.gz
+source_filename = zlib-1.3.1.tar.gz
+source_hash = 38ef96b8dfe14c3a9f1d52fb91c1c9bfba1f57cfab4a507c6f5e55074582631c
+patch_url = https://wrapdb.mesonbuild.com/v2/projects/zlib/1.3.1/1/get_zip
+patch_fallback_url = https://mirror.example.test/wraps/zlib-1.3.1-1.zip
+patch_filename = zlib-1.3.1-1-wrap.zip
+patch_hash = b19d3f8cb5a9b3c6d15e7f8034219f738f9d20a5c64e9b12f7032d8a5c1f9e44
+diff_files = zlib-meson-options.diff, zlib-warning-fix.diff
+method = cmake

@@ -1,0 +1,9 @@
+[requires]
+fmt/10.2.1
+
+[tool_requires]
+cmake/[>=3.27 <4]
+ninja/1.12.1#6e9d16f4a38fd536ab0b2f5e22d68d5a
+
+[test_requires]
+gtest/[>=1.12 <2]

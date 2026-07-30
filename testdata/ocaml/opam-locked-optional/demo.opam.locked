@@ -1,0 +1,11 @@
+opam-version: "2.0"
+name: "locked-optional"
+version: "1.0"
+depends: [
+  "ocaml" {= "5.2.0"}
+  "lwt" {= "5.8.0"}
+  "ppxlib" {= "0.35.0" & with-test}
+]
+conflicts: [
+  "not-installed-optional" {= "1.0.0"}
+]

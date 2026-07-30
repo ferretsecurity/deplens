@@ -1,0 +1,11 @@
+version: 2.0
+shards:
+  athena-mercure:
+    git: https://github.com/athena-framework/mercure.git
+    version: 0.1.0+git.commit.0edd85b94ba285cbf5ddadf4273389e5f45a6513
+  prerelease:
+    git: https://github.com/example/prerelease.cr.git
+    version: 2.0.0-rc1
+  dot_prerelease:
+    git: https://github.com/example/dot-prerelease.cr.git
+    version: 0.9.0.rc1

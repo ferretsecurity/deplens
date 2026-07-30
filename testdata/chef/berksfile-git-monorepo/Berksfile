@@ -1,0 +1,4 @@
+cookbook 'library-cookbook', '~> 0.1.1',
+  git: 'git@git.example.test:chef/cookbook-repo.git',
+  branch: 'production',
+  rel: 'cookbooks/library-cookbook'

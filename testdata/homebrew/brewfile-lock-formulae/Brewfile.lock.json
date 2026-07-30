@@ -1,0 +1,23 @@
+{
+  "entries": {
+    "brew": {
+      "git": {
+        "version": "2.47.1"
+      },
+      "postgresql@16": {
+        "version": "16.4"
+      },
+      "acme/tools/internal-cli": {
+        "version": "1.2.3"
+      }
+    }
+  },
+  "system": {
+    "macos": {
+      "sequoia": {
+        "HOMEBREW_VERSION": "4.4.0",
+        "HOMEBREW_PREFIX": "/opt/homebrew"
+      }
+    }
+  }
+}

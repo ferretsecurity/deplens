@@ -1,0 +1,4 @@
+<ivysettings>
+  <include file="ivysettings-shared.xml"/>
+  <settings defaultResolver="shared"/>
+</ivysettings>

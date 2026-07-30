@@ -1,0 +1,5 @@
+source https://api.nuget.org/v3/index.json
+
+nuget NUnit ~> 2.6.3
+nuget FAKE ~> 3.4
+nuget DotNetZip >= 1.9

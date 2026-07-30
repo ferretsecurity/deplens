@@ -1,0 +1,23 @@
+{
+  "entries": {
+    "brew": {
+      "golangci-lint": {
+        "version": "1.61.0"
+      },
+      "cargo-audit": {
+        "version": "0.21.1"
+      }
+    },
+    "cask": {
+      "visual-studio-code": {
+        "version": "1.94.2"
+      }
+    }
+  },
+  "system": {
+    "linux": {
+      "HOMEBREW_VERSION": "4.4.0",
+      "HOMEBREW_PREFIX": "/home/linuxbrew/.linuxbrew"
+    }
+  }
+}

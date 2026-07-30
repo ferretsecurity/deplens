@@ -1,0 +1,3 @@
+{:aliases {:compat {:default-deps {org.clojure/data.json {:mvn/version "2.5.1"}}
+                    :classpath-overrides {com.example/generated "target/generated.jar"}}
+           :local-m2 {:mvn/local-repo "target/m2"}}}

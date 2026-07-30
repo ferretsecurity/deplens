@@ -1,0 +1,1 @@
+constraints: any.aeson ==2.2.1.0, aeson +ordered-keymap -cffi

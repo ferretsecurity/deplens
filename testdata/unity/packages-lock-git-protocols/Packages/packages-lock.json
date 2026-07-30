@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "com.example.git-https": {
+      "version": "git+https://github.com/example/git-https#0123456789abcdef0123456789abcdef01234567",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "0123456789abcdef0123456789abcdef01234567"
+    },
+    "com.example.git-ssh": {
+      "version": "git@git.example.com:team/git-ssh.git#abcdefabcdefabcdefabcdefabcdefabcdefabcd",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "abcdefabcdefabcdefabcdefabcdefabcdefabcd"
+    }
+  }
+}

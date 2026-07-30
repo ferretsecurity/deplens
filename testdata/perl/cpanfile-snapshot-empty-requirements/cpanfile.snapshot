@@ -1,0 +1,8 @@
+# carton snapshot format: version 1.0
+
+DISTRIBUTIONS
+  PkgConfig-0.25026
+    pathname: S/SK/SKAJI/PkgConfig-0.25026.tar.gz
+    provides:
+      PkgConfig 0.25026
+    requirements:

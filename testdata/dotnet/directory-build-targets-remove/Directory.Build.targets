@@ -1,0 +1,7 @@
+<Project>
+  <ItemGroup>
+    <PackageReference Remove="Legacy.Build.Package" />
+    <PackageReference Update="Existing.Build.Package" Version="2.0.0" ExcludeAssets="runtime" />
+  </ItemGroup>
+  <Target Name="ApplyLatePackageSettings" AfterTargets="ResolveReferences" />
+</Project>

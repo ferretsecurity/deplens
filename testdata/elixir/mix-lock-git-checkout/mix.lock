@@ -1,0 +1,3 @@
+%{
+  "component" => {:git, "https://github.com/example/monorepo.git", "0123456789abcdef0123456789abcdef01234567", [tag: "v2.0.0", sparse: "apps/component", subdir: "apps/component", depth: 1, submodules: true]}
+}

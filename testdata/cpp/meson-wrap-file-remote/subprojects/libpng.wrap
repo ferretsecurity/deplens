@@ -1,0 +1,5 @@
+[wrap-file]
+directory = libpng-1.6.43
+source_url = https://download.sourceforge.net/libpng/libpng-1.6.43.tar.xz
+source_filename = libpng-1.6.43.tar.xz
+source_hash = 6a5ca3c2e778bbf9cd63f1e40d95d114c70d0a1aa5d9e4b9c8a2b34c5d6e7f80

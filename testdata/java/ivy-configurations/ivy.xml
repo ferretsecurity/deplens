@@ -1,0 +1,15 @@
+<ivy-module version="2.0">
+  <info organisation="com.example" module="configuration-mappings"/>
+  <configurations>
+    <conf name="default" visibility="public"/>
+    <conf name="runtime" visibility="public" extends="default"/>
+    <conf name="test" visibility="private"/>
+  </configurations>
+  <dependencies defaultconf="default" defaultconfmapping="default->default">
+    <dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.17.2" conf="default->@;runtime,test->runtime"/>
+    <dependency org="org.junit.jupiter" name="junit-jupiter" rev="5.10.2">
+      <conf name="test" mapped="runtime"/>
+    </dependency>
+    <dependency org="com.example" name="same-named-configuration" rev="1.0.0" conf="*->@"/>
+  </dependencies>
+</ivy-module>

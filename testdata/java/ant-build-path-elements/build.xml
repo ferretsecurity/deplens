@@ -1,0 +1,10 @@
+<project name="path-elements" default="compile">
+  <path id="compile.classpath">
+    <pathelement location="lib/guava-33.3.0-jre.jar"/>
+    <pathelement location="lib/slf4j-api-2.0.13.jar"/>
+    <pathelement path="${java.class.path}"/>
+  </path>
+  <target name="compile">
+    <javac srcdir="src" destdir="build/classes" classpathref="compile.classpath" includeantruntime="false"/>
+  </target>
+</project>

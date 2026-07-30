@@ -1,0 +1,14 @@
+cabal-version: 3.0
+name: example-tools-native
+version: 0.1.0.0
+build-type: Custom
+
+custom-setup
+  setup-depends: base, Cabal >=3.10, cabal-doctest >=1.0
+
+library
+  exposed-modules: Example
+  build-depends: base, bindings-DSL
+  build-tool-depends: alex:alex >=3.2, happy:happy >=1.20
+  pkgconfig-depends: libcurl >=7.64, zlib
+  default-language: Haskell2010

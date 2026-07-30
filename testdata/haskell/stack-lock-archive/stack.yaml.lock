@@ -1,0 +1,8 @@
+packages:
+- completed:
+    url: https://example.test/archive/package.tar.gz
+    sha256: 2ba66a092a32593880a87fb00f3213762d7bca65a687d45965778deb8694c5d1
+    size: 613
+    pantry-tree: {sha256: 614bc0cca76937507ea0a5ccc17a504c997ce458d7f2f9e43b15a10c8eaeb033, size: 226}
+  original: {url: https://example.test/archive/package.tar.gz}
+snapshots: []

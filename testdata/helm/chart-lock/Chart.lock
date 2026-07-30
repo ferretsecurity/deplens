@@ -2,5 +2,5 @@ dependencies:
 - name: redis
   version: 17.0.0
   repository: https://charts.bitnami.com/bitnami
-  digest: sha256:abc123
-  generated: "2023-01-01T00:00:00.000000000Z"
+digest: sha256:abc123
+generated: "2023-01-01T00:00:00.000000000Z"

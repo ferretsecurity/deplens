@@ -1,0 +1,13 @@
+source https://api.nuget.org/v3/index.json
+
+github forki/FsUnit FsUnit.fs
+github fsprojects/Paket:main src/Paket.Core/DependenciesFile.fs
+github fsprojects/Paket:9.0.0
+github fsharp/private src/myprivate/file.fs githubAuthKey
+gist Thorium/1972349 timestamp.fs
+gist Thorium/6088882
+http https://raw.githubusercontent.com/fsprojects/Paket/main/README.md docs/Paket.md PaketDocs
+http file:///c:/artifacts/local.dll lib/local.dll
+git https://github.com/fsprojects/Paket.git main
+git git@github.com:fsharp/FAKE.git
+git file:///c:/repos/AskMe 97ee5ae7074b

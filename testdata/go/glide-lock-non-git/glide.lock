@@ -1,0 +1,8 @@
+hash: b9e4643253d2170374b095ae0f19f71c3ef5c0549ba32a7148a6797e99a95144
+updated: 2019-07-09T18:35:06.713855-04:00
+imports:
+- name: example.com/legacy.svn
+  version: "4123"
+  repo: https://svn.apache.org/repos/asf/commons/proper/lang/trunk
+  vcs: svn
+testImports: []

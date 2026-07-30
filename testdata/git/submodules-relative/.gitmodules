@@ -1,0 +1,7 @@
+[submodule "shared-utils"]
+	path = vendor/shared-utils
+	url = ../shared-utils.git
+
+[submodule "nested-theme"]
+	path = themes/nested/theme
+	url = ./theme.git

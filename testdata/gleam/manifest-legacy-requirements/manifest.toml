@@ -1,0 +1,4 @@
+# Older generated manifests may contain requirements without package resolution data.
+[requirements]
+gleam_stdlib = ">= 0.34.0 and < 2.0.0"
+gleam_json = ">= 1.0.0 and < 2.0.0"

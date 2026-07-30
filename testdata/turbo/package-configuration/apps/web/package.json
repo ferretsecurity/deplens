@@ -1,0 +1,7 @@
+{
+  "name": "@acme/web",
+  "version": "1.0.0",
+  "dependencies": {
+    "@acme/turbo-config": "workspace:*"
+  }
+}

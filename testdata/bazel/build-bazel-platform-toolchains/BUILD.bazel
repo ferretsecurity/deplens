@@ -1,0 +1,27 @@
+constraint_setting(name = "runtime")
+
+constraint_value(
+    name = "container_runtime",
+    constraint_setting = ":runtime",
+)
+
+toolchain_type(name = "formatter_toolchain_type")
+
+config_setting(
+    name = "optimized_build",
+    values = {"compilation_mode": "opt"},
+)
+
+toolchain(
+    name = "formatter_toolchain",
+    toolchain = "@formatters//:toolchain",
+    toolchain_type = ":formatter_toolchain_type",
+    exec_compatible_with = ["@platforms//os:linux"],
+    target_compatible_with = [":container_runtime"],
+    target_settings = [":optimized_build"],
+)
+
+platform(
+    name = "container_platform",
+    constraint_values = [":container_runtime"],
+)

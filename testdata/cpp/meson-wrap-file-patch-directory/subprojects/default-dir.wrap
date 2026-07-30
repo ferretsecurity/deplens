@@ -1,0 +1,8 @@
+[wrap-file]
+source_filename = default-dir-1.0.tar.xz
+patch_directory = default-dir-meson
+lead_directory_missing = true
+method = meson
+
+[provide]
+dependency_names = default-dir

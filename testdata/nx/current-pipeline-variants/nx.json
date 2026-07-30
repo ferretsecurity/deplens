@@ -1,0 +1,11 @@
+{
+  "targetDefaults": {
+    "build": {
+      "dependsOn": [
+        { "dependencies": true, "target": "build", "params": "forward" },
+        { "projects": "{dependencies}", "target": "pre-build", "params": "ignore" },
+        "^build-*"
+      ]
+    }
+  }
+}

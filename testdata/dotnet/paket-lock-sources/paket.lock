@@ -1,0 +1,9 @@
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    Newtonsoft.Json (13.0.3)
+  remote: https://packages.example.invalid/nuget/v3/index.json username: "%PRIVATE_FEED_USER%" password: "%PRIVATE_FEED_PASS%" authtype: "ntlm"
+    Contoso.Internal.Library (2.4.0)
+  remote: C:\nugets
+    Local.Build.Tools (1.0.0)
+  remote: \\server\share
+    Shared.Build.Tasks (3.1.0)

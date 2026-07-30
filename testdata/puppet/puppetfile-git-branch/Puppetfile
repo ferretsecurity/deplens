@@ -1,0 +1,8 @@
+mod 'proxy',
+    :git => 'https://git.example.test/network/puppet-proxy.git',
+    :branch => 'proxy_match'
+
+mod 'hieradata',
+    :git => 'git@git.example.test:organization/hieradata.git',
+    :branch => :control_branch,
+    :default_branch => 'main'

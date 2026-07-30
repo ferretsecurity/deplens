@@ -1,0 +1,8 @@
+pluginManagement {
+    plugins {
+        id 'com.example.hello' version "${helloPluginVersion}"
+    }
+    repositories { gradlePluginPortal() }
+}
+
+rootProject.name = 'dynamic-plugin-version'

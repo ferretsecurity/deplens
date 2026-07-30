@@ -1,0 +1,14 @@
+workspace(name = "local_repository_dependencies")
+
+load("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository", "new_local_repository")
+
+local_repository(
+    name = "already_bazelized_library",
+    path = "third_party/already_bazelized_library",
+    repo_mapping = {"@legacy_dep": "@modern_dep"},
+)
+new_local_repository(
+    name = "makefile_library",
+    path = "third_party/makefile_library",
+    build_file_content = "cc_library(name = \"makefile_library\")",
+)

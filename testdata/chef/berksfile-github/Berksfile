@@ -1,0 +1,9 @@
+cookbook 'library-cookbook', '~> 0.1.1',
+  github: 'example/library-cookbook'
+
+cookbook 'release-cookbook',
+  github: 'example/release-cookbook', tag: 'v2.4.0'
+
+cookbook 'revision-cookbook',
+  github: 'example/revision-cookbook',
+  ref: 'eef7e65806e7ff3bdbe148e27c447ef4a8bc3881'

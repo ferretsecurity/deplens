@@ -1,0 +1,6 @@
+[profile.default]
+libs = ["dependencies"]
+
+[dependencies]
+solady = { version = "0.0.47", url = "https://github.com/Vectorized/solady/archive/refs/tags/v0.0.47.zip" }
+openzeppelin = { version = "5.0.2", url = "https://github.com/OpenZeppelin/openzeppelin-contracts/archive/refs/tags/v5.0.2.zip" }

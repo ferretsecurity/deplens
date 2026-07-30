@@ -1,0 +1,9 @@
+{
+  "meta-version": 1,
+  "name": "Demo::Phases",
+  "version": "0.2.0",
+  "description": "Installation, build, and test dependencies",
+  "depends": ["Cro::HTTP"],
+  "build-depends": ["LibraryMake"],
+  "test-depends": ["Test", "Test::META"]
+}

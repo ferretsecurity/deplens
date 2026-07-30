@@ -1,0 +1,6 @@
+{
+  "version": "0.5",
+  "requires": ["engine/2.0", "matrix/1.1"],
+  "build_requires": ["tool/2.3"],
+  "python_requires": ["recipe_helpers/1.0"]
+}

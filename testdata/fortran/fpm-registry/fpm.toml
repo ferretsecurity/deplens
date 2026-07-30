@@ -1,0 +1,8 @@
+name = "registry"
+version = "0.1.0"
+
+[dependencies]
+example-package.namespace = "example-namespace"
+example-package.v = "1.2.3"
+latest-package.namespace = "fortran-lang"
+stdlib = "*"

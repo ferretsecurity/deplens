@@ -1,0 +1,9 @@
+opam-version: "2.0"
+name: "locked-dev"
+version: "1.0"
+depends: [
+  "ocaml" {= "5.2.0"}
+  "dune" {= "3.17.2"}
+  "utop" {= "2.14.0" & dev}
+  "ocamlformat" {= "0.27.0" & with-dev-setup}
+]

@@ -1,0 +1,26 @@
+{
+  "lockFileVersion": 10,
+  "registryFileHashes": {},
+  "moduleExtensions": {
+    "@@rules_python~//python/extensions:python.bzl%python": {
+      "os:linux,arch:amd64": {
+        "bzlTransitiveDigest": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+        "usagesDigest": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "recordedRepoMappingEntries": [],
+        "generatedRepoSpecs": {}
+      },
+      "os:windows,arch:amd64": {
+        "bzlTransitiveDigest": "K7gNU3sdo+OL0wNhqoVWhr3g6s1xYv72ol/pe/Unols=",
+        "usagesDigest": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "recordedRepoMappingEntries": [],
+        "generatedRepoSpecs": {}
+      }
+    }
+  }
+}

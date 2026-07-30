@@ -1,0 +1,7 @@
+[[constraint]]
+  name = "github.com/acme/direct-library"
+  source = "github.com/acme-forks/direct-library"
+
+[[override]]
+  name = "github.com/acme/transitive-library"
+  source = "github.com/acme-forks/transitive-library"

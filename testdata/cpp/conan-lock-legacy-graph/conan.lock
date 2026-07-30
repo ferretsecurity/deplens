@@ -1,0 +1,31 @@
+{
+  "version": "0.4",
+  "graph_lock": {
+    "nodes": {
+      "0": {
+        "ref": "conanfile.txt",
+        "options": "",
+        "package_id": null,
+        "prev": null,
+        "requires": ["1", "2"],
+        "context": "host"
+      },
+      "1": {
+        "ref": "zlib/1.2.13@conan/stable#13c96f538b52e1600c40b88994de240f",
+        "options": "shared=False",
+        "package_id": "4f6081a0a471ec7f851ebd1949d1af6e",
+        "prev": "75b0f234e6f7e24d",
+        "requires": [],
+        "context": "host"
+      },
+      "2": {
+        "ref": "cmake/3.22.6@conan/stable",
+        "options": "",
+        "package_id": "da39a3ee5e6b4b0d3255bfef95601890",
+        "prev": "7d6b6f9b",
+        "requires": [],
+        "context": "build"
+      }
+    }
+  }
+}

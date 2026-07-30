@@ -1,0 +1,11 @@
+version: 2.0
+shards:
+  private_client:
+    git: git@github.com:acme/private-client.cr.git
+    version: 1.2.3
+  gitlab_lib:
+    git: https://gitlab.com/example/gitlab-lib.cr.git
+    version: 0.7.0
+  git_protocol_lib:
+    git: git://git.example/crystal/git-protocol-lib.git
+    version: 3.1.4

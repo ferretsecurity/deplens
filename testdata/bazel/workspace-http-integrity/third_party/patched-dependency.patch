@@ -1,0 +1,5 @@
+--- a/include/dependency.h
++++ b/include/dependency.h
+@@ -1 +1 @@
+-#define DEPENDENCY_VERSION 0
++#define DEPENDENCY_VERSION 1

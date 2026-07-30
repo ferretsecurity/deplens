@@ -1,0 +1,15 @@
+required = [
+  "github.com/golangci/golangci-lint/cmd/golangci-lint",
+  "github.com/vektra/mockery/v2/cmd/mockery"
+]
+
+ignored = [
+  "github.com/acme/application/internal/generated",
+  "github.com/acme/optional-feature*"
+]
+
+noverify = ["github.com/acme/unverified-vendor", "WORKSPACE"]
+
+[[constraint]]
+  name = "github.com/vektra/mockery"
+  version = "^2.42.2"

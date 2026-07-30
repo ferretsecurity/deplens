@@ -1,0 +1,21 @@
+exports_files(["public.proto"])
+
+filegroup(
+    name = "schema_sources",
+    srcs = [
+        "public.proto",
+        "@googleapis//google/api:annotations_proto",
+    ],
+)
+
+alias(
+    name = "protobuf_api",
+    actual = "@com_google_protobuf//:protobuf",
+)
+
+cc_library(
+    name = "consumer",
+    srcs = ["consumer.cc"],
+    deps = [":protobuf_api"],
+    data = [":schema_sources"],
+)

@@ -1,0 +1,9 @@
+# A ref can be a branch, tag, or commit; default_branch is used only as fallback.
+mod 'control_data',
+    :git => 'https://git.example.test/configuration/control_data.git',
+    :ref => 'environment/production',
+    :default_branch => 'main'
+
+# With no version option, r10k follows the repository's default branch.
+mod 'unversioned_data',
+    :git => 'https://git.example.test/configuration/unversioned_data.git'

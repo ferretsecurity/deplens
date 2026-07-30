@@ -1,0 +1,27 @@
+# carton snapshot format: version 1.0
+
+DISTRIBUTIONS
+  AnyEvent-7.17
+    pathname: M/ML/MLEHMANN/AnyEvent-7.17.tar.gz
+    provides:
+      AE undef
+      AE::Log::COLLECT undef
+      AE::Log::FILTER undef
+      AnyEvent 7.17
+      AnyEvent::Base 7.17
+      AnyEvent::CondVar 7.17
+      AnyEvent::DNS undef
+      AnyEvent::Handle undef
+      AnyEvent::IO undef
+      AnyEvent::Loop undef
+      AnyEvent::Socket undef
+      AnyEvent::Util undef
+    requirements:
+      Carp 0
+      ExtUtils::MakeMaker 0
+  Data-Section-Simple-0.07
+    pathname: M/MI/MIYAGAWA/Data-Section-Simple-0.07.tar.gz
+    provides:
+      Data::Section::Simple 0.07
+    requirements:
+      strict 0

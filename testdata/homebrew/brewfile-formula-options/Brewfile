@@ -1,0 +1,5 @@
+brew "postgresql@16", restart_service: true
+brew "denji/nginx/nginx-full", link: :overwrite, args: ["with-rmtp"]
+brew "mysql@5.6", restart_service: :changed, link: true, conflicts_with: ["mysql"]
+brew "postgresql@16", postinstall: "${HOMEBREW_PREFIX}/opt/postgresql@16/bin/postgres -D ${HOMEBREW_PREFIX}/var/postgresql@16"
+brew "ruby", version_file: ".ruby-version"

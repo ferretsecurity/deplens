@@ -1,0 +1,10 @@
+{
+  "name": "esy-basic",
+  "version": "1.0.0",
+  "esy": { "build": ["dune build"] },
+  "dependencies": {
+    "ocaml": "^5.2.0",
+    "@opam/dune": "^3.17.0",
+    "@opam/fmt": "^0.9.0"
+  }
+}

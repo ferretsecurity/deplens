@@ -2,7 +2,7 @@
 CARTON: 1.0.34
 
 DISTRIBUTIONS
-  MIYAGAWA/Plack-1.0050.tar.gz
+  Plack-1.0050
     pathname: M/MI/MIYAGAWA/Plack-1.0050.tar.gz
     provides:
       Plack 1.0050

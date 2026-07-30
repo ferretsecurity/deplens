@@ -1,0 +1,6 @@
+source "https://rubygems.org"
+
+gem "nokogiri", "~> 1.16", platforms: %i[mri mingw x64_mingw]
+platforms :jruby do
+  gem "jdbc-postgres", "~> 42.7"
+end

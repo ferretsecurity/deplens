@@ -1,0 +1,4 @@
+%{
+  "ecto" => {:hex, :ecto, "3.12.4", "7ddb1fdd3d7d115d4d7f8f820de7c8ecf083d9e1f04623d7e4a5e3d72ab2c6d3", [:mix], [], "hexpm", "ef6a4137b7d1d0c5b6d9a99a0d129a50f9ffcefdfd67e61dbbb12b1a6b27d70c"},
+  "custom_ecto" => {:git, "ssh://git@example.test/platform/custom_ecto.git", "0123456789abcdef0123456789abcdef01234567", [ref: "0123456789abcdef0123456789abcdef01234567"]}
+}

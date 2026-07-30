@@ -1,0 +1,17 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.6",
+  "Category": "Games",
+  "Description": "Project module additional dependency fixture.",
+  "Modules": [
+    {
+      "Name": "FixtureGame",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "AdditionalDependencies": ["Core", "CoreUObject", "Engine", "EnhancedInput"]
+    }
+  ],
+  "Plugins": [
+    { "Name": "EnhancedInput", "Enabled": true }
+  ]
+}

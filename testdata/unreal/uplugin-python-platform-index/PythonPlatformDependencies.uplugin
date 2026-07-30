@@ -1,0 +1,33 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "FriendlyName": "Python Platform Dependencies",
+  "Description": "Platform-specific Python requirement fixture.",
+  "Category": "Scripting",
+  "Modules": [
+    { "Name": "PythonPlatformDependencies", "Type": "Editor", "LoadingPhase": "Default" }
+  ],
+  "PythonRequirements": [
+    {
+      "Platform": "Linux",
+      "ExtraIndexUrls": ["https://download.pytorch.org/whl/"],
+      "Requirements": [
+        "torch==2.1.0+cu118 --hash=sha256:bcb17e2de6ca634d326203694d0bfb552587335e536c1917be3f28c5664b5506 --hash=sha256:8ecf52ba49cfd3b7303d4e57e7b5c2106b77dbc9bdeaf880870162138bc70e18 --hash=sha256:a81b554184492005543ddc32e96469f9369d778dedd195d73bda9bed407d6589"
+      ]
+    },
+    {
+      "Platform": "Mac",
+      "ExtraIndexUrls": ["https://download.pytorch.org/whl/"],
+      "Requirements": [
+        "torch==2.1.0 --hash=sha256:3cd1dedff13884d890f18eea620184fb4cd8fd3c68ce3300498f427ae93aa962 --hash=sha256:601b0a2a9d9233fb4b81f7d47dca9680d4f3a78ca3f781078b6ad1ced8a90523 --hash=sha256:05661c32ec14bc3a157193d0f19a7b19d8e61eb787b33353cad30202c295e83b --hash=sha256:101c139152959cb20ab370fc192672c50093747906ee4ceace44d8dd703f29af --hash=sha256:421739685eba5e0beba42cb649740b15d44b0d565c04e6ed667b41148734a75b --hash=sha256:a6b7438a90a870e4cdeb15301519ae6c043c883fcd224d303c5b118082814767 --hash=sha256:c8bf7eaf9514465e5d9101e05195183470a6215bb50295c61b52302a04edb690 --hash=sha256:6ad491e70dbe4288d17fdbfc7fbfa766d66cbe219bc4871c7a8096f4a37c98df"
+      ]
+    },
+    {
+      "Platform": "Win64",
+      "Requirements": [
+        "requests==2.32.3 --hash=sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6"
+      ]
+    }
+  ]
+}

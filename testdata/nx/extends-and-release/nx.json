@@ -1,0 +1,16 @@
+{
+  "extends": "./nx.base.json",
+  "release": {
+    "projects": ["packages/*", "!packages/experimental"],
+    "version": {
+      "preserveMatchingDependencyRanges": true,
+      "updateDependents": "always"
+    },
+    "groups": {
+      "core": {
+        "projects": ["api", "web"],
+        "projectsRelationship": "fixed"
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "ImportPath": "github.com/acme/monorepo",
+  "GoVersion": "go1.8.7",
+  "GodepVersion": "v80",
+  "Packages": ["./...", "./cmd/server", "./cmd/worker"],
+  "Deps": [
+    {
+      "ImportPath": "github.com/gorilla/mux",
+      "Rev": "8a875a034c69b940914d83ea03d3f1299b4d094b"
+    }
+  ]
+}

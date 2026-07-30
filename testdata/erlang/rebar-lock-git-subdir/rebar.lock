@@ -1,0 +1,2 @@
+{"1.2.0",[{<<"ra">>,{git_subdir,"https://github.com/rabbitmq/ra.git",{ref,"0123456789abcdef0123456789abcdef01234567"},"ra"},0},{<<"sys_config">>,{git_subdir,"git://github.com/example/monorepo.git",{ref,"a1b2c3d4e5f6789012345678901234567890abcd"},"apps/sys_config"},1}]}.
+[{pkg_hash,[]},{pkg_hash_ext,[]}].

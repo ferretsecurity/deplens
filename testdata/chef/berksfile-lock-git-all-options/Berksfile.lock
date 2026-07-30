@@ -1,0 +1,11 @@
+DEPENDENCIES
+  bacon
+    git: https://repo.example.test/cookbooks/bacon.git
+    revision: defjkl123456
+    ref: abc123
+    branch: ham
+    tag: v1.2.3
+    rel: cookbooks/bacon
+
+GRAPH
+  bacon (1.2.3)

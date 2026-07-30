@@ -1,0 +1,12 @@
+hash: b9e4643253d2170374b095ae0f19f71c3ef5c0549ba32a7148a6797e99a95144
+updated: 2019-07-09T18:35:06.713855-04:00
+imports:
+- name: github.com/codegangsta/cli
+  version: cfb38830724cc34fedffe9a2a29fb54fa9169cd1
+  os:
+  - linux
+  - darwin
+  arch:
+  - amd64
+  - arm64
+testImports: []

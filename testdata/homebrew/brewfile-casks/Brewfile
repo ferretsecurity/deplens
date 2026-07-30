@@ -1,0 +1,4 @@
+cask_args appdir: "~/Applications", require_sha: true
+cask "firefox", args: { appdir: "~/my-apps/Applications" }
+cask "opera", greedy: true
+cask "google-cloud-sdk", postinstall: "${HOMEBREW_PREFIX}/bin/gcloud components update"

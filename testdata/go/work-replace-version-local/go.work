@@ -1,0 +1,3 @@
+go 1.23.0
+
+replace example.com/a v1.2.3 => ./fork/a

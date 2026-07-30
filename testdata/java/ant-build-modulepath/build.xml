@@ -1,0 +1,9 @@
+<project name="modulepath" default="compile">
+  <path id="application.modules">
+    <pathelement location="modules/jackson-databind-2.17.2.jar"/>
+    <fileset dir="modules/optional" includes="*.jar"/>
+  </path>
+  <target name="compile">
+    <javac srcdir="src" destdir="build/classes" release="21" modulepathref="application.modules" includeantruntime="false"/>
+  </target>
+</project>

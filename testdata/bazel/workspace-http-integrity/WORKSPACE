@@ -1,0 +1,13 @@
+workspace(name = "http_integrity_dependencies")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "patched_dependency",
+    urls = ["https://example.test/patched-dependency-1.0.tar.gz"],
+    integrity = "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+    canonical_id = "patched-dependency-1.0",
+    strip_prefix = "patched-dependency-1.0",
+    patches = ["//third_party:patched-dependency.patch"],
+    patch_strip = 1,
+)

@@ -1,0 +1,13 @@
+<project name="classpath-attributes" default="run">
+  <target name="compile">
+    <javac srcdir="src"
+           destdir="build/classes"
+           classpath="lib/guava-33.3.0-jre.jar${path.separator}lib/jsr305-3.0.2.jar"
+           includeantruntime="false"/>
+  </target>
+  <target name="run" depends="compile">
+    <java classname="com.example.Main"
+          fork="true"
+          classpath="build/classes${path.separator}lib/logback-classic-1.5.7.jar"/>
+  </target>
+</project>

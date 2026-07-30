@@ -1,0 +1,5 @@
+version: v1beta1
+name: buf.build/acme/legacy
+deps:
+  - buf.build/googleapis/googleapis
+  - buf.build/acme/legacy-common:release-2025

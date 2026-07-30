@@ -1,0 +1,16 @@
+workspace(name = "bind_aliases")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "openssl_repo",
+    url = "https://example.test/openssl.zip",
+    sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    build_file = "//third_party:openssl.BUILD",
+)
+
+# Legacy bind alias retained only for old WORKSPACE declarations.
+bind(
+    name = "openssl",
+    actual = "@openssl_repo//:openssl-lib",
+)

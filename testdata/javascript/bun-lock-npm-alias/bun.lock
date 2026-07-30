@@ -1,0 +1,9 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {"": {"name": "alias-fixture", "dependencies": {"bun-types": "npm:@types/bun@^1.1.0"}}},
+  "packages": {
+    "@types/bun": ["@types/bun@1.1.16", "", {}, "sha512-YWxpYXNQbGFjZWhvbGRlcldpdGhIYXNo"],
+    "bun-types": ["bun-types@npm:@types/bun@1.1.16", "", {"dependencies": {"@types/bun": "1.1.16"}}, "sha512-YWxpYXNQYWNrYWdlUGxhY2Vob2xkZXI="]
+  }
+}

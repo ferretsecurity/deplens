@@ -1,0 +1,11 @@
+source https://api.nuget.org/v3/index.json
+source https://www.myget.org/F/fsharp/api/v3/index.json
+source https://packages.example.invalid/nuget/v3/index.json username: "%PRIVATE_FEED_USER%" password: "%PRIVATE_FEED_PASS%" authtype: "basic"
+source ./local-packages
+source .
+source C:\nugets
+source ~/project/nugets
+source \\server\share
+
+nuget FSharp.Core 8.0.100
+nuget ArgParse >= 6.2 prerelease

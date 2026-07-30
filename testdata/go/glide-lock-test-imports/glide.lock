@@ -1,0 +1,12 @@
+hash: b9e4643253d2170374b095ae0f19f71c3ef5c0549ba32a7148a6797e99a95144
+updated: 2019-07-09T18:35:06.713855-04:00
+imports:
+- name: github.com/Masterminds/semver
+  version: c7af12943936e8c39859482e61f0574c2fd7fc75
+testImports:
+- name: github.com/spf13/cobra
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+  repo: https://github.com/spf13/cobra.git
+  vcs: git
+  subpackages:
+  - .

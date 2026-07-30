@@ -1,0 +1,8 @@
+<ivy-module version="2.0">
+  <info organisation="com.example" module="resolution-controls"/>
+  <dependencies>
+    <dependency org="org.slf4j" name="slf4j-api" rev="2.0.13" revConstraint="[2.0,3.0[" force="true"/>
+    <dependency org="org.apache.felix" name="org.apache.felix.framework" rev="7.0.5" transitive="false"/>
+    <dependency org="com.example" name="snapshot-library" rev="1.0-SNAPSHOT" changing="true" branch="main"/>
+  </dependencies>
+</ivy-module>

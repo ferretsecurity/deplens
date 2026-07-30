@@ -1,0 +1,9 @@
+{
+  "lockFileVersion": 10,
+  "registryFileHashes": {
+    "https://registry.example.test/bazel_registry.json": "not found",
+    "https://bcr.bazel.build/bazel_registry.json": "8a28e4af1db396ce91c6712eb99213a53fb7713bb90d8e32f55e1b475d5b3497",
+    "https://bcr.bazel.build/modules/rules_cc/0.0.9/MODULE.bazel": "7cd0312e0e8a0dc36f6cd98beebc574738c84c3710f9c59749c8ef0e5c96ace2",
+    "https://bcr.bazel.build/modules/rules_cc/0.0.9/source.json": "e2893eecf08b19421cf0fe8e017b96a91629d35f4a1ad7d5e6d5a9d4a9ba3ebd"
+  }
+}

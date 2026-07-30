@@ -1,0 +1,11 @@
+[GLOBAL]
+pants_version = "2.32.0"
+backend_packages = ["pants.backend.python"]
+
+[python-repos]
+indexes = ["https://pypi.org/simple/", "https://packages.acme.test/simple/"]
+find_links = ["%(buildroot)s/3rdparty/python/wheels"]
+
+[python-repos.path_mappings]
+WHEELS = "%(buildroot)s/3rdparty/python/wheels"
+PRIVATE_INDEX = "https://packages.acme.test/simple/"

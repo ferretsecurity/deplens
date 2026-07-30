@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "com.example.git-package": {
+      "version": "https://github.com/example/git-package.git#v1.2.3",
+      "depth": 0,
+      "source": "git",
+      "dependencies": { "com.unity.nuget.newtonsoft-json": "3.2.1" },
+      "hash": "0123456789abcdef0123456789abcdef01234567"
+    }
+  }
+}

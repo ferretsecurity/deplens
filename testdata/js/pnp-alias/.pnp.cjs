@@ -1,0 +1,2 @@
+const RAW_RUNTIME_STATE = `{"dependencyTreeRoots":[{"name":"alias-fixture","reference":"workspace:."}],"packageRegistryData":[["alias-fixture",[["workspace:.",{"packageLocation":"./","packageDependencies":[["fixture-types",["@types/node","npm:22.10.0"]]],"linkType":"SOFT"}]]],["@types/node",[["npm:22.10.0",{"packageLocation":"./.yarn/cache/@types-node-npm-22.10.0.zip/node_modules/@types/node/","packageDependencies":[],"linkType":"HARD"}]]]]}`;
+module.exports = {RAW_RUNTIME_STATE};
