@@ -437,3 +437,6 @@ go build ./cmd/deplens
 ```
 
 When adding a detector, update this README and the coverage inventory, add a fixture under `testdata`, and add focused unit and scan integration tests.
+
+For collecting real-project fixture evidence for non-extracting detectors, see
+[the fixture collector loop guide](docs/fixturecollectorloop.md).

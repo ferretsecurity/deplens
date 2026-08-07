@@ -52,6 +52,9 @@ type detector struct {
 	FilenameRegexp *regexp.Regexp
 	PathGlob       string
 	Analyzer       sourceAnalyzer
+	AnalyzerType   string
+	AnalyzerConfig string
+	Capabilities   []string
 }
 
 type Ruleset struct {
@@ -251,6 +254,14 @@ func loadRules(source string, data []byte) (Ruleset, error) {
 		if err != nil {
 			return Ruleset{}, fmt.Errorf("%s: %s.analyzer: %w", source, fieldPath, err)
 		}
+		analyzerConfig, err := semanticAnalyzerConfig(rawRule.Analyzer)
+		if err != nil {
+			return Ruleset{}, fmt.Errorf("%s.analyzer: %w", fieldPath, err)
+		}
+		capabilities, err := classifyDetectorCapabilities(rawRule.Analyzer)
+		if err != nil {
+			return Ruleset{}, fmt.Errorf("%s.analyzer: %w", fieldPath, err)
+		}
 		detectors = append(detectors, detector{
 			ID:             id,
 			PackageType:    dependencyTypeFromRule(rawRule),
@@ -259,6 +270,9 @@ func loadRules(source string, data []byte) (Ruleset, error) {
 			FilenameRegexp: compiled,
 			PathGlob:       rawRule.PathGlob,
 			Analyzer:       analyzer,
+			AnalyzerType:   analyzerType(rawRule),
+			AnalyzerConfig: analyzerConfig,
+			Capabilities:   capabilities,
 		})
 	}
 

@@ -28,6 +28,36 @@ One dependency value obtained from a source. `raw` preserves the source value. S
 
 A structured warning or error with `severity`, stable kebab-case `code`, and human-readable `message`.
 
+## Fixture corpus
+
+### Corpus example
+
+An exact, byte-for-byte dependency-source file collected from an identifiable revision of a real project for future analyzer development and realistic detector testing.
+
+### Example set
+
+The deliberately varied corpus examples collected for one detector. An example set represents typical and edge-case dependency-relevant structures or facts across relevant project kinds rather than merely satisfying a numeric quota.
+
+### Provenance record
+
+The immutable origin and selection evidence associated with a corpus example, including its upstream repository, commit, path, license, retrieval date, and content hash.
+
+### Collection run
+
+One time-bounded invocation that performs collection iterations until its global stop condition is reached. Repeated collection runs continue the same reviewable body of work rather than publishing independently.
+
+### Collection iteration
+
+One resumable unit of a collection run, focused on advancing the example set for one detector and recording the resulting progress transition.
+
+### Collection PR
+
+The long-lived pull request through which corpus examples and their provenance records are reviewed before entering the main branch.
+
+### Collection progress
+
+The human-reviewable, machine-readable record that defines eligible detectors, example-set targets, iteration budgets, completed work, and the next unfinished collection iteration.
+
 ## Source forms
 
 A source has exactly one physical or syntactic form:
