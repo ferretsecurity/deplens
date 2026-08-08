@@ -442,9 +442,9 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	}
 	var before map[string]string
 	failure := "collection iteration did not complete"
-	validCheckpoint := false
+	progressCheckpointed := false
 	defer func() {
-		if code != 0 && !validCheckpoint {
+		if code != 0 && !progressCheckpointed {
 			recordRecovery(root, progressPath, p, recovery, before, failure)
 		}
 	}()
@@ -509,8 +509,6 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 			fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
 			return 1, false
 		}
-	}
-	if outcome.Result == "accepted" {
 		if err := validateCorpus(detector.ID, added, before, after); err != nil {
 			failure = err.Error()
 			fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
@@ -535,10 +533,9 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		fmt.Fprintf(stderr, "error: checkpoint collection progress: %v\n", err)
 		return 1, false
 	}
-	validCheckpoint = true
+	progressCheckpointed = true
 	if commit {
 		if err := commitCheckpoint(root, progressPath, detector.ID, detector.Iterations, outcome.Result, added); err != nil {
-			failure = err.Error()
 			fmt.Fprintf(stderr, "error: collection commit failed after a valid checkpoint: %v\n", err)
 			fmt.Fprintln(stderr, "validated corpus and progress remain as uncommitted collection state. Commit them manually, discard the iteration deliberately, or rerun without --commit after reviewing Git status.")
 			return 1, false
