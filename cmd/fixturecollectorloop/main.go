@@ -3,6 +3,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"errors"
 	"flag"
 	"fmt"
@@ -42,6 +43,31 @@ type Iteration struct {
 type Outcome struct {
 	Result string
 	Added  []string
+}
+
+const maxExampleSize = 2 << 20
+
+var approvedLicenses = map[string]bool{
+	"MIT": true, "Apache-2.0": true, "BSD-2-Clause": true, "BSD-3-Clause": true,
+	"ISC": true, "0BSD": true, "CC0-1.0": true, "Unlicense": true,
+}
+
+type Provenance struct {
+	Version       int      `yaml:"version"`
+	DetectorID    string   `yaml:"detector_id"`
+	Provider      string   `yaml:"provider"`
+	Repository    string   `yaml:"repository"`
+	RepositoryURL string   `yaml:"repository_url"`
+	Commit        string   `yaml:"commit"`
+	OriginalPath  string   `yaml:"original_path"`
+	Permalink     string   `yaml:"permalink"`
+	RetrievedAt   string   `yaml:"retrieved_at"`
+	SHA256        string   `yaml:"sha256"`
+	License       string   `yaml:"license"`
+	LicenseURL    string   `yaml:"license_url"`
+	ProjectKind   string   `yaml:"project_kind"`
+	VariationTags []string `yaml:"variation_tags"`
+	Rationale     string   `yaml:"rationale"`
 }
 
 type Agent interface {
@@ -157,6 +183,10 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 		fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
 		return 1
 	}
+	if err := validateCorpus(detector.ID, added, before, after); err != nil {
+		fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
+		return 1
+	}
 	detector.Iterations++
 	detector.State = stateInProgress
 	detector.Examples = append(detector.Examples, corpusExampleFiles(added)...)
@@ -166,6 +196,125 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 	}
 	fmt.Fprintf(stdout, "checkpoint: %s iteration %d (%d new files)\n", detector.ID, detector.Iterations, len(added))
 	return 0
+}
+
+func validateCorpus(detectorID string, added []string, before, after map[string]string) error {
+	byRoot := map[string][]string{}
+	for _, path := range added {
+		parts := strings.Split(path, "/")
+		if len(parts) < 5 {
+			return fmt.Errorf("%s does not preserve a source root", path)
+		}
+		root := strings.Join(parts[:4], "/")
+		byRoot[root] = append(byRoot[root], path)
+	}
+	knownIdentity, knownContent := map[string]bool{}, map[string]bool{}
+	for path, content := range before {
+		if filepath.Base(path) == "provenance.yaml" {
+			p, err := parseProvenance(content)
+			if err == nil {
+				knownIdentity[p.Repository+"@"+p.Commit+":"+p.OriginalPath] = true
+			}
+			continue
+		}
+		knownContent[hash(content)] = true
+	}
+	for root, paths := range byRoot {
+		provenancePath := root + "/provenance.yaml"
+		contents, ok := after[provenancePath]
+		if !ok {
+			return fmt.Errorf("%s has no provenance record", root)
+		}
+		p, err := parseProvenance(contents)
+		if err != nil {
+			return fmt.Errorf("%s: %w", provenancePath, err)
+		}
+		if err := validateProvenance(p, detectorID); err != nil {
+			return fmt.Errorf("%s: %w", provenancePath, err)
+		}
+		identity := p.Repository + "@" + p.Commit + ":" + p.OriginalPath
+		if knownIdentity[identity] {
+			return fmt.Errorf("duplicate upstream identity %s", identity)
+		}
+		knownIdentity[identity] = true
+		expected := root + "/" + strings.TrimPrefix(filepath.ToSlash(filepath.Clean(p.OriginalPath)), "./")
+		if _, ok := after[expected]; !ok {
+			return fmt.Errorf("%s does not contain original path %s", root, p.OriginalPath)
+		}
+		sourceCount := 0
+		for _, path := range paths {
+			if path == provenancePath {
+				continue
+			}
+			sourceCount++
+			content := after[path]
+			if len(content) > maxExampleSize {
+				return fmt.Errorf("%s exceeds the %d byte size limit", path, maxExampleSize)
+			}
+			if isLFSPointer(content) {
+				return fmt.Errorf("%s is a Git LFS pointer", path)
+			}
+			if containsUnsafeContent(content) {
+				return fmt.Errorf("%s contains credentials, authentication material, or personal data", path)
+			}
+			if knownContent[hash(content)] {
+				return fmt.Errorf("%s duplicates accepted corpus content", path)
+			}
+			knownContent[hash(content)] = true
+			if path == expected && !strings.EqualFold(hash(content), p.SHA256) {
+				return fmt.Errorf("%s does not match its provenance SHA-256", path)
+			}
+		}
+		if sourceCount != 1 {
+			return fmt.Errorf("%s must contain exactly one source file", root)
+		}
+	}
+	return nil
+}
+
+func parseProvenance(contents string) (Provenance, error) {
+	var p Provenance
+	d := yaml.NewDecoder(strings.NewReader(contents))
+	d.KnownFields(true)
+	if err := d.Decode(&p); err != nil {
+		return Provenance{}, err
+	}
+	return p, nil
+}
+
+func validateProvenance(p Provenance, detectorID string) error {
+	if p.Version != 1 || p.DetectorID != detectorID || p.Provider != "github" || p.Repository == "" ||
+		p.RepositoryURL == "" || p.Commit == "" || p.OriginalPath == "" || p.Permalink == "" ||
+		p.RetrievedAt == "" || p.SHA256 == "" || p.LicenseURL == "" || p.ProjectKind == "" ||
+		len(p.VariationTags) == 0 || p.Rationale == "" {
+		return errors.New("missing required provenance")
+	}
+	if !approvedLicenses[p.License] {
+		return fmt.Errorf("license %q is not approved", p.License)
+	}
+	if filepath.IsAbs(p.OriginalPath) || strings.HasPrefix(filepath.Clean(p.OriginalPath), "..") {
+		return errors.New("original path is unsafe")
+	}
+	if !strings.Contains(p.Permalink, "/blob/"+p.Commit+"/") {
+		return errors.New("permalink is not pinned to immutable commit")
+	}
+	if len(p.SHA256) != 64 {
+		return errors.New("SHA-256 is invalid")
+	}
+	return nil
+}
+
+func hash(content string) string {
+	sum := sha256.Sum256([]byte(content))
+	return fmt.Sprintf("%x", sum)
+}
+func isLFSPointer(content string) bool {
+	return strings.HasPrefix(content, "version https://git-lfs.github.com/spec/")
+}
+func containsUnsafeContent(content string) bool {
+	lower := strings.ToLower(content)
+	return strings.Contains(lower, "password=") || strings.Contains(lower, "authorization:") ||
+		strings.Contains(lower, "private_key") || strings.Contains(lower, "ghp_") || strings.Contains(lower, "npm_")
 }
 
 func selectDetector(detectors []DetectorProgress, target string) *DetectorProgress {

@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,6 +21,26 @@ func (f fakeAgent) Run(iteration Iteration) (Outcome, error) {
 
 var acceptedOutcome = Outcome{Result: "accepted", Added: []string{"owner-repo-abc123/project/dependencies.txt", "owner-repo-abc123/provenance.yaml"}}
 
+func provenance(detectorID, sourcePath string, contents []byte) []byte {
+	hash := sha256.Sum256(contents)
+	return []byte(fmt.Sprintf(`version: 1
+detector_id: %s
+provider: github
+repository: owner/repo
+repository_url: https://github.com/owner/repo
+commit: abc123def456
+original_path: %s
+permalink: https://github.com/owner/repo/blob/abc123def456/%s
+retrieved_at: 2026-08-08T00:00:00Z
+sha256: %x
+license: MIT
+license_url: https://opensource.org/license/mit
+project_kind: library
+variation_tags: [typical]
+rationale: typical dependency source
+`, detectorID, sourcePath, sourcePath, hash))
+}
+
 func TestRunCreatesAResumableCheckpoint(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
@@ -35,7 +57,7 @@ func TestRunCreatesAResumableCheckpoint(t *testing.T) {
 		if err := os.WriteFile(path, []byte("example dependency\n"), 0o644); err != nil {
 			return err
 		}
-		return os.WriteFile(filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "provenance.yaml"), []byte("version: 1\n"), 0o644)
+		return os.WriteFile(filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "provenance.yaml"), provenance(iteration.DetectorID, "project/dependencies.txt", []byte("example dependency\n")), 0o644)
 	}}
 	stdout.Reset()
 	stderr.Reset()
@@ -52,6 +74,66 @@ func TestRunCreatesAResumableCheckpoint(t *testing.T) {
 	}
 	if !strings.Contains(stdout.String(), "checkpoint: example-detector iteration 1") {
 		t.Fatalf("summary = %q", stdout.String())
+	}
+}
+
+func TestRunRejectsUnsafeOrUnverifiedCorpus(t *testing.T) {
+	for name, contents := range map[string][]byte{
+		"unsafe credential": []byte("token = ghp_abcdefghijklmnopqrstuvwxyz1234567890\n"),
+		"git lfs pointer":   []byte("version https://git-lfs.github.com/spec/v1\noid sha256:abc\nsize 1\n"),
+	} {
+		t.Run(name, func(t *testing.T) {
+			root := t.TempDir()
+			progress := filepath.Join(root, "collection.yaml")
+			if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+				t.Fatalf("initialize exit status = %d", got)
+			}
+			agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+				path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
+				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+					return err
+				}
+				if err := os.WriteFile(path, contents, 0o644); err != nil {
+					return err
+				}
+				return os.WriteFile(filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "provenance.yaml"), provenance(iteration.DetectorID, "project/dependencies.txt", contents), 0o644)
+			}}
+			var stdout, stderr bytes.Buffer
+			if got := run([]string{"run", "--progress", progress}, root, &stdout, &stderr, agent); got != 1 {
+				t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
+			}
+			if !strings.Contains(stderr.String(), "unvalidated collection changes") {
+				t.Fatalf("stderr = %q", stderr.String())
+			}
+		})
+	}
+}
+
+func TestRunRejectsHashMismatch(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+		t.Fatalf("initialize exit status = %d", got)
+	}
+	contents := []byte("example dependency\n")
+	agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(path, contents, 0o644); err != nil {
+			return err
+		}
+		bad := provenance(iteration.DetectorID, "project/dependencies.txt", contents)
+		bad[bytes.Index(bad, []byte("sha256: "))+len("sha256: ")] = 'z'
+		return os.WriteFile(filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "provenance.yaml"), bad, 0o644)
+	}}
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"run", "--progress", progress}, root, &stdout, &stderr, agent); got != 1 {
+		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
+	}
+	if !strings.Contains(stderr.String(), "SHA-256") {
+		t.Fatalf("stderr = %q", stderr.String())
 	}
 }
 
