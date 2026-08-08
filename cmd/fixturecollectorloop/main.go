@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -165,6 +166,7 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 	duration := fs.Duration("duration", 8*time.Hour, "soft limit for scheduling new iterations")
 	queryLimit := fs.Int("query-limit", 5, "maximum queries recorded by one iteration")
 	candidateLimit := fs.Int("candidate-limit", 20, "maximum candidates recorded by one iteration")
+	allowDirty := fs.Bool("allow-dirty", false, "allow a checkout that already has non-ignored changes")
 	if err := fs.Parse(args); err != nil {
 		return 1
 	}
@@ -182,6 +184,10 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 		return 1
 	}
 	defer unlock()
+	if err := preflightGit(root, *progressPath, *allowDirty, append([]string{"run"}, args...), stderr); err != nil {
+		fmt.Fprintf(stderr, "error: %v\n", err)
+		return 1
+	}
 	p, err := readProgress(*progressPath)
 	if err != nil {
 		fmt.Fprintf(stderr, "error: read collection progress: %v\n", err)
@@ -222,6 +228,98 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 			return collectionSummary(p, stdout)
 		}
 	}
+}
+
+func preflightGit(root, progressPath string, allowDirty bool, command []string, stderr io.Writer) error {
+	status, err := gitOutput(root, "status", "--porcelain=v1", "-z", "--untracked-files=all")
+	if err != nil {
+		return fmt.Errorf("fixture collection requires a Git checkout: %w", err)
+	}
+	paths := dirtyPaths(status)
+	lockPath, err := filepath.Rel(root, progressPath+".lock")
+	if err == nil {
+		paths = withoutPath(paths, filepath.ToSlash(lockPath))
+	}
+	if len(paths) > 0 && !allowDirty {
+		fmt.Fprintln(stderr, "checkout contains non-ignored changes:")
+		for _, path := range paths {
+			fmt.Fprintf(stderr, "  %s\n", path)
+		}
+		fmt.Fprintln(stderr, "refusing to run until you choose exactly one of:")
+		fmt.Fprintln(stderr, "  1. DESTRUCTIVE: git reset --hard HEAD")
+		fmt.Fprintln(stderr, "     DESTRUCTIVE: git clean -fd")
+		fmt.Fprintf(stderr, "  2. Rerun with --allow-dirty: fixturecollectorloop %s --allow-dirty\n", strings.Join(command, " "))
+		return errors.New("dirty checkout")
+	}
+	if allowDirty {
+		fmt.Fprintln(stderr, "WARNING: --allow-dirty permits pre-existing changes; their initial Git and filesystem state is preserved for validation and recovery.")
+	}
+	return warnBranchState(root, stderr)
+}
+
+func withoutPath(paths []string, excluded string) []string {
+	filtered := paths[:0]
+	for _, path := range paths {
+		if path != excluded {
+			filtered = append(filtered, path)
+		}
+	}
+	return filtered
+}
+
+func gitOutput(root string, args ...string) (string, error) {
+	command := exec.Command("git", append([]string{"-C", root}, args...)...)
+	output, err := command.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("git %s: %s", strings.Join(args, " "), strings.TrimSpace(string(output)))
+	}
+	return string(output), nil
+}
+
+func dirtyPaths(status string) []string {
+	var paths []string
+	entries := strings.Split(status, "\x00")
+	for i := 0; i < len(entries); i++ {
+		entry := entries[i]
+		if len(entry) < 4 {
+			continue
+		}
+		paths = append(paths, entry[3:])
+		if entry[0] == 'R' || entry[0] == 'C' {
+			// The old path is the next NUL-delimited field in porcelain v1 -z.
+			if i+1 < len(entries) && entries[i+1] != "" {
+				paths = append(paths, entries[i+1])
+			}
+			i++
+		}
+	}
+	sort.Strings(paths)
+	return paths
+}
+
+func warnBranchState(root string, stderr io.Writer) error {
+	branch, err := gitOutput(root, "symbolic-ref", "--quiet", "--short", "HEAD")
+	if err != nil {
+		fmt.Fprintln(stderr, "WARNING: detached HEAD; collection does not create or switch branches.")
+		return nil
+	}
+	branch = strings.TrimSpace(branch)
+	remote, err := gitOutput(root, "remote")
+	if err != nil || strings.TrimSpace(remote) == "" {
+		fmt.Fprintln(stderr, "WARNING: no Git remote is configured; the default branch cannot be determined.")
+		return nil
+	}
+	remoteName := strings.Fields(remote)[0]
+	defaultRef, err := gitOutput(root, "symbolic-ref", "--quiet", "--short", "refs/remotes/"+remoteName+"/HEAD")
+	if err != nil {
+		fmt.Fprintln(stderr, "WARNING: the default branch cannot be determined without fetching; collection will not fetch or switch branches.")
+		return nil
+	}
+	defaultBranch := strings.TrimPrefix(strings.TrimSpace(defaultRef), remoteName+"/")
+	if branch == defaultBranch {
+		fmt.Fprintf(stderr, "WARNING: running collection on the default branch %q; collection will not create or switch branches.\n", branch)
+	}
+	return nil
 }
 
 func runIteration(root, progressPath string, p Progress, detector *DetectorProgress, agent Agent, queryLimit, candidateLimit int, stderr io.Writer) (int, bool) {

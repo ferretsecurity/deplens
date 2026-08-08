@@ -5,11 +5,80 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 )
+
+func initializeGitRepository(t *testing.T, root string) {
+	t.Helper()
+	for _, args := range [][]string{{"init", "-q"}, {"config", "user.name", "Fixture Collector Test"}, {"config", "user.email", "fixture-collector@example.test"}} {
+		command := exec.Command("git", append([]string{"-C", root}, args...)...)
+		if output, err := command.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v: %s", args, err, output)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(root, "README.md"), []byte("test repository\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func commitGitChanges(t *testing.T, root string) {
+	t.Helper()
+	for _, args := range [][]string{{"add", "-A"}, {"-c", "commit.gpgSign=false", "commit", "--no-gpg-sign", "--no-verify", "-qm", "test checkpoint"}} {
+		command := exec.Command("git", append([]string{"-C", root}, args...)...)
+		if output, err := command.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v: %s", args, err, output)
+		}
+	}
+}
+
+func TestRunRefusesDirtyCheckoutAndAllowsExplicitOverride(t *testing.T) {
+	root := t.TempDir()
+	initializeGitRepository(t, root)
+	progress := filepath.Join(root, "collection.yaml")
+	p := Progress{Version: 1, Detectors: []DetectorProgress{{ID: "example", State: statePending, Examples: []string{}}}}
+	if err := writeProgress(progress, p); err != nil {
+		t.Fatal(err)
+	}
+	commitGitChanges(t, root)
+	if err := os.WriteFile(filepath.Join(root, "dirty.txt"), []byte("keep me"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, unavailableAgent{}); got != 1 {
+		t.Fatalf("dirty run exit status = %d", got)
+	}
+	for _, want := range []string{"dirty.txt", "git reset --hard HEAD", "git clean -fd", "--allow-dirty"} {
+		if !strings.Contains(stderr.String(), want) {
+			t.Fatalf("dirty refusal missing %q: %s", want, stderr.String())
+		}
+	}
+	if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, unavailableAgent{}); got != 1 {
+		t.Fatalf("override run exit status = %d", got)
+	}
+	if !strings.Contains(stderr.String(), "WARNING: --allow-dirty") {
+		t.Fatalf("override warning missing: %s", stderr.String())
+	}
+}
+
+func TestRunRequiresGitCheckout(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if err := writeProgress(progress, Progress{Version: 1, Detectors: []DetectorProgress{{ID: "example", State: statePending}}}); err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, unavailableAgent{}); got != 1 {
+		t.Fatalf("run exit status = %d", got)
+	}
+	if !strings.Contains(stderr.String(), "requires a Git checkout") {
+		t.Fatalf("stderr = %q", stderr.String())
+	}
+}
 
 type fakeAgent struct {
 	write   func(Iteration) error
@@ -49,6 +118,8 @@ func TestRunCreatesAResumableCheckpoint(t *testing.T) {
 	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, &stdout, &stderr, unavailableAgent{}); got != 0 {
 		t.Fatalf("initialize exit status = %d, stderr = %s", got, stderr.String())
 	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
 
 	agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
 		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
@@ -89,6 +160,8 @@ func TestRunRejectsUnsafeOrUnverifiedCorpus(t *testing.T) {
 			if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
 				t.Fatalf("initialize exit status = %d", got)
 			}
+			initializeGitRepository(t, root)
+			commitGitChanges(t, root)
 			agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
 				path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
 				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -116,6 +189,8 @@ func TestRunRejectsHashMismatch(t *testing.T) {
 	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
 	contents := []byte("example dependency\n")
 	agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
 		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
@@ -144,6 +219,8 @@ func TestRunRejectsChangesOutsideSelectedCorpus(t *testing.T) {
 	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
 
 	badAgent := fakeAgent{outcome: acceptedOutcome, write: func(Iteration) error {
 		return os.WriteFile(filepath.Join(root, "unrelated.txt"), []byte("no"), 0o644)
@@ -170,6 +247,8 @@ func TestRunRejectsProtocolThatDisagreesWithCorpus(t *testing.T) {
 	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
 	agent := fakeAgent{outcome: Outcome{Result: "accepted"}, write: func(iteration Iteration) error {
 		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "provenance.yaml")
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -196,6 +275,8 @@ func TestRunPrefersInProgressAndCanTargetOneDetector(t *testing.T) {
 	if err := writeProgress(progress, p); err != nil {
 		t.Fatal(err)
 	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
 	var ran []string
 	agent := fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(i Iteration) error { ran = append(ran, i.DetectorID); return nil }}
 	var stdout, stderr bytes.Buffer
@@ -205,7 +286,7 @@ func TestRunPrefersInProgressAndCanTargetOneDetector(t *testing.T) {
 	if len(ran) != 1 || ran[0] != "in-progress-second" {
 		t.Fatalf("selected detectors = %v", ran)
 	}
-	if got := run([]string{"run", "--single", "--progress", progress, "--detector", "pending-first"}, root, &stdout, &stderr, agent); got != 0 {
+	if got := run([]string{"run", "--single", "--progress", progress, "--detector", "pending-first", "--allow-dirty"}, root, &stdout, &stderr, agent); got != 0 {
 		t.Fatalf("targeted run exit status = %d, stderr = %s", got, stderr.String())
 	}
 	if len(ran) != 2 || ran[1] != "pending-first" {
@@ -220,6 +301,8 @@ func TestRunFullStopsAtIterationBudgetAndDoesNotAdvanceInfrastructureFailures(t 
 	if err := writeProgress(progress, p); err != nil {
 		t.Fatal(err)
 	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
 	var calls int
 	agent := fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { calls++; return nil }}
 	var stdout, stderr bytes.Buffer
@@ -245,6 +328,8 @@ func TestRunRefusesExistingProgressLockWithoutMutation(t *testing.T) {
 	if err := writeProgress(progress, p); err != nil {
 		t.Fatal(err)
 	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
 	if err := os.WriteFile(progress+".lock", []byte("active"), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -271,6 +356,8 @@ func TestRunStopsBeforeSchedulingAtSoftDuration(t *testing.T) {
 	if err := writeProgress(progress, p); err != nil {
 		t.Fatal(err)
 	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
 	originalNow := now
 	now = func() time.Time { return time.Unix(100, 0) }
 	t.Cleanup(func() { now = originalNow })
