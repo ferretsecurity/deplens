@@ -28,6 +28,48 @@ One dependency value obtained from a source. `raw` preserves the source value. S
 
 A structured warning or error with `severity`, stable kebab-case `code`, and human-readable `message`.
 
+## Fixture collection
+
+### Corpus
+
+The authoritative collection of validated corpus examples and their provenance records. Files at corpus paths enter the authoritative collection only when collection progress records their successful wrapper validation.
+
+### Corpus example
+
+An exact, byte-for-byte dependency source retained from a real public project for future analyzer design and testing. Every corpus example has an adjacent provenance record.
+
+### Provenance record
+
+Structured evidence identifying a corpus example's immutable upstream revision, origin, license, content hash, project classification, variations, and selection rationale.
+
+### Collection progress
+
+The strict, versioned document that records the reviewed collection plan and durable outcomes so independent collection iterations can resume without hidden conversational context.
+
+### Collection iteration
+
+One bounded attempt by a fresh agent session to advance the example set for one detector. The wrapper validates the attempt as a unit before accepting its changes or optionally committing them.
+
+### Collection run
+
+One invocation that executes one or more collection iterations within the requested mode and time limit.
+
+### Collection commit
+
+An optional local Git commit created by the wrapper after one valid collection iteration. It contains only validated collector-owned changes and is never pushed by the collector.
+
+### Collection checkpoint
+
+The durable collection state after a valid iteration has updated collection progress. In commit mode it is represented by `HEAD`; without commits it remains valid collection state in the working tree. A resumed run continues from this checkpoint rather than from an interrupted agent session.
+
+### Valid collection state
+
+Collector-owned files that are fully described by collection progress and satisfy the collector's integrity rules. A later collection run may revalidate and resume from this state even when it has not been committed.
+
+### Unvalidated collection changes
+
+Collector-owned file changes left by an iteration that did not complete wrapper validation. They are preserved for diagnosis, but collection cannot resume until a human resolves them.
+
 ## Source forms
 
 A source has exactly one physical or syntactic form:
