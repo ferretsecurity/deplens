@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -20,6 +21,11 @@ import (
 const (
 	statePending    = "pending"
 	stateInProgress = "in-progress"
+	stateComplete   = "complete"
+	stateBlocked    = "blocked"
+	stateExcluded   = "excluded"
+	maxIterations   = 7
+	defaultTarget   = 3
 )
 
 type Progress struct {
@@ -32,6 +38,10 @@ type DetectorProgress struct {
 	State      string   `yaml:"state"`
 	Iterations int      `yaml:"iterations"`
 	Examples   []string `yaml:"examples"`
+	Target     int      `yaml:"target,omitempty"`
+	Queries    []string `yaml:"queries,omitempty"`
+	Candidates []string `yaml:"candidates,omitempty"`
+	Rejections []string `yaml:"rejections,omitempty"`
 }
 
 type Iteration struct {
@@ -41,9 +51,14 @@ type Iteration struct {
 }
 
 type Outcome struct {
-	Result string
-	Added  []string
+	Result     string
+	Added      []string
+	Queries    []string
+	Candidates []string
+	Rejections []string
 }
+
+var now = time.Now
 
 const maxExampleSize = 2 << 20
 
@@ -102,6 +117,7 @@ func initialize(args []string, root string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("initialize-progress", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	progressPath := fs.String("progress", filepath.Join(root, ".deplens", "fixture-collection.yaml"), "collection progress path")
+	target := fs.Int("target", defaultTarget, "examples required per detector (3 through 5)")
 	var detectors commaList
 	fs.Var(&detectors, "detector", "detector identifier (repeatable or comma-separated)")
 	if err := fs.Parse(args); err != nil {
@@ -109,6 +125,10 @@ func initialize(args []string, root string, stdout, stderr io.Writer) int {
 	}
 	if len(detectors) == 0 {
 		fmt.Fprintln(stderr, "error: at least one --detector is required for this tracer bullet")
+		return 1
+	}
+	if *target < 3 || *target > 5 {
+		fmt.Fprintln(stderr, "error: target must be between 3 and 5")
 		return 1
 	}
 	if _, err := os.Stat(*progressPath); err == nil {
@@ -126,7 +146,7 @@ func initialize(args []string, root string, stdout, stderr io.Writer) int {
 			return 1
 		}
 		seen[id] = true
-		p.Detectors[i] = DetectorProgress{ID: id, State: statePending, Examples: []string{}}
+		p.Detectors[i] = DetectorProgress{ID: id, State: statePending, Target: *target, Examples: []string{}}
 	}
 	if err := writeProgress(*progressPath, p); err != nil {
 		fmt.Fprintf(stderr, "error: initialize collection progress: %v\n", err)
@@ -141,60 +161,177 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 	fs.SetOutput(stderr)
 	progressPath := fs.String("progress", filepath.Join(root, ".deplens", "fixture-collection.yaml"), "collection progress path")
 	target := fs.String("detector", "", "run one detector")
+	single := fs.Bool("single", false, "run one automatically selected iteration")
+	duration := fs.Duration("duration", 8*time.Hour, "soft limit for scheduling new iterations")
+	queryLimit := fs.Int("query-limit", 5, "maximum queries recorded by one iteration")
+	candidateLimit := fs.Int("candidate-limit", 20, "maximum candidates recorded by one iteration")
 	if err := fs.Parse(args); err != nil {
 		return 1
 	}
+	if *duration < 0 {
+		fmt.Fprintln(stderr, "error: duration must not be negative")
+		return 1
+	}
+	if *queryLimit < 1 || *candidateLimit < 1 {
+		fmt.Fprintln(stderr, "error: query-limit and candidate-limit must be positive")
+		return 1
+	}
+	unlock, err := lockProgress(*progressPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "error: %v\n", err)
+		return 1
+	}
+	defer unlock()
 	p, err := readProgress(*progressPath)
 	if err != nil {
 		fmt.Fprintf(stderr, "error: read collection progress: %v\n", err)
 		return 1
 	}
-	detector := selectDetector(p.Detectors, *target)
-	if detector == nil {
-		fmt.Fprintln(stdout, "collection complete: no eligible detector")
-		return 0
+	deadline := now().Add(*duration)
+	for {
+		if !now().Before(deadline) {
+			fmt.Fprintln(stdout, "collection stopped: soft duration reached; the latest checkpoint is preserved")
+			return 0
+		}
+		detector := selectDetector(p.Detectors, *target)
+		if detector == nil {
+			return collectionSummary(p, stdout)
+		}
+		if detector.Target == 0 {
+			detector.Target = defaultTarget
+		}
+		if detector.Iterations >= maxIterations {
+			detector.State = stateBlocked
+			if err := writeProgress(*progressPath, p); err != nil {
+				fmt.Fprintf(stderr, "error: checkpoint collection progress: %v\n", err)
+				return 1
+			}
+			if *single || *target != "" {
+				return collectionSummary(p, stdout)
+			}
+			continue
+		}
+		code, checkpointed := runIteration(root, *progressPath, p, detector, agent, *queryLimit, *candidateLimit, stderr)
+		if code != 0 {
+			return code
+		}
+		if checkpointed {
+			fmt.Fprintf(stdout, "checkpoint: %s iteration %d\n", detector.ID, detector.Iterations)
+		}
+		if *single || *target != "" {
+			return collectionSummary(p, stdout)
+		}
 	}
+}
+
+func runIteration(root, progressPath string, p Progress, detector *DetectorProgress, agent Agent, queryLimit, candidateLimit int, stderr io.Writer) (int, bool) {
 	before, err := snapshot(root)
 	if err != nil {
 		fmt.Fprintf(stderr, "error: snapshot collection state: %v\n", err)
-		return 1
+		return 1, false
 	}
 	corpusDir := filepath.Join(root, "testdata", "corpus", detector.ID)
 	outcome, err := agent.Run(Iteration{DetectorID: detector.ID, CorpusDir: corpusDir, Iteration: detector.Iterations + 1})
 	if err != nil {
 		fmt.Fprintf(stderr, "error: collection agent: %v\n", err)
-		return 1
+		return 1, false
 	}
 	after, err := snapshot(root)
 	if err != nil {
 		fmt.Fprintf(stderr, "error: snapshot collection state: %v\n", err)
-		return 1
+		return 1, false
 	}
 	added, err := validateDelta(before, after, filepath.Join("testdata", "corpus", detector.ID))
 	if err != nil {
 		fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
-		return 1
+		return 1, false
 	}
-	if len(added) == 0 {
+	if outcome.Result != "accepted" && outcome.Result != "unsuccessful" {
+		fmt.Fprintln(stderr, "error: collection agent: invalid outcome result")
+		return 1, false
+	}
+	if len(outcome.Queries) > queryLimit || len(outcome.Candidates) > candidateLimit {
+		fmt.Fprintln(stderr, "error: collection agent: outcome exceeds the configured query or candidate bound")
+		return 1, false
+	}
+	if outcome.Result == "unsuccessful" && len(added) != 0 {
+		fmt.Fprintln(stderr, "error: unvalidated collection changes: unsuccessful research changed the corpus")
+		return 1, false
+	}
+	if outcome.Result == "accepted" && len(added) == 0 {
 		fmt.Fprintln(stderr, "error: unvalidated collection changes: agent added no corpus example")
-		return 1
+		return 1, false
 	}
-	if err := validateOutcome(outcome, detector.ID, added); err != nil {
-		fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
-		return 1
+	if outcome.Result == "accepted" {
+		if err := validateOutcome(outcome, detector.ID, added); err != nil {
+			fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
+			return 1, false
+		}
 	}
-	if err := validateCorpus(detector.ID, added, before, after); err != nil {
-		fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
-		return 1
+	if outcome.Result == "accepted" {
+		if err := validateCorpus(detector.ID, added, before, after); err != nil {
+			fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
+			return 1, false
+		}
 	}
 	detector.Iterations++
 	detector.State = stateInProgress
 	detector.Examples = append(detector.Examples, corpusExampleFiles(added)...)
-	if err := writeProgress(*progressPath, p); err != nil {
-		fmt.Fprintf(stderr, "error: checkpoint collection progress: %v\n", err)
-		return 1
+	detector.Queries = append(detector.Queries, outcome.Queries...)
+	detector.Candidates = append(detector.Candidates, outcome.Candidates...)
+	detector.Rejections = append(detector.Rejections, outcome.Rejections...)
+	if len(detector.Examples) >= detector.Target {
+		detector.State = stateComplete
 	}
-	fmt.Fprintf(stdout, "checkpoint: %s iteration %d (%d new files)\n", detector.ID, detector.Iterations, len(added))
+	if detector.Iterations >= maxIterations && detector.State != stateComplete {
+		detector.State = stateBlocked
+	}
+	if err := writeProgress(progressPath, p); err != nil {
+		fmt.Fprintf(stderr, "error: checkpoint collection progress: %v\n", err)
+		return 1, false
+	}
+	return 0, true
+}
+
+func lockProgress(progressPath string) (func(), error) {
+	path := progressPath + ".lock"
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if errors.Is(err, os.ErrExist) {
+		return nil, fmt.Errorf("another collection run holds %s; inspect it and remove only a confirmed stale lock", path)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if _, err := fmt.Fprintf(f, "pid: %d\n", os.Getpid()); err != nil {
+		_ = f.Close()
+		_ = os.Remove(path)
+		return nil, err
+	}
+	if err := f.Close(); err != nil {
+		_ = os.Remove(path)
+		return nil, err
+	}
+	return func() { _ = os.Remove(path) }, nil
+}
+
+func collectionSummary(p Progress, stdout io.Writer) int {
+	var complete, blocked, excluded, active int
+	for _, d := range p.Detectors {
+		switch d.State {
+		case stateComplete:
+			complete++
+		case stateBlocked:
+			blocked++
+		case stateExcluded:
+			excluded++
+		default:
+			active++
+		}
+	}
+	fmt.Fprintf(stdout, "collection summary: %d complete, %d blocked, %d excluded, %d remaining\n", complete, blocked, excluded, active)
+	if blocked > 0 {
+		return 2
+	}
 	return 0
 }
 
@@ -319,7 +456,7 @@ func containsUnsafeContent(content string) bool {
 
 func selectDetector(detectors []DetectorProgress, target string) *DetectorProgress {
 	for i := range detectors {
-		if detectors[i].ID == target && target != "" {
+		if detectors[i].ID == target && target != "" && isEligible(detectors[i]) {
 			return &detectors[i]
 		}
 	}
@@ -334,6 +471,10 @@ func selectDetector(detectors []DetectorProgress, target string) *DetectorProgre
 		}
 	}
 	return nil
+}
+
+func isEligible(d DetectorProgress) bool {
+	return (d.State == statePending || d.State == stateInProgress) && d.Iterations < maxIterations
 }
 
 func readProgress(path string) (Progress, error) {
@@ -351,11 +492,16 @@ func readProgress(path string) (Progress, error) {
 		return Progress{}, errors.New("invalid collection progress schema")
 	}
 	for _, detector := range p.Detectors {
-		if detector.ID == "" || (detector.State != statePending && detector.State != stateInProgress) {
+		if detector.ID == "" || !validState(detector.State) || detector.Iterations < 0 || detector.Iterations > maxIterations ||
+			(detector.Target != 0 && (detector.Target < 3 || detector.Target > 5)) {
 			return Progress{}, errors.New("invalid detector progress")
 		}
 	}
 	return p, nil
+}
+
+func validState(state string) bool {
+	return state == statePending || state == stateInProgress || state == stateComplete || state == stateBlocked || state == stateExcluded
 }
 
 func writeProgress(path string, p Progress) error {
