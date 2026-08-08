@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -489,5 +491,83 @@ func TestRunStopsBeforeSchedulingAtSoftDuration(t *testing.T) {
 	}
 	if !strings.Contains(stdout.String(), "soft duration reached") {
 		t.Fatalf("stdout = %q", stdout.String())
+	}
+}
+
+type fakeCommandRunner struct {
+	calls [][]string
+	final Outcome
+	err   error
+}
+
+func (f *fakeCommandRunner) Run(_ string, name string, args []string) ([]byte, error) {
+	f.calls = append(f.calls, append([]string{name}, args...))
+	if name != "codex" || len(args) == 0 || args[0] != "exec" {
+		return []byte("authenticated"), nil
+	}
+	for i := range args {
+		if args[i] == "--output-last-message" && i+1 < len(args) {
+			contents, _ := json.Marshal(f.final)
+			if err := os.WriteFile(args[i+1], contents, 0o600); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return []byte(`{"type":"item.completed"}` + "\n"), f.err
+}
+
+func TestCodexAgentPreflightsAndUsesFreshStructuredSession(t *testing.T) {
+	root := t.TempDir()
+	var stdout bytes.Buffer
+	runner := &fakeCommandRunner{final: Outcome{Result: "unsuccessful", Added: []string{}, Queries: []string{}, Candidates: []string{}, Rejections: []string{}}}
+	agent := &codexAgent{root: root, stdout: &stdout, runner: runner}
+	if err := agent.Preflight(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := agent.Run(Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 2, QueryLimit: 5, CandidateLimit: 20}); err != nil {
+		t.Fatal(err)
+	}
+	if len(runner.calls) != 3 || strings.Join(runner.calls[0], " ") != "codex login status" || strings.Join(runner.calls[1], " ") != "gh auth status --hostname github.com" {
+		t.Fatalf("preflight calls = %#v", runner.calls)
+	}
+	call := strings.Join(runner.calls[2], " ")
+	for _, want := range []string{"codex exec", "--json", "--sandbox workspace-write", "--output-schema", "--output-last-message", "default branch to a commit SHA", "at most 5 search queries"} {
+		if !strings.Contains(call, want) {
+			t.Fatalf("session command missing %q: %s", want, call)
+		}
+	}
+	logs, err := filepath.Glob(filepath.Join(root, ".deplens", "fixture-collection-logs", "*.jsonl"))
+	if err != nil || len(logs) != 0 {
+		t.Fatalf("successful non-retained logs = %v, err = %v", logs, err)
+	}
+}
+
+func TestCodexAgentRetainsFailureLogsOwnerOnly(t *testing.T) {
+	root := t.TempDir()
+	runner := &fakeCommandRunner{final: Outcome{}, err: fmt.Errorf("simulated failure")}
+	agent := &codexAgent{root: root, stdout: io.Discard, runner: runner}
+	_, err := agent.Run(Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 1})
+	if err == nil || !strings.Contains(err.Error(), "log retained") || !strings.Contains(err.Error(), "sensitive") {
+		t.Fatalf("error = %v", err)
+	}
+	path := filepath.Join(root, ".deplens", "fixture-collection-logs", "npm-1.jsonl")
+	info, statErr := os.Stat(path)
+	if statErr != nil {
+		t.Fatalf("stat failure log: %v", statErr)
+	}
+	if info.Mode().Perm() != 0o600 {
+		t.Fatalf("failure log mode = %v", info.Mode())
+	}
+}
+
+func TestCodexAgentRetainsSuccessfulLogsOnlyWhenRequested(t *testing.T) {
+	root := t.TempDir()
+	runner := &fakeCommandRunner{final: Outcome{Result: "unsuccessful", Added: []string{}, Queries: []string{}, Candidates: []string{}, Rejections: []string{}}}
+	agent := &codexAgent{root: root, stdout: io.Discard, runner: runner, retainLogs: true}
+	if _, err := agent.Run(Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(root, ".deplens", "fixture-collection-logs", "npm-1.jsonl")); err != nil {
+		t.Fatalf("retained success log: %v", err)
 	}
 }

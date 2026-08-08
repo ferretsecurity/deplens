@@ -46,9 +46,13 @@ type DetectorProgress struct {
 }
 
 type Iteration struct {
-	DetectorID string
-	CorpusDir  string
-	Iteration  int
+	DetectorID        string
+	CorpusDir         string
+	Iteration         int
+	QueryLimit        int
+	CandidateLimit    int
+	PriorHistory      []string
+	MissingDimensions []string
 }
 
 type Outcome struct {
@@ -97,7 +101,7 @@ func (unavailableAgent) Run(Iteration) (Outcome, error) {
 	return Outcome{}, errors.New("no Codex agent is configured; inject an agent through the command seam")
 }
 
-func main() { os.Exit(run(os.Args[1:], ".", os.Stdout, os.Stderr, unavailableAgent{})) }
+func main() { os.Exit(run(os.Args[1:], ".", os.Stdout, os.Stderr, newCodexAgent(".", os.Stdout))) }
 
 func run(args []string, root string, stdout, stderr io.Writer, agent Agent) int {
 	if len(args) == 0 {
@@ -169,6 +173,7 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 	candidateLimit := fs.Int("candidate-limit", 20, "maximum candidates recorded by one iteration")
 	allowDirty := fs.Bool("allow-dirty", false, "allow a checkout that already has non-ignored changes")
 	commit := fs.Bool("commit", false, "create one local collection commit for each valid iteration")
+	retainLogs := fs.Bool("retain-logs", false, "retain successful Codex JSONL logs (logs may contain sensitive content)")
 	if err := fs.Parse(args); err != nil {
 		return 1
 	}
@@ -179,6 +184,9 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 	if *queryLimit < 1 || *candidateLimit < 1 {
 		fmt.Fprintln(stderr, "error: query-limit and candidate-limit must be positive")
 		return 1
+	}
+	if configurable, ok := agent.(interface{ SetRetainLogs(bool) }); ok {
+		configurable.SetRetainLogs(*retainLogs)
 	}
 	unlock, err := lockProgress(*progressPath)
 	if err != nil {
@@ -193,6 +201,12 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 	if *commit {
 		if _, err := gitOutput(root, "var", "GIT_AUTHOR_IDENT"); err != nil {
 			fmt.Fprintf(stderr, "error: --commit requires a configured Git author identity: %v\n", err)
+			return 1
+		}
+	}
+	if preflight, ok := agent.(interface{ Preflight() error }); ok {
+		if err := preflight.Preflight(); err != nil {
+			fmt.Fprintf(stderr, "error: collection authentication preflight: %v\n", err)
 			return 1
 		}
 	}
@@ -337,7 +351,17 @@ func runIteration(root, progressPath string, p Progress, detector *DetectorProgr
 		return 1, false
 	}
 	corpusDir := filepath.Join(root, "testdata", "corpus", detector.ID)
-	outcome, err := agent.Run(Iteration{DetectorID: detector.ID, CorpusDir: corpusDir, Iteration: detector.Iterations + 1})
+	history := append(append([]string{}, detector.Queries...), detector.Candidates...)
+	history = append(history, detector.Rejections...)
+	outcome, err := agent.Run(Iteration{
+		DetectorID:        detector.ID,
+		CorpusDir:         corpusDir,
+		Iteration:         detector.Iterations + 1,
+		QueryLimit:        queryLimit,
+		CandidateLimit:    candidateLimit,
+		PriorHistory:      history,
+		MissingDimensions: []string{"source variation not yet recorded by collection progress"},
+	})
 	if err != nil {
 		fmt.Fprintf(stderr, "error: collection agent: %v\n", err)
 		return 1, false
