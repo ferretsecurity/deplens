@@ -272,23 +272,9 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 		result := make(chan iterationResult, 1)
 		go func() {
 			code, checkpointed := runIteration(ctx, root, *progressPath, p, detector, agent, *queryLimit, *candidateLimit, *commit, *allowDirty, stderr)
-			result <- iterationResult{code, checkpointed}
+			result <- iterationResult{code: code, checkpointed: checkpointed}
 		}()
-		var iteration iterationResult
-		stopAfterIteration := false
-		select {
-		case iteration = <-result:
-		case <-signals:
-			stopAfterIteration = true
-			fmt.Fprintln(stdout, "collection stopping: interrupt received; the active iteration may validate and checkpoint")
-			select {
-			case iteration = <-result:
-			case <-signals:
-				fmt.Fprintln(stderr, "collection forced stop: terminating the active agent; recovery is required before resuming")
-				cancel()
-				iteration = <-result
-			}
-		}
+		iteration, stopAfterIteration := waitForIteration(result, signals, cancel, stdout, stderr)
 		code, checkpointed := iteration.code, iteration.checkpointed
 		if code != 0 {
 			return code
@@ -305,6 +291,25 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 type iterationResult struct {
 	code         int
 	checkpointed bool
+}
+
+// waitForIteration lets the first interrupt finish a valid checkpoint and uses
+// the second to cancel the agent so recovery details can be recorded.
+func waitForIteration(result <-chan iterationResult, signals <-chan os.Signal, cancel context.CancelFunc, stdout, stderr io.Writer) (iterationResult, bool) {
+	select {
+	case iteration := <-result:
+		return iteration, false
+	case <-signals:
+		fmt.Fprintln(stdout, "collection stopping: interrupt received; the active iteration may validate and checkpoint")
+	}
+	select {
+	case iteration := <-result:
+		return iteration, true
+	case <-signals:
+		fmt.Fprintln(stderr, "collection forced stop: terminating the active agent; recovery is required before resuming")
+		cancel()
+		return <-result, true
+	}
 }
 
 func printRecoveryRequired(r Recovery, stderr io.Writer) {
@@ -429,9 +434,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	} else {
 		checkpoint = strings.TrimSpace(checkpoint)
 	}
-	runID := fmt.Sprintf("%d", now().UnixNano())
-	logPath := filepath.Join(root, ".deplens", "fixture-collection-"+runID+".log")
-	recovery := Recovery{RunID: runID, DetectorID: detector.ID, Iteration: detector.Iterations + 1, LastCheckpoint: checkpoint, ProgressPath: progressPath, LogPath: logPath, Commit: commit, AllowDirty: allowDirty}
+	recovery := newRecovery(root, progressPath, detector, checkpoint, commit, allowDirty)
 	p.Recovery = &recovery
 	if err := writeProgress(progressPath, p); err != nil {
 		fmt.Fprintf(stderr, "error: checkpoint recovery state: %v\n", err)
@@ -544,31 +547,42 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	return 0, true
 }
 
+func newRecovery(root, progressPath string, detector *DetectorProgress, checkpoint string, commit, allowDirty bool) Recovery {
+	runID := fmt.Sprintf("%d", now().UnixNano())
+	return Recovery{
+		RunID:          runID,
+		DetectorID:     detector.ID,
+		Iteration:      detector.Iterations + 1,
+		LastCheckpoint: checkpoint,
+		ProgressPath:   progressPath,
+		LogPath:        filepath.Join(root, ".deplens", "fixture-collection-"+runID+".log"),
+		Commit:         commit,
+		AllowDirty:     allowDirty,
+	}
+}
+
 func recordRecovery(root, progressPath string, p Progress, recovery Recovery, before map[string]string, failure string) {
 	recovery.ValidationError = failure
 	if err := os.MkdirAll(filepath.Dir(recovery.LogPath), 0o755); err == nil {
 		_ = os.WriteFile(recovery.LogPath, []byte(failure+"\n"), 0o600)
 	}
-	after, err := snapshot(root)
-	if err == nil {
+	if after, err := snapshot(root); err == nil {
 		recovery.ChangedPaths = changedPaths(before, after)
 	}
 	p.Recovery = &recovery
-	if err := writeProgress(progressPath, p); err != nil {
-		return
-	}
+	_ = writeProgress(progressPath, p)
 }
 
 func changedPaths(before, after map[string]string) []string {
-	paths := map[string]bool{}
+	paths := map[string]struct{}{}
 	for path, contents := range after {
 		if before[path] != contents {
-			paths[path] = true
+			paths[path] = struct{}{}
 		}
 	}
 	for path := range before {
 		if _, ok := after[path]; !ok {
-			paths[path] = true
+			paths[path] = struct{}{}
 		}
 	}
 	result := make([]string, 0, len(paths))
