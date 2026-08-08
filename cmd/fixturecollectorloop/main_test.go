@@ -149,6 +149,128 @@ func TestRunCreatesAResumableCheckpoint(t *testing.T) {
 	}
 }
 
+func TestRunCommitCreatesAtomicCollectionCheckpoint(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+		t.Fatalf("initialize exit status = %d", got)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+	contents := []byte("example dependency\n")
+	agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(path, contents, 0o644); err != nil {
+			return err
+		}
+		return os.WriteFile(filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "provenance.yaml"), provenance(iteration.DetectorID, "project/dependencies.txt", contents), 0o644)
+	}}
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"run", "--single", "--commit", "--progress", progress}, root, &stdout, &stderr, agent); got != 0 {
+		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
+	}
+	message, err := gitOutput(root, "log", "-1", "--format=%s")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := strings.TrimSpace(message), "collect example-detector corpus examples (iteration 1)"; got != want {
+		t.Fatalf("commit message = %q, want %q", got, want)
+	}
+	changed, err := gitOutput(root, "show", "--format=", "--name-only", "HEAD")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"collection.yaml", "testdata/corpus/example-detector/owner-repo-abc123/project/dependencies.txt", "testdata/corpus/example-detector/owner-repo-abc123/provenance.yaml"} {
+		if !strings.Contains(changed, want) {
+			t.Fatalf("commit paths missing %q: %s", want, changed)
+		}
+	}
+	status, err := gitOutput(root, "status", "--porcelain")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status != "" {
+		t.Fatalf("collection checkpoint left changes: %q", status)
+	}
+}
+
+func TestRunCommitRecordsUnsuccessfulCollectionAttempt(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+		t.Fatalf("initialize exit status = %d", got)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+	var stdout, stderr bytes.Buffer
+	agent := fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { return nil }}
+	if got := run([]string{"run", "--single", "--commit", "--progress", progress}, root, &stdout, &stderr, agent); got != 0 {
+		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
+	}
+	message, err := gitOutput(root, "log", "-1", "--format=%s")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := strings.TrimSpace(message), "record example-detector collection attempt (iteration 1)"; got != want {
+		t.Fatalf("commit message = %q, want %q", got, want)
+	}
+	changed, err := gitOutput(root, "show", "--format=", "--name-only", "HEAD")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.TrimSpace(changed) != "collection.yaml" {
+		t.Fatalf("progress-only commit changed %q", changed)
+	}
+}
+
+func TestRunCommitFailurePreservesValidatedUncommittedCheckpoint(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+		t.Fatalf("initialize exit status = %d", got)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+	originalGitCommit := gitCommit
+	gitCommit = func(_ string, args ...string) (string, error) {
+		return "", fmt.Errorf("git %s: simulated commit failure", strings.Join(args, " "))
+	}
+	t.Cleanup(func() { gitCommit = originalGitCommit })
+	contents := []byte("example dependency\n")
+	agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(path, contents, 0o644); err != nil {
+			return err
+		}
+		return os.WriteFile(filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "provenance.yaml"), provenance(iteration.DetectorID, "project/dependencies.txt", contents), 0o644)
+	}}
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"run", "--single", "--commit", "--progress", progress}, root, &stdout, &stderr, agent); got != 1 {
+		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
+	}
+	updated, err := readProgress(progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := updated.Detectors[0]; got.Iterations != 1 || len(got.Examples) != 1 {
+		t.Fatalf("valid checkpoint was not preserved: %+v", got)
+	}
+	if _, err := os.Stat(filepath.Join(root, "testdata", "corpus", "example-detector", "owner-repo-abc123", "project", "dependencies.txt")); err != nil {
+		t.Fatalf("validated corpus was not preserved: %v", err)
+	}
+	for _, want := range []string{"collection commit failed after a valid checkpoint", "remain as uncommitted collection state"} {
+		if !strings.Contains(stderr.String(), want) {
+			t.Fatalf("commit failure guidance missing %q: %s", want, stderr.String())
+		}
+	}
+}
+
 func TestRunRejectsUnsafeOrUnverifiedCorpus(t *testing.T) {
 	for name, contents := range map[string][]byte{
 		"unsafe credential": []byte("token = ghp_abcdefghijklmnopqrstuvwxyz1234567890\n"),

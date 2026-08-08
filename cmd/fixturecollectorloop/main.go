@@ -60,6 +60,7 @@ type Outcome struct {
 }
 
 var now = time.Now
+var gitCommit = gitOutput
 
 const maxExampleSize = 2 << 20
 
@@ -167,6 +168,7 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 	queryLimit := fs.Int("query-limit", 5, "maximum queries recorded by one iteration")
 	candidateLimit := fs.Int("candidate-limit", 20, "maximum candidates recorded by one iteration")
 	allowDirty := fs.Bool("allow-dirty", false, "allow a checkout that already has non-ignored changes")
+	commit := fs.Bool("commit", false, "create one local collection commit for each valid iteration")
 	if err := fs.Parse(args); err != nil {
 		return 1
 	}
@@ -187,6 +189,12 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 	if err := preflightGit(root, *progressPath, *allowDirty, append([]string{"run"}, args...), stderr); err != nil {
 		fmt.Fprintf(stderr, "error: %v\n", err)
 		return 1
+	}
+	if *commit {
+		if _, err := gitOutput(root, "var", "GIT_AUTHOR_IDENT"); err != nil {
+			fmt.Fprintf(stderr, "error: --commit requires a configured Git author identity: %v\n", err)
+			return 1
+		}
 	}
 	p, err := readProgress(*progressPath)
 	if err != nil {
@@ -217,7 +225,7 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 			}
 			continue
 		}
-		code, checkpointed := runIteration(root, *progressPath, p, detector, agent, *queryLimit, *candidateLimit, stderr)
+		code, checkpointed := runIteration(root, *progressPath, p, detector, agent, *queryLimit, *candidateLimit, *commit, stderr)
 		if code != 0 {
 			return code
 		}
@@ -322,7 +330,7 @@ func warnBranchState(root string, stderr io.Writer) error {
 	return nil
 }
 
-func runIteration(root, progressPath string, p Progress, detector *DetectorProgress, agent Agent, queryLimit, candidateLimit int, stderr io.Writer) (int, bool) {
+func runIteration(root, progressPath string, p Progress, detector *DetectorProgress, agent Agent, queryLimit, candidateLimit int, commit bool, stderr io.Writer) (int, bool) {
 	before, err := snapshot(root)
 	if err != nil {
 		fmt.Fprintf(stderr, "error: snapshot collection state: %v\n", err)
@@ -388,7 +396,37 @@ func runIteration(root, progressPath string, p Progress, detector *DetectorProgr
 		fmt.Fprintf(stderr, "error: checkpoint collection progress: %v\n", err)
 		return 1, false
 	}
+	if commit {
+		if err := commitCheckpoint(root, progressPath, detector.ID, detector.Iterations, outcome.Result, added); err != nil {
+			fmt.Fprintf(stderr, "error: collection commit failed after a valid checkpoint: %v\n", err)
+			fmt.Fprintln(stderr, "validated corpus and progress remain as uncommitted collection state. Commit them manually, discard the iteration deliberately, or rerun without --commit after reviewing Git status.")
+			return 1, false
+		}
+	}
 	return 0, true
+}
+
+func commitCheckpoint(root, progressPath, detectorID string, iteration int, result string, added []string) error {
+	progressRel, err := filepath.Rel(root, progressPath)
+	if err != nil || progressRel == ".." || strings.HasPrefix(progressRel, ".."+string(filepath.Separator)) {
+		return fmt.Errorf("collection progress must be inside the Git checkout: %s", progressPath)
+	}
+	paths := make([]string, 0, len(added)+1)
+	paths = append(paths, filepath.ToSlash(progressRel))
+	paths = append(paths, added...)
+	for _, path := range paths {
+		if _, err := gitOutput(root, "add", "--", path); err != nil {
+			return err
+		}
+	}
+	message := fmt.Sprintf("collect %s corpus examples (iteration %d)", detectorID, iteration)
+	if result == "unsuccessful" {
+		message = fmt.Sprintf("record %s collection attempt (iteration %d)", detectorID, iteration)
+	}
+	args := []string{"-c", "commit.gpgSign=false", "commit", "--only", "--no-gpg-sign", "--no-verify", "-m", message, "--"}
+	args = append(args, paths...)
+	_, err = gitCommit(root, args...)
+	return err
 }
 
 func lockProgress(progressPath string) (func(), error) {
