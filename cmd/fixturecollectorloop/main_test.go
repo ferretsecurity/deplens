@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -13,6 +14,99 @@ import (
 	"testing"
 	"time"
 )
+
+func TestRunSecondInterruptRecordsRecoveryAndRefusesResume(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+		t.Fatalf("initialize exit status = %d", got)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+
+	signals := make(chan os.Signal, 2)
+	originalSignals := collectionSignals
+	collectionSignals = func() (<-chan os.Signal, func()) { return signals, func() {} }
+	t.Cleanup(func() { collectionSignals = originalSignals })
+	agent := blockingAgent{started: make(chan struct{})}
+	result := make(chan int, 1)
+	var stdout, stderr bytes.Buffer
+	go func() {
+		result <- run([]string{"run", "--progress", progress}, root, &stdout, &stderr, agent)
+	}()
+	<-agent.started
+	signals <- os.Interrupt
+	signals <- os.Interrupt
+	if got := <-result; got != 1 {
+		t.Fatalf("forced interruption exit status = %d, stderr = %s", got, stderr.String())
+	}
+	stored, err := readProgress(progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stored.Recovery == nil || stored.Recovery.DetectorID != "example" {
+		t.Fatalf("recovery = %+v", stored.Recovery)
+	}
+	stdout.Reset()
+	stderr.Reset()
+	if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, unavailableAgent{}); got != 1 {
+		t.Fatalf("recovery-required exit status = %d", got)
+	}
+	for _, want := range []string{"recovery is required", "example", "last checkpoint", "progress:"} {
+		if !strings.Contains(stderr.String(), want) {
+			t.Fatalf("recovery guidance missing %q: %s", want, stderr.String())
+		}
+	}
+}
+
+func TestRunFirstInterruptAllowsActiveIterationToCheckpoint(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+		t.Fatalf("initialize exit status = %d", got)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+	signals := make(chan os.Signal, 2)
+	originalSignals := collectionSignals
+	collectionSignals = func() (<-chan os.Signal, func()) { return signals, func() {} }
+	t.Cleanup(func() { collectionSignals = originalSignals })
+	started, finish := make(chan struct{}), make(chan struct{})
+	agent := fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error {
+		close(started)
+		<-finish
+		return nil
+	}}
+	var stdout, stderr bytes.Buffer
+	result := make(chan int, 1)
+	go func() {
+		result <- run([]string{"run", "--progress", progress}, root, &stdout, &stderr, agent)
+	}()
+	<-started
+	signals <- os.Interrupt
+	close(finish)
+	if got := <-result; got != 0 {
+		t.Fatalf("graceful interruption exit status = %d, stderr = %s", got, stderr.String())
+	}
+	stored, err := readProgress(progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stored.Recovery != nil || stored.Detectors[0].Iterations != 1 {
+		t.Fatalf("graceful interrupt did not checkpoint: %+v", stored)
+	}
+	if !strings.Contains(stdout.String(), "active iteration may validate and checkpoint") {
+		t.Fatalf("stdout = %q", stdout.String())
+	}
+}
+
+type blockingAgent struct{ started chan struct{} }
+
+func (a blockingAgent) Run(ctx context.Context, _ Iteration) (Outcome, error) {
+	close(a.started)
+	<-ctx.Done()
+	return Outcome{}, ctx.Err()
+}
 
 func initializeGitRepository(t *testing.T, root string) {
 	t.Helper()
@@ -87,7 +181,7 @@ type fakeAgent struct {
 	outcome Outcome
 }
 
-func (f fakeAgent) Run(iteration Iteration) (Outcome, error) {
+func (f fakeAgent) Run(_ context.Context, iteration Iteration) (Outcome, error) {
 	return f.outcome, f.write(iteration)
 }
 
@@ -500,7 +594,7 @@ type fakeCommandRunner struct {
 	err   error
 }
 
-func (f *fakeCommandRunner) Run(_ string, name string, args []string) ([]byte, error) {
+func (f *fakeCommandRunner) Run(_ context.Context, _ string, name string, args []string) ([]byte, error) {
 	f.calls = append(f.calls, append([]string{name}, args...))
 	if name != "codex" || len(args) == 0 || args[0] != "exec" {
 		return []byte("authenticated"), nil
@@ -524,7 +618,7 @@ func TestCodexAgentPreflightsAndUsesFreshStructuredSession(t *testing.T) {
 	if err := agent.Preflight(); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := agent.Run(Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 2, QueryLimit: 5, CandidateLimit: 20}); err != nil {
+	if _, err := agent.Run(context.Background(), Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 2, QueryLimit: 5, CandidateLimit: 20}); err != nil {
 		t.Fatal(err)
 	}
 	if len(runner.calls) != 3 || strings.Join(runner.calls[0], " ") != "codex login status" || strings.Join(runner.calls[1], " ") != "gh auth status --hostname github.com" {
@@ -546,7 +640,7 @@ func TestCodexAgentRetainsFailureLogsOwnerOnly(t *testing.T) {
 	root := t.TempDir()
 	runner := &fakeCommandRunner{final: Outcome{}, err: fmt.Errorf("simulated failure")}
 	agent := &codexAgent{root: root, stdout: io.Discard, runner: runner}
-	_, err := agent.Run(Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 1})
+	_, err := agent.Run(context.Background(), Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 1})
 	if err == nil || !strings.Contains(err.Error(), "log retained") || !strings.Contains(err.Error(), "sensitive") {
 		t.Fatalf("error = %v", err)
 	}
@@ -564,7 +658,7 @@ func TestCodexAgentRetainsSuccessfulLogsOnlyWhenRequested(t *testing.T) {
 	root := t.TempDir()
 	runner := &fakeCommandRunner{final: Outcome{Result: "unsuccessful", Added: []string{}, Queries: []string{}, Candidates: []string{}, Rejections: []string{}}}
 	agent := &codexAgent{root: root, stdout: io.Discard, runner: runner, retainLogs: true}
-	if _, err := agent.Run(Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 1}); err != nil {
+	if _, err := agent.Run(context.Background(), Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 1}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(filepath.Join(root, ".deplens", "fixture-collection-logs", "npm-1.jsonl")); err != nil {

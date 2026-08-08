@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,13 +13,13 @@ import (
 
 // commandRunner is deliberately small so collector tests never need Codex, GitHub, or a network.
 type commandRunner interface {
-	Run(dir, name string, args []string) ([]byte, error)
+	Run(context.Context, string, string, []string) ([]byte, error)
 }
 
 type systemCommandRunner struct{}
 
-func (systemCommandRunner) Run(dir, name string, args []string) ([]byte, error) {
-	command := exec.Command(name, args...)
+func (systemCommandRunner) Run(ctx context.Context, dir, name string, args []string) ([]byte, error) {
+	command := exec.CommandContext(ctx, name, args...)
 	command.Dir = dir
 	return command.CombinedOutput()
 }
@@ -39,10 +40,10 @@ func newCodexAgent(root string, stdout io.Writer) *codexAgent {
 func (a *codexAgent) SetRetainLogs(retain bool) { a.retainLogs = retain }
 
 func (a *codexAgent) Preflight() error {
-	if output, err := a.runner.Run(a.root, "codex", []string{"login", "status"}); err != nil {
+	if output, err := a.runner.Run(context.Background(), a.root, "codex", []string{"login", "status"}); err != nil {
 		return commandError("Codex authentication", output, err)
 	}
-	if output, err := a.runner.Run(a.root, "gh", []string{"auth", "status", "--hostname", "github.com"}); err != nil {
+	if output, err := a.runner.Run(context.Background(), a.root, "gh", []string{"auth", "status", "--hostname", "github.com"}); err != nil {
 		return commandError("GitHub authentication", output, err)
 	}
 	return nil
@@ -56,7 +57,7 @@ func commandError(name string, output []byte, err error) error {
 	return fmt.Errorf("%s: %w: %s", name, err, detail)
 }
 
-func (a *codexAgent) Run(iteration Iteration) (Outcome, error) {
+func (a *codexAgent) Run(ctx context.Context, iteration Iteration) (Outcome, error) {
 	logDir := filepath.Join(a.root, ".deplens", "fixture-collection-logs")
 	if err := os.MkdirAll(logDir, 0o700); err != nil {
 		return Outcome{}, err
@@ -89,7 +90,7 @@ func (a *codexAgent) Run(iteration Iteration) (Outcome, error) {
 
 	fmt.Fprintf(a.stdout, "researching detector %s (iteration %d); detailed JSONL is retained locally on failure\n", iteration.DetectorID, iteration.Iteration)
 	args := []string{"exec", "--json", "--sandbox", "workspace-write", "-C", a.root, "--output-schema", schemaPath, "--output-last-message", resultPath, collectionPrompt(iteration)}
-	jsonl, runErr := a.runner.Run(a.root, "codex", args)
+	jsonl, runErr := a.runner.Run(ctx, a.root, "codex", args)
 	if err := writePrivateFile(logPath, jsonl); err != nil {
 		return Outcome{}, err
 	}

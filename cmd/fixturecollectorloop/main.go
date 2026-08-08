@@ -3,6 +3,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"errors"
 	"flag"
@@ -11,9 +12,11 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"sort"
 	"strings"
+	"syscall"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -32,6 +35,20 @@ const (
 type Progress struct {
 	Version   int                `yaml:"version"`
 	Detectors []DetectorProgress `yaml:"detectors"`
+	Recovery  *Recovery          `yaml:"recovery,omitempty"`
+}
+
+type Recovery struct {
+	RunID           string   `yaml:"run_id"`
+	DetectorID      string   `yaml:"detector_id"`
+	Iteration       int      `yaml:"iteration"`
+	LastCheckpoint  string   `yaml:"last_checkpoint"`
+	ProgressPath    string   `yaml:"progress_path"`
+	LogPath         string   `yaml:"log_path"`
+	ValidationError string   `yaml:"validation_error"`
+	ChangedPaths    []string `yaml:"changed_paths"`
+	Commit          bool     `yaml:"commit"`
+	AllowDirty      bool     `yaml:"allow_dirty"`
 }
 
 type DetectorProgress struct {
@@ -65,6 +82,11 @@ type Outcome struct {
 
 var now = time.Now
 var gitCommit = gitOutput
+var collectionSignals = func() (<-chan os.Signal, func()) {
+	ch := make(chan os.Signal, 2)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
+	return ch, func() { signal.Stop(ch) }
+}
 
 const maxExampleSize = 2 << 20
 
@@ -92,12 +114,12 @@ type Provenance struct {
 }
 
 type Agent interface {
-	Run(Iteration) (Outcome, error)
+	Run(context.Context, Iteration) (Outcome, error)
 }
 
 type unavailableAgent struct{}
 
-func (unavailableAgent) Run(Iteration) (Outcome, error) {
+func (unavailableAgent) Run(context.Context, Iteration) (Outcome, error) {
 	return Outcome{}, errors.New("no Codex agent is configured; inject an agent through the command seam")
 }
 
@@ -194,6 +216,15 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 		return 1
 	}
 	defer unlock()
+	p, err := readProgress(*progressPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "error: read collection progress: %v\n", err)
+		return 1
+	}
+	if p.Recovery != nil {
+		printRecoveryRequired(*p.Recovery, stderr)
+		return 1
+	}
 	if err := preflightGit(root, *progressPath, *allowDirty, append([]string{"run"}, args...), stderr); err != nil {
 		fmt.Fprintf(stderr, "error: %v\n", err)
 		return 1
@@ -210,12 +241,11 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 			return 1
 		}
 	}
-	p, err := readProgress(*progressPath)
-	if err != nil {
-		fmt.Fprintf(stderr, "error: read collection progress: %v\n", err)
-		return 1
-	}
 	deadline := now().Add(*duration)
+	signals, stopSignals := collectionSignals()
+	defer stopSignals()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	for {
 		if !now().Before(deadline) {
 			fmt.Fprintln(stdout, "collection stopped: soft duration reached; the latest checkpoint is preserved")
@@ -239,16 +269,64 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 			}
 			continue
 		}
-		code, checkpointed := runIteration(root, *progressPath, p, detector, agent, *queryLimit, *candidateLimit, *commit, stderr)
+		result := make(chan iterationResult, 1)
+		go func() {
+			code, checkpointed := runIteration(ctx, root, *progressPath, p, detector, agent, *queryLimit, *candidateLimit, *commit, *allowDirty, stderr)
+			result <- iterationResult{code, checkpointed}
+		}()
+		var iteration iterationResult
+		stopAfterIteration := false
+		select {
+		case iteration = <-result:
+		case <-signals:
+			stopAfterIteration = true
+			fmt.Fprintln(stdout, "collection stopping: interrupt received; the active iteration may validate and checkpoint")
+			select {
+			case iteration = <-result:
+			case <-signals:
+				fmt.Fprintln(stderr, "collection forced stop: terminating the active agent; recovery is required before resuming")
+				cancel()
+				iteration = <-result
+			}
+		}
+		code, checkpointed := iteration.code, iteration.checkpointed
 		if code != 0 {
 			return code
 		}
 		if checkpointed {
 			fmt.Fprintf(stdout, "checkpoint: %s iteration %d\n", detector.ID, detector.Iterations)
 		}
-		if *single || *target != "" {
+		if stopAfterIteration || *single || *target != "" {
 			return collectionSummary(p, stdout)
 		}
+	}
+}
+
+type iterationResult struct {
+	code         int
+	checkpointed bool
+}
+
+func printRecoveryRequired(r Recovery, stderr io.Writer) {
+	fmt.Fprintln(stderr, "error: fixture collection recovery is required before another agent starts (cannot be bypassed with --allow-dirty)")
+	fmt.Fprintf(stderr, "  detector: %s (iteration %d, run %s)\n", r.DetectorID, r.Iteration, r.RunID)
+	fmt.Fprintf(stderr, "  last checkpoint: %s\n  progress: %s\n  log: %s\n", r.LastCheckpoint, r.ProgressPath, r.LogPath)
+	validationError := r.ValidationError
+	if validationError == "" {
+		validationError = "none recorded"
+	}
+	fmt.Fprintf(stderr, "  validation error: %s\n", validationError)
+	changed := "none recorded"
+	if len(r.ChangedPaths) > 0 {
+		changed = strings.Join(r.ChangedPaths, ", ")
+	}
+	fmt.Fprintf(stderr, "  changed paths: %s\n", changed)
+	if r.Commit {
+		fmt.Fprintln(stderr, "  after review, a clean commit-mode checkout can be restored with DESTRUCTIVE: git reset --hard HEAD and DESTRUCTIVE: git clean -fd")
+	} else if r.AllowDirty {
+		fmt.Fprintln(stderr, "  preserve the initial dirty state; review and restore only the listed collector paths.")
+	} else {
+		fmt.Fprintln(stderr, "  preserve earlier valid collection checkpoints; review and restore only the listed iteration paths.")
 	}
 }
 
@@ -344,16 +422,39 @@ func warnBranchState(root string, stderr io.Writer) error {
 	return nil
 }
 
-func runIteration(root, progressPath string, p Progress, detector *DetectorProgress, agent Agent, queryLimit, candidateLimit int, commit bool, stderr io.Writer) (int, bool) {
-	before, err := snapshot(root)
+func runIteration(ctx context.Context, root, progressPath string, p Progress, detector *DetectorProgress, agent Agent, queryLimit, candidateLimit int, commit, allowDirty bool, stderr io.Writer) (code int, checkpointed bool) {
+	checkpoint, err := gitOutput(root, "rev-parse", "HEAD")
 	if err != nil {
+		checkpoint = "working tree (no Git checkpoint available)"
+	} else {
+		checkpoint = strings.TrimSpace(checkpoint)
+	}
+	runID := fmt.Sprintf("%d", now().UnixNano())
+	logPath := filepath.Join(root, ".deplens", "fixture-collection-"+runID+".log")
+	recovery := Recovery{RunID: runID, DetectorID: detector.ID, Iteration: detector.Iterations + 1, LastCheckpoint: checkpoint, ProgressPath: progressPath, LogPath: logPath, Commit: commit, AllowDirty: allowDirty}
+	p.Recovery = &recovery
+	if err := writeProgress(progressPath, p); err != nil {
+		fmt.Fprintf(stderr, "error: checkpoint recovery state: %v\n", err)
+		return 1, false
+	}
+	var before map[string]string
+	failure := "collection iteration did not complete"
+	validCheckpoint := false
+	defer func() {
+		if code != 0 && !validCheckpoint {
+			recordRecovery(root, progressPath, p, recovery, before, failure)
+		}
+	}()
+	before, err = snapshot(root)
+	if err != nil {
+		failure = err.Error()
 		fmt.Fprintf(stderr, "error: snapshot collection state: %v\n", err)
 		return 1, false
 	}
 	corpusDir := filepath.Join(root, "testdata", "corpus", detector.ID)
 	history := append(append([]string{}, detector.Queries...), detector.Candidates...)
 	history = append(history, detector.Rejections...)
-	outcome, err := agent.Run(Iteration{
+	outcome, err := agent.Run(ctx, Iteration{
 		DetectorID:        detector.ID,
 		CorpusDir:         corpusDir,
 		Iteration:         detector.Iterations + 1,
@@ -363,43 +464,52 @@ func runIteration(root, progressPath string, p Progress, detector *DetectorProgr
 		MissingDimensions: []string{"source variation not yet recorded by collection progress"},
 	})
 	if err != nil {
+		failure = err.Error()
 		fmt.Fprintf(stderr, "error: collection agent: %v\n", err)
 		return 1, false
 	}
 	after, err := snapshot(root)
 	if err != nil {
+		failure = err.Error()
 		fmt.Fprintf(stderr, "error: snapshot collection state: %v\n", err)
 		return 1, false
 	}
 	added, err := validateDelta(before, after, filepath.Join("testdata", "corpus", detector.ID))
 	if err != nil {
+		failure = err.Error()
 		fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
 		return 1, false
 	}
 	if outcome.Result != "accepted" && outcome.Result != "unsuccessful" {
+		failure = "agent returned an invalid outcome result"
 		fmt.Fprintln(stderr, "error: collection agent: invalid outcome result")
 		return 1, false
 	}
 	if len(outcome.Queries) > queryLimit || len(outcome.Candidates) > candidateLimit {
+		failure = "agent outcome exceeds configured bounds"
 		fmt.Fprintln(stderr, "error: collection agent: outcome exceeds the configured query or candidate bound")
 		return 1, false
 	}
 	if outcome.Result == "unsuccessful" && len(added) != 0 {
+		failure = "unsuccessful research changed the corpus"
 		fmt.Fprintln(stderr, "error: unvalidated collection changes: unsuccessful research changed the corpus")
 		return 1, false
 	}
 	if outcome.Result == "accepted" && len(added) == 0 {
+		failure = "agent added no corpus example"
 		fmt.Fprintln(stderr, "error: unvalidated collection changes: agent added no corpus example")
 		return 1, false
 	}
 	if outcome.Result == "accepted" {
 		if err := validateOutcome(outcome, detector.ID, added); err != nil {
+			failure = err.Error()
 			fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
 			return 1, false
 		}
 	}
 	if outcome.Result == "accepted" {
 		if err := validateCorpus(detector.ID, added, before, after); err != nil {
+			failure = err.Error()
 			fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
 			return 1, false
 		}
@@ -416,18 +526,57 @@ func runIteration(root, progressPath string, p Progress, detector *DetectorProgr
 	if detector.Iterations >= maxIterations && detector.State != stateComplete {
 		detector.State = stateBlocked
 	}
+	p.Recovery = nil
 	if err := writeProgress(progressPath, p); err != nil {
+		failure = err.Error()
 		fmt.Fprintf(stderr, "error: checkpoint collection progress: %v\n", err)
 		return 1, false
 	}
+	validCheckpoint = true
 	if commit {
 		if err := commitCheckpoint(root, progressPath, detector.ID, detector.Iterations, outcome.Result, added); err != nil {
+			failure = err.Error()
 			fmt.Fprintf(stderr, "error: collection commit failed after a valid checkpoint: %v\n", err)
 			fmt.Fprintln(stderr, "validated corpus and progress remain as uncommitted collection state. Commit them manually, discard the iteration deliberately, or rerun without --commit after reviewing Git status.")
 			return 1, false
 		}
 	}
 	return 0, true
+}
+
+func recordRecovery(root, progressPath string, p Progress, recovery Recovery, before map[string]string, failure string) {
+	recovery.ValidationError = failure
+	if err := os.MkdirAll(filepath.Dir(recovery.LogPath), 0o755); err == nil {
+		_ = os.WriteFile(recovery.LogPath, []byte(failure+"\n"), 0o600)
+	}
+	after, err := snapshot(root)
+	if err == nil {
+		recovery.ChangedPaths = changedPaths(before, after)
+	}
+	p.Recovery = &recovery
+	if err := writeProgress(progressPath, p); err != nil {
+		return
+	}
+}
+
+func changedPaths(before, after map[string]string) []string {
+	paths := map[string]bool{}
+	for path, contents := range after {
+		if before[path] != contents {
+			paths[path] = true
+		}
+	}
+	for path := range before {
+		if _, ok := after[path]; !ok {
+			paths[path] = true
+		}
+	}
+	result := make([]string, 0, len(paths))
+	for path := range paths {
+		result = append(result, path)
+	}
+	sort.Strings(result)
+	return result
 }
 
 func commitCheckpoint(root, progressPath, detectorID string, iteration int, result string, added []string) error {
