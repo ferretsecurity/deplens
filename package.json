@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "scripts": {
+    "sandcastle": "TMPDIR=/tmp node --import tsx .sandcastle/main.mts",
+    "sandcastle:build": "sandcastle docker build-image",
+    "sandcastle:smoke": "TMPDIR=/tmp node --import tsx .sandcastle/smoke.mts"
+  },
+  "devDependencies": {
+    "@ai-hero/sandcastle": "^0.12.0",
+    "tsx": "^4.20.6"
+  }
+}
