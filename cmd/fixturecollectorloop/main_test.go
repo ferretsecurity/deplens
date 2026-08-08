@@ -131,6 +131,135 @@ func commitGitChanges(t *testing.T, root string) {
 	}
 }
 
+func TestCommandWorkflow(t *testing.T) {
+	newRepository := func(t *testing.T) (string, string) {
+		t.Helper()
+		root := t.TempDir()
+		progress := filepath.Join(root, "collection.yaml")
+		var stdout, stderr bytes.Buffer
+		if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, &stdout, &stderr, unavailableAgent{}); got != 0 {
+			t.Fatalf("initialize exit status = %d, stderr = %s", got, stderr.String())
+		}
+		initializeGitRepository(t, root)
+		commitGitChanges(t, root)
+		return root, progress
+	}
+	accepted := func() fakeAgent {
+		contents := []byte("example dependency\n")
+		return fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+			path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
+			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+				return err
+			}
+			if err := os.WriteFile(path, contents, 0o644); err != nil {
+				return err
+			}
+			return os.WriteFile(filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "provenance.yaml"), provenance(iteration.DetectorID, "project/dependencies.txt", contents), 0o644)
+		}}
+	}
+
+	t.Run("initializes, refuses dirt, warns on override, checkpoints, and stops at deadline", func(t *testing.T) {
+		root, progress := newRepository(t)
+		if err := os.WriteFile(filepath.Join(root, "dirty.txt"), []byte("keep"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		var stdout, stderr bytes.Buffer
+		if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, unavailableAgent{}); got != 1 {
+			t.Fatalf("dirty exit status = %d", got)
+		}
+		if !strings.Contains(stderr.String(), "git reset --hard HEAD") || !strings.Contains(stderr.String(), "--allow-dirty") {
+			t.Fatalf("dirty guidance = %s", stderr.String())
+		}
+		if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { return nil }}); got != 0 {
+			t.Fatalf("override exit status = %d", got)
+		}
+		if !strings.Contains(stderr.String(), "WARNING: --allow-dirty") {
+			t.Fatalf("override warning = %s", stderr.String())
+		}
+		if err := os.Remove(filepath.Join(root, "dirty.txt")); err != nil {
+			t.Fatal(err)
+		}
+		stdout.Reset()
+		stderr.Reset()
+		if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, accepted()); got != 0 {
+			t.Fatalf("checkpoint exit status = %d, stderr = %s", got, stderr.String())
+		}
+		if !strings.Contains(stdout.String(), "checkpoint: example-detector iteration 2") {
+			t.Fatalf("checkpoint output = %s", stdout.String())
+		}
+		originalNow := now
+		now = func() time.Time { return time.Unix(100, 0) }
+		t.Cleanup(func() { now = originalNow })
+		stdout.Reset()
+		if got := run([]string{"run", "--progress", progress, "--duration", "0s", "--allow-dirty"}, root, &stdout, &stderr, unavailableAgent{}); got != 0 {
+			t.Fatalf("deadline exit status = %d", got)
+		}
+		if !strings.Contains(stdout.String(), "soft duration reached") {
+			t.Fatalf("deadline output = %s", stdout.String())
+		}
+	})
+
+	t.Run("stops gracefully and records forced recovery", func(t *testing.T) {
+		root, progress := newRepository(t)
+		signals := make(chan os.Signal, 2)
+		originalSignals := collectionSignals
+		collectionSignals = func() (<-chan os.Signal, func()) { return signals, func() {} }
+		t.Cleanup(func() { collectionSignals = originalSignals })
+		started := make(chan struct{})
+		release := make(chan struct{})
+		agent := fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error {
+			close(started)
+			<-release
+			return nil
+		}}
+		result := make(chan int, 1)
+		go func() { result <- run([]string{"run", "--progress", progress}, root, io.Discard, io.Discard, agent) }()
+		<-started
+		signals <- os.Interrupt
+		close(release)
+		if got := <-result; got != 0 {
+			t.Fatalf("graceful stop exit status = %d", got)
+		}
+		stored, err := readProgress(progress)
+		if err != nil || stored.Recovery != nil || stored.Detectors[0].Iterations != 1 {
+			t.Fatalf("graceful checkpoint = %+v, err = %v", stored, err)
+		}
+
+		root, progress = newRepository(t)
+		signals = make(chan os.Signal, 2)
+		started = make(chan struct{})
+		forcedAgent := blockingAgent{started: started}
+		result = make(chan int, 1)
+		go func() {
+			result <- run([]string{"run", "--progress", progress}, root, io.Discard, io.Discard, forcedAgent)
+		}()
+		<-started
+		signals <- os.Interrupt
+		signals <- os.Interrupt
+		if got := <-result; got != 1 {
+			t.Fatalf("forced stop exit status = %d", got)
+		}
+		var stderr bytes.Buffer
+		if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, io.Discard, &stderr, unavailableAgent{}); got != 1 {
+			t.Fatalf("recovery-required exit status = %d", got)
+		}
+		if !strings.Contains(stderr.String(), "recovery is required") {
+			t.Fatalf("recovery guidance = %s", stderr.String())
+		}
+	})
+
+	t.Run("creates an optional local commit", func(t *testing.T) {
+		root, progress := newRepository(t)
+		if got := run([]string{"run", "--single", "--commit", "--progress", progress}, root, io.Discard, io.Discard, accepted()); got != 0 {
+			t.Fatalf("commit exit status = %d", got)
+		}
+		message, err := gitOutput(root, "log", "-1", "--format=%s")
+		if err != nil || !strings.Contains(message, "collect example-detector corpus examples") {
+			t.Fatalf("commit = %q, err = %v", message, err)
+		}
+	})
+}
+
 func TestRunRefusesDirtyCheckoutAndAllowsExplicitOverride(t *testing.T) {
 	root := t.TempDir()
 	initializeGitRepository(t, root)

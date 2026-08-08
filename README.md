@@ -21,6 +21,13 @@ Useful flags:
 
 The removed `--show-empty` flag is not accepted.
 
+## Fixture collection development tool
+
+Maintainers collecting authentic dependency-source corpus examples should use
+the local-only `fixturecollectorloop` workflow. Its initialization, progress,
+Git safety checks, stopping, recovery, provenance, security rules, and exit
+statuses are documented in the [fixture collector operator guide](docs/fixture-collector.md).
+
 Human output is path-first and includes the source form plus its analysis state:
 
 ```text
