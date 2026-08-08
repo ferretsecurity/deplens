@@ -19,6 +19,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ferretsecurity/deplens/internal/analyze"
 	"gopkg.in/yaml.v3"
 )
 
@@ -33,9 +34,10 @@ const (
 )
 
 type Progress struct {
-	Version   int                `yaml:"version"`
-	Detectors []DetectorProgress `yaml:"detectors"`
-	Recovery  *Recovery          `yaml:"recovery,omitempty"`
+	Version              int                `yaml:"version"`
+	InventoryFingerprint string             `yaml:"inventory_fingerprint,omitempty"`
+	Detectors            []DetectorProgress `yaml:"detectors"`
+	Recovery             *Recovery          `yaml:"recovery,omitempty"`
 }
 
 type Recovery struct {
@@ -53,6 +55,8 @@ type Recovery struct {
 
 type DetectorProgress struct {
 	ID         string   `yaml:"id"`
+	Form       string   `yaml:"form,omitempty"`
+	Roles      []string `yaml:"roles,omitempty"`
 	State      string   `yaml:"state"`
 	Iterations int      `yaml:"iterations"`
 	Examples   []string `yaml:"examples"`
@@ -151,10 +155,6 @@ func initialize(args []string, root string, stdout, stderr io.Writer) int {
 	if err := fs.Parse(args); err != nil {
 		return 1
 	}
-	if len(detectors) == 0 {
-		fmt.Fprintln(stderr, "error: at least one --detector is required for this tracer bullet")
-		return 1
-	}
 	if *target < 3 || *target > 5 {
 		fmt.Fprintln(stderr, "error: target must be between 3 and 5")
 		return 1
@@ -166,15 +166,39 @@ func initialize(args []string, root string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "error: inspect progress path: %v\n", err)
 		return 1
 	}
-	p := Progress{Version: 1, Detectors: make([]DetectorProgress, len(detectors))}
-	seen := map[string]bool{}
-	for i, id := range detectors {
-		if id == "" || seen[id] {
-			fmt.Fprintf(stderr, "error: detector identifiers must be non-empty and unique\n")
+	p := Progress{Version: 1}
+	if len(detectors) == 0 {
+		rules, err := analyze.LoadDefaultRules()
+		if err != nil {
+			fmt.Fprintf(stderr, "error: load detector inventory: %v\n", err)
 			return 1
 		}
-		seen[id] = true
-		p.Detectors[i] = DetectorProgress{ID: id, State: statePending, Target: *target, Examples: []string{}}
+		if err := validateCoverageInventory(root, rules); err != nil {
+			fmt.Fprintf(stderr, "error: validate coverage inventory: %v\n", err)
+			return 1
+		}
+		p.InventoryFingerprint = rules.DetectorInventoryFingerprint()
+		for _, capability := range rules.DetectorCapabilities() {
+			if hasCapability(capability.Capabilities, "extract") {
+				continue
+			}
+			roles := make([]string, len(capability.Roles))
+			for i, role := range capability.Roles {
+				roles[i] = string(role)
+			}
+			p.Detectors = append(p.Detectors, DetectorProgress{ID: string(capability.ID), Form: string(capability.Form), Roles: roles, State: statePending, Target: *target, Examples: []string{}})
+		}
+	} else {
+		p.Detectors = make([]DetectorProgress, len(detectors))
+		seen := map[string]bool{}
+		for i, id := range detectors {
+			if id == "" || seen[id] {
+				fmt.Fprintf(stderr, "error: detector identifiers must be non-empty and unique\n")
+				return 1
+			}
+			seen[id] = true
+			p.Detectors[i] = DetectorProgress{ID: id, State: statePending, Target: *target, Examples: []string{}}
+		}
 	}
 	if err := writeProgress(*progressPath, p); err != nil {
 		fmt.Fprintf(stderr, "error: initialize collection progress: %v\n", err)
@@ -224,6 +248,17 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 	if p.Recovery != nil {
 		printRecoveryRequired(*p.Recovery, stderr)
 		return 1
+	}
+	if p.InventoryFingerprint != "" {
+		rules, err := analyze.LoadDefaultRules()
+		if err != nil {
+			fmt.Fprintf(stderr, "error: load detector inventory: %v\n", err)
+			return 1
+		}
+		if p.InventoryFingerprint != rules.DetectorInventoryFingerprint() {
+			fmt.Fprintln(stderr, "error: collection progress detector inventory no longer matches the reviewed plan; reinitialize and review it before running")
+			return 1
+		}
 	}
 	if err := preflightGit(root, *progressPath, *allowDirty, append([]string{"run"}, args...), stderr); err != nil {
 		fmt.Fprintf(stderr, "error: %v\n", err)
@@ -822,6 +857,47 @@ func readProgress(path string) (Progress, error) {
 
 func validState(state string) bool {
 	return state == statePending || state == stateInProgress || state == stateComplete || state == stateBlocked || state == stateExcluded
+}
+
+func hasCapability(capabilities []string, wanted string) bool {
+	for _, capability := range capabilities {
+		if capability == wanted {
+			return true
+		}
+	}
+	return false
+}
+
+func validateCoverageInventory(root string, rules analyze.Ruleset) error {
+	data, err := os.ReadFile(filepath.Join(root, "DEPENDENCY_COVERAGE.md"))
+	if err != nil {
+		return fmt.Errorf("read DEPENDENCY_COVERAGE.md: %w", err)
+	}
+	listed := map[analyze.DetectorID]bool{}
+	for _, line := range strings.Split(string(data), "\n") {
+		columns := strings.Split(line, "|")
+		if len(columns) != 7 || !strings.Contains(columns[5], "select") {
+			continue
+		}
+		id := strings.Trim(strings.TrimSpace(columns[1]), "`")
+		if id != "Detector ID" && !strings.Contains(columns[5], "extract") {
+			listed[analyze.DetectorID(id)] = true
+		}
+	}
+	eligible := 0
+	for _, capability := range rules.DetectorCapabilities() {
+		if hasCapability(capability.Capabilities, "extract") {
+			continue
+		}
+		eligible++
+		if !listed[capability.ID] {
+			return fmt.Errorf("coverage inventory omits eligible detector %q", capability.ID)
+		}
+	}
+	if len(listed) != eligible {
+		return fmt.Errorf("eligible detector count differs: coverage inventory has %d, rule classifier has %d", len(listed), eligible)
+	}
+	return nil
 }
 
 func writeProgress(path string, p Progress) error {

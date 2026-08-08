@@ -11,6 +11,16 @@ type bannerRegexAnalyzerConfig struct {
 	Pattern string `yaml:"pattern"`
 }
 
+func (c analyzerConfig) semanticBytes() ([]byte, error) {
+	value := yaml.Node{Kind: yaml.MappingNode, Tag: "!!map"}
+	value.Content = append(value.Content,
+		&yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: "type"},
+		&yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: c.Type},
+	)
+	value.Content = append(value.Content, c.config.Content...)
+	return yaml.Marshal(&value)
+}
+
 func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 	if raw.Analyzer == nil {
 		return nil, nil

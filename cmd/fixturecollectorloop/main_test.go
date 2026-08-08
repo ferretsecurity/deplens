@@ -131,6 +131,47 @@ func commitGitChanges(t *testing.T, root string) {
 	}
 }
 
+func TestInitializeProgressBuildsReviewedDetectorInventory(t *testing.T) {
+	projectRoot, err := filepath.Abs(filepath.Join("..", ".."))
+	if err != nil {
+		t.Fatal(err)
+	}
+	progress := filepath.Join(t.TempDir(), "collection.yaml")
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"initialize-progress", "--progress", progress}, projectRoot, &stdout, &stderr, unavailableAgent{}); got != 0 {
+		t.Fatalf("initialize exit status = %d, stderr = %s", got, stderr.String())
+	}
+	p, err := readProgress(progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(p.Detectors) != 144 || p.InventoryFingerprint == "" {
+		t.Fatalf("reviewed inventory = %d detectors, fingerprint %q", len(p.Detectors), p.InventoryFingerprint)
+	}
+	if p.Detectors[0].Form == "" || len(p.Detectors[0].Roles) == 0 {
+		t.Fatalf("first detector lacks reviewed semantics: %+v", p.Detectors[0])
+	}
+}
+
+func TestRunRefusesAnInventoryFingerprintMismatch(t *testing.T) {
+	progress := filepath.Join(t.TempDir(), "collection.yaml")
+	p := Progress{
+		Version:              1,
+		InventoryFingerprint: "changed-detector-inventory",
+		Detectors:            []DetectorProgress{{ID: "example", State: statePending, Target: defaultTarget, Examples: []string{}}},
+	}
+	if err := writeProgress(progress, p); err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"run", "--progress", progress}, t.TempDir(), &stdout, &stderr, unavailableAgent{}); got != 1 {
+		t.Fatalf("run exit status = %d", got)
+	}
+	if !strings.Contains(stderr.String(), "no longer matches the reviewed plan") {
+		t.Fatalf("stderr = %s", stderr.String())
+	}
+}
+
 func TestCommandWorkflow(t *testing.T) {
 	newRepository := func(t *testing.T) (string, string) {
 		t.Helper()

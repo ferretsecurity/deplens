@@ -2,7 +2,9 @@ package analyze
 
 import (
 	"bytes"
+	"crypto/sha256"
 	_ "embed"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
@@ -52,6 +54,19 @@ type detector struct {
 	FilenameRegexp *regexp.Regexp
 	PathGlob       string
 	Analyzer       sourceAnalyzer
+	AnalyzerType   string
+	AnalyzerConfig []byte
+}
+
+// DetectorCapability describes the stable, collection-relevant semantics of a detector.
+type DetectorCapability struct {
+	ID            DetectorID   `json:"id" yaml:"id"`
+	Form          SourceForm   `json:"form" yaml:"form"`
+	Roles         []SourceRole `json:"roles" yaml:"roles"`
+	FilenameRegex string       `json:"filename_regex,omitempty" yaml:"filename_regex,omitempty"`
+	PathGlob      string       `json:"path_glob,omitempty" yaml:"path_glob,omitempty"`
+	Analyzer      string       `json:"analyzer,omitempty" yaml:"analyzer,omitempty"`
+	Capabilities  []string     `json:"capabilities" yaml:"capabilities"`
 }
 
 type Ruleset struct {
@@ -251,6 +266,15 @@ func loadRules(source string, data []byte) (Ruleset, error) {
 		if err != nil {
 			return Ruleset{}, fmt.Errorf("%s: %s.analyzer: %w", source, fieldPath, err)
 		}
+		var analyzerConfig []byte
+		analyzerType := ""
+		if rawRule.Analyzer != nil {
+			analyzerType = rawRule.Analyzer.Type
+			analyzerConfig, err = rawRule.Analyzer.semanticBytes()
+			if err != nil {
+				return Ruleset{}, fmt.Errorf("%s: %s.analyzer: encode semantic configuration: %w", source, fieldPath, err)
+			}
+		}
 		detectors = append(detectors, detector{
 			ID:             id,
 			PackageType:    dependencyTypeFromRule(rawRule),
@@ -259,6 +283,8 @@ func loadRules(source string, data []byte) (Ruleset, error) {
 			FilenameRegexp: compiled,
 			PathGlob:       rawRule.PathGlob,
 			Analyzer:       analyzer,
+			AnalyzerType:   analyzerType,
+			AnalyzerConfig: analyzerConfig,
 		})
 	}
 
@@ -332,6 +358,72 @@ func validEvaluatorType(value string) bool {
 
 func (r Ruleset) DetectorIDs() []DetectorID {
 	return append([]DetectorID(nil), r.detectorIDs...)
+}
+
+// DetectorCapabilities returns every detector in rule order for development tooling.
+func (r Ruleset) DetectorCapabilities() []DetectorCapability {
+	result := make([]DetectorCapability, 0, len(r.detectors))
+	for _, d := range r.detectors {
+		capabilities := []string{"select"}
+		if d.Analyzer != nil {
+			capabilities = append(capabilities, "recognize")
+			if analyzerExtractsDependencies(d.ID, d.AnalyzerType) {
+				capabilities = append(capabilities, "extract", "normalize")
+			} else if analyzerAssessesPresence(d.AnalyzerType) {
+				capabilities = append(capabilities, "assess-presence")
+			}
+		}
+		result = append(result, DetectorCapability{
+			ID: d.ID, Form: d.Form, Roles: append([]SourceRole(nil), d.Roles...),
+			FilenameRegex: regexString(d.FilenameRegexp), PathGlob: d.PathGlob,
+			Analyzer: d.AnalyzerType, Capabilities: capabilities,
+		})
+	}
+	return result
+}
+
+// DetectorInventoryFingerprint identifies detector semantics that affect a reviewed collection plan.
+func (r Ruleset) DetectorInventoryFingerprint() string {
+	h := sha256.New()
+	for _, d := range r.detectors {
+		fmt.Fprintf(h, "%s\x00%s\x00%s\x00%s\x00%s\x00%s\x00", d.ID, d.Form, strings.Join(sourceRolesToStrings(d.Roles), ","), regexString(d.FilenameRegexp), d.PathGlob, d.AnalyzerType)
+		h.Write(d.AnalyzerConfig)
+		h.Write([]byte{'\n'})
+	}
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+func regexString(value *regexp.Regexp) string {
+	if value == nil {
+		return ""
+	}
+	return value.String()
+}
+
+func sourceRolesToStrings(roles []SourceRole) []string {
+	values := make([]string, len(roles))
+	for i, role := range roles {
+		values[i] = string(role)
+	}
+	return values
+}
+
+func analyzerExtractsDependencies(id DetectorID, analyzerType string) bool {
+	switch analyzerType {
+	case "banner-regex", "typescript", "python", "py-requirements", "pipfile-lock", "poetry-lock", "uv-lock", "go-mod", "package-lock", "package-json", "pnpm-lock", "composer-lock", "cargo-lock", "yarn-lock", "gradle-build", "gradle-lock", "gradle-version-catalog", "gemfile", "gemfile-lock", "dockerfile", "docker-compose", "maven-pom", "cargo-manifest", "composer-manifest", "dotnet-project", "dotnet-central-packages", "dotnet-packages-config", "html":
+		return true
+	default:
+		return id == "python-pyproject" || id == "python-pipfile" || id == "python-setup-cfg"
+	}
+}
+
+func analyzerAssessesPresence(analyzerType string) bool {
+	switch analyzerType {
+	case "ini", "yaml", "toml", "json", "xml":
+		return true
+	default:
+		return false
+	}
 }
 
 func (r Ruleset) MatchSelectorOnlySource(name string) (DetectorID, bool) {
