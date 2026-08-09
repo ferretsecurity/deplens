@@ -391,6 +391,7 @@ func printRecoveryRequired(r Recovery, stderr io.Writer) {
 	fmt.Fprintln(stderr, "  after reviewing the paths, the recommended cleanup is:")
 	fmt.Fprintf(stderr, "    git restore --worktree -- %s\n", r.ProgressPath)
 	if len(cleanPaths) > 0 {
+		fmt.Fprintf(stderr, "    git clean -fdn -- %s\n", strings.Join(cleanPaths, " "))
 		fmt.Fprintf(stderr, "    git clean -fd -- %s\n", strings.Join(cleanPaths, " "))
 	}
 	fmt.Fprintln(stderr, "  or, after review, preserve the listed changes and resume with:")

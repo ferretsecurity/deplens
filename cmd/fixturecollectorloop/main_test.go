@@ -73,6 +73,7 @@ func TestPrintRecoveryRequiredShowsTargetedCleanupAndDirtyResume(t *testing.T) {
 	}, &stderr)
 	for _, want := range []string{
 		"git restore --worktree -- .deplens/fixture-collection.yaml",
+		"git clean -fdn -- .deplens/fixture-collection-run-123.log testdata/corpus/example/owner-repo/source.lock",
 		"git clean -fd -- .deplens/fixture-collection-run-123.log testdata/corpus/example/owner-repo/source.lock",
 		"run --single --progress .deplens/fixture-collection.yaml --allow-dirty",
 	} {
