@@ -246,8 +246,17 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 		return 1
 	}
 	if p.Recovery != nil {
-		printRecoveryRequired(*p.Recovery, stderr)
-		return 1
+		if !*allowDirty {
+			printRecoveryRequired(*p.Recovery, stderr)
+			return 1
+		}
+		recovery := *p.Recovery
+		p.Recovery = nil
+		if err := writeProgress(*progressPath, p); err != nil {
+			fmt.Fprintf(stderr, "error: clear collection recovery state: %v\n", err)
+			return 1
+		}
+		fmt.Fprintf(stderr, "WARNING: --allow-dirty is resuming after recovery for %s iteration %d; preserving the listed unvalidated changes as pre-existing dirty state.\n", recovery.DetectorID, recovery.Iteration)
 	}
 	if p.InventoryFingerprint != "" {
 		rules, err := analyze.LoadDefaultRules()
@@ -348,7 +357,7 @@ func waitForIteration(result <-chan iterationResult, signals <-chan os.Signal, c
 }
 
 func printRecoveryRequired(r Recovery, stderr io.Writer) {
-	fmt.Fprintln(stderr, "error: fixture collection recovery is required before another agent starts (cannot be bypassed with --allow-dirty)")
+	fmt.Fprintln(stderr, "error: fixture collection recovery is required before another agent starts")
 	fmt.Fprintf(stderr, "  detector: %s (iteration %d, run %s)\n", r.DetectorID, r.Iteration, r.RunID)
 	fmt.Fprintf(stderr, "  last checkpoint: %s\n  progress: %s\n  log: %s\n", r.LastCheckpoint, r.ProgressPath, r.LogPath)
 	validationError := r.ValidationError
@@ -361,13 +370,19 @@ func printRecoveryRequired(r Recovery, stderr io.Writer) {
 		changed = strings.Join(r.ChangedPaths, ", ")
 	}
 	fmt.Fprintf(stderr, "  changed paths: %s\n", changed)
-	if r.Commit {
-		fmt.Fprintln(stderr, "  after review, a clean commit-mode checkout can be restored with DESTRUCTIVE: git reset --hard HEAD and DESTRUCTIVE: git clean -fd")
-	} else if r.AllowDirty {
-		fmt.Fprintln(stderr, "  preserve the initial dirty state; review and restore only the listed collector paths.")
-	} else {
-		fmt.Fprintln(stderr, "  preserve earlier valid collection checkpoints; review and restore only the listed iteration paths.")
+	cleanPaths := make([]string, 0, len(r.ChangedPaths))
+	for _, path := range r.ChangedPaths {
+		if path != r.ProgressPath {
+			cleanPaths = append(cleanPaths, path)
+		}
 	}
+	fmt.Fprintln(stderr, "  after reviewing the paths, the recommended cleanup is:")
+	fmt.Fprintf(stderr, "    git restore --worktree -- %s\n", r.ProgressPath)
+	if len(cleanPaths) > 0 {
+		fmt.Fprintf(stderr, "    git clean -fd -- %s\n", strings.Join(cleanPaths, " "))
+	}
+	fmt.Fprintln(stderr, "  or, after review, preserve the listed changes and resume with:")
+	fmt.Fprintf(stderr, "    go run ./cmd/fixturecollectorloop run --single --progress %s --allow-dirty\n", r.ProgressPath)
 }
 
 func preflightGit(root, progressPath string, allowDirty bool, command []string, stderr io.Writer) error {

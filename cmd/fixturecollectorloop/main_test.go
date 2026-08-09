@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-func TestRunSecondInterruptRecordsRecoveryAndRefusesResume(t *testing.T) {
+func TestRunSecondInterruptRecordsRecoveryAndAllowsExplicitDirtyResume(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
 	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
@@ -49,10 +49,33 @@ func TestRunSecondInterruptRecordsRecoveryAndRefusesResume(t *testing.T) {
 	}
 	stdout.Reset()
 	stderr.Reset()
-	if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, unavailableAgent{}); got != 1 {
-		t.Fatalf("recovery-required exit status = %d", got)
+	if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { return nil }}); got != 0 {
+		t.Fatalf("explicit dirty resume exit status = %d, stderr = %s", got, stderr.String())
 	}
-	for _, want := range []string{"recovery is required", "example", "last checkpoint", "progress:"} {
+	for _, want := range []string{"WARNING: --allow-dirty", "resuming after recovery", "example"} {
+		if !strings.Contains(stderr.String(), want) {
+			t.Fatalf("explicit dirty resume guidance missing %q: %s", want, stderr.String())
+		}
+	}
+}
+
+func TestPrintRecoveryRequiredShowsTargetedCleanupAndDirtyResume(t *testing.T) {
+	var stderr bytes.Buffer
+	printRecoveryRequired(Recovery{
+		DetectorID:   "example",
+		Iteration:    2,
+		RunID:        "run-123",
+		ProgressPath: ".deplens/fixture-collection.yaml",
+		ChangedPaths: []string{
+			".deplens/fixture-collection-run-123.log",
+			"testdata/corpus/example/owner-repo/source.lock",
+		},
+	}, &stderr)
+	for _, want := range []string{
+		"git restore --worktree -- .deplens/fixture-collection.yaml",
+		"git clean -fd -- .deplens/fixture-collection-run-123.log testdata/corpus/example/owner-repo/source.lock",
+		"run --single --progress .deplens/fixture-collection.yaml --allow-dirty",
+	} {
 		if !strings.Contains(stderr.String(), want) {
 			t.Fatalf("recovery guidance missing %q: %s", want, stderr.String())
 		}
@@ -281,10 +304,10 @@ func TestCommandWorkflow(t *testing.T) {
 			t.Fatalf("forced stop exit status = %d", got)
 		}
 		var stderr bytes.Buffer
-		if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, io.Discard, &stderr, unavailableAgent{}); got != 1 {
+		if got := run([]string{"run", "--single", "--progress", progress}, root, io.Discard, &stderr, unavailableAgent{}); got != 1 {
 			t.Fatalf("recovery-required exit status = %d", got)
 		}
-		if !strings.Contains(stderr.String(), "recovery is required") {
+		if !strings.Contains(stderr.String(), "recovery is required") || !strings.Contains(stderr.String(), "git clean -fd --") {
 			t.Fatalf("recovery guidance = %s", stderr.String())
 		}
 	})
