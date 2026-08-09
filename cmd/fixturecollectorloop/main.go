@@ -476,6 +476,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		return 1, false
 	}
 	var before map[string]string
+	var beforeDirectories map[string]struct{}
 	failure := "collection iteration did not complete"
 	progressCheckpointed := false
 	agentCompleted := false
@@ -487,6 +488,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		}
 		if code != 0 && !progressCheckpointed {
 			recordRecovery(root, progressPath, p, recovery, before, failure)
+			removeNewEmptyDirectories(filepath.Join(root, "testdata", "corpus", detector.ID), beforeDirectories)
 		}
 	}()
 	before, err = snapshot(root)
@@ -496,6 +498,12 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		return 1, false
 	}
 	corpusDir := filepath.Join(root, "testdata", "corpus", detector.ID)
+	beforeDirectories, err = snapshotDirectories(corpusDir)
+	if err != nil {
+		failure = err.Error()
+		fmt.Fprintf(stderr, "error: snapshot collection directories: %v\n", err)
+		return 1, false
+	}
 	history := append(append([]string{}, detector.Queries...), detector.Candidates...)
 	history = append(history, detector.Rejections...)
 	outcome, err := agent.Run(ctx, Iteration{
@@ -969,6 +977,47 @@ func snapshot(root string) (map[string]string, error) {
 		return nil
 	})
 	return files, err
+}
+
+func snapshotDirectories(root string) (map[string]struct{}, error) {
+	directories := map[string]struct{}{}
+	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if path == root || !entry.IsDir() {
+			return nil
+		}
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		directories[filepath.ToSlash(rel)] = struct{}{}
+		return nil
+	})
+	if errors.Is(err, os.ErrNotExist) {
+		return directories, nil
+	}
+	return directories, err
+}
+
+func removeNewEmptyDirectories(root string, before map[string]struct{}) {
+	after, err := snapshotDirectories(root)
+	if err != nil {
+		return
+	}
+	paths := make([]string, 0, len(after))
+	for path := range after {
+		if _, existed := before[path]; !existed {
+			paths = append(paths, path)
+		}
+	}
+	sort.Slice(paths, func(i, j int) bool {
+		return strings.Count(paths[i], "/") > strings.Count(paths[j], "/")
+	})
+	for _, path := range paths {
+		_ = os.Remove(filepath.Join(root, filepath.FromSlash(path)))
+	}
 }
 
 func validateDelta(before, after map[string]string, allowed string) ([]string, error) {

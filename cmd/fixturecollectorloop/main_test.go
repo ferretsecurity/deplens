@@ -661,6 +661,27 @@ func TestRunRejectsChangesOutsideSelectedCorpus(t *testing.T) {
 	}
 }
 
+func TestRunRemovesEmptyDirectoriesCreatedByRejectedIteration(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, io.Discard, io.Discard, unavailableAgent{}); got != 0 {
+		t.Fatalf("initialize exit status = %d", got)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+
+	abandoned := filepath.Join(root, "testdata", "corpus", "example-detector", "abandoned-example", "nested")
+	agent := fakeAgent{outcome: Outcome{Result: "accepted"}, write: func(Iteration) error {
+		return os.MkdirAll(abandoned, 0o755)
+	}}
+	if got := run([]string{"run", "--single", "--progress", progress}, root, io.Discard, io.Discard, agent); got != 1 {
+		t.Fatalf("run exit status = %d", got)
+	}
+	if _, err := os.Stat(filepath.Dir(abandoned)); !os.IsNotExist(err) {
+		t.Fatalf("rejected iteration left empty staging directory: %v", err)
+	}
+}
+
 func TestRunRejectsProtocolThatDisagreesWithCorpus(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
