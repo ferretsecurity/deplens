@@ -50,7 +50,7 @@ type codexAgent struct {
 }
 
 func newCodexAgent(root string, stdout io.Writer) *codexAgent {
-	return &codexAgent{root: root, stdout: stdout, runner: systemCommandRunner{}}
+	return &codexAgent{root: root, stdout: stdout, runner: systemCommandRunner{}, retainLogs: true}
 }
 
 func (a *codexAgent) SetRetainLogs(retain bool) { a.retainLogs = retain }
@@ -143,8 +143,9 @@ func (a *codexAgent) Run(ctx context.Context, iteration Iteration) (Outcome, err
 	return outcome, nil
 }
 
-// FinalizeIteration removes a successful log only after the wrapper validates
-// and checkpoints the corpus change. Failed validation always preserves it.
+// FinalizeIteration retains successful logs by default after the wrapper
+// validates and checkpoints the corpus change. Failed validation always
+// preserves its log; --retain-logs=false discards successful logs.
 func (a *codexAgent) FinalizeIteration(success bool) {
 	if a.logPath == "" {
 		return

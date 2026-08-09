@@ -155,6 +155,7 @@ func initialize(args []string, root string, stdout, stderr io.Writer) int {
 	if err := fs.Parse(args); err != nil {
 		return 1
 	}
+	printFlagValues(stdout, "initialize-progress", fs)
 	if *target < 3 || *target > 5 {
 		fmt.Fprintln(stderr, "error: target must be between 3 and 5")
 		return 1
@@ -219,10 +220,11 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 	candidateLimit := fs.Int("candidate-limit", 20, "maximum candidates recorded by one iteration")
 	allowDirty := fs.Bool("allow-dirty", false, "allow a checkout that already has non-ignored changes")
 	commit := fs.Bool("commit", false, "create one local collection commit for each valid iteration")
-	retainLogs := fs.Bool("retain-logs", false, "retain successful Codex JSONL logs (logs may contain sensitive content)")
+	retainLogs := fs.Bool("retain-logs", true, "retain successful Codex JSONL logs (logs may contain sensitive content)")
 	if err := fs.Parse(args); err != nil {
 		return 1
 	}
+	printFlagValues(stdout, "run", fs)
 	if *duration < 0 {
 		fmt.Fprintln(stderr, "error: duration must not be negative")
 		return 1
@@ -330,6 +332,16 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 			return collectionSummary(p, stdout)
 		}
 	}
+}
+
+// printFlagValues makes each invocation reproducible by showing the effective
+// value of every command flag, including values supplied by defaults.
+func printFlagValues(stdout io.Writer, command string, fs *flag.FlagSet) {
+	values := make([]string, 0)
+	fs.VisitAll(func(f *flag.Flag) {
+		values = append(values, fmt.Sprintf("--%s=%s", f.Name, f.Value.String()))
+	})
+	fmt.Fprintf(stdout, "%s configuration: %s\n", command, strings.Join(values, " "))
 }
 
 type iterationResult struct {

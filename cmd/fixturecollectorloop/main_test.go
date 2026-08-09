@@ -438,6 +438,36 @@ func TestRunCreatesAResumableCheckpoint(t *testing.T) {
 	}
 }
 
+func TestRunPrintsEffectiveFlagValues(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, io.Discard, io.Discard, unavailableAgent{}); got != 0 {
+		t.Fatalf("initialize exit status = %d", got)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"run", "--progress", progress, "--duration", "0s"}, root, &stdout, &stderr, unavailableAgent{}); got != 0 {
+		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
+	}
+	for _, want := range []string{
+		"run configuration:",
+		"--allow-dirty=false",
+		"--candidate-limit=20",
+		"--commit=false",
+		"--detector=",
+		"--duration=0s",
+		"--progress=" + progress,
+		"--query-limit=5",
+		"--retain-logs=true",
+		"--single=false",
+	} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("configuration missing %q: %s", want, stdout.String())
+		}
+	}
+}
+
 func TestRunIgnoresLocalCollectorLogsDuringCorpusValidation(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
@@ -856,11 +886,12 @@ func (f *fakeCommandRunner) Run(_ context.Context, _ string, name string, args [
 	return []byte(`{"type":"item.completed"}` + "\n"), f.err
 }
 
-func TestCodexAgentPreflightsAndUsesFreshStructuredSession(t *testing.T) {
+func TestCodexAgentRetainsSuccessfulLogsByDefault(t *testing.T) {
 	root := t.TempDir()
 	var stdout bytes.Buffer
 	runner := &fakeCommandRunner{final: Outcome{Result: "unsuccessful", Added: []string{}, Queries: []string{}, Candidates: []string{}, Rejections: []string{}}}
-	agent := &codexAgent{root: root, stdout: &stdout, runner: runner}
+	agent := newCodexAgent(root, &stdout)
+	agent.runner = runner
 	if err := agent.Preflight(); err != nil {
 		t.Fatal(err)
 	}
@@ -878,8 +909,8 @@ func TestCodexAgentPreflightsAndUsesFreshStructuredSession(t *testing.T) {
 	}
 	agent.FinalizeIteration(true)
 	logs, err := filepath.Glob(filepath.Join(root, ".deplens", "fixture-collection-logs", "*.jsonl"))
-	if err != nil || len(logs) != 0 {
-		t.Fatalf("successful non-retained logs = %v, err = %v", logs, err)
+	if err != nil || len(logs) != 1 {
+		t.Fatalf("successful retained logs = %v, err = %v", logs, err)
 	}
 }
 
