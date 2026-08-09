@@ -795,11 +795,12 @@ func TestCodexAgentPreflightsAndUsesFreshStructuredSession(t *testing.T) {
 		t.Fatalf("preflight calls = %#v", runner.calls)
 	}
 	call := strings.Join(runner.calls[2], " ")
-	for _, want := range []string{"codex exec", "--json", "--sandbox workspace-write", "--output-schema", "--output-last-message", "default branch to a commit SHA", "at most 5 search queries"} {
+	for _, want := range []string{"codex exec", "--json", "--sandbox workspace-write", "--output-schema", "--output-last-message", "default branch to a commit SHA", "at most 5 search queries", "provenance.yaml", "Do not use provenance.json"} {
 		if !strings.Contains(call, want) {
 			t.Fatalf("session command missing %q: %s", want, call)
 		}
 	}
+	agent.FinalizeIteration(true)
 	logs, err := filepath.Glob(filepath.Join(root, ".deplens", "fixture-collection-logs", "*.jsonl"))
 	if err != nil || len(logs) != 0 {
 		t.Fatalf("successful non-retained logs = %v, err = %v", logs, err)
@@ -831,6 +832,7 @@ func TestCodexAgentRetainsSuccessfulLogsOnlyWhenRequested(t *testing.T) {
 	if _, err := agent.Run(context.Background(), Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 1}); err != nil {
 		t.Fatal(err)
 	}
+	agent.FinalizeIteration(true)
 	if _, err := os.Stat(filepath.Join(root, ".deplens", "fixture-collection-logs", "npm-1.jsonl")); err != nil {
 		t.Fatalf("retained success log: %v", err)
 	}

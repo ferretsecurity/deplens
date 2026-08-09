@@ -478,7 +478,13 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	var before map[string]string
 	failure := "collection iteration did not complete"
 	progressCheckpointed := false
+	agentCompleted := false
 	defer func() {
+		if agentCompleted {
+			if finalizer, ok := agent.(interface{ FinalizeIteration(bool) }); ok {
+				finalizer.FinalizeIteration(code == 0)
+			}
+		}
 		if code != 0 && !progressCheckpointed {
 			recordRecovery(root, progressPath, p, recovery, before, failure)
 		}
@@ -506,6 +512,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		fmt.Fprintf(stderr, "error: collection agent: %v\n", err)
 		return 1, false
 	}
+	agentCompleted = true
 	after, err := snapshot(root)
 	if err != nil {
 		failure = err.Error()
