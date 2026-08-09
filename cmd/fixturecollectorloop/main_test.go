@@ -415,6 +415,38 @@ func TestRunCreatesAResumableCheckpoint(t *testing.T) {
 	}
 }
 
+func TestRunIgnoresLocalCollectorLogsDuringCorpusValidation(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, io.Discard, io.Discard, unavailableAgent{}); got != 0 {
+		t.Fatalf("initialize exit status = %d", got)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+	contents := []byte("example dependency\n")
+	agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(path, contents, 0o644); err != nil {
+			return err
+		}
+		if err := os.WriteFile(filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "provenance.yaml"), provenance(iteration.DetectorID, "project/dependencies.txt", contents), 0o644); err != nil {
+			return err
+		}
+		logPath := filepath.Join(root, ".deplens", "fixture-collection-logs", "example-detector-1.jsonl")
+		if err := os.MkdirAll(filepath.Dir(logPath), 0o700); err != nil {
+			return err
+		}
+		return os.WriteFile(logPath, []byte(`{"type":"item.completed"}`+"\n"), 0o600)
+	}}
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, agent); got != 0 {
+		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
+	}
+}
+
 func TestRunCommitCreatesAtomicCollectionCheckpoint(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")

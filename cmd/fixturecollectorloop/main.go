@@ -936,11 +936,18 @@ func writeProgress(path string, p Progress) error {
 
 func snapshot(root string) (map[string]string, error) {
 	files := map[string]string{}
+	localLogDir := filepath.Join(root, ".deplens", "fixture-collection-logs")
 	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if path == root || entry.IsDir() {
+		if path == root {
+			return nil
+		}
+		if entry.IsDir() {
+			if path == localLogDir {
+				return filepath.SkipDir
+			}
 			return nil
 		}
 		rel, err := filepath.Rel(root, path)

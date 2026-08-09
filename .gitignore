@@ -38,6 +38,7 @@ desktop.ini
 
 # AI and agent tools
 .codex
+.deplens/fixture-collection-logs/
 .claude/
 .cursor/
 .aider*
