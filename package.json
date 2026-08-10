@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "sandcastle": "TMPDIR=/tmp node --import tsx .sandcastle/main.mts",
+    "sandcastle:feature": "TMPDIR=/tmp node --import tsx .sandcastle/feature-pipeline.mts",
     "sandcastle:build": "sandcastle docker build-image",
     "sandcastle:smoke": "TMPDIR=/tmp node --import tsx .sandcastle/smoke.mts"
   },
