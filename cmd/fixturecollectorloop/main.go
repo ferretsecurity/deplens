@@ -973,22 +973,6 @@ func validateCoverageInventory(root string, rules analyze.Ruleset) error {
 }
 
 func writeProgress(path string, p Progress) error {
-	if p.Version == 1 {
-		// Tests and old in-memory callers may still construct the former Go
-		// value, but durable documents are always written in the fresh format.
-		p.Version = progressVersion
-	}
-	if p.Limits == (CollectionLimits{}) {
-		p.Limits = defaultCollectionLimits
-	}
-	for i := range p.Detectors {
-		if p.Detectors[i].State == stateNeedsQueryReview {
-			continue
-		}
-		if len(p.Detectors[i].QueryPlan) == 0 {
-			p.Detectors[i].QueryPlan = []string{"filename:" + p.Detectors[i].ID}
-		}
-	}
 	if _, err := validateProgress(p); err != nil {
 		return err
 	}

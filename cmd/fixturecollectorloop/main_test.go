@@ -16,6 +16,21 @@ import (
 	"time"
 )
 
+func validTestProgress(detectors ...DetectorProgress) Progress {
+	for i := range detectors {
+		if detectors[i].Target == 0 {
+			detectors[i].Target = defaultTarget
+		}
+		if detectors[i].Examples == nil {
+			detectors[i].Examples = []string{}
+		}
+		if detectors[i].State != stateNeedsQueryReview && len(detectors[i].QueryPlan) == 0 {
+			detectors[i].QueryPlan = []string{"filename:" + detectors[i].ID}
+		}
+	}
+	return Progress{Version: progressVersion, Limits: defaultCollectionLimits, Detectors: detectors}
+}
+
 func TestRunSecondInterruptRecordsRecoveryAndAllowsExplicitDirtyResume(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
@@ -180,11 +195,8 @@ func TestInitializeProgressBuildsReviewedDetectorInventory(t *testing.T) {
 
 func TestRunRefusesAnInventoryFingerprintMismatch(t *testing.T) {
 	progress := filepath.Join(t.TempDir(), "collection.yaml")
-	p := Progress{
-		Version:              1,
-		InventoryFingerprint: "changed-detector-inventory",
-		Detectors:            []DetectorProgress{{ID: "example", State: statePending, Target: defaultTarget, Examples: []string{}}},
-	}
+	p := validTestProgress(DetectorProgress{ID: "example", State: statePending})
+	p.InventoryFingerprint = "changed-detector-inventory"
 	if err := writeProgress(progress, p); err != nil {
 		t.Fatal(err)
 	}
@@ -330,7 +342,7 @@ func TestRunRefusesDirtyCheckoutAndAllowsExplicitOverride(t *testing.T) {
 	root := t.TempDir()
 	initializeGitRepository(t, root)
 	progress := filepath.Join(root, "collection.yaml")
-	p := Progress{Version: 1, Detectors: []DetectorProgress{{ID: "example", State: statePending, Examples: []string{}}}}
+	p := validTestProgress(DetectorProgress{ID: "example", State: statePending})
 	if err := writeProgress(progress, p); err != nil {
 		t.Fatal(err)
 	}
@@ -359,7 +371,7 @@ func TestRunRefusesDirtyCheckoutAndAllowsExplicitOverride(t *testing.T) {
 func TestRunRequiresGitCheckout(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	if err := writeProgress(progress, Progress{Version: 1, Detectors: []DetectorProgress{{ID: "example", State: statePending}}}); err != nil {
+	if err := writeProgress(progress, validTestProgress(DetectorProgress{ID: "example", State: statePending})); err != nil {
 		t.Fatal(err)
 	}
 	var stdout, stderr bytes.Buffer
@@ -806,10 +818,10 @@ func TestRunRejectsProtocolThatDisagreesWithCorpus(t *testing.T) {
 func TestRunPrefersInProgressAndCanTargetOneDetector(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	p := Progress{Version: 1, Detectors: []DetectorProgress{
-		{ID: "pending-first", State: statePending, Examples: []string{}},
-		{ID: "in-progress-second", State: stateInProgress, Examples: []string{}},
-	}}
+	p := validTestProgress(
+		DetectorProgress{ID: "pending-first", State: statePending, Examples: []string{}},
+		DetectorProgress{ID: "in-progress-second", State: stateInProgress, Examples: []string{}},
+	)
 	if err := writeProgress(progress, p); err != nil {
 		t.Fatal(err)
 	}
@@ -835,7 +847,7 @@ func TestRunPrefersInProgressAndCanTargetOneDetector(t *testing.T) {
 func TestRunFullStopsAtIterationBudgetAndDoesNotAdvanceInfrastructureFailures(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	p := Progress{Version: 1, Detectors: []DetectorProgress{{ID: "example", State: stateInProgress, Iterations: 6, Examples: []string{}}}}
+	p := validTestProgress(DetectorProgress{ID: "example", State: stateInProgress, Iterations: 6, Examples: []string{}})
 	if err := writeProgress(progress, p); err != nil {
 		t.Fatal(err)
 	}
@@ -862,7 +874,7 @@ func TestRunFullStopsAtIterationBudgetAndDoesNotAdvanceInfrastructureFailures(t 
 func TestRunRefusesExistingProgressLockWithoutMutation(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	p := Progress{Version: 1, Detectors: []DetectorProgress{{ID: "example", State: statePending, Examples: []string{}}}}
+	p := validTestProgress(DetectorProgress{ID: "example", State: statePending})
 	if err := writeProgress(progress, p); err != nil {
 		t.Fatal(err)
 	}
@@ -890,7 +902,7 @@ func TestRunRefusesExistingProgressLockWithoutMutation(t *testing.T) {
 func TestRunStopsBeforeSchedulingAtSoftDuration(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	p := Progress{Version: 1, Detectors: []DetectorProgress{{ID: "example", State: statePending, Examples: []string{}}}}
+	p := validTestProgress(DetectorProgress{ID: "example", State: statePending})
 	if err := writeProgress(progress, p); err != nil {
 		t.Fatal(err)
 	}

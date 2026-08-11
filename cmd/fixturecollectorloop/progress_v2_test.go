@@ -85,6 +85,18 @@ func TestReadProgressRejectsOldAndInvalidV2Documents(t *testing.T) {
 	}
 }
 
+func TestWriteProgressRejectsLegacyOrIncompleteProgress(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "collection.yaml")
+	for _, progress := range []Progress{
+		{Version: 1, Detectors: []DetectorProgress{{ID: "example", State: statePending}}},
+		{Version: progressVersion, Detectors: []DetectorProgress{{ID: "example", State: statePending}}},
+	} {
+		if err := writeProgress(path, progress); err == nil {
+			t.Fatalf("writeProgress accepted %+v", progress)
+		}
+	}
+}
+
 func TestQueryReviewDoesNotBlockCollection(t *testing.T) {
 	detectors := []DetectorProgress{{ID: "review", State: stateNeedsQueryReview}, {ID: "ready", State: statePending, QueryPlan: []string{"filename:ready"}}}
 	if got := selectDetector(detectors, ""); got == nil || got.ID != "ready" {
