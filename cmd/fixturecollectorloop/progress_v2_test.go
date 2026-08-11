@@ -73,6 +73,8 @@ func TestReadProgressRejectsOldAndInvalidV2Documents(t *testing.T) {
 		"version: 2\nlimits:\n  queries: 8\nunknown: true\ndetectors: []\n",
 		"version: 2\nlimits:\n  queries: 8\nlog_path: .deplens/collector.jsonl\ndetectors: []\n",
 		"version: 2\nlimits:\n  queries: 8\ndetectors:\n  - id: example\n    state: needs-query-review\n    query_plan: [filename:x]\n",
+		"version: 2\nlimits:\n  queries: 8\n  result_pages: 10\n  candidate_inspections: 40\n  decoded_response_bytes: 16777216\n  packet_tokens: 50000\n  selector_invocations: 2\n  source_bytes: 2097152\n  valid_iterations: 7\ndetectors:\n  - id: example\n    state: blocked\n    iterations: 7\n    query_plan: [filename:x]\n",
+		"version: 2\nlimits:\n  queries: 8\n  result_pages: 10\n  candidate_inspections: 40\n  decoded_response_bytes: 16777216\n  packet_tokens: 50000\n  selector_invocations: 2\n  source_bytes: 2097152\n  valid_iterations: 7\ndetectors:\n  - id: example\n    state: excluded\n    query_plan: [filename:x]\n",
 	} {
 		if err := os.WriteFile(path, []byte(document), 0o600); err != nil {
 			t.Fatal(err)

@@ -77,9 +77,8 @@ go run ./cmd/fixturecollectorloop run --duration 8h \
 an active iteration may validate and checkpoint, but no subsequent iteration
 starts. Re-run the same command to resume a valid checkpoint. The first
 `SIGINT`/`SIGTERM` requests that behavior; a second cancels active research and
-records recovery-required state. Exit 0 is a valid completion or stop, exit 2
-means legacy `blocked` detector state is present, and exit 1 is an operational,
-integrity, lock, Git, selector, or recovery failure.
+records recovery-required state. Exit 0 is a valid completion or stop; exit 1
+is an operational, integrity, lock, Git, selector, or recovery failure.
 
 ## Git, recovery, and commits
 
