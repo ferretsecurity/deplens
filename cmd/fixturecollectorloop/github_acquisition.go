@@ -180,6 +180,7 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 		return ResearchInput{Outcome: Outcome{Result: "unsuccessful"}}, nil
 	}
 	seen := make(map[string]struct{})
+	firstDiscoveringQuery := make(map[string]string)
 	cache := newAcquisitionCache()
 	var hits []GitHubCodeHit
 	outcome := Outcome{Result: "unsuccessful"}
@@ -207,6 +208,7 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 					}
 					seen[key] = struct{}{}
 					hits = append(hits, hit)
+					firstDiscoveringQuery[key] = query
 				}
 			}
 			if !next {
@@ -240,6 +242,7 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 			continue
 		}
 		identities[identity], contents[candidate.SourceSHA256] = struct{}{}, struct{}{}
+		candidate.DiscoveringQuery = firstDiscoveringQuery[strings.ToLower(hit.Repository)+"\x00"+path.Clean(hit.Path)]
 		outcome.Candidates = append(outcome.Candidates, candidate.ID)
 		candidates = append(candidates, candidate)
 	}

@@ -89,28 +89,45 @@ type DetectorProgress struct {
 	Queries           []string          `yaml:"queries,omitempty"`
 	Candidates        []string          `yaml:"candidates,omitempty"`
 	Rejections        []string          `yaml:"rejections,omitempty"`
+	Omitted           []string          `yaml:"omitted,omitempty"`
+	DecisionStates    []DecisionState   `yaml:"decision_states,omitempty"`
 	History           []IterationRecord `yaml:"history,omitempty"`
 }
 
 // IterationRecord is append-only, content-free evidence of a valid attempt.
 type IterationRecord struct {
-	Iteration   int      `yaml:"iteration"`
-	Result      string   `yaml:"result"`
-	AcceptedIDs []string `yaml:"accepted_ids,omitempty"`
-	Queries     []string `yaml:"queries,omitempty"`
-	Candidates  []string `yaml:"candidates,omitempty"`
-	Rejections  []string `yaml:"rejections,omitempty"`
+	Iteration   int            `yaml:"iteration"`
+	Result      string         `yaml:"result"`
+	AcceptedIDs []string       `yaml:"accepted_ids,omitempty"`
+	Queries     []string       `yaml:"queries,omitempty"`
+	Candidates  []string       `yaml:"candidates,omitempty"`
+	Rejections  []string       `yaml:"rejections,omitempty"`
+	Omitted     []string       `yaml:"omitted,omitempty"`
+	Decision    *DecisionState `yaml:"decision,omitempty"`
+}
+
+// DecisionState is content-free evidence used to avoid repeating an identical
+// valid selector comparison state.
+type DecisionState struct {
+	PacketFingerprint         string `yaml:"packet_fingerprint"`
+	AcceptedCorpusFingerprint string `yaml:"accepted_corpus_fingerprint"`
+	SelectorConfiguration     string `yaml:"selector_configuration_fingerprint"`
 }
 
 type Iteration struct {
-	DetectorID        string
-	CorpusDir         string
-	Iteration         int
-	QueryLimit        int
-	CandidateLimit    int
-	QueryPlan         []string
-	PriorHistory      []string
-	MissingDimensions []string
+	DetectorID                       string
+	CorpusDir                        string
+	Iteration                        int
+	QueryLimit                       int
+	CandidateLimit                   int
+	QueryPlan                        []string
+	PriorHistory                     []string
+	MissingDimensions                []string
+	PacketTokens                     int
+	AcceptedReferences               []AcceptedCorpusReference
+	PresentedCandidateIDs            map[string]bool
+	SelectorConfigurationFingerprint string
+	PriorDecisionStates              []DecisionState
 }
 
 type Outcome struct {
@@ -119,6 +136,7 @@ type Outcome struct {
 	Queries    []string
 	Candidates []string
 	Rejections []string
+	Omitted    []string
 }
 
 var now = time.Now
@@ -349,6 +367,22 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 	if preflight, ok := researcher.(researcherPreflighter); ok {
 		if err := preflight.Preflight(); err != nil {
 			fmt.Fprintf(stderr, "error: collection authentication preflight: %v\n", err)
+			return 1
+		}
+	}
+	// A detector becomes complete at the first three independently accepted
+	// examples. This also prevents any selector invocation with three existing
+	// corpus examples, even for progress created with an older larger target.
+	updatedCompletion := false
+	for i := range p.Detectors {
+		if len(p.Detectors[i].Examples) >= 3 && p.Detectors[i].State == stateInProgress {
+			p.Detectors[i].State = stateComplete
+			updatedCompletion = true
+		}
+	}
+	if updatedCompletion {
+		if err := writeProgress(*progressPath, p); err != nil {
+			fmt.Fprintf(stderr, "error: checkpoint collection progress: %v\n", err)
 			return 1
 		}
 	}
@@ -599,15 +633,35 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	}
 	history := append(append([]string{}, detector.Queries...), detector.Candidates...)
 	history = append(history, detector.Rejections...)
+	references, err := acceptedCorpusReferences(root, detector)
+	if err != nil {
+		failure = err.Error()
+		fmt.Fprintf(stderr, "error: read accepted corpus references: %v\n", err)
+		return 1, false
+	}
+	presented := make(map[string]bool)
+	omitted := make(map[string]bool, len(detector.Omitted))
+	for _, id := range detector.Omitted {
+		omitted[id] = true
+	}
+	for _, id := range detector.Candidates {
+		if !omitted[id] {
+			presented[id] = true
+		}
+	}
 	result, err := researcher.Research(ctx, Iteration{
-		DetectorID:        detector.ID,
-		CorpusDir:         corpusDir,
-		Iteration:         detector.Iterations + 1,
-		QueryLimit:        queryLimit,
-		CandidateLimit:    candidateLimit,
-		QueryPlan:         append([]string(nil), detector.QueryPlan...),
-		PriorHistory:      history,
-		MissingDimensions: []string{"source variation not yet recorded by collection progress"},
+		DetectorID:            detector.ID,
+		CorpusDir:             corpusDir,
+		Iteration:             detector.Iterations + 1,
+		QueryLimit:            queryLimit,
+		CandidateLimit:        candidateLimit,
+		QueryPlan:             append([]string(nil), detector.QueryPlan...),
+		PriorHistory:          history,
+		MissingDimensions:     []string{"source variation not yet recorded by collection progress"},
+		PacketTokens:          p.Limits.PacketTokens,
+		AcceptedReferences:    references,
+		PresentedCandidateIDs: presented,
+		PriorDecisionStates:   append([]DecisionState(nil), detector.DecisionStates...),
 	})
 	if err != nil {
 		failure = err.Error()
@@ -671,8 +725,12 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	detector.Queries = append(detector.Queries, outcome.Queries...)
 	detector.Candidates = append(detector.Candidates, outcome.Candidates...)
 	detector.Rejections = append(detector.Rejections, outcome.Rejections...)
-	detector.History = append(detector.History, iterationRecord(detector.Iterations, outcome, result.Accepted))
-	if len(detector.Examples) >= detector.Target {
+	detector.Omitted = append(detector.Omitted, outcome.Omitted...)
+	if result.Decision != nil {
+		detector.DecisionStates = append(detector.DecisionStates, *result.Decision)
+	}
+	detector.History = append(detector.History, iterationRecord(detector.Iterations, outcome, result.Accepted, result.Decision))
+	if len(detector.Examples) >= 3 {
 		detector.State = stateComplete
 	}
 	if detector.Iterations >= maxIterations && detector.State != stateComplete {
@@ -695,13 +753,64 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	return 0, true
 }
 
-func iterationRecord(iteration int, outcome Outcome, accepted []AcceptedCandidate) IterationRecord {
+// acceptedCorpusReferences reconstructs the limited comparison corpus from
+// exact local source and provenance records. It never writes or retains those
+// contents beyond the active selector handoff.
+func acceptedCorpusReferences(root string, detector *DetectorProgress) ([]AcceptedCorpusReference, error) {
+	if len(detector.Examples) == 0 {
+		return nil, nil
+	}
+	if len(detector.Examples) > 2 {
+		return nil, errors.New("selector must not run with three accepted corpus examples")
+	}
+	references := make([]AcceptedCorpusReference, 0, len(detector.Examples))
+	prefix := filepath.ToSlash(filepath.Join("testdata", "corpus", detector.ID)) + "/"
+	for _, relativeSource := range detector.Examples {
+		if filepath.IsAbs(relativeSource) || strings.HasPrefix(filepath.Clean(relativeSource), "..") {
+			return nil, errors.New("accepted corpus source path is unsafe")
+		}
+		cleanRelative := filepath.ToSlash(filepath.Clean(relativeSource))
+		if !strings.HasPrefix(cleanRelative, prefix) {
+			return nil, errors.New("accepted corpus source is outside its detector corpus")
+		}
+		parts := strings.Split(strings.TrimPrefix(cleanRelative, prefix), "/")
+		if len(parts) < 2 || parts[0] == "" {
+			return nil, errors.New("accepted corpus source has no example directory")
+		}
+		source, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(relativeSource)))
+		if err != nil {
+			return nil, err
+		}
+		provenancePath := filepath.Join(root, "testdata", "corpus", detector.ID, parts[0], "provenance.yaml")
+		contents, err := os.ReadFile(provenancePath)
+		if err != nil {
+			return nil, err
+		}
+		p, err := parseProvenance(string(contents))
+		if err != nil {
+			return nil, err
+		}
+		if err := validateProvenance(p, detector.ID); err != nil {
+			return nil, err
+		}
+		if hash(string(source)) != strings.ToLower(p.SHA256) {
+			return nil, errors.New("accepted corpus source does not match provenance hash")
+		}
+		references = append(references, AcceptedCorpusReference{Candidate: SourceCandidate{ID: p.CandidateID, Provider: p.Provider, Repository: p.Repository, RepositoryURL: p.RepositoryURL, DefaultBranch: p.DefaultBranch, Commit: p.Commit, OriginalPath: p.OriginalPath, RetrievedAt: p.RetrievedAt, Source: source, SourceSHA256: p.SHA256, License: LicenseEvidence{SPDX: p.License.SPDX, Path: p.License.Path, Permalink: p.License.Permalink, SHA256: p.License.SHA256}}, Rationale: p.Rationale})
+	}
+	sort.Slice(references, func(i, j int) bool { return references[i].Candidate.ID < references[j].Candidate.ID })
+	return references, nil
+}
+
+func iterationRecord(iteration int, outcome Outcome, accepted []AcceptedCandidate, decision *DecisionState) IterationRecord {
 	record := IterationRecord{
 		Iteration:  iteration,
 		Result:     outcome.Result,
 		Queries:    append([]string(nil), outcome.Queries...),
 		Candidates: append([]string(nil), outcome.Candidates...),
 		Rejections: append([]string(nil), outcome.Rejections...),
+		Omitted:    append([]string(nil), outcome.Omitted...),
+		Decision:   decision,
 	}
 	for _, candidate := range accepted {
 		record.AcceptedIDs = append(record.AcceptedIDs, candidate.Candidate.ID)
@@ -1107,7 +1216,7 @@ func validateProgress(p Progress) (Progress, error) {
 				return Progress{}, errors.New("invalid pending detector progress")
 			}
 		case stateComplete:
-			if len(detector.Examples) < target {
+			if len(detector.Examples) < 3 {
 				return Progress{}, errors.New("invalid complete detector progress")
 			}
 		case stateBlocked:
