@@ -117,19 +117,11 @@ type Provenance struct {
 	Rationale     string   `yaml:"rationale"`
 }
 
-type Agent interface {
-	Run(context.Context, Iteration) (Outcome, error)
+func main() {
+	os.Exit(run(os.Args[1:], ".", os.Stdout, os.Stderr, newLegacyAgentResearcher(newCodexAgent(".", os.Stdout))))
 }
 
-type unavailableAgent struct{}
-
-func (unavailableAgent) Run(context.Context, Iteration) (Outcome, error) {
-	return Outcome{}, errors.New("no Codex agent is configured; inject an agent through the command seam")
-}
-
-func main() { os.Exit(run(os.Args[1:], ".", os.Stdout, os.Stderr, newCodexAgent(".", os.Stdout))) }
-
-func run(args []string, root string, stdout, stderr io.Writer, agent Agent) int {
+func run(args []string, root string, stdout, stderr io.Writer, researcher Researcher) int {
 	if len(args) == 0 {
 		fmt.Fprintln(stderr, "usage: fixturecollectorloop <initialize-progress|run> [flags]")
 		return 1
@@ -138,7 +130,7 @@ func run(args []string, root string, stdout, stderr io.Writer, agent Agent) int 
 	case "initialize-progress":
 		return initialize(args[1:], root, stdout, stderr)
 	case "run":
-		return collect(args[1:], root, stdout, stderr, agent)
+		return collect(args[1:], root, stdout, stderr, researcher)
 	default:
 		fmt.Fprintf(stderr, "error: unknown command %q\n", args[0])
 		return 1
@@ -209,7 +201,7 @@ func initialize(args []string, root string, stdout, stderr io.Writer) int {
 	return 0
 }
 
-func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) int {
+func collect(args []string, root string, stdout, stderr io.Writer, researcher Researcher) int {
 	fs := flag.NewFlagSet("run", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	progressPath := fs.String("progress", filepath.Join(root, ".deplens", "fixture-collection.yaml"), "collection progress path")
@@ -233,7 +225,7 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 		fmt.Fprintln(stderr, "error: query-limit and candidate-limit must be positive")
 		return 1
 	}
-	if configurable, ok := agent.(interface{ SetRetainLogs(bool) }); ok {
+	if configurable, ok := researcher.(researchLogConfigurer); ok {
 		configurable.SetRetainLogs(*retainLogs)
 	}
 	unlock, err := lockProgress(*progressPath)
@@ -281,7 +273,7 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 			return 1
 		}
 	}
-	if preflight, ok := agent.(interface{ Preflight() error }); ok {
+	if preflight, ok := researcher.(researcherPreflighter); ok {
 		if err := preflight.Preflight(); err != nil {
 			fmt.Fprintf(stderr, "error: collection authentication preflight: %v\n", err)
 			return 1
@@ -317,7 +309,7 @@ func collect(args []string, root string, stdout, stderr io.Writer, agent Agent) 
 		}
 		result := make(chan iterationResult, 1)
 		go func() {
-			code, checkpointed := runIteration(ctx, root, *progressPath, p, detector, agent, *queryLimit, *candidateLimit, *commit, *allowDirty, stderr)
+			code, checkpointed := runIteration(ctx, root, *progressPath, p, detector, researcher, *queryLimit, *candidateLimit, *commit, *allowDirty, stderr)
 			result <- iterationResult{code: code, checkpointed: checkpointed}
 		}()
 		iteration, stopAfterIteration := waitForIteration(result, signals, cancel, stdout, stderr)
@@ -490,7 +482,7 @@ func warnBranchState(root string, stderr io.Writer) error {
 	return nil
 }
 
-func runIteration(ctx context.Context, root, progressPath string, p Progress, detector *DetectorProgress, agent Agent, queryLimit, candidateLimit int, commit, allowDirty bool, stderr io.Writer) (code int, checkpointed bool) {
+func runIteration(ctx context.Context, root, progressPath string, p Progress, detector *DetectorProgress, researcher Researcher, queryLimit, candidateLimit int, commit, allowDirty bool, stderr io.Writer) (code int, checkpointed bool) {
 	checkpoint, err := gitOutput(root, "rev-parse", "HEAD")
 	if err != nil {
 		checkpoint = "working tree (no Git checkpoint available)"
@@ -507,11 +499,11 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	var beforeDirectories map[string]struct{}
 	failure := "collection iteration did not complete"
 	progressCheckpointed := false
-	agentCompleted := false
+	researchCompleted := false
 	defer func() {
-		if agentCompleted {
-			if finalizer, ok := agent.(interface{ FinalizeIteration(bool) }); ok {
-				finalizer.FinalizeIteration(code == 0)
+		if researchCompleted {
+			if finalizer, ok := researcher.(researchFinalizer); ok {
+				finalizer.FinalizeResearch(code == 0)
 			}
 		}
 		if code != 0 && !progressCheckpointed {
@@ -534,7 +526,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	}
 	history := append(append([]string{}, detector.Queries...), detector.Candidates...)
 	history = append(history, detector.Rejections...)
-	outcome, err := agent.Run(ctx, Iteration{
+	result, err := researcher.Research(ctx, Iteration{
 		DetectorID:        detector.ID,
 		CorpusDir:         corpusDir,
 		Iteration:         detector.Iterations + 1,
@@ -548,7 +540,8 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		fmt.Fprintf(stderr, "error: collection agent: %v\n", err)
 		return 1, false
 	}
-	agentCompleted = true
+	researchCompleted = true
+	outcome := result.Outcome
 	after, err := snapshot(root)
 	if err != nil {
 		failure = err.Error()
