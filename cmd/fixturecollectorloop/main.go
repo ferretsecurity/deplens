@@ -345,6 +345,10 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 		}
 		fmt.Fprintf(stderr, "WARNING: --allow-dirty is resuming after recovery for %s iteration %d; preserving the listed unvalidated changes as pre-existing dirty state.\n", recovery.DetectorID, recovery.Iteration)
 	}
+	if *target != "" && findDetector(p.Detectors, *target) == nil {
+		fmt.Fprintf(stderr, "error: unknown detector %q in collection progress\n", *target)
+		return 1
+	}
 	if p.InventoryFingerprint != "" {
 		rules, err := analyze.LoadDefaultRules()
 		if err != nil {
@@ -1167,10 +1171,12 @@ func containsUnsafeContent(content string) bool {
 var unsafeContentPattern = regexp.MustCompile(`(?im)(?:\b(?:password|passwd|secret|api[_-]?key)\s*[:=]|\bauthorization\s*:|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9_]{20,}|\bnpm_[A-Za-z0-9]{20,}|\bAKIA[0-9A-Z]{16}\b|//[^\s/:]+:[^\s@/]+@[^\s/]+|:_authToken\s*[:=]|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b)`)
 
 func selectDetector(detectors []DetectorProgress, target string) *DetectorProgress {
-	for i := range detectors {
-		if detectors[i].ID == target && target != "" && isEligible(detectors[i]) {
-			return &detectors[i]
+	if target != "" {
+		detector := findDetector(detectors, target)
+		if detector != nil && isEligible(*detector) {
+			return detector
 		}
+		return nil
 	}
 	for i := range detectors {
 		if detectors[i].State == stateInProgress {
@@ -1179,6 +1185,15 @@ func selectDetector(detectors []DetectorProgress, target string) *DetectorProgre
 	}
 	for i := range detectors {
 		if detectors[i].State == statePending {
+			return &detectors[i]
+		}
+	}
+	return nil
+}
+
+func findDetector(detectors []DetectorProgress, id string) *DetectorProgress {
+	for i := range detectors {
+		if detectors[i].ID == id {
 			return &detectors[i]
 		}
 	}
