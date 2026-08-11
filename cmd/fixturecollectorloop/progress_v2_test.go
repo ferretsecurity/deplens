@@ -71,6 +71,7 @@ func TestReadProgressRejectsOldAndInvalidV2Documents(t *testing.T) {
 	for _, document := range []string{
 		"version: 1\ndetectors: []\n",
 		"version: 2\nlimits:\n  queries: 8\nunknown: true\ndetectors: []\n",
+		"version: 2\nlimits:\n  queries: 8\nlog_path: .deplens/collector.jsonl\ndetectors: []\n",
 		"version: 2\nlimits:\n  queries: 8\ndetectors:\n  - id: example\n    state: needs-query-review\n    query_plan: [filename:x]\n",
 	} {
 		if err := os.WriteFile(path, []byte(document), 0o600); err != nil {
@@ -82,6 +83,31 @@ func TestReadProgressRejectsOldAndInvalidV2Documents(t *testing.T) {
 		}
 		if strings.Contains(document, "version: 1") && !strings.Contains(err.Error(), "initialize a fresh collection") {
 			t.Fatalf("old progress error = %v", err)
+		}
+	}
+}
+
+func TestRunRejectsObsoleteRawLogRetentionFlag(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"run", "--retain-logs"}, t.TempDir(), &stdout, &stderr, unavailableResearcher{}); got != 1 {
+		t.Fatalf("run exit status = %d, want 1", got)
+	}
+	if !strings.Contains(stderr.String(), "flag provided but not defined") {
+		t.Fatalf("stderr = %q", stderr.String())
+	}
+}
+
+func TestProvenanceRejectsLegacySchemaAndMetadata(t *testing.T) {
+	if err := validateProvenance(Provenance{Version: 1}, "example"); err == nil {
+		t.Fatal("version-1 provenance was accepted")
+	}
+	for _, document := range []string{
+		"version: 2\nproject_kind: library\n",
+		"version: 2\nvariation_tags: [common]\n",
+		"version: 2\nmodel_path: source/file\n",
+	} {
+		if _, err := parseProvenance(document); err == nil {
+			t.Fatalf("legacy provenance metadata was accepted: %q", document)
 		}
 	}
 }

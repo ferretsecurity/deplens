@@ -71,7 +71,6 @@ type Recovery struct {
 	Iteration       int      `yaml:"iteration"`
 	LastCheckpoint  string   `yaml:"last_checkpoint"`
 	ProgressPath    string   `yaml:"progress_path"`
-	LogPath         string   `yaml:"log_path"`
 	ValidationError string   `yaml:"validation_error"`
 	ChangedPaths    []string `yaml:"changed_paths"`
 	Commit          bool     `yaml:"commit"`
@@ -123,8 +122,6 @@ type Iteration struct {
 	QueryLimit                       int
 	CandidateLimit                   int
 	QueryPlan                        []string
-	PriorHistory                     []string
-	MissingDimensions                []string
 	PacketTokens                     int
 	AcceptedReferences               []AcceptedCorpusReference
 	PresentedCandidateIDs            map[string]bool
@@ -306,7 +303,6 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 	candidateLimit := fs.Int("candidate-limit", 20, "maximum candidates recorded by one iteration")
 	allowDirty := fs.Bool("allow-dirty", false, "allow a checkout that already has non-ignored changes")
 	commit := fs.Bool("commit", false, "create one local collection commit for each valid iteration")
-	retainLogs := fs.Bool("retain-logs", true, "retain successful Codex JSONL logs (logs may contain sensitive content)")
 	if err := fs.Parse(args); err != nil {
 		return 1
 	}
@@ -318,9 +314,6 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 	if *queryLimit < 1 || *candidateLimit < 1 {
 		fmt.Fprintln(stderr, "error: query-limit and candidate-limit must be positive")
 		return 1
-	}
-	if configurable, ok := researcher.(researchLogConfigurer); ok {
-		configurable.SetRetainLogs(*retainLogs)
 	}
 	unlock, err := lockProgress(*progressPath)
 	if err != nil {
@@ -456,7 +449,7 @@ type iterationResult struct {
 }
 
 // waitForIteration lets the first interrupt finish a valid checkpoint and uses
-// the second to cancel the agent so recovery details can be recorded.
+// the second to cancel research so recovery details can be recorded.
 func waitForIteration(result <-chan iterationResult, signals <-chan os.Signal, cancel context.CancelFunc, stdout, stderr io.Writer) (iterationResult, bool) {
 	select {
 	case iteration := <-result:
@@ -468,16 +461,16 @@ func waitForIteration(result <-chan iterationResult, signals <-chan os.Signal, c
 	case iteration := <-result:
 		return iteration, true
 	case <-signals:
-		fmt.Fprintln(stderr, "collection forced stop: terminating the active agent; recovery is required before resuming")
+		fmt.Fprintln(stderr, "collection forced stop: terminating active research; recovery is required before resuming")
 		cancel()
 		return <-result, true
 	}
 }
 
 func printRecoveryRequired(r Recovery, stderr io.Writer) {
-	fmt.Fprintln(stderr, "error: fixture collection recovery is required before another agent starts")
+	fmt.Fprintln(stderr, "error: fixture collection recovery is required before another research iteration starts")
 	fmt.Fprintf(stderr, "  detector: %s (iteration %d, run %s)\n", r.DetectorID, r.Iteration, r.RunID)
-	fmt.Fprintf(stderr, "  last checkpoint: %s\n  progress: %s\n  log: %s\n", r.LastCheckpoint, r.ProgressPath, r.LogPath)
+	fmt.Fprintf(stderr, "  last checkpoint: %s\n  progress: %s\n", r.LastCheckpoint, r.ProgressPath)
 	validationError := r.ValidationError
 	if validationError == "" {
 		validationError = "none recorded"
@@ -603,7 +596,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	} else {
 		checkpoint = strings.TrimSpace(checkpoint)
 	}
-	recovery := newRecovery(root, progressPath, detector, checkpoint, commit, allowDirty)
+	recovery := newRecovery(progressPath, detector, checkpoint, commit, allowDirty)
 	p.Recovery = &recovery
 	if err := writeProgress(progressPath, p); err != nil {
 		fmt.Fprintf(stderr, "error: checkpoint recovery state: %v\n", err)
@@ -613,13 +606,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	var beforeDirectories map[string]struct{}
 	failure := "collection iteration did not complete"
 	progressCheckpointed := false
-	researchCompleted := false
 	defer func() {
-		if researchCompleted {
-			if finalizer, ok := researcher.(researchFinalizer); ok {
-				finalizer.FinalizeResearch(code == 0)
-			}
-		}
 		if code != 0 && !progressCheckpointed {
 			recordRecovery(root, progressPath, p, recovery, before, failure)
 			removeNewEmptyDirectories(filepath.Join(root, "testdata", "corpus", detector.ID), beforeDirectories)
@@ -638,8 +625,6 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		fmt.Fprintf(stderr, "error: snapshot collection directories: %v\n", err)
 		return 1, false
 	}
-	history := append(append([]string{}, detector.Queries...), detector.Candidates...)
-	history = append(history, detector.Rejections...)
 	references, err := acceptedCorpusReferences(root, detector)
 	if err != nil {
 		failure = err.Error()
@@ -654,8 +639,6 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		QueryLimit:            queryLimit,
 		CandidateLimit:        candidateLimit,
 		QueryPlan:             append([]string(nil), detector.QueryPlan...),
-		PriorHistory:          history,
-		MissingDimensions:     []string{"source variation not yet recorded by collection progress"},
 		PacketTokens:          p.Limits.PacketTokens,
 		AcceptedReferences:    references,
 		PresentedCandidateIDs: presented,
@@ -663,10 +646,9 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	})
 	if err != nil {
 		failure = err.Error()
-		fmt.Fprintf(stderr, "error: collection agent: %v\n", err)
+		fmt.Fprintf(stderr, "error: collection research: %v\n", err)
 		return 1, false
 	}
-	researchCompleted = true
 	outcome := result.Outcome
 	after, err := snapshot(root)
 	if err != nil {
@@ -722,13 +704,13 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		}
 	}
 	if outcome.Result != "accepted" && outcome.Result != "unsuccessful" {
-		failure = "agent returned an invalid outcome result"
-		fmt.Fprintln(stderr, "error: collection agent: invalid outcome result")
+		failure = "research returned an invalid outcome result"
+		fmt.Fprintln(stderr, "error: collection research: invalid outcome result")
 		return 1, false
 	}
 	if len(outcome.Queries) > queryLimit || len(outcome.Candidates) > candidateLimit {
-		failure = "agent outcome exceeds configured bounds"
-		fmt.Fprintln(stderr, "error: collection agent: outcome exceeds the configured query or candidate bound")
+		failure = "research outcome exceeds configured bounds"
+		fmt.Fprintln(stderr, "error: collection research: outcome exceeds the configured query or candidate bound")
 		return 1, false
 	}
 	if outcome.Result == "unsuccessful" && len(added) != 0 {
@@ -737,8 +719,8 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		return 1, false
 	}
 	if outcome.Result == "accepted" && len(added) == 0 {
-		failure = "agent added no corpus example"
-		fmt.Fprintln(stderr, "error: unvalidated collection changes: agent added no corpus example")
+		failure = "research added no corpus example"
+		fmt.Fprintln(stderr, "error: unvalidated collection changes: research added no corpus example")
 		return 1, false
 	}
 	if outcome.Result == "accepted" {
@@ -925,7 +907,7 @@ func iterationRecord(iteration int, outcome Outcome, accepted []AcceptedCandidat
 	return record
 }
 
-func newRecovery(root, progressPath string, detector *DetectorProgress, checkpoint string, commit, allowDirty bool) Recovery {
+func newRecovery(progressPath string, detector *DetectorProgress, checkpoint string, commit, allowDirty bool) Recovery {
 	runID := fmt.Sprintf("%d", now().UnixNano())
 	return Recovery{
 		RunID:          runID,
@@ -933,7 +915,6 @@ func newRecovery(root, progressPath string, detector *DetectorProgress, checkpoi
 		Iteration:      detector.Iterations + 1,
 		LastCheckpoint: checkpoint,
 		ProgressPath:   progressPath,
-		LogPath:        filepath.Join(root, ".deplens", "fixture-collection-"+runID+".log"),
 		Commit:         commit,
 		AllowDirty:     allowDirty,
 	}
@@ -941,9 +922,6 @@ func newRecovery(root, progressPath string, detector *DetectorProgress, checkpoi
 
 func recordRecovery(root, progressPath string, p Progress, recovery Recovery, before map[string]string, failure string) {
 	recovery.ValidationError = failure
-	if err := os.MkdirAll(filepath.Dir(recovery.LogPath), 0o755); err == nil {
-		_ = os.WriteFile(recovery.LogPath, []byte(failure+"\n"), 0o600)
-	}
 	if after, err := snapshot(root); err == nil {
 		recovery.ChangedPaths = changedPaths(before, after)
 	}
@@ -1483,18 +1461,18 @@ func validateDelta(before, after map[string]string, allowed string) ([]string, e
 
 func validateOutcome(outcome Outcome, detectorID string, added []string) error {
 	if outcome.Result != "accepted" {
-		return fmt.Errorf("agent outcome must be accepted")
+		return fmt.Errorf("research outcome must be accepted")
 	}
 	declared := append([]string(nil), outcome.Added...)
 	sort.Strings(declared)
 	if len(declared) != len(added) {
-		return fmt.Errorf("agent protocol does not match the added files")
+		return fmt.Errorf("research result does not match the added files")
 	}
 	for i := range added {
 		if strings.TrimPrefix(added[i], "testdata/corpus/"+detectorID+"/") == declared[i] {
 			continue
 		}
-		return fmt.Errorf("agent protocol does not match the added files")
+		return fmt.Errorf("research result does not match the added files")
 	}
 	hasProvenance := false
 	for _, path := range declared {
@@ -1503,10 +1481,10 @@ func validateOutcome(outcome Outcome, detectorID string, added []string) error {
 		}
 	}
 	if !hasProvenance {
-		return fmt.Errorf("agent added no provenance record")
+		return fmt.Errorf("research result added no provenance record")
 	}
 	if len(corpusExampleFiles(added)) == 0 {
-		return fmt.Errorf("agent added no corpus example")
+		return fmt.Errorf("research result added no corpus example")
 	}
 	return nil
 }
