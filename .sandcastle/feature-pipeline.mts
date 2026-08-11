@@ -203,6 +203,10 @@ const selectIssue = async (
   const stateByIssue = new Map<number, boolean>();
 
   for (const issue of issues) {
+    if (!(await issueIsOpen(issue.number, stateByIssue))) {
+      continue;
+    }
+
     if (await issueIsBlocked(issue, repository, stateByIssue)) {
       blockedIssueNumbers.push(issue.number);
       continue;
