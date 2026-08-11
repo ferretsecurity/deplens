@@ -1,0 +1,1603 @@
+version: 2
+inventory_fingerprint: 9fcb56e0496a1e5e1e29d1f089e780cae705aafeaabb7e9b86d1db0af6a23c09
+limits:
+    queries: 8
+    result_pages: 10
+    candidate_inspections: 40
+    decoded_response_bytes: 16777216
+    packet_tokens: 50000
+    selector_invocations: 2
+    source_bytes: 2097152
+    valid_iterations: 7
+detectors:
+    - id: python-pdm-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:pdm.lock
+    - id: python-conda-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:conda-lock.yml
+    - id: python-conda-env-alt
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:conda.yaml
+        - filename:conda.yml
+    - id: python-conda-environment
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:environment.yaml
+        - filename:environment.yml
+    - id: python-constraints
+      form: constraint-file
+      roles:
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:constraints.txt
+    - id: js-bower
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:bower.json
+    - id: js-bun-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:bun.lock
+    - id: js-bun-lockb
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:bun.lockb
+    - id: deno-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:deno.lock
+    - id: deno-json
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:deno.json
+    - id: deno-jsonc
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:deno.jsonc
+    - id: js-pnp
+      form: vendored-file
+      roles:
+        - inventory
+        - resolution
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:.pnp.cjs
+        - filename:.pnp.loader.mjs
+    - id: js-pnpm-workspace
+      form: workspace-definition
+      roles:
+        - workspace
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:pnpm-workspace.yaml
+        - filename:pnpm-workspace.yml
+    - id: js-npmrc
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:.npmrc
+    - id: js-yarnrc
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:.yarnrc.yml
+    - id: js-importmap
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:importmap.json
+    - id: java-gradle-settings
+      form: workspace-definition
+      roles:
+        - workspace
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:settings.gradle
+    - id: java-gradle-settings-kts
+      form: workspace-definition
+      roles:
+        - workspace
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:settings.gradle.kts
+    - id: java-gradle-wrapper
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:gradle/wrapper/gradle-wrapper.properties
+    - id: scala-sbt-build
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:build.sbt
+    - id: scala-sbt-plugins
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:project/plugins.sbt
+    - id: scala-sbt-dependencies
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:project/Dependencies.scala
+    - id: scala-sbt-build-props
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:project/build.properties
+    - id: scala-mill
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:build.sc
+    - id: java-ant-build
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:build.xml
+    - id: java-ivy
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:ivy.xml
+    - id: java-ivy-settings
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:ivysettings.xml
+    - id: ruby-gemspec
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - extension:gemspec
+    - id: ruby-appraisal
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:gemfiles extension:gemfile
+    - id: swift-package
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Package.swift
+    - id: ios-podfile
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Podfile
+    - id: ios-cartfile
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Cartfile
+    - id: ios-podspec
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - extension:podspec
+    - id: ios-cartfile-resolved
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Cartfile.resolved
+    - id: dart-pubspec
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:pubspec.yaml
+    - id: dart-pubspec-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:pubspec.lock
+    - id: erlang-rebar-config
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:rebar.config
+    - id: erlang-rebar-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:rebar.lock
+    - id: clojure-deps-edn
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:deps.edn
+    - id: clojure-project-clj
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:project.clj
+    - id: clojure-boot
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:build.boot
+    - id: haskell-stack
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:stack.yaml
+    - id: haskell-stack-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:stack.yaml.lock
+    - id: haskell-cabal-project
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:cabal.project
+    - id: haskell-cabal-project-freeze
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:cabal.project.freeze
+    - id: haskell-cabal
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - extension:cabal
+    - id: haskell-package-yaml
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:package.yaml
+    - id: dotnet-packages-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:packages.lock.json
+    - id: dotnet-paket-dependencies
+      form: requirements
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:paket.dependencies
+    - id: dotnet-paket-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:paket.lock
+    - id: dotnet-directory-build
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Directory.Build.props
+        - filename:Directory.Build.targets
+    - id: dotnet-paket-references
+      form: requirements
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:paket.references
+    - id: dotnet-tools-manifest
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:.config/dotnet-tools.json
+    - id: go-sum
+      form: checksum-file
+      roles:
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:go.sum
+    - id: go-work
+      form: workspace-definition
+      roles:
+        - workspace
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:go.work
+    - id: go-gopkg-toml
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Gopkg.toml
+    - id: go-glide-yaml
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:glide.yaml
+    - id: go-godep
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:Godeps/Godeps.json
+    - id: rust-cargo-config
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:.cargo/config.toml
+    - id: go-gopkg-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Gopkg.lock
+    - id: go-glide-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:glide.lock
+    - id: cpp-conanfile
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:conanfile.txt
+    - id: cpp-conan-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:conan.lock
+    - id: cpp-vcpkg
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:vcpkg.json
+    - id: cpp-cmake
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:CMakeLists.txt
+    - id: cpp-conanfile-py
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:conanfile.py
+    - id: cpp-vcpkg-config
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:vcpkg-configuration.json
+    - id: cpp-meson
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:meson.build
+    - id: cpp-autotools
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:configure.ac
+        - filename:configure.in
+    - id: cpp-cmake-modules
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:cmake extension:cmake
+    - id: cpp-meson-wrap
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:subprojects extension:wrap
+    - id: swift-package-resolved
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Package.resolved
+    - id: ios-podfile-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Podfile.lock
+    - id: elixir-mix
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:mix.exs
+    - id: elixir-mix-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:mix.lock
+    - id: julia-project
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Project.toml
+    - id: julia-manifest
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Manifest.toml
+    - id: perl-cpanfile
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:cpanfile
+    - id: perl-cpanfile-snapshot
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:cpanfile.snapshot
+    - id: perl-makefile-pl
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Makefile.PL
+    - id: perl-build-pl
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Build.PL
+    - id: perl-meta
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:META.json
+        - filename:META.yaml
+        - filename:META.yml
+    - id: perl-dist-ini
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:dist.ini
+    - id: raku-meta
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:META6.json
+    - id: r-renv-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:renv.lock
+    - id: r-packrat-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:packrat/packrat.lock
+    - id: lua-rockspec
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - extension:rockspec
+    - id: zig-build-zon
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:build.zig.zon
+    - id: zig-build
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:build.zig
+    - id: nim-nimble
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - extension:nimble
+    - id: ocaml-opam
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - extension:opam
+    - id: ocaml-opam-locked
+      form: lockfile
+      roles:
+        - resolution
+      state: needs-query-review
+      iterations: 0
+      examples: []
+      target: 3
+      query_review_reason: 'filename regex is not safely finite: ".*\\.opam\\.locked$"'
+    - id: ocaml-dune-project
+      form: workspace-definition
+      roles:
+        - workspace
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:dune-project
+    - id: ocaml-esy
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:esy.json
+    - id: crystal-shard
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:shard.yml
+    - id: crystal-shard-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:shard.lock
+    - id: gleam
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:gleam.toml
+    - id: gleam-manifest
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:manifest.toml
+    - id: fortran-fpm
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:fpm.toml
+    - id: vlang
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:v.mod
+    - id: helm-chart
+      form: deployment-definition
+      roles:
+        - declaration
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Chart.yaml
+    - id: ansible-requirements
+      form: requirements
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:requirements.yaml
+        - filename:requirements.yml
+    - id: buf
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:buf.yaml
+    - id: homebrew-brewfile
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Brewfile
+    - id: jsonnet-bundler
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:jsonnetfile.json
+    - id: terraform-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:.terraform.lock.hcl
+    - id: unity-packages-manifest
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:Packages/manifest.json
+    - id: unity-packages-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:Packages/packages-lock.json
+    - id: github-actions-action
+      form: automation-definition
+      roles:
+        - configuration
+        - usage
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:action.yaml
+        - filename:action.yml
+    - id: github-actions-workflow
+      form: automation-definition
+      roles:
+        - configuration
+        - usage
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:.github/workflows extension:yml
+    - id: bazel-workspace
+      form: workspace-definition
+      roles:
+        - workspace
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:WORKSPACE
+        - filename:WORKSPACE.bazel
+    - id: bazel-module
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:MODULE.bazel
+    - id: bazel-module-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:MODULE.bazel.lock
+    - id: bazel-build-file
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:BUILD.bazel
+    - id: bazel-third-party-bzl
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:third_party extension:bzl
+    - id: js-nx
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:nx.json
+    - id: js-lerna
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:lerna.json
+    - id: js-rush
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:rush.json
+    - id: rush-common-versions
+      form: constraint-file
+      roles:
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:common/config/rush/common-versions.json
+    - id: js-turbo
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:turbo.json
+    - id: pants-config
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:pants.toml
+    - id: pants-jvm-build
+      form: build-definition
+      roles:
+        - declaration
+        - constraint
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - path:3rdparty/jvm/BUILD
+    - id: git-submodules
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:.gitmodules
+    - id: nix-default-shell
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:default.nix
+        - filename:shell.nix
+    - id: nix-flake
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:flake.nix
+    - id: nix-flake-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:flake.lock
+    - id: helm-chart-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Chart.lock
+    - id: homebrew-brewfile-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Brewfile.lock.json
+    - id: buf-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:buf.lock
+    - id: puppet-puppetfile
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Puppetfile
+    - id: chef-berksfile
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Berksfile
+    - id: chef-berksfile-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Berksfile.lock
+    - id: chef-metadata
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:metadata.rb
+    - id: chef-policyfile
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Policyfile.rb
+    - id: chef-policyfile-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Policyfile.lock.json
+    - id: jsonnet-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:jsonnetfile.lock.json
+    - id: emacs-cask
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:Cask
+    - id: unreal-uproject
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - extension:uproject
+    - id: unreal-uplugin
+      form: manifest
+      roles:
+        - declaration
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - extension:uplugin
+    - id: godot-plugin-cfg
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:plugin.cfg
+    - id: foundry-toml
+      form: tool-config
+      roles:
+        - configuration
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:foundry.toml
+    - id: foundry-remappings
+      form: constraint-file
+      roles:
+        - constraint
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:remappings.txt
+    - id: soldeer-lock
+      form: lockfile
+      roles:
+        - resolution
+        - integrity
+      state: pending
+      iterations: 0
+      examples: []
+      target: 3
+      query_plan:
+        - filename:soldeer.lock
+    - id: terraform.aws_glue_job.python
+      form: source-code
+      roles:
+        - usage
+        - inventory
+      state: needs-query-review
+      iterations: 0
+      examples: []
+      target: 3
+      query_review_reason: extension-only search needs a content term for analyzer "terraform"
