@@ -107,6 +107,7 @@ type Iteration struct {
 	Iteration         int
 	QueryLimit        int
 	CandidateLimit    int
+	QueryPlan         []string
 	PriorHistory      []string
 	MissingDimensions []string
 }
@@ -184,7 +185,7 @@ func provenanceV2From(c SourceCandidate, detectorID, rationale string) Provenanc
 
 func main() {
 	// The legacy Codex agent is intentionally not a write-capable default.
-	os.Exit(run(os.Args[1:], ".", os.Stdout, os.Stderr, newComposedResearcher(unconfiguredAcquisition{}, unconfiguredSelector{})))
+	os.Exit(run(os.Args[1:], ".", os.Stdout, os.Stderr, newComposedResearcher(newDefaultGitHubAcquisition(defaultCollectionLimits), unconfiguredSelector{})))
 }
 
 func run(args []string, root string, stdout, stderr io.Writer, researcher Researcher) int {
@@ -603,6 +604,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		Iteration:         detector.Iterations + 1,
 		QueryLimit:        queryLimit,
 		CandidateLimit:    candidateLimit,
+		QueryPlan:         append([]string(nil), detector.QueryPlan...),
 		PriorHistory:      history,
 		MissingDimensions: []string{"source variation not yet recorded by collection progress"},
 	})
