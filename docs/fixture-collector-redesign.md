@@ -221,13 +221,15 @@ candidates packed first.
 
 ## Codex transport and isolation
 
-Go invokes a pinned installed `codex exec` binary using the existing Codex
-ChatGPT OAuth login. The packet is sent only on stdin. The process is ephemeral,
-ignores user configuration and rules, uses a strict output schema, runs from a
-fresh empty private directory, never requests approval, inherits an allowlisted
-environment, and uses a deny-by-default filesystem and network permission
-profile. Version-checked feature disables remove shell, web, MCP/app/plugin,
-subagent, browser/computer, image, hook, and related tool families.
+Go invokes an installed `codex exec` binary using the existing Codex ChatGPT
+OAuth login. Any Codex CLI version number is eligible, but preflight fails
+closed unless the complete required isolation feature set is available. The
+packet is sent only on stdin. The process is ephemeral, ignores user
+configuration and rules, uses a strict output schema, runs from a fresh empty
+private directory, never requests approval, inherits an allowlisted environment,
+and uses a deny-by-default filesystem and network permission profile. Checked
+feature disables remove shell, web, MCP/app/plugin, subagent, browser/computer,
+image, hook, and related tool families.
 
 Codex does not expose a supported empty-tool-list switch under this OAuth
 transport. The contract is therefore explicit: high-risk tool families are
@@ -235,9 +237,9 @@ removed where supported, and residual local tools are ineffective outside the
 sandbox. The exact invocation and first-party citations are documented in
 `docs/research/selector-transport-options.md`.
 
-The model identifier, reasoning effort, Codex version, isolation-feature set,
-and packet format version are explicit reviewed configuration and are included
-in the selector-state fingerprint. They are never inherited silently from user
+The model identifier, reasoning effort, observed Codex version,
+isolation-feature set, and packet format version are included in the
+selector-state fingerprint. They are never inherited silently from user
 configuration.
 
 ## Selector validation and retries

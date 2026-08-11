@@ -161,6 +161,40 @@ func TestTargetedCommandCollectsQualifiedBatchWithoutSelectorWorkspaceWrites(t *
 	}
 }
 
+func TestTargetedCommandCheckpointsNoCandidatesWithoutSelector(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableResearcher{}); got != 0 {
+		t.Fatalf("initialize = %d", got)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+
+	wantOutcome := Outcome{
+		Result:     "unsuccessful",
+		Queries:    []string{"filename:go.work"},
+		Rejections: []string{"source-selector-mismatch", "license-ambiguous"},
+	}
+	acquisition := fakeAcquisition{input: ResearchInput{Outcome: wantOutcome}}
+	selector := fakeSelector{}
+	researcher := newComposedResearcher(&acquisition, &selector)
+	if got := run([]string{"run", "--detector", "example-detector", "--progress", progress}, root, os.Stdout, os.Stderr, researcher); got != 0 {
+		t.Fatalf("run = %d", got)
+	}
+
+	p, err := readProgress(progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	detector := p.Detectors[0]
+	if selector.called || p.Recovery != nil || detector.State != stateInProgress || detector.Iterations != 1 || len(detector.History) != 1 || detector.History[0].Result != "unsuccessful" {
+		t.Fatalf("selector called = %t, progress = %+v", selector.called, p)
+	}
+	if !sameStrings(detector.History[0].Queries, wantOutcome.Queries) || !sameStrings(detector.History[0].Rejections, wantOutcome.Rejections) {
+		t.Fatalf("history = %+v", detector.History[0])
+	}
+}
+
 func candidate(provider, repository, commit, path, source string) SourceCandidate {
 	sourceHash := sha256.Sum256([]byte(source))
 	license := []byte("MIT License\n")
@@ -172,9 +206,14 @@ func candidate(provider, repository, commit, path, source string) SourceCandidat
 
 func fmtHash(sum [sha256.Size]byte) string { return fmt.Sprintf("%x", sum) }
 
-func TestComposedResearcherReplacesAcquisitionAndSelectorIndependently(t *testing.T) {
-	acquisition := fakeAcquisition{input: ResearchInput{SelectionPacket: []byte(`{"candidates":["candidate-1"]}`)}}
-	selector := fakeSelector{result: ResearchResult{Outcome: Outcome{Result: "unsuccessful"}}}
+func TestComposedResearcherCheckpointsNoCandidatesWithoutSelector(t *testing.T) {
+	wantOutcome := Outcome{
+		Result:     "unsuccessful",
+		Queries:    []string{"filename:go.work"},
+		Rejections: []string{"source-selector-mismatch", "license-ambiguous"},
+	}
+	acquisition := fakeAcquisition{input: ResearchInput{Outcome: wantOutcome}}
+	selector := fakeSelector{}
 	researcher := newComposedResearcher(&acquisition, &selector)
 	iteration := Iteration{DetectorID: "example-detector", Iteration: 1}
 
@@ -182,11 +221,11 @@ func TestComposedResearcherReplacesAcquisitionAndSelectorIndependently(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !acquisition.called || !selector.called {
+	if !acquisition.called || selector.called {
 		t.Fatalf("acquisition called = %t, selector called = %t", acquisition.called, selector.called)
 	}
-	if selector.packet == nil || result.Outcome.Result != "unsuccessful" {
-		t.Fatalf("selector packet = %q, result = %+v", selector.packet, result)
+	if result.Outcome.Result != wantOutcome.Result || !sameStrings(result.Outcome.Queries, wantOutcome.Queries) || !sameStrings(result.Outcome.Rejections, wantOutcome.Rejections) {
+		t.Fatalf("result = %+v", result)
 	}
 }
 

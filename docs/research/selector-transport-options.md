@@ -19,8 +19,7 @@ session.
 Use a fresh `codex exec` process for each selection, with the packet on stdin,
 `--ephemeral`, `--ignore-user-config`, a strict output schema, an empty private
 working directory, and a custom deny-by-default permission profile. Disable
-every relevant tool family exposed as a feature by the pinned installed Codex
-version.
+every relevant tool family exposed as a feature by the installed Codex version.
 
 This is the strongest practical first-party Codex-OAuth option. It is not the
 same guarantee as a Responses API request with `tools: []`:
@@ -38,8 +37,9 @@ The installed `codex-cli 0.147.0-alpha.6.5` exposes `--ephemeral`,
 `--disable`, and stdin prompt input. The upstream source classifies
 `shell_tool` as a stable feature whose purpose is to enable the default shell
 tool ([feature registry](https://github.com/openai/codex/blob/main/codex-rs/features/src/lib.rs)).
-Pin and test the Codex version because feature names and tool composition can
-change.
+Record the exact Codex version in the selector fingerprint and test the required
+feature names at preflight. The implementation accepts any version number but
+fails closed when the isolation contract is unavailable.
 
 ## Recommended invocation
 

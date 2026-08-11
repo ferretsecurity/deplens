@@ -52,9 +52,12 @@ bytes are treated as data, not instructions. Go alone derives the stable
 directory, original path, hashes, URLs, license evidence, and provenance. The
 model's rationale is the sole model-authored provenance field.
 
-The selector requires the pinned installed Codex CLI and an existing Codex OAuth
-login. GitHub credentials come from standard token environment variables or an
-existing `gh` login and remain in Go memory; they are never passed to Codex.
+The selector requires an installed Codex CLI with the complete isolation feature
+set and an existing Codex OAuth login. Any Codex CLI version number is eligible;
+preflight fails closed when a required feature is unavailable, and the observed
+version is included in the selector-state fingerprint. GitHub credentials come
+from standard token environment variables or an existing `gh` login and remain
+in Go memory; they are never passed to Codex.
 The packet is supplied only on stdin. Configurable tool families are disabled;
 the residual-tool sandbox has an empty network policy and only a disposable
 read-only work directory. This is a residual-tool sandbox guarantee, not a

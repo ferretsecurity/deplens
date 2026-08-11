@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	pinnedCodexVersion  = "0.147.0"
 	selectorOutputLimit = 64 << 10
 )
 
@@ -34,7 +33,10 @@ func defaultIsolatedCodexSelectorConfig() IsolatedCodexSelectorConfig {
 	}
 }
 
-type isolatedCodexSelector struct{ config IsolatedCodexSelectorConfig }
+type isolatedCodexSelector struct {
+	config     IsolatedCodexSelectorConfig
+	cliVersion string
+}
 
 func newIsolatedCodexSelector(config IsolatedCodexSelectorConfig) *isolatedCodexSelector {
 	if config.Executable == "" {
@@ -44,11 +46,16 @@ func newIsolatedCodexSelector(config IsolatedCodexSelectorConfig) *isolatedCodex
 }
 
 func (s *isolatedCodexSelector) configurationFingerprint() string {
-	return hash(strings.Join([]string{"isolated-codex-selector-v1", pinnedCodexVersion, s.config.Model, s.config.ReasoningEffort, strings.Join(disabledCodexFeatures, ",")}, "\x00"))
+	version := s.cliVersion
+	if version == "" {
+		version = "unverified"
+	}
+	return hash(strings.Join([]string{"isolated-codex-selector-v2", version, s.config.Model, s.config.ReasoningEffort, strings.Join(disabledCodexFeatures, ",")}, "\x00"))
 }
 
-// disabledCodexFeatures must be available in the pinned CLI so the selector
-// can explicitly disable every capability outside its narrow protocol.
+// disabledCodexFeatures must be available in the installed CLI so the selector
+// can explicitly disable every capability outside its narrow protocol. Version
+// numbers are unrestricted; feature availability defines compatibility.
 var disabledCodexFeatures = []string{
 	"shell_tool", "unified_exec", "shell_snapshot", "hooks", "multi_agent",
 	"apps", "plugins", "remote_plugin", "plugin_sharing", "tool_suggest",
@@ -63,9 +70,11 @@ func (s *isolatedCodexSelector) Preflight() error {
 		return errors.New("isolated Codex selector model and reasoning effort must be configured")
 	}
 	version, err := exec.Command(s.config.Executable, "--version").Output()
-	if err != nil || strings.TrimSpace(string(version)) != "codex-cli "+pinnedCodexVersion {
-		return errors.New("installed Codex version does not match the pinned selector version")
+	cliVersion := strings.TrimSpace(string(version))
+	if err != nil || !strings.HasPrefix(cliVersion, "codex-cli ") || strings.TrimSpace(strings.TrimPrefix(cliVersion, "codex-cli ")) == "" {
+		return errors.New("installed Codex CLI is unavailable")
 	}
+	s.cliVersion = cliVersion
 	features, err := exec.Command(s.config.Executable, "features", "list").Output()
 	if err != nil {
 		return errors.New("cannot list installed Codex isolation features")

@@ -89,7 +89,8 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 	}
 	candidates := input.Candidates
 	if len(candidates) == 0 {
-		return r.selectWithoutCandidates(ctx, iteration, input)
+		input.Outcome.Result = "unsuccessful"
+		return ResearchResult{Outcome: input.Outcome}, nil
 	}
 	packet, err := buildSelectionPacket(SelectionPacketOptions{
 		Candidates: candidates, AcceptedReferences: iteration.AcceptedReferences,
@@ -133,14 +134,6 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 		result.Outcome.Added = append(result.Outcome.Added, accepted.Directory+"/"+accepted.Candidate.OriginalPath, accepted.Directory+"/provenance.yaml")
 	}
 	return result, nil
-}
-
-func (r composedResearcher) selectWithoutCandidates(ctx context.Context, iteration Iteration, input ResearchInput) (ResearchResult, error) {
-	result, err := r.selector.Select(ctx, iteration, input.SelectionPacket)
-	if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.Rejections) != 0 {
-		result.Outcome = input.Outcome
-	}
-	return result, err
 }
 
 func candidateIDSet(candidates []SourceCandidate) map[string]struct{} {

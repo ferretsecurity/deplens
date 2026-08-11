@@ -9,13 +9,13 @@ import (
 	"testing"
 )
 
-func TestIsolatedCodexSelectorUsesPinnedIsolatedStdinProtocol(t *testing.T) {
+func TestIsolatedCodexSelectorUsesCompatibleIsolatedStdinProtocol(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
 	logPath := filepath.Join(root, "invocation")
 	fake := filepath.Join(root, "codex")
 	script := fmt.Sprintf(`#!/bin/sh
-if [ "$1" = "--version" ]; then echo 'codex-cli 0.147.0'; exit 0; fi
+if [ "$1" = "--version" ]; then echo 'codex-cli 999.123.45-custom'; exit 0; fi
 if [ "$1" = "features" ]; then
   cat <<'EOF'
 shell_tool unified_exec shell_snapshot hooks multi_agent apps plugins remote_plugin plugin_sharing tool_suggest skill_search skill_mcp_dependency_install in_app_browser browser_use browser_use_external browser_use_full_cdp_access computer_use image_generation goals guardian_approval workspace_dependencies auth_elicitation tool_call_mcp_elicitation in_app_updates
@@ -36,6 +36,14 @@ printf '{"selected":[{"id":"candidate-1","rationale":"varied example"}]}'
 	selector := newIsolatedCodexSelector(IsolatedCodexSelectorConfig{Executable: fake, Model: "gpt-5.4", ReasoningEffort: "high"})
 	if err := selector.Preflight(); err != nil {
 		t.Fatalf("Preflight() error = %v", err)
+	}
+	if selector.cliVersion != "codex-cli 999.123.45-custom" {
+		t.Fatalf("recorded CLI version = %q", selector.cliVersion)
+	}
+	otherVersion := newIsolatedCodexSelector(selector.config)
+	otherVersion.cliVersion = "codex-cli 1.0.0"
+	if selector.configurationFingerprint() == otherVersion.configurationFingerprint() {
+		t.Fatal("selector fingerprint did not include the observed CLI version")
 	}
 	result, err := selector.Select(context.Background(), Iteration{}, []byte(`{"packet":"untrusted source contents"}`))
 	if err != nil {
