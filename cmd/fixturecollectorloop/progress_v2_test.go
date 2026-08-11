@@ -108,6 +108,24 @@ func TestWriteProgressRejectsLegacyOrIncompleteProgress(t *testing.T) {
 	}
 }
 
+func TestWriteProgressSyncsParentDirectoryAfterAtomicInstall(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "collection.yaml")
+	called := ""
+	originalSync := syncProgressDirectory
+	syncProgressDirectory = func(directory string) error {
+		called = directory
+		return nil
+	}
+	t.Cleanup(func() { syncProgressDirectory = originalSync })
+
+	if err := writeProgress(path, validTestProgress(DetectorProgress{ID: "example", State: statePending})); err != nil {
+		t.Fatal(err)
+	}
+	if called != filepath.Dir(path) {
+		t.Fatalf("synced directory = %q, want %q", called, filepath.Dir(path))
+	}
+}
+
 func TestQueryReviewDoesNotBlockCollection(t *testing.T) {
 	detectors := []DetectorProgress{{ID: "review", State: stateNeedsQueryReview}, {ID: "ready", State: statePending, QueryPlan: []string{"filename:ready"}}}
 	if got := selectDetector(detectors, ""); got == nil || got.ID != "ready" {
