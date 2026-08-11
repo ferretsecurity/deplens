@@ -143,6 +143,7 @@ type Outcome struct {
 
 var now = time.Now
 var gitCommit = gitOutput
+var syncProgressDirectory = syncDirectory
 var collectionSignals = func() (<-chan os.Signal, func()) {
 	ch := make(chan os.Signal, 2)
 	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
@@ -1308,7 +1309,19 @@ func writeProgress(path string, p Progress) error {
 	if err := tmp.Close(); err != nil {
 		return err
 	}
-	return os.Rename(tmp.Name(), path)
+	if err := os.Rename(tmp.Name(), path); err != nil {
+		return err
+	}
+	return syncProgressDirectory(filepath.Dir(path))
+}
+
+func syncDirectory(path string) error {
+	directory, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer directory.Close()
+	return directory.Sync()
 }
 
 func validateProgress(p Progress) (Progress, error) {
