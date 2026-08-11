@@ -489,18 +489,18 @@ func queryMatchesSourcePath(query, sourcePath string) bool {
 	return true
 }
 
-func detectSPDX(contents []byte) (string, bool) {
-	s := strings.ToLower(string(contents))
-	var matches []string
-	for _, id := range []string{"MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "0BSD", "CC0-1.0", "Unlicense"} {
-		if strings.Contains(s, strings.ToLower(id)) || (id == "MIT" && strings.Contains(s, "mit license")) {
-			matches = append(matches, id)
+func detectSPDX(contents []byte) (spdx string, ambiguous bool) {
+	licenseText := strings.ToLower(string(contents))
+	for id := range approvedLicenses {
+		if !strings.Contains(licenseText, strings.ToLower(id)) && (id != "MIT" || !strings.Contains(licenseText, "mit license")) {
+			continue
 		}
+		if spdx != "" {
+			return "", true
+		}
+		spdx = id
 	}
-	if len(matches) != 1 {
-		return "", len(matches) > 1
-	}
-	return matches[0], false
+	return spdx, false
 }
 func minPositive(a, b int) int {
 	if a <= 0 {
