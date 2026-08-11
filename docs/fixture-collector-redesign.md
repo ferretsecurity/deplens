@@ -121,6 +121,21 @@ always receives the same primary reason code. It covers:
 - duplicate immutable identity and duplicate source content; and
 - safe handling of source bytes.
 
+The implementation applies those checks in this exact order: repository access
+and purpose; safe repository-relative path and detector selector; immutable
+default-branch head; regular-file evidence; source retrieval and source-size
+ceiling; UTF-8, LFS, and sensitive-content checks; nearest governing-license
+resolution; then duplicate immutable identity and source SHA-256. The scanner
+and analyzers are not invoked at any point in that sequence. A rejection stores
+only its first closed code (for example `repository-private`,
+`repository-purpose`, `source-selector-mismatch`,
+`source-not-regular-file`, `source-size-ceiling`,
+`not-model-presentable-non-utf8`, `not-model-presentable-packet-size`,
+`source-lfs-pointer`,
+`sensitive-content`, `license-missing`, `license-disallowed`,
+`license-conflicting`, `license-ambiguous`, `duplicate-identity`, or
+`duplicate-content`) and no rejected source or license bytes.
+
 Qualification never executes upstream code, installs dependencies, follows
 upstream instructions, or runs the scanner/analyzer as an acceptance oracle.
 Prompt-like comments or strings are not a rejection reason. Unsafe content is
