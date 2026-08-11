@@ -28,8 +28,6 @@ const (
 	statePending               = "pending"
 	stateInProgress            = "in-progress"
 	stateComplete              = "complete"
-	stateBlocked               = "blocked"
-	stateExcluded              = "excluded"
 	stateNeedsQueryReview      = "needs-query-review"
 	stateNeedsContentReview    = "needs-content-review"
 	stateNeedsCollectionReview = "needs-collection-review"
@@ -994,7 +992,7 @@ func lockProgress(progressPath string) (func(), error) {
 }
 
 func collectionSummary(p Progress, stdout io.Writer) int {
-	var complete, blocked, excluded, queryReview, contentReview, collectionReview, active int
+	var complete, queryReview, contentReview, collectionReview, active int
 	queryIDs := []string{}
 	contentIDs := []string{}
 	collectionIDs := []string{}
@@ -1002,10 +1000,6 @@ func collectionSummary(p Progress, stdout io.Writer) int {
 		switch d.State {
 		case stateComplete:
 			complete++
-		case stateBlocked:
-			blocked++
-		case stateExcluded:
-			excluded++
 		case stateNeedsQueryReview:
 			queryReview++
 			queryIDs = append(queryIDs, d.ID)
@@ -1019,10 +1013,7 @@ func collectionSummary(p Progress, stdout io.Writer) int {
 			active++
 		}
 	}
-	fmt.Fprintf(stdout, "collection summary: %d complete, %d blocked, %d excluded, %d needs query review (%s), %d needs content review (%s), %d needs collection review (%s), %d remaining\n", complete, blocked, excluded, queryReview, strings.Join(queryIDs, ","), contentReview, strings.Join(contentIDs, ","), collectionReview, strings.Join(collectionIDs, ","), active)
-	if blocked > 0 {
-		return 2
-	}
+	fmt.Fprintf(stdout, "collection summary: %d complete, %d needs query review (%s), %d needs content review (%s), %d needs collection review (%s), %d remaining\n", complete, queryReview, strings.Join(queryIDs, ","), contentReview, strings.Join(contentIDs, ","), collectionReview, strings.Join(collectionIDs, ","), active)
 	return 0
 }
 
@@ -1202,7 +1193,7 @@ func readProgress(path string) (Progress, error) {
 
 func validState(state string) bool {
 	switch state {
-	case statePending, stateInProgress, stateComplete, stateBlocked, stateExcluded, stateNeedsQueryReview, stateNeedsContentReview, stateNeedsCollectionReview:
+	case statePending, stateInProgress, stateComplete, stateNeedsQueryReview, stateNeedsContentReview, stateNeedsCollectionReview:
 		return true
 	default:
 		return false
@@ -1335,10 +1326,6 @@ func validateProgress(p Progress) (Progress, error) {
 		case stateComplete:
 			if len(detector.Examples) < 3 {
 				return Progress{}, errors.New("invalid complete detector progress")
-			}
-		case stateBlocked:
-			if detector.Iterations != p.Limits.ValidIterations {
-				return Progress{}, errors.New("invalid blocked detector progress")
 			}
 		case stateNeedsContentReview:
 			if detector.Iterations == 0 || len(detector.Examples) >= defaultTarget {

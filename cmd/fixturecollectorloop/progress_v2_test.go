@@ -68,22 +68,32 @@ func TestInitializeProgressWritesV2ReviewedPlans(t *testing.T) {
 
 func TestReadProgressRejectsOldAndInvalidV2Documents(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "collection.yaml")
-	for _, document := range []string{
-		"version: 1\ndetectors: []\n",
-		"version: 2\nlimits:\n  queries: 8\nunknown: true\ndetectors: []\n",
-		"version: 2\nlimits:\n  queries: 8\nlog_path: .deplens/collector.jsonl\ndetectors: []\n",
-		"version: 2\nlimits:\n  queries: 8\ndetectors:\n  - id: example\n    state: needs-query-review\n    query_plan: [filename:x]\n",
-	} {
-		if err := os.WriteFile(path, []byte(document), 0o600); err != nil {
-			t.Fatal(err)
-		}
-		_, err := readProgress(path)
-		if err == nil {
-			t.Fatalf("readProgress accepted %q", document)
-		}
-		if strings.Contains(document, "version: 1") && !strings.Contains(err.Error(), "initialize a fresh collection") {
-			t.Fatalf("old progress error = %v", err)
-		}
+	const validLimits = "limits:\n  queries: 8\n  result_pages: 10\n  candidate_inspections: 40\n  decoded_response_bytes: 16777216\n  packet_tokens: 50000\n  selector_invocations: 2\n  source_bytes: 2097152\n  valid_iterations: 7\n"
+	tests := []struct {
+		name     string
+		document string
+		wantText string
+	}{
+		{"old version", "version: 1\ndetectors: []\n", "initialize a fresh collection"},
+		{"unknown field", "version: 2\nlimits:\n  queries: 8\nunknown: true\ndetectors: []\n", ""},
+		{"obsolete log path", "version: 2\nlimits:\n  queries: 8\nlog_path: .deplens/collector.jsonl\ndetectors: []\n", ""},
+		{"invalid query review", "version: 2\nlimits:\n  queries: 8\ndetectors:\n  - id: example\n    state: needs-query-review\n    query_plan: [filename:x]\n", ""},
+		{"obsolete blocked state", "version: 2\n" + validLimits + "detectors:\n  - id: example\n    state: blocked\n    iterations: 7\n    query_plan: [filename:x]\n", ""},
+		{"obsolete excluded state", "version: 2\n" + validLimits + "detectors:\n  - id: example\n    state: excluded\n    query_plan: [filename:x]\n", ""},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if err := os.WriteFile(path, []byte(test.document), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			_, err := readProgress(path)
+			if err == nil {
+				t.Fatalf("readProgress accepted %q", test.document)
+			}
+			if test.wantText != "" && !strings.Contains(err.Error(), test.wantText) {
+				t.Fatalf("readProgress error = %v, want text %q", err, test.wantText)
+			}
+		})
 	}
 }
 
