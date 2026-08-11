@@ -19,6 +19,8 @@ import (
 
 var errGitHubNotFound = errors.New("GitHub resource not found")
 
+var licenseFilenames = []string{"LICENSE", "LICENSE.md", "LICENSE.txt"}
+
 // githubService is the complete remote boundary. Its byteLimit must be obeyed
 // before a response is decoded, so callers can enforce their aggregate budget.
 type githubService interface {
@@ -69,6 +71,13 @@ type acquisitionBudget struct {
 type acquisitionCache struct {
 	repositories map[string]GitHubRepository
 	heads        map[string]string
+}
+
+func newAcquisitionCache() acquisitionCache {
+	return acquisitionCache{
+		repositories: make(map[string]GitHubRepository),
+		heads:        make(map[string]string),
+	}
 }
 
 func (b *acquisitionBudget) reserveQueries() error {
@@ -122,15 +131,14 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	}
 	queryLimit := minPositive(iteration.QueryLimit, b.limits.Queries)
 	candidateLimit := minPositive(iteration.CandidateLimit, b.limits.CandidateInspections)
-	queries := append([]string(nil), iteration.QueryPlan...)
-	if len(queries) == 0 {
+	if len(iteration.QueryPlan) == 0 {
 		return ResearchInput{Outcome: Outcome{Result: "unsuccessful"}}, nil
 	}
-	seen := map[string]bool{}
-	cache := acquisitionCache{repositories: map[string]GitHubRepository{}, heads: map[string]string{}}
+	seen := make(map[string]struct{})
+	cache := newAcquisitionCache()
 	var hits []GitHubCodeHit
 	outcome := Outcome{Result: "unsuccessful"}
-	for _, query := range queries {
+	for _, query := range iteration.QueryPlan {
 		if len(outcome.Queries) >= queryLimit || b.reserveQueries() != nil {
 			break
 		}
@@ -148,8 +156,11 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 			}
 			for _, hit := range items {
 				key := strings.ToLower(hit.Repository) + "\x00" + path.Clean(hit.Path)
-				if hit.Repository != "" && hit.Path != "" && !seen[key] {
-					seen[key] = true
+				if hit.Repository != "" && hit.Path != "" {
+					if _, duplicate := seen[key]; duplicate {
+						continue
+					}
+					seen[key] = struct{}{}
 					hits = append(hits, hit)
 				}
 			}
@@ -213,14 +224,14 @@ func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, c
 	if len(commit) != 40 {
 		return SourceCandidate{}, "invalid-default-branch-head", nil
 	}
-	source, n, err := a.service.File(ctx, hit.Repository, commit, hit.Path, b.remainingBytes())
+	source, byteCount, err := a.service.File(ctx, hit.Repository, commit, hit.Path, b.remainingBytes())
 	if err != nil {
 		if errors.Is(err, errGitHubNotFound) {
 			return SourceCandidate{}, "source-not-found", nil
 		}
 		return SourceCandidate{}, "", githubInfrastructureError(err)
 	}
-	if err := b.chargeBytes(n); err != nil {
+	if err := b.chargeBytes(byteCount); err != nil {
 		return SourceCandidate{}, "", err
 	}
 	if len(source) == 0 || len(source) > a.limits.SourceBytes {
@@ -237,16 +248,33 @@ func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, c
 	if !approvedLicenses[spdx] {
 		return SourceCandidate{}, "license-unapproved", nil
 	}
-	sourceSum := sha256.Sum256(source)
-	licenseSum := sha256.Sum256(license)
-	c := SourceCandidate{Provider: "github", Repository: repo.FullName, RepositoryURL: repo.HTMLURL, DefaultBranch: repo.DefaultBranch, Commit: commit, OriginalPath: hit.Path, RetrievedAt: a.now().UTC().Format(time.RFC3339), Source: source, SourceSHA256: fmt.Sprintf("%x", sourceSum), License: LicenseEvidence{SPDX: spdx, Path: licensePath, Permalink: repo.HTMLURL + "/blob/" + commit + "/" + licensePath, SHA256: fmt.Sprintf("%x", licenseSum), Bytes: license}}
+	sourceHash := sha256.Sum256(source)
+	licenseHash := sha256.Sum256(license)
+	c := SourceCandidate{
+		Provider:      "github",
+		Repository:    repo.FullName,
+		RepositoryURL: repo.HTMLURL,
+		DefaultBranch: repo.DefaultBranch,
+		Commit:        commit,
+		OriginalPath:  hit.Path,
+		RetrievedAt:   a.now().UTC().Format(time.RFC3339),
+		Source:        source,
+		SourceSHA256:  fmt.Sprintf("%x", sourceHash),
+		License: LicenseEvidence{
+			SPDX:      spdx,
+			Path:      licensePath,
+			Permalink: repo.HTMLURL + "/blob/" + commit + "/" + licensePath,
+			SHA256:    fmt.Sprintf("%x", licenseHash),
+			Bytes:     license,
+		},
+	}
 	c.ID = stableCandidateID(c.Provider, c.Repository, c.Commit, c.OriginalPath)
 	return c, "", nil
 }
 
 func (a *githubAcquisition) license(ctx context.Context, b *acquisitionBudget, repository, commit, sourcePath string) (string, []byte, error) {
 	for dir := path.Dir(sourcePath); ; dir = path.Dir(dir) {
-		for _, name := range []string{"LICENSE", "LICENSE.md", "LICENSE.txt"} {
+		for _, name := range licenseFilenames {
 			p := name
 			if dir != "." {
 				p = dir + "/" + name
