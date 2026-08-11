@@ -409,6 +409,44 @@ func TestRunConsumesAnInMemoryResearchResult(t *testing.T) {
 	}
 }
 
+func TestRunTargetedModeNeverFallsBackToAnotherDetector(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	p := validTestProgress(
+		DetectorProgress{ID: "review", State: stateNeedsQueryReview, QueryReviewReason: "manual query required"},
+		DetectorProgress{ID: "ready", State: statePending},
+	)
+	if err := writeProgress(progress, p); err != nil {
+		t.Fatal(err)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+
+	researcher := &trackingResearcher{result: ResearchResult{Outcome: Outcome{Result: "unsuccessful"}}}
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"run", "--detector", "review", "--progress", progress}, root, &stdout, &stderr, researcher); got != 0 {
+		t.Fatalf("review-targeted run = %d, stderr = %s", got, stderr.String())
+	}
+	if researcher.called {
+		t.Fatal("targeted review detector fell back to a different detector")
+	}
+	stored, err := readProgress(progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stored.Detectors[1].Iterations != 0 {
+		t.Fatalf("unrelated detector was run: %+v", stored.Detectors[1])
+	}
+
+	stderr.Reset()
+	if got := run([]string{"run", "--detector", "missing", "--progress", progress}, root, io.Discard, &stderr, researcher); got != 1 {
+		t.Fatalf("unknown-targeted run = %d", got)
+	}
+	if !strings.Contains(stderr.String(), `unknown detector "missing"`) {
+		t.Fatalf("unknown target guidance = %s", stderr.String())
+	}
+}
+
 type fakeResearcher struct {
 	write   func(Iteration) error
 	outcome Outcome
