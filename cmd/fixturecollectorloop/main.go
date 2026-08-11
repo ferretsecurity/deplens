@@ -204,7 +204,7 @@ func provenanceV2From(c SourceCandidate, detectorID, rationale string) Provenanc
 
 func main() {
 	// The legacy Codex agent is intentionally not a write-capable default.
-	os.Exit(run(os.Args[1:], ".", os.Stdout, os.Stderr, newComposedResearcher(newDefaultGitHubAcquisition(defaultCollectionLimits), unconfiguredSelector{})))
+	os.Exit(run(os.Args[1:], ".", os.Stdout, os.Stderr, newComposedResearcher(newDefaultGitHubAcquisition(defaultCollectionLimits), newIsolatedCodexSelector(defaultIsolatedCodexSelectorConfig()))))
 }
 
 func run(args []string, root string, stdout, stderr io.Writer, researcher Researcher) int {
