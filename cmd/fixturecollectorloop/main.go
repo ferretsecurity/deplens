@@ -639,16 +639,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		fmt.Fprintf(stderr, "error: read accepted corpus references: %v\n", err)
 		return 1, false
 	}
-	presented := make(map[string]bool)
-	omitted := make(map[string]bool, len(detector.Omitted))
-	for _, id := range detector.Omitted {
-		omitted[id] = true
-	}
-	for _, id := range detector.Candidates {
-		if !omitted[id] {
-			presented[id] = true
-		}
-	}
+	presented := presentedCandidateIDs(detector)
 	result, err := researcher.Research(ctx, Iteration{
 		DetectorID:            detector.ID,
 		CorpusDir:             corpusDir,
@@ -796,10 +787,48 @@ func acceptedCorpusReferences(root string, detector *DetectorProgress) ([]Accept
 		if hash(string(source)) != strings.ToLower(p.SHA256) {
 			return nil, errors.New("accepted corpus source does not match provenance hash")
 		}
-		references = append(references, AcceptedCorpusReference{Candidate: SourceCandidate{ID: p.CandidateID, Provider: p.Provider, Repository: p.Repository, RepositoryURL: p.RepositoryURL, DefaultBranch: p.DefaultBranch, Commit: p.Commit, OriginalPath: p.OriginalPath, RetrievedAt: p.RetrievedAt, Source: source, SourceSHA256: p.SHA256, License: LicenseEvidence{SPDX: p.License.SPDX, Path: p.License.Path, Permalink: p.License.Permalink, SHA256: p.License.SHA256}}, Rationale: p.Rationale})
+		references = append(references, AcceptedCorpusReference{
+			Candidate: sourceCandidateFromProvenance(p, source),
+			Rationale: p.Rationale,
+		})
 	}
 	sort.Slice(references, func(i, j int) bool { return references[i].Candidate.ID < references[j].Candidate.ID })
 	return references, nil
+}
+
+func presentedCandidateIDs(detector *DetectorProgress) map[string]bool {
+	omitted := make(map[string]bool, len(detector.Omitted))
+	for _, id := range detector.Omitted {
+		omitted[id] = true
+	}
+	presented := make(map[string]bool, len(detector.Candidates))
+	for _, id := range detector.Candidates {
+		if !omitted[id] {
+			presented[id] = true
+		}
+	}
+	return presented
+}
+
+func sourceCandidateFromProvenance(p Provenance, source []byte) SourceCandidate {
+	return SourceCandidate{
+		ID:            p.CandidateID,
+		Provider:      p.Provider,
+		Repository:    p.Repository,
+		RepositoryURL: p.RepositoryURL,
+		DefaultBranch: p.DefaultBranch,
+		Commit:        p.Commit,
+		OriginalPath:  p.OriginalPath,
+		RetrievedAt:   p.RetrievedAt,
+		Source:        source,
+		SourceSHA256:  p.SHA256,
+		License: LicenseEvidence{
+			SPDX:      p.License.SPDX,
+			Path:      p.License.Path,
+			Permalink: p.License.Permalink,
+			SHA256:    p.License.SHA256,
+		},
+	}
 }
 
 func iterationRecord(iteration int, outcome Outcome, accepted []AcceptedCandidate, decision *DecisionState) IterationRecord {
