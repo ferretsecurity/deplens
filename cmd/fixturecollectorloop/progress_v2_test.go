@@ -85,6 +85,29 @@ func TestReadProgressRejectsOldAndInvalidV2Documents(t *testing.T) {
 	}
 }
 
+func TestWriteProgressRejectsLegacyOrIncompleteProgress(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "collection.yaml")
+	for _, test := range []struct {
+		name     string
+		progress Progress
+	}{
+		{
+			name:     "legacy version",
+			progress: Progress{Version: 1, Detectors: []DetectorProgress{{ID: "example", State: statePending}}},
+		},
+		{
+			name:     "missing required v2 fields",
+			progress: Progress{Version: progressVersion, Detectors: []DetectorProgress{{ID: "example", State: statePending}}},
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			if err := writeProgress(path, test.progress); err == nil {
+				t.Fatalf("writeProgress accepted %+v", test.progress)
+			}
+		})
+	}
+}
+
 func TestQueryReviewDoesNotBlockCollection(t *testing.T) {
 	detectors := []DetectorProgress{{ID: "review", State: stateNeedsQueryReview}, {ID: "ready", State: statePending, QueryPlan: []string{"filename:ready"}}}
 	if got := selectDetector(detectors, ""); got == nil || got.ID != "ready" {
