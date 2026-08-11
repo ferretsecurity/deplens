@@ -35,6 +35,7 @@ type ResearchResult struct {
 	Outcome   Outcome
 	Selection Selection
 	Accepted  []AcceptedCandidate
+	Decision  *DecisionState
 }
 
 // Acquisition obtains the bounded research input for an iteration. Its
@@ -85,10 +86,55 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 	}
 	candidates := input.Candidates
 	if len(candidates) != 0 {
-		input.SelectionPacket, err = selectionPacket(candidates)
+		packet, packetErr := buildSelectionPacket(SelectionPacketOptions{
+			Candidates: candidates, AcceptedReferences: iteration.AcceptedReferences,
+			QueryPlan: iteration.QueryPlan, PacketTokens: iteration.PacketTokens,
+			PresentedIDs: iteration.PresentedCandidateIDs,
+		})
+		err = packetErr
 		if err != nil {
 			return ResearchResult{}, err
 		}
+		input.SelectionPacket = packet.Bytes
+		candidates = packet.Candidates
+		input.Outcome.Omitted = append(input.Outcome.Omitted, packet.OmittedIDs...)
+		configuration := iteration.SelectorConfigurationFingerprint
+		if configuration == "" {
+			configuration = hash("fixture-collector-selector-configuration-v1")
+		}
+		decision := DecisionState{PacketFingerprint: packet.PacketFingerprint, AcceptedCorpusFingerprint: packet.AcceptedFingerprint, SelectorConfiguration: configuration}
+		if containsDecisionState(iteration.PriorDecisionStates, decision) {
+			input.Outcome.Result = "unsuccessful"
+			return ResearchResult{Outcome: input.Outcome}, nil
+		}
+		result, err := r.selector.Select(ctx, iteration, input.SelectionPacket)
+		if err != nil {
+			return result, err
+		}
+		if err := validateSelection(result.Selection, candidateIDSet(candidates), len(iteration.AcceptedReferences)); err != nil {
+			return ResearchResult{}, err
+		}
+		result.Decision = &decision
+		if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.Rejections) != 0 || len(input.Outcome.Omitted) != 0 {
+			result.Outcome = input.Outcome
+		}
+		if len(candidates) == 0 {
+			return result, nil
+		}
+		accepted, err := materializeCandidatesWithAcceptedCount(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection, len(iteration.AcceptedReferences))
+		if err != nil {
+			return ResearchResult{}, err
+		}
+		result.Accepted = accepted
+		if len(accepted) > 0 {
+			result.Outcome.Result = "accepted"
+			for _, accepted := range accepted {
+				result.Outcome.Added = append(result.Outcome.Added, accepted.Directory+"/"+accepted.Candidate.OriginalPath, accepted.Directory+"/provenance.yaml")
+			}
+		} else {
+			result.Outcome.Result = "unsuccessful"
+		}
+		return result, nil
 	}
 	result, err := r.selector.Select(ctx, iteration, input.SelectionPacket)
 	if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.Rejections) != 0 {
@@ -97,7 +143,7 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 	if err != nil || len(candidates) == 0 {
 		return result, err
 	}
-	accepted, err := materializeCandidates(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection)
+	accepted, err := materializeCandidatesWithAcceptedCount(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection, len(iteration.AcceptedReferences))
 	if err != nil {
 		return ResearchResult{}, err
 	}
@@ -107,6 +153,23 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 		result.Outcome.Added = append(result.Outcome.Added, accepted.Directory+"/"+accepted.Candidate.OriginalPath, accepted.Directory+"/provenance.yaml")
 	}
 	return result, nil
+}
+
+func candidateIDSet(candidates []SourceCandidate) map[string]struct{} {
+	ids := make(map[string]struct{}, len(candidates))
+	for _, candidate := range candidates {
+		ids[candidate.ID] = struct{}{}
+	}
+	return ids
+}
+
+func containsDecisionState(states []DecisionState, wanted DecisionState) bool {
+	for _, state := range states {
+		if state == wanted {
+			return true
+		}
+	}
+	return false
 }
 
 // Agent is the temporary implementation boundary retained while research is

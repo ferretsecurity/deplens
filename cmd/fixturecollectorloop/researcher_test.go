@@ -108,6 +108,62 @@ func TestComposedResearcherReplacesAcquisitionAndSelectorIndependently(t *testin
 	}
 }
 
+func TestSelectionPacketPacksReferencesAndCandidatesDeterministically(t *testing.T) {
+	first := candidate("github", "owner/first", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "go.mod", "module first\n")
+	second := candidate("github", "owner/second", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "go.mod", "module second\n")
+	third := candidate("github", "owner/third", "cccccccccccccccccccccccccccccccccccccccc", "go.mod", "module third\n")
+	first.DiscoveringQuery, second.DiscoveringQuery, third.DiscoveringQuery = "one", "two", "one"
+	ref := AcceptedCorpusReference{Candidate: candidate("github", "owner/ref", "dddddddddddddddddddddddddddddddddddddddd", "go.mod", "module reference\n"), Rationale: "already accepted"}
+
+	packet, err := buildSelectionPacket(SelectionPacketOptions{
+		Candidates:         []SourceCandidate{third, first, second},
+		AcceptedReferences: []AcceptedCorpusReference{ref},
+		QueryPlan:          []string{"one", "two"},
+		PacketTokens:       10000,
+		HeadroomBytes:      128,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(packet.OmittedIDs) != 0 || len(packet.Candidates) != 3 {
+		t.Fatalf("packet candidates = %v, omitted = %v", packet.Candidates, packet.OmittedIDs)
+	}
+	if packet.Candidates[0].ID > packet.Candidates[1].ID || packet.Candidates[1].ID > packet.Candidates[2].ID {
+		t.Fatalf("serialized candidates are not stable-ID sorted: %#v", packet.Candidates)
+	}
+	var decoded struct {
+		AcceptedCorpus []struct {
+			Mandatory bool   `json:"mandatory"`
+			Source    string `json:"source_untrusted_data"`
+		} `json:"accepted_corpus_references"`
+		Candidates []struct {
+			Source string `json:"source_untrusted_data"`
+		} `json:"candidates"`
+	}
+	if err := json.Unmarshal(packet.Bytes, &decoded); err != nil {
+		t.Fatal(err)
+	}
+	if len(decoded.AcceptedCorpus) != 1 || !decoded.AcceptedCorpus[0].Mandatory || decoded.AcceptedCorpus[0].Source != "module reference\n" || len(decoded.Candidates) != 3 {
+		t.Fatalf("decoded packet = %#v", decoded)
+	}
+}
+
+func TestSelectionValidationUsesPacketMembershipAndPartialBounds(t *testing.T) {
+	selection := Selection{Selected: []SelectedCandidate{{ID: "candidate-a", Rationale: "useful\nvariation"}}}
+	if err := validateSelection(selection, map[string]struct{}{"candidate-a": {}}, 2); err != nil {
+		t.Fatalf("partial selection rejected: %v", err)
+	}
+	if err := validateSelection(selection, map[string]struct{}{"candidate-a": {}}, 0); err == nil {
+		t.Fatal("fresh one-candidate selection was accepted")
+	}
+	if err := validateSelection(Selection{Selected: []SelectedCandidate{{ID: "candidate-a", Rationale: "one"}, {ID: "candidate-a", Rationale: "two"}, {ID: "candidate-b", Rationale: "three"}}}, map[string]struct{}{"candidate-a": {}, "candidate-b": {}}, 0); err == nil {
+		t.Fatal("duplicate selection ID was accepted")
+	}
+	if err := validateSelection(Selection{Selected: []SelectedCandidate{{ID: "candidate-a", Rationale: "bad\x01control"}, {ID: "candidate-b", Rationale: "two"}, {ID: "candidate-c", Rationale: "three"}}}, map[string]struct{}{"candidate-a": {}, "candidate-b": {}, "candidate-c": {}}, 0); err == nil {
+		t.Fatal("forbidden rationale control was accepted")
+	}
+}
+
 func TestLegacyAgentResearcherDelegatesResearchLifecycle(t *testing.T) {
 	agent := &lifecycleAgent{outcome: Outcome{Result: "unsuccessful"}, retainLogs: true}
 	researcher := newLegacyAgentResearcher(agent)
