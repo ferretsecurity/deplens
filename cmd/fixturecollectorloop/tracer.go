@@ -404,6 +404,10 @@ func materializeSelectedCandidates(corpusDir, detectorID string, candidates []So
 	}
 	selected := append([]SelectedCandidate(nil), selection.Selected...)
 	sort.Slice(selected, func(i, j int) bool { return selected[i].ID < selected[j].ID })
+	knownContent, err := existingCorpusSourceHashes(corpusDir, detectorID)
+	if err != nil {
+		return nil, nil, err
+	}
 	accepted := make([]AcceptedCandidate, 0, len(selected))
 	rejected := make([]string, 0)
 	for _, chosen := range selected {
@@ -413,6 +417,10 @@ func materializeSelectedCandidates(corpusDir, detectorID string, candidates []So
 		}
 		if err := validateCandidate(c); err != nil {
 			rejected = append(rejected, "final-validation-candidate-invalid")
+			continue
+		}
+		if knownContent[strings.ToLower(c.SourceSHA256)] {
+			rejected = append(rejected, "final-validation-duplicate-content")
 			continue
 		}
 		directory := c.ID
@@ -439,8 +447,53 @@ func materializeSelectedCandidates(corpusDir, detectorID string, candidates []So
 			return nil, nil, err
 		}
 		accepted = append(accepted, AcceptedCandidate{Candidate: c, Directory: directory, Rationale: chosen.Rationale})
+		knownContent[strings.ToLower(c.SourceSHA256)] = true
 	}
 	return accepted, rejected, nil
+}
+
+// existingCorpusSourceHashes confirms that previously accepted corpus files
+// remain exact before they participate in a candidate-specific duplicate check.
+func existingCorpusSourceHashes(corpusDir, detectorID string) (map[string]bool, error) {
+	known := make(map[string]bool)
+	entries, err := os.ReadDir(corpusDir)
+	if errors.Is(err, os.ErrNotExist) {
+		return known, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			return nil, errors.New("corpus contains an unexpected non-directory entry")
+		}
+		root := filepath.Join(corpusDir, entry.Name())
+		contents, err := os.ReadFile(filepath.Join(root, "provenance.yaml"))
+		if errors.Is(err, os.ErrNotExist) {
+			// A selected candidate can collide with a pre-existing staging
+			// directory. The per-candidate identity check reports that closure.
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		p, err := parseProvenance(string(contents))
+		if err != nil {
+			return nil, err
+		}
+		if err := validateProvenance(p, detectorID); err != nil {
+			return nil, err
+		}
+		source, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(p.OriginalPath)))
+		if err != nil {
+			return nil, err
+		}
+		if !strings.EqualFold(hash(string(source)), p.SHA256) {
+			return nil, errors.New("accepted corpus source does not match provenance hash")
+		}
+		known[strings.ToLower(p.SHA256)] = true
+	}
+	return known, nil
 }
 
 func candidateIDs(candidates map[string]SourceCandidate) map[string]struct{} {

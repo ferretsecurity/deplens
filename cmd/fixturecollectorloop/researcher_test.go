@@ -71,6 +71,29 @@ func TestComposedResearcherPreservesSelectedSurvivorsWhenPeerFailsFinalValidatio
 	}
 }
 
+func TestComposedResearcherPreservesSurvivorsWhenSelectedPeerDuplicatesSourceContent(t *testing.T) {
+	iteration := Iteration{DetectorID: "example-detector", CorpusDir: filepath.Join(t.TempDir(), "corpus"), Iteration: 1}
+	first := candidate("github", "Owner/first", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "go.mod", "module shared\n")
+	duplicate := candidate("github", "Owner/duplicate", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "go.mod", "module shared\n")
+	third := candidate("github", "Owner/third", "cccccccccccccccccccccccccccccccccccccccc", "go.mod", "module distinct\n")
+	selector := fakeSelector{result: ResearchResult{Selection: Selection{Selected: []SelectedCandidate{
+		{ID: first.ID, Rationale: "first source"},
+		{ID: duplicate.ID, Rationale: "duplicate source"},
+		{ID: third.ID, Rationale: "distinct source"},
+	}}}}
+
+	result, err := newComposedResearcher(&fakeAcquisition{input: ResearchInput{Candidates: []SourceCandidate{first, duplicate, third}}}, &selector).Research(context.Background(), iteration)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Outcome.Result != "accepted" || len(result.Accepted) != 2 {
+		t.Fatalf("result = %+v", result)
+	}
+	if !sameStrings(result.Outcome.Rejections, []string{"final-validation-duplicate-content"}) {
+		t.Fatalf("rejections = %v", result.Outcome.Rejections)
+	}
+}
+
 func TestTargetedCommandCollectsQualifiedBatchWithoutSelectorWorkspaceWrites(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
