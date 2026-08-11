@@ -117,3 +117,20 @@ func TestQueryReviewDoesNotBlockCollection(t *testing.T) {
 		t.Fatalf("summary exit = %d", got)
 	}
 }
+
+func TestCollectionSummaryReportsNonBlockingReviewStates(t *testing.T) {
+	var stdout bytes.Buffer
+	p := Progress{Detectors: []DetectorProgress{
+		{ID: "content", State: stateNeedsContentReview},
+		{ID: "collection", State: stateNeedsCollectionReview},
+		{ID: "ready", State: statePending, QueryPlan: []string{"filename:ready"}},
+	}}
+	if got := collectionSummary(p, &stdout); got != 0 {
+		t.Fatalf("summary exit code = %d", got)
+	}
+	for _, want := range []string{"1 needs content review (content)", "1 needs collection review (collection)", "1 remaining"} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("summary %q does not contain %q", stdout.String(), want)
+		}
+	}
+}

@@ -25,15 +25,17 @@ import (
 )
 
 const (
-	statePending          = "pending"
-	stateInProgress       = "in-progress"
-	stateComplete         = "complete"
-	stateBlocked          = "blocked"
-	stateExcluded         = "excluded"
-	stateNeedsQueryReview = "needs-query-review"
-	maxIterations         = 7
-	defaultTarget         = 3
-	progressVersion       = 2
+	statePending               = "pending"
+	stateInProgress            = "in-progress"
+	stateComplete              = "complete"
+	stateBlocked               = "blocked"
+	stateExcluded              = "excluded"
+	stateNeedsQueryReview      = "needs-query-review"
+	stateNeedsContentReview    = "needs-content-review"
+	stateNeedsCollectionReview = "needs-collection-review"
+	maxIterations              = 7
+	defaultTarget              = 3
+	progressVersion            = 2
 )
 
 // CollectionLimits are reviewed hard limits. Acquisition reserves each limit
@@ -404,7 +406,7 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 			detector.Target = defaultTarget
 		}
 		if detector.Iterations >= maxIterations {
-			detector.State = stateBlocked
+			detector.State = stateNeedsCollectionReview
 			if err := writeProgress(*progressPath, p); err != nil {
 				fmt.Fprintf(stderr, "error: checkpoint collection progress: %v\n", err)
 				return 1
@@ -673,6 +675,47 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
 		return 1, false
 	}
+	if len(result.Accepted) != 0 {
+		selectedCount := len(result.Accepted)
+		survivors := result.Accepted[:0]
+		for _, accepted := range result.Accepted {
+			if err := validateAcceptedCandidate(accepted, detector.ID, after); err == nil {
+				survivors = append(survivors, accepted)
+				continue
+			}
+			if err := removeRejectedCandidate(root, detector.ID, accepted); err != nil {
+				failure = err.Error()
+				fmt.Fprintf(stderr, "error: remove rejected candidate: %v\n", err)
+				return 1, false
+			}
+			outcome.Rejections = append(outcome.Rejections, "final-validation-mutation")
+		}
+		result.Accepted = survivors
+		if len(survivors) == 0 {
+			outcome.Result = "unsuccessful"
+			outcome.Added = nil
+		} else if len(survivors) != selectedCount {
+			outcome.Result = "accepted"
+		}
+		if len(survivors) != selectedCount {
+			after, err = snapshot(root)
+			if err != nil {
+				failure = err.Error()
+				fmt.Fprintf(stderr, "error: snapshot collection state: %v\n", err)
+				return 1, false
+			}
+			added, err = validateDelta(before, after, filepath.Join("testdata", "corpus", detector.ID))
+			if err != nil {
+				failure = err.Error()
+				fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
+				return 1, false
+			}
+			outcome.Added = make([]string, 0, len(added))
+			for _, path := range added {
+				outcome.Added = append(outcome.Added, strings.TrimPrefix(path, "testdata/corpus/"+detector.ID+"/"))
+			}
+		}
+	}
 	if outcome.Result != "accepted" && outcome.Result != "unsuccessful" {
 		failure = "agent returned an invalid outcome result"
 		fmt.Fprintln(stderr, "error: collection agent: invalid outcome result")
@@ -725,7 +768,14 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		detector.State = stateComplete
 	}
 	if detector.Iterations >= maxIterations && detector.State != stateComplete {
-		detector.State = stateBlocked
+		detector.State = stateNeedsCollectionReview
+	}
+	if detector.State != stateComplete && len(detector.Examples) < defaultTarget {
+		if result.NoDistinctDecisionState {
+			detector.State = stateNeedsCollectionReview
+		} else if noPresentableCandidates(outcome) {
+			detector.State = stateNeedsContentReview
+		}
 	}
 	p.Recovery = nil
 	if err := writeProgress(progressPath, p); err != nil {
@@ -742,6 +792,14 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		}
 	}
 	return 0, true
+}
+
+func removeRejectedCandidate(root, detectorID string, accepted AcceptedCandidate) error {
+	if accepted.Directory != accepted.Candidate.ID || accepted.Directory == "" || strings.Contains(accepted.Directory, string(filepath.Separator)) {
+		return errors.New("rejected candidate has an unsafe materialization directory")
+	}
+	path := filepath.Join(root, "testdata", "corpus", detectorID, accepted.Directory)
+	return os.RemoveAll(path)
 }
 
 // acceptedCorpusReferences reconstructs the limited comparison corpus from
@@ -808,6 +866,20 @@ func presentedCandidateIDs(detector *DetectorProgress) map[string]bool {
 		}
 	}
 	return presented
+}
+
+// noPresentableCandidates distinguishes an exhausted candidate set from an
+// ordinary zero selection. Only the former can establish content review.
+func noPresentableCandidates(outcome Outcome) bool {
+	if len(outcome.Candidates) != 0 {
+		return false
+	}
+	for _, reason := range outcome.Rejections {
+		if reason == string(reasonSourceUTF8) || reason == string(reasonSourcePacketSize) {
+			return true
+		}
+	}
+	return false
 }
 
 func sourceCandidateFromProvenance(p Provenance, source []byte) SourceCandidate {
@@ -939,7 +1011,10 @@ func lockProgress(progressPath string) (func(), error) {
 }
 
 func collectionSummary(p Progress, stdout io.Writer) int {
-	var complete, blocked, excluded, queryReview, active int
+	var complete, blocked, excluded, queryReview, contentReview, collectionReview, active int
+	queryIDs := []string{}
+	contentIDs := []string{}
+	collectionIDs := []string{}
 	for _, d := range p.Detectors {
 		switch d.State {
 		case stateComplete:
@@ -950,11 +1025,18 @@ func collectionSummary(p Progress, stdout io.Writer) int {
 			excluded++
 		case stateNeedsQueryReview:
 			queryReview++
+			queryIDs = append(queryIDs, d.ID)
+		case stateNeedsContentReview:
+			contentReview++
+			contentIDs = append(contentIDs, d.ID)
+		case stateNeedsCollectionReview:
+			collectionReview++
+			collectionIDs = append(collectionIDs, d.ID)
 		default:
 			active++
 		}
 	}
-	fmt.Fprintf(stdout, "collection summary: %d complete, %d blocked, %d excluded, %d needs query review, %d remaining\n", complete, blocked, excluded, queryReview, active)
+	fmt.Fprintf(stdout, "collection summary: %d complete, %d blocked, %d excluded, %d needs query review (%s), %d needs content review (%s), %d needs collection review (%s), %d remaining\n", complete, blocked, excluded, queryReview, strings.Join(queryIDs, ","), contentReview, strings.Join(contentIDs, ","), collectionReview, strings.Join(collectionIDs, ","), active)
 	if blocked > 0 {
 		return 2
 	}
@@ -1126,7 +1208,7 @@ func readProgress(path string) (Progress, error) {
 
 func validState(state string) bool {
 	switch state {
-	case statePending, stateInProgress, stateComplete, stateBlocked, stateExcluded, stateNeedsQueryReview:
+	case statePending, stateInProgress, stateComplete, stateBlocked, stateExcluded, stateNeedsQueryReview, stateNeedsContentReview, stateNeedsCollectionReview:
 		return true
 	default:
 		return false
@@ -1251,6 +1333,14 @@ func validateProgress(p Progress) (Progress, error) {
 		case stateBlocked:
 			if detector.Iterations != p.Limits.ValidIterations {
 				return Progress{}, errors.New("invalid blocked detector progress")
+			}
+		case stateNeedsContentReview:
+			if detector.Iterations == 0 || len(detector.Examples) >= defaultTarget {
+				return Progress{}, errors.New("invalid content-review detector progress")
+			}
+		case stateNeedsCollectionReview:
+			if len(detector.Examples) >= defaultTarget {
+				return Progress{}, errors.New("invalid collection-review detector progress")
 			}
 		}
 	}
