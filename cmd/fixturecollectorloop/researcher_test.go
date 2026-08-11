@@ -2,8 +2,93 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
+	"time"
 )
+
+func TestComposedResearcherMaterializesThreeSelectedCandidatesFromIDsOnly(t *testing.T) {
+	iteration := Iteration{DetectorID: "example-detector", CorpusDir: filepath.Join(t.TempDir(), "corpus"), Iteration: 1}
+	candidates := []SourceCandidate{
+		candidate("github", "Owner/one", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "go.mod", "module one\n"),
+		candidate("github", "Owner/two", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "nested/go.mod", "module two\n"),
+		candidate("github", "Owner/three", "cccccccccccccccccccccccccccccccccccccccc", "go.mod", "module three\n"),
+	}
+	acquisition := fakeAcquisition{input: ResearchInput{Candidates: candidates}}
+	selector := fakeSelector{result: ResearchResult{Selection: Selection{Selected: []SelectedCandidate{
+		{ID: candidates[2].ID, Rationale: "nested module"},
+		{ID: candidates[0].ID, Rationale: "simple module"},
+		{ID: candidates[1].ID, Rationale: "second module"},
+	}}}}
+
+	result, err := newComposedResearcher(&acquisition, &selector).Research(context.Background(), iteration)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Outcome.Result != "accepted" || len(result.Accepted) != 3 {
+		t.Fatalf("result = %+v", result)
+	}
+	var packet struct {
+		Candidates []struct {
+			ID string `json:"id"`
+		} `json:"candidates"`
+	}
+	if err := json.Unmarshal(selector.packet, &packet); err != nil || len(packet.Candidates) != 3 {
+		t.Fatalf("packet = %s, err = %v", selector.packet, err)
+	}
+	for _, accepted := range result.Accepted {
+		if _, err := os.Stat(filepath.Join(iteration.CorpusDir, accepted.Directory, "provenance.yaml")); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func TestTargetedCommandCollectsQualifiedBatchWithoutSelectorWorkspaceWrites(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableResearcher{}); got != 0 {
+		t.Fatalf("initialize = %d", got)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+	candidates := []SourceCandidate{
+		candidate("github", "Owner/one", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "go.mod", "module one\n"),
+		candidate("github", "Owner/two", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "nested/go.mod", "module two\n"),
+		candidate("github", "Owner/three", "cccccccccccccccccccccccccccccccccccccccc", "go.mod", "module three\n"),
+	}
+	selector := fakeSelector{result: ResearchResult{Selection: Selection{Selected: []SelectedCandidate{
+		{ID: candidates[1].ID, Rationale: "nested"}, {ID: candidates[2].ID, Rationale: "third"}, {ID: candidates[0].ID, Rationale: "first"},
+	}}}}
+	researcher := newComposedResearcher(&fakeAcquisition{input: ResearchInput{Candidates: candidates}}, &selector)
+	if got := run([]string{"run", "--single", "--progress", progress}, root, os.Stdout, os.Stderr, researcher); got != 0 {
+		t.Fatalf("run = %d", got)
+	}
+	p, err := readProgress(progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p.Detectors[0].State != stateComplete || len(p.Detectors[0].Examples) != 3 || len(p.Detectors[0].History) != 1 || len(p.Detectors[0].History[0].AcceptedIDs) != 3 {
+		t.Fatalf("progress = %+v", p.Detectors[0])
+	}
+	if _, err := os.Stat(filepath.Join(root, "selection-wrote-here")); !os.IsNotExist(err) {
+		t.Fatalf("selector wrote workspace: %v", err)
+	}
+}
+
+func candidate(provider, repository, commit, path, source string) SourceCandidate {
+	sourceHash := sha256.Sum256([]byte(source))
+	license := []byte("MIT License\n")
+	licenseHash := sha256.Sum256(license)
+	c := SourceCandidate{Provider: provider, Repository: repository, RepositoryURL: "https://github.com/" + repository, DefaultBranch: "main", Commit: commit, OriginalPath: path, Source: []byte(source), SourceSHA256: fmtHash(sourceHash), RetrievedAt: time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC).Format(time.RFC3339), License: LicenseEvidence{SPDX: "MIT", Path: "LICENSE", Permalink: "https://github.com/" + repository + "/blob/" + commit + "/LICENSE", SHA256: fmtHash(licenseHash), Bytes: license}}
+	c.ID = stableCandidateID(c.Provider, c.Repository, c.Commit, c.OriginalPath)
+	return c
+}
+
+func fmtHash(sum [sha256.Size]byte) string { return fmt.Sprintf("%x", sum) }
 
 func TestComposedResearcherReplacesAcquisitionAndSelectorIndependently(t *testing.T) {
 	acquisition := fakeAcquisition{input: ResearchInput{SelectionPacket: []byte(`{"candidates":["candidate-1"]}`)}}
@@ -18,8 +103,8 @@ func TestComposedResearcherReplacesAcquisitionAndSelectorIndependently(t *testin
 	if !acquisition.called || !selector.called {
 		t.Fatalf("acquisition called = %t, selector called = %t", acquisition.called, selector.called)
 	}
-	if selector.input.SelectionPacket == nil || result.Outcome.Result != "unsuccessful" {
-		t.Fatalf("selector input = %+v, result = %+v", selector.input, result)
+	if selector.packet == nil || result.Outcome.Result != "unsuccessful" {
+		t.Fatalf("selector packet = %q, result = %+v", selector.packet, result)
 	}
 }
 
@@ -54,13 +139,13 @@ func (f *fakeAcquisition) Acquire(_ context.Context, _ Iteration) (ResearchInput
 
 type fakeSelector struct {
 	called bool
-	input  ResearchInput
+	packet []byte
 	result ResearchResult
 }
 
-func (f *fakeSelector) Select(_ context.Context, _ Iteration, input ResearchInput) (ResearchResult, error) {
+func (f *fakeSelector) Select(_ context.Context, _ Iteration, packet []byte) (ResearchResult, error) {
 	f.called = true
-	f.input = input
+	f.packet = packet
 	return f.result, nil
 }
 

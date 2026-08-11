@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 )
 
 // Researcher performs one detector research attempt. It returns the result to
@@ -31,7 +32,9 @@ type iterationFinalizer interface {
 
 // ResearchResult is the in-memory output of one research attempt.
 type ResearchResult struct {
-	Outcome Outcome
+	Outcome   Outcome
+	Selection Selection
+	Accepted  []AcceptedCandidate
 }
 
 // Acquisition obtains the bounded research input for an iteration. Its
@@ -43,13 +46,26 @@ type Acquisition interface {
 // Selector compares acquired candidates and returns a research result. Its
 // production implementation will invoke the isolated Codex selector.
 type Selector interface {
-	Select(context.Context, Iteration, ResearchInput) (ResearchResult, error)
+	Select(context.Context, Iteration, []byte) (ResearchResult, error)
 }
 
 // ResearchInput is the bounded, in-memory handoff from acquisition to
 // selection. The packet is intentionally opaque to the command wrapper.
 type ResearchInput struct {
 	SelectionPacket []byte
+	Candidates      []SourceCandidate
+}
+
+type unconfiguredAcquisition struct{}
+
+func (unconfiguredAcquisition) Acquire(context.Context, Iteration) (ResearchInput, error) {
+	return ResearchInput{}, errors.New("no Go-owned acquisition adapter is configured")
+}
+
+type unconfiguredSelector struct{}
+
+func (unconfiguredSelector) Select(context.Context, Iteration, []byte) (ResearchResult, error) {
+	return ResearchResult{}, errors.New("no isolated selector adapter is configured")
 }
 
 type composedResearcher struct {
@@ -66,7 +82,27 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 	if err != nil {
 		return ResearchResult{}, err
 	}
-	return r.selector.Select(ctx, iteration, input)
+	candidates := input.Candidates
+	if len(candidates) != 0 {
+		input.SelectionPacket, err = selectionPacket(candidates)
+		if err != nil {
+			return ResearchResult{}, err
+		}
+	}
+	result, err := r.selector.Select(ctx, iteration, input.SelectionPacket)
+	if err != nil || len(candidates) == 0 {
+		return result, err
+	}
+	accepted, err := materializeCandidates(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection)
+	if err != nil {
+		return ResearchResult{}, err
+	}
+	result.Accepted = accepted
+	result.Outcome = Outcome{Result: "accepted"}
+	for _, accepted := range accepted {
+		result.Outcome.Added = append(result.Outcome.Added, accepted.Directory+"/"+accepted.Candidate.OriginalPath, accepted.Directory+"/provenance.yaml")
+	}
+	return result, nil
 }
 
 // Agent is the temporary implementation boundary retained while research is

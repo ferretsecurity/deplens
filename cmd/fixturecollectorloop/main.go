@@ -76,18 +76,29 @@ type Recovery struct {
 }
 
 type DetectorProgress struct {
-	ID                string   `yaml:"id"`
-	Form              string   `yaml:"form,omitempty"`
-	Roles             []string `yaml:"roles,omitempty"`
-	State             string   `yaml:"state"`
-	Iterations        int      `yaml:"iterations"`
-	Examples          []string `yaml:"examples"`
-	Target            int      `yaml:"target,omitempty"`
-	QueryPlan         []string `yaml:"query_plan,omitempty"`
-	QueryReviewReason string   `yaml:"query_review_reason,omitempty"`
-	Queries           []string `yaml:"queries,omitempty"`
-	Candidates        []string `yaml:"candidates,omitempty"`
-	Rejections        []string `yaml:"rejections,omitempty"`
+	ID                string            `yaml:"id"`
+	Form              string            `yaml:"form,omitempty"`
+	Roles             []string          `yaml:"roles,omitempty"`
+	State             string            `yaml:"state"`
+	Iterations        int               `yaml:"iterations"`
+	Examples          []string          `yaml:"examples"`
+	Target            int               `yaml:"target,omitempty"`
+	QueryPlan         []string          `yaml:"query_plan,omitempty"`
+	QueryReviewReason string            `yaml:"query_review_reason,omitempty"`
+	Queries           []string          `yaml:"queries,omitempty"`
+	Candidates        []string          `yaml:"candidates,omitempty"`
+	Rejections        []string          `yaml:"rejections,omitempty"`
+	History           []IterationRecord `yaml:"history,omitempty"`
+}
+
+// IterationRecord is append-only, content-free evidence of a valid attempt.
+type IterationRecord struct {
+	Iteration   int      `yaml:"iteration"`
+	Result      string   `yaml:"result"`
+	AcceptedIDs []string `yaml:"accepted_ids,omitempty"`
+	Queries     []string `yaml:"queries,omitempty"`
+	Candidates  []string `yaml:"candidates,omitempty"`
+	Rejections  []string `yaml:"rejections,omitempty"`
 }
 
 type Iteration struct {
@@ -124,25 +135,56 @@ var approvedLicenses = map[string]bool{
 }
 
 type Provenance struct {
-	Version       int      `yaml:"version"`
-	DetectorID    string   `yaml:"detector_id"`
-	Provider      string   `yaml:"provider"`
-	Repository    string   `yaml:"repository"`
-	RepositoryURL string   `yaml:"repository_url"`
-	Commit        string   `yaml:"commit"`
-	OriginalPath  string   `yaml:"original_path"`
-	Permalink     string   `yaml:"permalink"`
-	RetrievedAt   string   `yaml:"retrieved_at"`
-	SHA256        string   `yaml:"sha256"`
-	License       string   `yaml:"license"`
-	LicenseURL    string   `yaml:"license_url"`
-	ProjectKind   string   `yaml:"project_kind"`
-	VariationTags []string `yaml:"variation_tags"`
-	Rationale     string   `yaml:"rationale"`
+	Version       int               `yaml:"version"`
+	DetectorID    string            `yaml:"detector_id"`
+	CandidateID   string            `yaml:"candidate_id"`
+	Provider      string            `yaml:"provider"`
+	Repository    string            `yaml:"repository"`
+	RepositoryURL string            `yaml:"repository_url"`
+	DefaultBranch string            `yaml:"default_branch"`
+	Commit        string            `yaml:"commit"`
+	OriginalPath  string            `yaml:"original_path"`
+	Permalink     string            `yaml:"permalink"`
+	RetrievedAt   string            `yaml:"retrieved_at"`
+	SHA256        string            `yaml:"sha256"`
+	License       ProvenanceLicense `yaml:"governing_license"`
+	Rationale     string            `yaml:"rationale"`
+}
+
+type ProvenanceLicense struct {
+	SPDX      string `yaml:"spdx"`
+	Path      string `yaml:"path"`
+	Permalink string `yaml:"permalink"`
+	SHA256    string `yaml:"sha256"`
+}
+
+func provenanceV2From(c SourceCandidate, detectorID, rationale string) Provenance {
+	return Provenance{
+		Version:       2,
+		DetectorID:    detectorID,
+		CandidateID:   c.ID,
+		Provider:      c.Provider,
+		Repository:    c.Repository,
+		RepositoryURL: c.RepositoryURL,
+		DefaultBranch: c.DefaultBranch,
+		Commit:        c.Commit,
+		OriginalPath:  c.OriginalPath,
+		Permalink:     c.RepositoryURL + "/blob/" + c.Commit + "/" + c.OriginalPath,
+		RetrievedAt:   c.RetrievedAt,
+		SHA256:        c.SourceSHA256,
+		License: ProvenanceLicense{
+			SPDX:      c.License.SPDX,
+			Path:      c.License.Path,
+			Permalink: c.License.Permalink,
+			SHA256:    c.License.SHA256,
+		},
+		Rationale: rationale,
+	}
 }
 
 func main() {
-	os.Exit(run(os.Args[1:], ".", os.Stdout, os.Stderr, newLegacyAgentResearcher(newCodexAgent(".", os.Stdout))))
+	// The legacy Codex agent is intentionally not a write-capable default.
+	os.Exit(run(os.Args[1:], ".", os.Stdout, os.Stderr, newComposedResearcher(unconfiguredAcquisition{}, unconfiguredSelector{})))
 }
 
 func run(args []string, root string, stdout, stderr io.Writer, researcher Researcher) int {
@@ -614,6 +656,11 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 			fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
 			return 1, false
 		}
+		if err := validateAcceptedCandidates(result.Accepted, detector.ID, after); err != nil {
+			failure = err.Error()
+			fmt.Fprintf(stderr, "error: unvalidated collection changes: %v\n", err)
+			return 1, false
+		}
 	}
 	detector.Iterations++
 	detector.State = stateInProgress
@@ -621,6 +668,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	detector.Queries = append(detector.Queries, outcome.Queries...)
 	detector.Candidates = append(detector.Candidates, outcome.Candidates...)
 	detector.Rejections = append(detector.Rejections, outcome.Rejections...)
+	detector.History = append(detector.History, iterationRecord(detector.Iterations, outcome, result.Accepted))
 	if len(detector.Examples) >= detector.Target {
 		detector.State = stateComplete
 	}
@@ -642,6 +690,21 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		}
 	}
 	return 0, true
+}
+
+func iterationRecord(iteration int, outcome Outcome, accepted []AcceptedCandidate) IterationRecord {
+	record := IterationRecord{
+		Iteration:  iteration,
+		Result:     outcome.Result,
+		Queries:    append([]string(nil), outcome.Queries...),
+		Candidates: append([]string(nil), outcome.Candidates...),
+		Rejections: append([]string(nil), outcome.Rejections...),
+	}
+	for _, candidate := range accepted {
+		record.AcceptedIDs = append(record.AcceptedIDs, candidate.Candidate.ID)
+	}
+	sort.Strings(record.AcceptedIDs)
+	return record
 }
 
 func newRecovery(root, progressPath string, detector *DetectorProgress, checkpoint string, commit, allowDirty bool) Recovery {
@@ -842,14 +905,16 @@ func parseProvenance(contents string) (Provenance, error) {
 }
 
 func validateProvenance(p Provenance, detectorID string) error {
-	if p.Version != 1 || p.DetectorID != detectorID || p.Provider != "github" || p.Repository == "" ||
+	if p.Version != 2 || p.DetectorID != detectorID || p.CandidateID == "" || p.Provider != "github" || p.Repository == "" ||
 		p.RepositoryURL == "" || p.Commit == "" || p.OriginalPath == "" || p.Permalink == "" ||
-		p.RetrievedAt == "" || p.SHA256 == "" || p.LicenseURL == "" || p.ProjectKind == "" ||
-		len(p.VariationTags) == 0 || p.Rationale == "" {
+		p.RetrievedAt == "" || p.SHA256 == "" || p.DefaultBranch == "" || p.License.Path == "" || p.License.Permalink == "" || p.License.SHA256 == "" || p.Rationale == "" {
 		return errors.New("missing required provenance")
 	}
-	if !approvedLicenses[p.License] {
-		return fmt.Errorf("license %q is not approved", p.License)
+	if p.CandidateID != stableCandidateID(p.Provider, p.Repository, p.Commit, p.OriginalPath) {
+		return errors.New("candidate ID does not match immutable identity")
+	}
+	if !approvedLicenses[p.License.SPDX] {
+		return fmt.Errorf("license %q is not approved", p.License.SPDX)
 	}
 	if filepath.IsAbs(p.OriginalPath) || strings.HasPrefix(filepath.Clean(p.OriginalPath), "..") {
 		return errors.New("original path is unsafe")
@@ -857,7 +922,7 @@ func validateProvenance(p Provenance, detectorID string) error {
 	if !strings.Contains(p.Permalink, "/blob/"+p.Commit+"/") {
 		return errors.New("permalink is not pinned to immutable commit")
 	}
-	if len(p.SHA256) != 64 {
+	if !strings.Contains(p.License.Permalink, "/blob/"+p.Commit+"/") || len(p.SHA256) != 64 || len(p.License.SHA256) != 64 {
 		return errors.New("SHA-256 is invalid")
 	}
 	return nil
