@@ -71,6 +71,64 @@ func TestComposedResearcherPreservesSelectedSurvivorsWhenPeerFailsFinalValidatio
 	}
 }
 
+func TestComposedResearcherPreservesSurvivorsWhenSelectedPeerDuplicatesSourceContent(t *testing.T) {
+	iteration := Iteration{DetectorID: "example-detector", CorpusDir: filepath.Join(t.TempDir(), "corpus"), Iteration: 1}
+	first := candidate("github", "Owner/first", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "go.mod", "module shared\n")
+	duplicate := candidate("github", "Owner/duplicate", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "go.mod", "module shared\n")
+	third := candidate("github", "Owner/third", "cccccccccccccccccccccccccccccccccccccccc", "go.mod", "module distinct\n")
+	selector := fakeSelector{result: ResearchResult{Selection: Selection{Selected: []SelectedCandidate{
+		{ID: first.ID, Rationale: "first source"},
+		{ID: duplicate.ID, Rationale: "duplicate source"},
+		{ID: third.ID, Rationale: "distinct source"},
+	}}}}
+
+	result, err := newComposedResearcher(&fakeAcquisition{input: ResearchInput{Candidates: []SourceCandidate{first, duplicate, third}}}, &selector).Research(context.Background(), iteration)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Outcome.Result != "accepted" || len(result.Accepted) != 2 {
+		t.Fatalf("result = %+v", result)
+	}
+	if !sameStrings(result.Outcome.Rejections, []string{"final-validation-duplicate-content"}) {
+		t.Fatalf("rejections = %v", result.Outcome.Rejections)
+	}
+}
+
+func TestComposedResearcherRejectsContentAlreadyInCorpus(t *testing.T) {
+	iteration := Iteration{DetectorID: "example-detector", CorpusDir: filepath.Join(t.TempDir(), "corpus"), Iteration: 1}
+	existing := candidate("github", "Owner/existing", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "go.mod", "module shared\n")
+	existingTwo := candidate("github", "Owner/existing-two", "cccccccccccccccccccccccccccccccccccccccc", "go.mod", "module existing two\n")
+	existingThree := candidate("github", "Owner/existing-three", "dddddddddddddddddddddddddddddddddddddddd", "go.mod", "module existing three\n")
+	duplicate := candidate("github", "Owner/duplicate", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "go.mod", "module shared\n")
+	survivor := candidate("github", "Owner/survivor", "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "go.mod", "module survivor\n")
+	survivorTwo := candidate("github", "Owner/survivor-two", "ffffffffffffffffffffffffffffffffffffffff", "go.mod", "module survivor two\n")
+
+	firstSelector := fakeSelector{result: ResearchResult{Selection: Selection{Selected: []SelectedCandidate{
+		{ID: existing.ID, Rationale: "existing source"},
+		{ID: existingTwo.ID, Rationale: "existing source two"},
+		{ID: existingThree.ID, Rationale: "existing source three"},
+	}}}}
+	if _, err := newComposedResearcher(&fakeAcquisition{input: ResearchInput{Candidates: []SourceCandidate{existing, existingTwo, existingThree}}}, &firstSelector).Research(context.Background(), iteration); err != nil {
+		t.Fatal(err)
+	}
+
+	selector := fakeSelector{result: ResearchResult{Selection: Selection{Selected: []SelectedCandidate{
+		{ID: duplicate.ID, Rationale: "duplicate source"},
+		{ID: survivor.ID, Rationale: "surviving source"},
+		{ID: survivorTwo.ID, Rationale: "second surviving source"},
+	}}}}
+	result, err := newComposedResearcher(&fakeAcquisition{input: ResearchInput{Candidates: []SourceCandidate{duplicate, survivor, survivorTwo}}}, &selector).Research(context.Background(), iteration)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Outcome.Result != "accepted" || len(result.Accepted) != 2 {
+		t.Fatalf("result = %+v", result)
+	}
+	if !sameStrings(result.Outcome.Rejections, []string{"final-validation-duplicate-content"}) {
+		t.Fatalf("rejections = %v", result.Outcome.Rejections)
+	}
+}
+
 func TestTargetedCommandCollectsQualifiedBatchWithoutSelectorWorkspaceWrites(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")

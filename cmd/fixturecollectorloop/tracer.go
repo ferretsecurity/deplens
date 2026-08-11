@@ -404,18 +404,27 @@ func materializeSelectedCandidates(corpusDir, detectorID string, candidates []So
 	}
 	selected := append([]SelectedCandidate(nil), selection.Selected...)
 	sort.Slice(selected, func(i, j int) bool { return selected[i].ID < selected[j].ID })
+	knownSourceHashes, err := corpusSourceHashes(corpusDir, detectorID)
+	if err != nil {
+		return nil, nil, err
+	}
 	accepted := make([]AcceptedCandidate, 0, len(selected))
 	rejected := make([]string, 0)
 	for _, chosen := range selected {
-		c, ok := byID[chosen.ID]
+		candidate, ok := byID[chosen.ID]
 		if !ok {
 			return nil, nil, fmt.Errorf("selector chose unknown candidate %q", chosen.ID)
 		}
-		if err := validateCandidate(c); err != nil {
+		if err := validateCandidate(candidate); err != nil {
 			rejected = append(rejected, "final-validation-candidate-invalid")
 			continue
 		}
-		directory := c.ID
+		sourceHash := strings.ToLower(candidate.SourceSHA256)
+		if knownSourceHashes[sourceHash] {
+			rejected = append(rejected, "final-validation-duplicate-content")
+			continue
+		}
+		directory := candidate.ID
 		root := filepath.Join(corpusDir, directory)
 		if _, err := os.Stat(root); err == nil {
 			rejected = append(rejected, "final-validation-duplicate-identity")
@@ -423,24 +432,68 @@ func materializeSelectedCandidates(corpusDir, detectorID string, candidates []So
 		} else if !errors.Is(err, os.ErrNotExist) {
 			return nil, nil, err
 		}
-		sourcePath := filepath.Join(root, filepath.FromSlash(c.OriginalPath))
+		sourcePath := filepath.Join(root, filepath.FromSlash(candidate.OriginalPath))
 		if err := os.MkdirAll(filepath.Dir(sourcePath), 0o755); err != nil {
 			return nil, nil, err
 		}
-		if err := os.WriteFile(sourcePath, c.Source, 0o644); err != nil {
+		if err := os.WriteFile(sourcePath, candidate.Source, 0o644); err != nil {
 			return nil, nil, err
 		}
-		p := provenanceV2From(c, detectorID, chosen.Rationale)
-		contents, err := yaml.Marshal(p)
+		provenance := provenanceV2From(candidate, detectorID, chosen.Rationale)
+		contents, err := yaml.Marshal(provenance)
 		if err != nil {
 			return nil, nil, err
 		}
 		if err := os.WriteFile(filepath.Join(root, "provenance.yaml"), contents, 0o644); err != nil {
 			return nil, nil, err
 		}
-		accepted = append(accepted, AcceptedCandidate{Candidate: c, Directory: directory, Rationale: chosen.Rationale})
+		accepted = append(accepted, AcceptedCandidate{Candidate: candidate, Directory: directory, Rationale: chosen.Rationale})
+		knownSourceHashes[sourceHash] = true
 	}
 	return accepted, rejected, nil
+}
+
+// corpusSourceHashes validates existing corpus sources and returns their hashes.
+func corpusSourceHashes(corpusDir, detectorID string) (map[string]bool, error) {
+	sourceHashes := make(map[string]bool)
+	entries, err := os.ReadDir(corpusDir)
+	if errors.Is(err, os.ErrNotExist) {
+		return sourceHashes, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			return nil, errors.New("corpus contains an unexpected non-directory entry")
+		}
+		root := filepath.Join(corpusDir, entry.Name())
+		contents, err := os.ReadFile(filepath.Join(root, "provenance.yaml"))
+		if errors.Is(err, os.ErrNotExist) {
+			// A selected candidate can collide with a pre-existing staging
+			// directory. The per-candidate identity check reports that closure.
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		provenance, err := parseProvenance(string(contents))
+		if err != nil {
+			return nil, err
+		}
+		if err := validateProvenance(provenance, detectorID); err != nil {
+			return nil, err
+		}
+		source, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(provenance.OriginalPath)))
+		if err != nil {
+			return nil, err
+		}
+		if !strings.EqualFold(hash(string(source)), provenance.SHA256) {
+			return nil, errors.New("accepted corpus source does not match provenance hash")
+		}
+		sourceHashes[strings.ToLower(provenance.SHA256)] = true
+	}
+	return sourceHashes, nil
 }
 
 func candidateIDs(candidates map[string]SourceCandidate) map[string]struct{} {
