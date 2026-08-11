@@ -15,12 +15,142 @@ detectors:
       roles:
         - resolution
         - integrity
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/python-pdm-lock/candidate-84223c25c6f3c34c7a4dd76ca8871179/pdm.lock
+        - testdata/corpus/python-pdm-lock/candidate-9daab4053bfa7f1de47500790ff17397/pdm.lock
+        - testdata/corpus/python-pdm-lock/candidate-eb648a2250e1f18845b7f1b0d382389e/pdm.lock
       target: 3
       query_plan:
         - filename:pdm.lock
+      queries:
+        - filename:pdm.lock
+      candidates:
+        - candidate-ab9f23a286a316c644e12196b48e464e
+        - candidate-504a2507ad4c1f20554a9a59c9952aa8
+        - candidate-b4bd857ae8060cb7d9d10d14cd8a5cbc
+        - candidate-f0f4c60d8896caece90507e31030a36b
+        - candidate-f03f71ac0694def2846ffcf3dcea9dd7
+        - candidate-9ef2327d4adf819d397458d363d82c5c
+        - candidate-cc88fa2eb946a0abe3fffbc9e41b66c0
+        - candidate-4fd306b9bd7629036198fb63ddcc83cb
+        - candidate-84223c25c6f3c34c7a4dd76ca8871179
+        - candidate-627a33f9e2f994fffd8a2f37e6937405
+        - candidate-0f414dc6066f449b873f8d4b88b7bd66
+        - candidate-a24be8d7c14387c7e537906c00caabf2
+        - candidate-bb894c52ab5618eb076ca34fb6a640c7
+        - candidate-18b9f4c5e6e9718a9032d89f3ebb0d7f
+        - candidate-eb648a2250e1f18845b7f1b0d382389e
+        - candidate-9daab4053bfa7f1de47500790ff17397
+      filtered_search_hits:
+        source-selector-mismatch: 21
+      rejections:
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - license-missing
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+      omitted:
+        - candidate-4fd306b9bd7629036198fb63ddcc83cb
+        - candidate-627a33f9e2f994fffd8a2f37e6937405
+        - candidate-9ef2327d4adf819d397458d363d82c5c
+        - candidate-a24be8d7c14387c7e537906c00caabf2
+        - candidate-ab9f23a286a316c644e12196b48e464e
+        - candidate-bb894c52ab5618eb076ca34fb6a640c7
+        - candidate-cc88fa2eb946a0abe3fffbc9e41b66c0
+        - candidate-f03f71ac0694def2846ffcf3dcea9dd7
+        - candidate-f0f4c60d8896caece90507e31030a36b
+      decision_states:
+        - packet_fingerprint: 1531cdf7468af6066f35b4f16564534d4535281bc52c98b8a218513b9d2cfeb1
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 3f2824483587925e49a631950c5dc8d6fdd77b1aa6cc74ce7452367818b4b764
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-84223c25c6f3c34c7a4dd76ca8871179
+            - candidate-9daab4053bfa7f1de47500790ff17397
+            - candidate-eb648a2250e1f18845b7f1b0d382389e
+          queries:
+            - filename:pdm.lock
+          candidates:
+            - candidate-ab9f23a286a316c644e12196b48e464e
+            - candidate-504a2507ad4c1f20554a9a59c9952aa8
+            - candidate-b4bd857ae8060cb7d9d10d14cd8a5cbc
+            - candidate-f0f4c60d8896caece90507e31030a36b
+            - candidate-f03f71ac0694def2846ffcf3dcea9dd7
+            - candidate-9ef2327d4adf819d397458d363d82c5c
+            - candidate-cc88fa2eb946a0abe3fffbc9e41b66c0
+            - candidate-4fd306b9bd7629036198fb63ddcc83cb
+            - candidate-84223c25c6f3c34c7a4dd76ca8871179
+            - candidate-627a33f9e2f994fffd8a2f37e6937405
+            - candidate-0f414dc6066f449b873f8d4b88b7bd66
+            - candidate-a24be8d7c14387c7e537906c00caabf2
+            - candidate-bb894c52ab5618eb076ca34fb6a640c7
+            - candidate-18b9f4c5e6e9718a9032d89f3ebb0d7f
+            - candidate-eb648a2250e1f18845b7f1b0d382389e
+            - candidate-9daab4053bfa7f1de47500790ff17397
+          filtered_search_hits:
+            source-selector-mismatch: 21
+          rejections:
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - license-missing
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+          omitted:
+            - candidate-4fd306b9bd7629036198fb63ddcc83cb
+            - candidate-627a33f9e2f994fffd8a2f37e6937405
+            - candidate-9ef2327d4adf819d397458d363d82c5c
+            - candidate-a24be8d7c14387c7e537906c00caabf2
+            - candidate-ab9f23a286a316c644e12196b48e464e
+            - candidate-bb894c52ab5618eb076ca34fb6a640c7
+            - candidate-cc88fa2eb946a0abe3fffbc9e41b66c0
+            - candidate-f03f71ac0694def2846ffcf3dcea9dd7
+            - candidate-f0f4c60d8896caece90507e31030a36b
+          decision:
+            packet_fingerprint: 1531cdf7468af6066f35b4f16564534d4535281bc52c98b8a218513b9d2cfeb1
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 3f2824483587925e49a631950c5dc8d6fdd77b1aa6cc74ce7452367818b4b764
     - id: python-conda-lock
       form: lockfile
       roles:

@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-pdm-lock
+candidate_id: candidate-9daab4053bfa7f1de47500790ff17397
+provider: github
+repository: serious-scaffold/ss-python
+repository_url: https://github.com/serious-scaffold/ss-python
+default_branch: main
+commit: 9222f049827f9d037d1697ba4e859fea61c309b5
+original_path: pdm.lock
+permalink: https://github.com/serious-scaffold/ss-python/blob/9222f049827f9d037d1697ba4e859fea61c309b5/pdm.lock
+retrieved_at: "2026-08-11T20:36:02Z"
+sha256: 7fcf2d486fb1ecab50d43fbae5091a9c801593fc631f9d854c5d24b267d078ec
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/serious-scaffold/ss-python/blob/9222f049827f9d037d1697ba4e859fea61c309b5/LICENSE
+    sha256: c1af5608916e7fa7dd6fd561a45e9add28dc435df1e5f9930ca8f2e0cb5f5421
+rationale: 'Best general match for a lean modern PDM Python app: small default dependency set, current `lock_version = 4.5.0`, and common service/CLI packages (`click`, `pydantic`, `pydantic-settings`, `python-dotenv`).'

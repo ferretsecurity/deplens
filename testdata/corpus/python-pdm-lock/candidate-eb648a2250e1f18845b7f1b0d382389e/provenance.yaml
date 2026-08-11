@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-pdm-lock
+candidate_id: candidate-eb648a2250e1f18845b7f1b0d382389e
+provider: github
+repository: mweinelt/kea-exporter
+repository_url: https://github.com/mweinelt/kea-exporter
+default_branch: main
+commit: 627d2c6b90f1d6749820d36ebb57be8d12ed27de
+original_path: pdm.lock
+permalink: https://github.com/mweinelt/kea-exporter/blob/627d2c6b90f1d6749820d36ebb57be8d12ed27de/pdm.lock
+retrieved_at: "2026-08-11T20:36:00Z"
+sha256: 80f4edf0b9f2d943932db4a7fb614563a8c7d0cd4e1bb949bff9e23c7e2e88bf
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/mweinelt/kea-exporter/blob/627d2c6b90f1d6749820d36ebb57be8d12ed27de/LICENSE
+    sha256: 3ee2103667db0d5f40ffad4ab1ae6a71c44d9c16e92b32e5cf6290f8e83a7d4f
+rationale: Good fit if the target is a small operational service or CLI tool. Its lockfile stays simple and focused around `requests`, `click`, and `prometheus-client`, which is closer to minimal production apps than the more specialized candidates.

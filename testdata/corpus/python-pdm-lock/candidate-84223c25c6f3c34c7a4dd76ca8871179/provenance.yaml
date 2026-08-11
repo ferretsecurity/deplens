@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-pdm-lock
+candidate_id: candidate-84223c25c6f3c34c7a4dd76ca8871179
+provider: github
+repository: gazpachoking/jsonref
+repository_url: https://github.com/gazpachoking/jsonref
+default_branch: master
+commit: 6331c78a7eb126ad3c908960ea95b6dd363f421d
+original_path: pdm.lock
+permalink: https://github.com/gazpachoking/jsonref/blob/6331c78a7eb126ad3c908960ea95b6dd363f421d/pdm.lock
+retrieved_at: "2026-08-11T20:35:46Z"
+sha256: af14818457f87ca2153281c3df30ea207d9c3dfefcc01dcb723f05ca9c8eff9d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/gazpachoking/jsonref/blob/6331c78a7eb126ad3c908960ea95b6dd363f421d/LICENSE
+    sha256: c93d594f97a1bc45d04908cd47c707cd7ff078f038a011443e0049ed28da3f31
+rationale: Useful fallback for a lightweight library-style project. It has a sparse runtime footprint and mostly dev tooling (`black`, `flake8`, `pytest`), which matches repositories that keep external dependencies minimal.
