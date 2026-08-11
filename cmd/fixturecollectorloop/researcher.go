@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 )
 
 // Researcher performs one detector research attempt. It returns the result to
@@ -10,6 +9,24 @@ import (
 // checkpointing, and Git operations.
 type Researcher interface {
 	Research(context.Context, Iteration) (ResearchResult, error)
+}
+
+// Optional Researcher capabilities preserve the legacy session lifecycle while
+// allowing new implementations to own only research.
+type researchLogConfigurer interface {
+	SetRetainLogs(bool)
+}
+
+type researcherPreflighter interface {
+	Preflight() error
+}
+
+type researchFinalizer interface {
+	FinalizeResearch(bool)
+}
+
+type iterationFinalizer interface {
+	FinalizeIteration(bool)
 }
 
 // ResearchResult is the in-memory output of one research attempt.
@@ -70,38 +87,20 @@ func (r legacyAgentResearcher) Research(ctx context.Context, iteration Iteration
 }
 
 func (r legacyAgentResearcher) SetRetainLogs(retain bool) {
-	if configurable, ok := r.agent.(interface{ SetRetainLogs(bool) }); ok {
+	if configurable, ok := r.agent.(researchLogConfigurer); ok {
 		configurable.SetRetainLogs(retain)
 	}
 }
 
 func (r legacyAgentResearcher) Preflight() error {
-	if preflight, ok := r.agent.(interface{ Preflight() error }); ok {
+	if preflight, ok := r.agent.(researcherPreflighter); ok {
 		return preflight.Preflight()
 	}
 	return nil
 }
 
 func (r legacyAgentResearcher) FinalizeResearch(success bool) {
-	if finalizer, ok := r.agent.(interface{ FinalizeIteration(bool) }); ok {
+	if finalizer, ok := r.agent.(iterationFinalizer); ok {
 		finalizer.FinalizeIteration(success)
 	}
-}
-
-type unavailableResearcher struct{}
-
-func (unavailableResearcher) Research(context.Context, Iteration) (ResearchResult, error) {
-	return ResearchResult{}, errors.New("no Researcher is configured; inject one through the command seam")
-}
-
-// unavailableAgent preserves the old test-only command fixture while command
-// callers move to the Researcher boundary.
-type unavailableAgent struct{}
-
-func (unavailableAgent) Run(context.Context, Iteration) (Outcome, error) {
-	return Outcome{}, errors.New("no Codex agent is configured; inject an agent through the command seam")
-}
-
-func (a unavailableAgent) Research(ctx context.Context, iteration Iteration) (ResearchResult, error) {
-	return newLegacyAgentResearcher(a).Research(ctx, iteration)
 }

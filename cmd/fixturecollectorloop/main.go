@@ -225,7 +225,7 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 		fmt.Fprintln(stderr, "error: query-limit and candidate-limit must be positive")
 		return 1
 	}
-	if configurable, ok := researcher.(interface{ SetRetainLogs(bool) }); ok {
+	if configurable, ok := researcher.(researchLogConfigurer); ok {
 		configurable.SetRetainLogs(*retainLogs)
 	}
 	unlock, err := lockProgress(*progressPath)
@@ -273,7 +273,7 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 			return 1
 		}
 	}
-	if preflight, ok := researcher.(interface{ Preflight() error }); ok {
+	if preflight, ok := researcher.(researcherPreflighter); ok {
 		if err := preflight.Preflight(); err != nil {
 			fmt.Fprintf(stderr, "error: collection authentication preflight: %v\n", err)
 			return 1
@@ -502,7 +502,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	researchCompleted := false
 	defer func() {
 		if researchCompleted {
-			if finalizer, ok := researcher.(interface{ FinalizeResearch(bool) }); ok {
+			if finalizer, ok := researcher.(researchFinalizer); ok {
 				finalizer.FinalizeResearch(code == 0)
 			}
 		}

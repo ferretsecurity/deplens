@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -18,7 +19,7 @@ import (
 func TestRunSecondInterruptRecordsRecoveryAndAllowsExplicitDirtyResume(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example"}, root, os.Stdout, os.Stderr, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
 	initializeGitRepository(t, root)
@@ -28,7 +29,7 @@ func TestRunSecondInterruptRecordsRecoveryAndAllowsExplicitDirtyResume(t *testin
 	originalSignals := collectionSignals
 	collectionSignals = func() (<-chan os.Signal, func()) { return signals, func() {} }
 	t.Cleanup(func() { collectionSignals = originalSignals })
-	agent := blockingAgent{started: make(chan struct{})}
+	agent := blockingResearcher{started: make(chan struct{})}
 	result := make(chan int, 1)
 	var stdout, stderr bytes.Buffer
 	go func() {
@@ -49,7 +50,7 @@ func TestRunSecondInterruptRecordsRecoveryAndAllowsExplicitDirtyResume(t *testin
 	}
 	stdout.Reset()
 	stderr.Reset()
-	if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { return nil }}); got != 0 {
+	if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, fakeResearcher{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { return nil }}); got != 0 {
 		t.Fatalf("explicit dirty resume exit status = %d, stderr = %s", got, stderr.String())
 	}
 	for _, want := range []string{"WARNING: --allow-dirty", "resuming after recovery", "example"} {
@@ -86,7 +87,7 @@ func TestPrintRecoveryRequiredShowsTargetedCleanupAndDirtyResume(t *testing.T) {
 func TestRunFirstInterruptAllowsActiveIterationToCheckpoint(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example"}, root, os.Stdout, os.Stderr, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
 	initializeGitRepository(t, root)
@@ -96,7 +97,7 @@ func TestRunFirstInterruptAllowsActiveIterationToCheckpoint(t *testing.T) {
 	collectionSignals = func() (<-chan os.Signal, func()) { return signals, func() {} }
 	t.Cleanup(func() { collectionSignals = originalSignals })
 	started, finish := make(chan struct{}), make(chan struct{})
-	agent := fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error {
+	agent := fakeResearcher{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error {
 		close(started)
 		<-finish
 		return nil
@@ -124,17 +125,12 @@ func TestRunFirstInterruptAllowsActiveIterationToCheckpoint(t *testing.T) {
 	}
 }
 
-type blockingAgent struct{ started chan struct{} }
+type blockingResearcher struct{ started chan struct{} }
 
-func (a blockingAgent) Run(ctx context.Context, _ Iteration) (Outcome, error) {
+func (a blockingResearcher) Research(ctx context.Context, _ Iteration) (ResearchResult, error) {
 	close(a.started)
 	<-ctx.Done()
-	return Outcome{}, ctx.Err()
-}
-
-func (a blockingAgent) Research(ctx context.Context, iteration Iteration) (ResearchResult, error) {
-	outcome, err := a.Run(ctx, iteration)
-	return ResearchResult{Outcome: outcome}, err
+	return ResearchResult{}, ctx.Err()
 }
 
 func initializeGitRepository(t *testing.T, root string) {
@@ -167,7 +163,7 @@ func TestInitializeProgressBuildsReviewedDetectorInventory(t *testing.T) {
 	}
 	progress := filepath.Join(t.TempDir(), "collection.yaml")
 	var stdout, stderr bytes.Buffer
-	if got := run([]string{"initialize-progress", "--progress", progress}, projectRoot, &stdout, &stderr, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress}, projectRoot, &stdout, &stderr, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d, stderr = %s", got, stderr.String())
 	}
 	p, err := readProgress(progress)
@@ -193,7 +189,7 @@ func TestRunRefusesAnInventoryFingerprintMismatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	var stdout, stderr bytes.Buffer
-	if got := run([]string{"run", "--progress", progress}, t.TempDir(), &stdout, &stderr, unavailableAgent{}); got != 1 {
+	if got := run([]string{"run", "--progress", progress}, t.TempDir(), &stdout, &stderr, unavailableResearcher{}); got != 1 {
 		t.Fatalf("run exit status = %d", got)
 	}
 	if !strings.Contains(stderr.String(), "no longer matches the reviewed plan") {
@@ -207,16 +203,16 @@ func TestCommandWorkflow(t *testing.T) {
 		root := t.TempDir()
 		progress := filepath.Join(root, "collection.yaml")
 		var stdout, stderr bytes.Buffer
-		if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, &stdout, &stderr, unavailableAgent{}); got != 0 {
+		if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, &stdout, &stderr, unavailableResearcher{}); got != 0 {
 			t.Fatalf("initialize exit status = %d, stderr = %s", got, stderr.String())
 		}
 		initializeGitRepository(t, root)
 		commitGitChanges(t, root)
 		return root, progress
 	}
-	accepted := func() fakeAgent {
+	accepted := func() fakeResearcher {
 		contents := []byte("example dependency\n")
-		return fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+		return fakeResearcher{outcome: acceptedOutcome, write: func(iteration Iteration) error {
 			path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
 			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 				return err
@@ -234,13 +230,13 @@ func TestCommandWorkflow(t *testing.T) {
 			t.Fatal(err)
 		}
 		var stdout, stderr bytes.Buffer
-		if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, unavailableAgent{}); got != 1 {
+		if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, unavailableResearcher{}); got != 1 {
 			t.Fatalf("dirty exit status = %d", got)
 		}
 		if !strings.Contains(stderr.String(), "git reset --hard HEAD") || !strings.Contains(stderr.String(), "--allow-dirty") {
 			t.Fatalf("dirty guidance = %s", stderr.String())
 		}
-		if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { return nil }}); got != 0 {
+		if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, fakeResearcher{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { return nil }}); got != 0 {
 			t.Fatalf("override exit status = %d", got)
 		}
 		if !strings.Contains(stderr.String(), "WARNING: --allow-dirty") {
@@ -261,7 +257,7 @@ func TestCommandWorkflow(t *testing.T) {
 		now = func() time.Time { return time.Unix(100, 0) }
 		t.Cleanup(func() { now = originalNow })
 		stdout.Reset()
-		if got := run([]string{"run", "--progress", progress, "--duration", "0s", "--allow-dirty"}, root, &stdout, &stderr, unavailableAgent{}); got != 0 {
+		if got := run([]string{"run", "--progress", progress, "--duration", "0s", "--allow-dirty"}, root, &stdout, &stderr, unavailableResearcher{}); got != 0 {
 			t.Fatalf("deadline exit status = %d", got)
 		}
 		if !strings.Contains(stdout.String(), "soft duration reached") {
@@ -277,7 +273,7 @@ func TestCommandWorkflow(t *testing.T) {
 		t.Cleanup(func() { collectionSignals = originalSignals })
 		started := make(chan struct{})
 		release := make(chan struct{})
-		agent := fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error {
+		agent := fakeResearcher{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error {
 			close(started)
 			<-release
 			return nil
@@ -298,7 +294,7 @@ func TestCommandWorkflow(t *testing.T) {
 		root, progress = newRepository(t)
 		signals = make(chan os.Signal, 2)
 		started = make(chan struct{})
-		forcedAgent := blockingAgent{started: started}
+		forcedAgent := blockingResearcher{started: started}
 		result = make(chan int, 1)
 		go func() {
 			result <- run([]string{"run", "--progress", progress}, root, io.Discard, io.Discard, forcedAgent)
@@ -310,7 +306,7 @@ func TestCommandWorkflow(t *testing.T) {
 			t.Fatalf("forced stop exit status = %d", got)
 		}
 		var stderr bytes.Buffer
-		if got := run([]string{"run", "--single", "--progress", progress}, root, io.Discard, &stderr, unavailableAgent{}); got != 1 {
+		if got := run([]string{"run", "--single", "--progress", progress}, root, io.Discard, &stderr, unavailableResearcher{}); got != 1 {
 			t.Fatalf("recovery-required exit status = %d", got)
 		}
 		if !strings.Contains(stderr.String(), "recovery is required") || !strings.Contains(stderr.String(), "git clean -fd --") {
@@ -344,7 +340,7 @@ func TestRunRefusesDirtyCheckoutAndAllowsExplicitOverride(t *testing.T) {
 	}
 
 	var stdout, stderr bytes.Buffer
-	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, unavailableAgent{}); got != 1 {
+	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, unavailableResearcher{}); got != 1 {
 		t.Fatalf("dirty run exit status = %d", got)
 	}
 	for _, want := range []string{"dirty.txt", "git reset --hard HEAD", "git clean -fd", "--allow-dirty"} {
@@ -352,7 +348,7 @@ func TestRunRefusesDirtyCheckoutAndAllowsExplicitOverride(t *testing.T) {
 			t.Fatalf("dirty refusal missing %q: %s", want, stderr.String())
 		}
 	}
-	if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, unavailableAgent{}); got != 1 {
+	if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, unavailableResearcher{}); got != 1 {
 		t.Fatalf("override run exit status = %d", got)
 	}
 	if !strings.Contains(stderr.String(), "WARNING: --allow-dirty") {
@@ -367,7 +363,7 @@ func TestRunRequiresGitCheckout(t *testing.T) {
 		t.Fatal(err)
 	}
 	var stdout, stderr bytes.Buffer
-	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, unavailableAgent{}); got != 1 {
+	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, unavailableResearcher{}); got != 1 {
 		t.Fatalf("run exit status = %d", got)
 	}
 	if !strings.Contains(stderr.String(), "requires a Git checkout") {
@@ -385,7 +381,7 @@ func TestRunConsumesAnInMemoryResearchResult(t *testing.T) {
 	initializeGitRepository(t, root)
 	commitGitChanges(t, root)
 
-	researcher := &fakeResearcher{result: ResearchResult{Outcome: Outcome{Result: "unsuccessful"}}}
+	researcher := &trackingResearcher{result: ResearchResult{Outcome: Outcome{Result: "unsuccessful"}}}
 	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, researcher); got != 0 {
 		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
 	}
@@ -401,26 +397,27 @@ func TestRunConsumesAnInMemoryResearchResult(t *testing.T) {
 	}
 }
 
-type fakeAgent struct {
+type fakeResearcher struct {
 	write   func(Iteration) error
 	outcome Outcome
 }
 
-func (f fakeAgent) Run(_ context.Context, iteration Iteration) (Outcome, error) {
-	return f.outcome, f.write(iteration)
+func (f fakeResearcher) Research(_ context.Context, iteration Iteration) (ResearchResult, error) {
+	return ResearchResult{Outcome: f.outcome}, f.write(iteration)
 }
 
-func (f fakeAgent) Research(ctx context.Context, iteration Iteration) (ResearchResult, error) {
-	outcome, err := f.Run(ctx, iteration)
-	return ResearchResult{Outcome: outcome}, err
+type unavailableResearcher struct{}
+
+func (unavailableResearcher) Research(context.Context, Iteration) (ResearchResult, error) {
+	return ResearchResult{}, errors.New("no Researcher is configured; inject one through the command seam")
 }
 
-type fakeResearcher struct {
+type trackingResearcher struct {
 	called bool
 	result ResearchResult
 }
 
-func (f *fakeResearcher) Research(context.Context, Iteration) (ResearchResult, error) {
+func (f *trackingResearcher) Research(context.Context, Iteration) (ResearchResult, error) {
 	f.called = true
 	return f.result, nil
 }
@@ -451,13 +448,13 @@ func TestRunCreatesAResumableCheckpoint(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
 	var stdout, stderr bytes.Buffer
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, &stdout, &stderr, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, &stdout, &stderr, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d, stderr = %s", got, stderr.String())
 	}
 	initializeGitRepository(t, root)
 	commitGitChanges(t, root)
 
-	agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+	agent := fakeResearcher{outcome: acceptedOutcome, write: func(iteration Iteration) error {
 		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			return err
@@ -488,13 +485,13 @@ func TestRunCreatesAResumableCheckpoint(t *testing.T) {
 func TestRunPrintsEffectiveFlagValues(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, io.Discard, io.Discard, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, io.Discard, io.Discard, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
 	initializeGitRepository(t, root)
 	commitGitChanges(t, root)
 	var stdout, stderr bytes.Buffer
-	if got := run([]string{"run", "--progress", progress, "--duration", "0s"}, root, &stdout, &stderr, unavailableAgent{}); got != 0 {
+	if got := run([]string{"run", "--progress", progress, "--duration", "0s"}, root, &stdout, &stderr, unavailableResearcher{}); got != 0 {
 		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
 	}
 	for _, want := range []string{
@@ -518,13 +515,13 @@ func TestRunPrintsEffectiveFlagValues(t *testing.T) {
 func TestRunIgnoresLocalCollectorLogsDuringCorpusValidation(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, io.Discard, io.Discard, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, io.Discard, io.Discard, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
 	initializeGitRepository(t, root)
 	commitGitChanges(t, root)
 	contents := []byte("example dependency\n")
-	agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+	agent := fakeResearcher{outcome: acceptedOutcome, write: func(iteration Iteration) error {
 		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			return err
@@ -550,13 +547,13 @@ func TestRunIgnoresLocalCollectorLogsDuringCorpusValidation(t *testing.T) {
 func TestRunCommitCreatesAtomicCollectionCheckpoint(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
 	initializeGitRepository(t, root)
 	commitGitChanges(t, root)
 	contents := []byte("example dependency\n")
-	agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+	agent := fakeResearcher{outcome: acceptedOutcome, write: func(iteration Iteration) error {
 		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			return err
@@ -598,13 +595,13 @@ func TestRunCommitCreatesAtomicCollectionCheckpoint(t *testing.T) {
 func TestRunCommitRecordsUnsuccessfulCollectionAttempt(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
 	initializeGitRepository(t, root)
 	commitGitChanges(t, root)
 	var stdout, stderr bytes.Buffer
-	agent := fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { return nil }}
+	agent := fakeResearcher{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { return nil }}
 	if got := run([]string{"run", "--single", "--commit", "--progress", progress}, root, &stdout, &stderr, agent); got != 0 {
 		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
 	}
@@ -627,7 +624,7 @@ func TestRunCommitRecordsUnsuccessfulCollectionAttempt(t *testing.T) {
 func TestRunCommitFailurePreservesValidatedUncommittedCheckpoint(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
 	initializeGitRepository(t, root)
@@ -638,7 +635,7 @@ func TestRunCommitFailurePreservesValidatedUncommittedCheckpoint(t *testing.T) {
 	}
 	t.Cleanup(func() { gitCommit = originalGitCommit })
 	contents := []byte("example dependency\n")
-	agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+	agent := fakeResearcher{outcome: acceptedOutcome, write: func(iteration Iteration) error {
 		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			return err
@@ -677,12 +674,12 @@ func TestRunRejectsUnsafeOrUnverifiedCorpus(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			root := t.TempDir()
 			progress := filepath.Join(root, "collection.yaml")
-			if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+			if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableResearcher{}); got != 0 {
 				t.Fatalf("initialize exit status = %d", got)
 			}
 			initializeGitRepository(t, root)
 			commitGitChanges(t, root)
-			agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+			agent := fakeResearcher{outcome: acceptedOutcome, write: func(iteration Iteration) error {
 				path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
 				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 					return err
@@ -706,13 +703,13 @@ func TestRunRejectsUnsafeOrUnverifiedCorpus(t *testing.T) {
 func TestRunRejectsHashMismatch(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
 	initializeGitRepository(t, root)
 	commitGitChanges(t, root)
 	contents := []byte("example dependency\n")
-	agent := fakeAgent{outcome: acceptedOutcome, write: func(iteration Iteration) error {
+	agent := fakeResearcher{outcome: acceptedOutcome, write: func(iteration Iteration) error {
 		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			return err
@@ -736,13 +733,13 @@ func TestRunRejectsHashMismatch(t *testing.T) {
 func TestRunRejectsChangesOutsideSelectedCorpus(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
 	initializeGitRepository(t, root)
 	commitGitChanges(t, root)
 
-	badAgent := fakeAgent{outcome: acceptedOutcome, write: func(Iteration) error {
+	badAgent := fakeResearcher{outcome: acceptedOutcome, write: func(Iteration) error {
 		return os.WriteFile(filepath.Join(root, "unrelated.txt"), []byte("no"), 0o644)
 	}}
 	var stdout, stderr bytes.Buffer
@@ -764,14 +761,14 @@ func TestRunRejectsChangesOutsideSelectedCorpus(t *testing.T) {
 func TestRunRemovesEmptyDirectoriesCreatedByRejectedIteration(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, io.Discard, io.Discard, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, io.Discard, io.Discard, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
 	initializeGitRepository(t, root)
 	commitGitChanges(t, root)
 
 	abandoned := filepath.Join(root, "testdata", "corpus", "example-detector", "abandoned-example", "nested")
-	agent := fakeAgent{outcome: Outcome{Result: "accepted"}, write: func(Iteration) error {
+	agent := fakeResearcher{outcome: Outcome{Result: "accepted"}, write: func(Iteration) error {
 		return os.MkdirAll(abandoned, 0o755)
 	}}
 	if got := run([]string{"run", "--single", "--progress", progress}, root, io.Discard, io.Discard, agent); got != 1 {
@@ -785,12 +782,12 @@ func TestRunRemovesEmptyDirectoriesCreatedByRejectedIteration(t *testing.T) {
 func TestRunRejectsProtocolThatDisagreesWithCorpus(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableAgent{}); got != 0 {
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, os.Stdout, os.Stderr, unavailableResearcher{}); got != 0 {
 		t.Fatalf("initialize exit status = %d", got)
 	}
 	initializeGitRepository(t, root)
 	commitGitChanges(t, root)
-	agent := fakeAgent{outcome: Outcome{Result: "accepted"}, write: func(iteration Iteration) error {
+	agent := fakeResearcher{outcome: Outcome{Result: "accepted"}, write: func(iteration Iteration) error {
 		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "provenance.yaml")
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			return err
@@ -819,7 +816,7 @@ func TestRunPrefersInProgressAndCanTargetOneDetector(t *testing.T) {
 	initializeGitRepository(t, root)
 	commitGitChanges(t, root)
 	var ran []string
-	agent := fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(i Iteration) error { ran = append(ran, i.DetectorID); return nil }}
+	agent := fakeResearcher{outcome: Outcome{Result: "unsuccessful"}, write: func(i Iteration) error { ran = append(ran, i.DetectorID); return nil }}
 	var stdout, stderr bytes.Buffer
 	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, agent); got != 0 {
 		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
@@ -845,7 +842,7 @@ func TestRunFullStopsAtIterationBudgetAndDoesNotAdvanceInfrastructureFailures(t 
 	initializeGitRepository(t, root)
 	commitGitChanges(t, root)
 	var calls int
-	agent := fakeAgent{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { calls++; return nil }}
+	agent := fakeResearcher{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { calls++; return nil }}
 	var stdout, stderr bytes.Buffer
 	if got := run([]string{"run", "--progress", progress}, root, &stdout, &stderr, agent); got != 2 {
 		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
@@ -875,7 +872,7 @@ func TestRunRefusesExistingProgressLockWithoutMutation(t *testing.T) {
 		t.Fatal(err)
 	}
 	var stdout, stderr bytes.Buffer
-	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, unavailableAgent{}); got != 1 {
+	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, unavailableResearcher{}); got != 1 {
 		t.Fatalf("run exit status = %d", got)
 	}
 	if !strings.Contains(stderr.String(), "another collection run holds") {
@@ -903,7 +900,7 @@ func TestRunStopsBeforeSchedulingAtSoftDuration(t *testing.T) {
 	now = func() time.Time { return time.Unix(100, 0) }
 	t.Cleanup(func() { now = originalNow })
 	var stdout, stderr bytes.Buffer
-	if got := run([]string{"run", "--progress", progress, "--duration", "0s"}, root, &stdout, &stderr, unavailableAgent{}); got != 0 {
+	if got := run([]string{"run", "--progress", progress, "--duration", "0s"}, root, &stdout, &stderr, unavailableResearcher{}); got != 0 {
 		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
 	}
 	if !strings.Contains(stdout.String(), "soft duration reached") {
