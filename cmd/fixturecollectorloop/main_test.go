@@ -438,22 +438,27 @@ var acceptedOutcome = Outcome{Result: "accepted", Added: []string{"owner-repo-ab
 
 func provenance(detectorID, sourcePath string, contents []byte) []byte {
 	hash := sha256.Sum256(contents)
-	return []byte(fmt.Sprintf(`version: 1
+	licenseHash := sha256.Sum256([]byte("MIT License\n"))
+	commit := "abc123def456"
+	return []byte(fmt.Sprintf(`version: 2
 detector_id: %s
+candidate_id: %s
 provider: github
 repository: owner/repo
 repository_url: https://github.com/owner/repo
-commit: abc123def456
+default_branch: main
+commit: %s
 original_path: %s
-permalink: https://github.com/owner/repo/blob/abc123def456/%s
+permalink: https://github.com/owner/repo/blob/%s/%s
 retrieved_at: 2026-08-08T00:00:00Z
 sha256: %x
-license: MIT
-license_url: https://opensource.org/license/mit
-project_kind: library
-variation_tags: [typical]
+governing_license:
+  spdx: MIT
+  path: LICENSE
+  permalink: https://github.com/owner/repo/blob/%s/LICENSE
+  sha256: %x
 rationale: typical dependency source
-`, detectorID, sourcePath, sourcePath, hash))
+`, detectorID, stableCandidateID("github", "owner/repo", commit, sourcePath), commit, sourcePath, commit, sourcePath, hash, commit, licenseHash))
 }
 
 func TestRunCreatesAResumableCheckpoint(t *testing.T) {
