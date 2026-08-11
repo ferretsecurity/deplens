@@ -87,13 +87,24 @@ func TestReadProgressRejectsOldAndInvalidV2Documents(t *testing.T) {
 
 func TestWriteProgressRejectsLegacyOrIncompleteProgress(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "collection.yaml")
-	for _, progress := range []Progress{
-		{Version: 1, Detectors: []DetectorProgress{{ID: "example", State: statePending}}},
-		{Version: progressVersion, Detectors: []DetectorProgress{{ID: "example", State: statePending}}},
+	for _, test := range []struct {
+		name     string
+		progress Progress
+	}{
+		{
+			name:     "legacy version",
+			progress: Progress{Version: 1, Detectors: []DetectorProgress{{ID: "example", State: statePending}}},
+		},
+		{
+			name:     "missing required v2 fields",
+			progress: Progress{Version: progressVersion, Detectors: []DetectorProgress{{ID: "example", State: statePending}}},
+		},
 	} {
-		if err := writeProgress(path, progress); err == nil {
-			t.Fatalf("writeProgress accepted %+v", progress)
-		}
+		t.Run(test.name, func(t *testing.T) {
+			if err := writeProgress(path, test.progress); err == nil {
+				t.Fatalf("writeProgress accepted %+v", test.progress)
+			}
+		})
 	}
 }
 
