@@ -142,10 +142,13 @@ const (
 type ResearchProgress struct {
 	Stage                              string
 	Provider, Query                    string
+	Budget                             string
 	QueryIndex, QueryTotal, Page, Hits int
 	Inspected, InspectionLimit         int
 	Qualified, Rejected, Filtered      int
 	Candidates, Selected               int
+	DownloadedBytes, ByteLimit         int64
+	RemainingBytes                     int64
 	Final                              bool
 }
 
@@ -475,19 +478,34 @@ func (w *synchronizedWriter) Write(p []byte) (int, error) {
 func printResearchProgress(stdout io.Writer, detectorID string, progress ResearchProgress) {
 	switch progress.Stage {
 	case progressSearch:
-		fmt.Fprintf(stdout, "candidate search progress: detector=%s provider=%s query=%d/%d page=%d hits=%d expression=%q\n", detectorID, progress.Provider, progress.QueryIndex, progress.QueryTotal, progress.Page, progress.Hits, progress.Query)
+		fmt.Fprintf(stdout, "candidate search progress: detector=%s provider=%s query=%d/%d page=%d hits=%d expression=%q %s-bytes=%s/%s remaining=%s\n", detectorID, progress.Provider, progress.QueryIndex, progress.QueryTotal, progress.Page, progress.Hits, progress.Query, progress.Budget, formatByteCount(progress.DownloadedBytes), formatByteCount(progress.ByteLimit), formatByteCount(progress.RemainingBytes))
 	case progressQualification:
 		label := "progress"
 		if progress.Final {
 			label = "finished"
 		}
-		fmt.Fprintf(stdout, "candidate qualification %s: detector=%s inspected=%d/%d qualified=%d rejected=%d filtered=%d\n", label, detectorID, progress.Inspected, progress.InspectionLimit, progress.Qualified, progress.Rejected, progress.Filtered)
+		fmt.Fprintf(stdout, "candidate qualification %s: detector=%s inspected=%d/%d qualified=%d rejected=%d filtered=%d %s-bytes=%s/%s remaining=%s\n", label, detectorID, progress.Inspected, progress.InspectionLimit, progress.Qualified, progress.Rejected, progress.Filtered, progress.Budget, formatByteCount(progress.DownloadedBytes), formatByteCount(progress.ByteLimit), formatByteCount(progress.RemainingBytes))
 	case progressSelection:
 		if progress.Final {
 			fmt.Fprintf(stdout, "candidate selection finished: detector=%s selected=%d\n", detectorID, progress.Selected)
 			return
 		}
 		fmt.Fprintf(stdout, "candidate selection started: detector=%s candidates=%d\n", detectorID, progress.Candidates)
+	}
+}
+
+func formatByteCount(bytes int64) string {
+	const (
+		kib = 1 << 10
+		mib = 1 << 20
+	)
+	switch {
+	case bytes >= mib:
+		return fmt.Sprintf("%.1fMiB", float64(bytes)/mib)
+	case bytes >= kib:
+		return fmt.Sprintf("%.1fKiB", float64(bytes)/kib)
+	default:
+		return fmt.Sprintf("%dB", bytes)
 	}
 }
 

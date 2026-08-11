@@ -584,9 +584,9 @@ func TestRunPrintsResearchProgress(t *testing.T) {
 	commitGitChanges(t, root)
 	var stdout, stderr bytes.Buffer
 	researcher := fakeResearcher{outcome: Outcome{Result: "unsuccessful"}, write: func(iteration Iteration) error {
-		iteration.ReportProgress(ResearchProgress{Stage: progressSearch, Provider: "github", Query: "filename:go.work", QueryIndex: 1, QueryTotal: 1, Page: 1, Hits: 100})
-		iteration.ReportProgress(ResearchProgress{Stage: progressQualification, Inspected: 4, InspectionLimit: 40, Qualified: 1, Rejected: 3, Filtered: 12})
-		iteration.ReportProgress(ResearchProgress{Stage: progressQualification, Final: true, Inspected: 40, InspectionLimit: 40, Qualified: 9, Rejected: 31, Filtered: 105})
+		iteration.ReportProgress(ResearchProgress{Stage: progressSearch, Provider: "github", Query: "filename:go.work", QueryIndex: 1, QueryTotal: 1, Page: 1, Hits: 100, Budget: "search", DownloadedBytes: 512 << 10, ByteLimit: 4 << 20, RemainingBytes: 3584 << 10})
+		iteration.ReportProgress(ResearchProgress{Stage: progressQualification, Inspected: 4, InspectionLimit: 40, Qualified: 1, Rejected: 3, Filtered: 12, Budget: "acquisition", DownloadedBytes: 2 << 20, ByteLimit: 12 << 20, RemainingBytes: 10 << 20})
+		iteration.ReportProgress(ResearchProgress{Stage: progressQualification, Final: true, Inspected: 40, InspectionLimit: 40, Qualified: 9, Rejected: 31, Filtered: 105, Budget: "acquisition", DownloadedBytes: 8 << 20, ByteLimit: 12 << 20, RemainingBytes: 4 << 20})
 		iteration.ReportProgress(ResearchProgress{Stage: progressSelection, Candidates: 9})
 		iteration.ReportProgress(ResearchProgress{Stage: progressSelection, Final: true, Selected: 3})
 		return nil
@@ -595,9 +595,9 @@ func TestRunPrintsResearchProgress(t *testing.T) {
 		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
 	}
 	for _, want := range []string{
-		`candidate search progress: detector=example-detector provider=github query=1/1 page=1 hits=100 expression="filename:go.work"`,
-		"candidate qualification progress: detector=example-detector inspected=4/40 qualified=1 rejected=3 filtered=12",
-		"candidate qualification finished: detector=example-detector inspected=40/40 qualified=9 rejected=31 filtered=105",
+		`candidate search progress: detector=example-detector provider=github query=1/1 page=1 hits=100 expression="filename:go.work" search-bytes=512.0KiB/4.0MiB remaining=3.5MiB`,
+		"candidate qualification progress: detector=example-detector inspected=4/40 qualified=1 rejected=3 filtered=12 acquisition-bytes=2.0MiB/12.0MiB remaining=10.0MiB",
+		"candidate qualification finished: detector=example-detector inspected=40/40 qualified=9 rejected=31 filtered=105 acquisition-bytes=8.0MiB/12.0MiB remaining=4.0MiB",
 		"candidate selection started: detector=example-detector candidates=9",
 		"candidate selection finished: detector=example-detector selected=3",
 	} {

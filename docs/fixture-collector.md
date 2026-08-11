@@ -25,8 +25,11 @@ go run ./cmd/fixturecollectorloop initialize-progress \
 Review progress before running. Its defaults bound eight queries, ten result
 pages, 40 candidate inspections, 16 MiB of decoded remote responses, 2 MiB per
 source, an approximately 50,000-token selection packet, two selector calls,
-and seven valid iterations. The packet figure is a conservative local
-approximation, not exact counting of the complete model request.
+and seven valid iterations. One quarter of the decoded-response allowance is
+reserved for search and three quarters for detailed acquisition, so result
+pages cannot consume source and license capacity. The packet figure is a
+conservative local approximation, not exact counting of the complete model
+request.
 
 States are `pending`, `in-progress`, `complete`, `needs-query-review`,
 `needs-content-review`, and `needs-collection-review`. Review-needed states are
@@ -59,6 +62,12 @@ request. This keeps the same bounded acquisition behavior across all detector
 query shapes without trusting provider search semantics. Filtered search noise
 is checkpointed as bounded reason counts; it is not recorded as one candidate
 rejection per provider hit.
+
+Search pagination stops as soon as the unique selector-matching hit pool can
+fill the remaining inspection ceiling; a popular query therefore does not
+download unused result pages. Production source inspection obtains the file
+type and exact bytes from one GitHub Contents response. Search and acquisition
+charge independent portions of the reviewed aggregate byte allowance.
 
 The selector requires an installed Codex CLI with the complete isolation feature
 set and an existing Codex OAuth login. Any Codex CLI version number is eligible;
@@ -94,11 +103,13 @@ is an operational, integrity, lock, Git, selector, or recovery failure.
 `run` reports the selected detector and iteration before research starts. While
 acquisition is active it reports each provider result page and approximately
 ten evenly spaced qualification tallies containing inspected, qualified,
-rejected, and cheaply filtered counts. It also brackets the isolated model call
-with selection-started and selection-finished messages. After a valid accepted
+rejected, and cheaply filtered counts. Search lines show the search-byte
+allowance; qualification lines show the acquisition-byte allowance, including
+downloaded and remaining amounts. It also brackets the isolated model call with
+selection-started and selection-finished messages. After a valid accepted
 checkpoint, it prints absolute local paths for every selected source and its
-provenance file so terminals can render them as links. Progress is
-content-free: it never prints upstream source or license bytes.
+provenance file so terminals can render them as links. Progress is content-free:
+it never prints upstream source or license bytes.
 
 ## Git, recovery, and commits
 

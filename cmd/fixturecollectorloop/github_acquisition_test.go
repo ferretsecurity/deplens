@@ -2,7 +2,11 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 )
@@ -91,12 +95,109 @@ func TestGitHubAcquisitionFiltersSearchNoiseBeforeInspectionBudget(t *testing.T)
 	if len(input.Outcome.Rejections) != 0 || input.Outcome.FilteredSearchHits[string(reasonSourceSelector)] != 1 {
 		t.Fatalf("filtered search hits = %v, rejections = %q", input.Outcome.FilteredSearchHits, input.Outcome.Rejections)
 	}
-	if len(progress) < 2 || progress[0].Stage != progressSearch || progress[0].Page != 1 || progress[0].Hits != 2 {
+	if len(progress) < 2 || progress[0].Stage != progressSearch || progress[0].Page != 1 || progress[0].Hits != 2 || progress[0].Budget != "search" || progress[0].ByteLimit != 1024 || progress[0].DownloadedBytes == 0 {
 		t.Fatalf("search progress = %+v", progress)
 	}
 	final := progress[len(progress)-1]
-	if final.Stage != progressQualification || !final.Final || final.Inspected != 1 || final.InspectionLimit != 1 || final.Qualified != 1 || final.Rejected != 0 || final.Filtered != 1 {
+	if final.Stage != progressQualification || !final.Final || final.Inspected != 1 || final.InspectionLimit != 1 || final.Qualified != 1 || final.Rejected != 0 || final.Filtered != 1 || final.Budget != "acquisition" || final.ByteLimit != 3072 || final.DownloadedBytes == 0 {
 		t.Fatalf("final qualification progress = %+v", final)
+	}
+}
+
+func TestAcquisitionBudgetSeparatesSearchAndInspectionBytes(t *testing.T) {
+	budget := newAcquisitionBudget(CollectionLimits{DecodedResponseBytes: 100})
+	if budget.remainingSearchBytes() != 25 || budget.remainingAcquisitionBytes() != 75 {
+		t.Fatalf("initial budget = %+v", budget)
+	}
+	if err := budget.chargeSearchBytes(25); err != nil {
+		t.Fatal(err)
+	}
+	if budget.remainingSearchBytes() != 0 || budget.remainingAcquisitionBytes() != 75 {
+		t.Fatalf("search consumed acquisition reserve: %+v", budget)
+	}
+	if err := budget.chargeAcquisitionBytes(75); err != nil {
+		t.Fatal(err)
+	}
+	if budget.remainingAcquisitionBytes() != 0 {
+		t.Fatalf("acquisition remaining = %d", budget.remainingAcquisitionBytes())
+	}
+}
+
+func TestGitHubAcquisitionStopsSearchWhenInspectionPoolIsFull(t *testing.T) {
+	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	service := &fakeGitHubService{
+		searchPages: map[string][][]GitHubCodeHit{"filename:go.work": {
+			{
+				{Repository: "octo/noise", Path: "go.work.example"},
+				{Repository: "octo/one", Path: "go.work"},
+				{Repository: "octo/two", Path: "nested/go.work"},
+			},
+			{{Repository: "octo/unneeded", Path: "go.work"}},
+		}},
+		repositories: map[string]GitHubRepository{
+			"octo/one": {FullName: "octo/one", HTMLURL: "https://github.com/octo/one", DefaultBranch: "main"},
+			"octo/two": {FullName: "octo/two", HTMLURL: "https://github.com/octo/two", DefaultBranch: "main"},
+		},
+		heads: map[string]string{"octo/one/main": commit, "octo/two/main": commit},
+		files: map[string][]byte{
+			"octo/one@" + commit + ":go.work":        []byte("go 1.22\nuse ./one\n"),
+			"octo/two@" + commit + ":nested/go.work": []byte("go 1.22\nuse ./two\n"),
+			"octo/one@" + commit + ":LICENSE":        []byte("MIT License\n"),
+			"octo/two@" + commit + ":LICENSE":        []byte("MIT License\n"),
+		},
+	}
+	input, err := newGitHubAcquisition(service, CollectionLimits{
+		Queries: 1, ResultPages: 10, CandidateInspections: 2,
+		DecodedResponseBytes: 4096, SourceBytes: 1024,
+	}).Acquire(context.Background(), Iteration{
+		QueryPlan: []string{"filename:go.work"}, QueryLimit: 1, CandidateLimit: 2,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if service.searchCalls != 1 || len(input.Candidates) != 2 {
+		t.Fatalf("search calls = %d, candidates = %d", service.searchCalls, len(input.Candidates))
+	}
+}
+
+func TestGitHubHTTPAcquisitionFetchesSourceContentsOnce(t *testing.T) {
+	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	source := []byte("module example\n")
+	license := []byte("MIT License\n")
+	sourceRequests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/search/code":
+			fmt.Fprint(w, `{"items":[{"path":"go.mod","repository":{"full_name":"octo/project"}}]}`)
+		case "/repos/octo/project":
+			fmt.Fprint(w, `{"full_name":"octo/project","html_url":"https://github.com/octo/project","default_branch":"main"}`)
+		case "/repos/octo/project/git/ref/heads/main":
+			fmt.Fprintf(w, `{"object":{"sha":%q}}`, commit)
+		case "/repos/octo/project/contents/go.mod":
+			sourceRequests++
+			fmt.Fprintf(w, `{"type":"file","encoding":"base64","content":%q}`, base64.StdEncoding.EncodeToString(source))
+		case "/repos/octo/project/contents/LICENSE":
+			fmt.Fprintf(w, `{"type":"file","encoding":"base64","content":%q}`, base64.StdEncoding.EncodeToString(license))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	service := newGitHubHTTPService("")
+	service.baseURL = server.URL
+	input, err := newGitHubAcquisition(service, CollectionLimits{
+		Queries: 1, ResultPages: 1, CandidateInspections: 1,
+		DecodedResponseBytes: 64 << 10, SourceBytes: 1024, PacketTokens: 50000,
+	}).Acquire(context.Background(), Iteration{
+		QueryPlan: []string{"filename:go.mod"}, QueryLimit: 1, CandidateLimit: 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(input.Candidates) != 1 || sourceRequests != 1 {
+		t.Fatalf("candidates = %d, source content requests = %d", len(input.Candidates), sourceRequests)
 	}
 }
 
@@ -296,12 +397,14 @@ func sameStrings(a, b []string) bool {
 }
 
 type fakeGitHubService struct {
-	searches                                       map[string][]GitHubCodeHit
-	repositories                                   map[string]GitHubRepository
-	heads                                          map[string]string
-	files                                          map[string][]byte
-	fileTypes                                      map[string]string
-	repositoryCalls, fileCalls, clones, executions int
+	searches                                map[string][]GitHubCodeHit
+	searchPages                             map[string][][]GitHubCodeHit
+	repositories                            map[string]GitHubRepository
+	heads                                   map[string]string
+	files                                   map[string][]byte
+	fileTypes                               map[string]string
+	searchCalls, repositoryCalls, fileCalls int
+	clones, executions                      int
 }
 
 type fakeWebHintService struct {
@@ -318,7 +421,14 @@ func (f *fakeWebHintService) SearchHints(_ context.Context, query string, _ int,
 	return f.searches[query], false, int64(len(query)), nil
 }
 
-func (f *fakeGitHubService) SearchCode(_ context.Context, query string, _ int, _ int64) ([]GitHubCodeHit, bool, int64, error) {
+func (f *fakeGitHubService) SearchCode(_ context.Context, query string, page int, _ int64) ([]GitHubCodeHit, bool, int64, error) {
+	f.searchCalls++
+	if pages := f.searchPages[query]; len(pages) != 0 {
+		if page < 1 || page > len(pages) {
+			return nil, false, int64(len(query)), nil
+		}
+		return pages[page-1], page < len(pages), int64(len(query)), nil
+	}
 	return f.searches[query], false, int64(len(query)), nil
 }
 func (f *fakeGitHubService) Repository(_ context.Context, repository string, _ int64) (GitHubRepository, int64, error) {

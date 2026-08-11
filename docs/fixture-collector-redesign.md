@@ -66,7 +66,8 @@ budgets cover:
 - search queries;
 - result pages;
 - candidate inspections;
-- decoded remote-response bytes, including metadata and evidence;
+- decoded remote-response bytes, partitioned between discovery and detailed
+  acquisition and including metadata and evidence;
 - selection-packet tokens; and
 - selector invocations.
 
@@ -75,6 +76,13 @@ ceiling, a 50,000-token candidate-packet target, seven valid iterations per
 detector, and two selector invocations per iteration. Page and aggregate-byte
 limits are mandatory reviewed values rather than hidden implementation
 defaults.
+
+The aggregate decoded-response allowance is deterministically partitioned: one
+quarter is reserved for search responses and three quarters for repository,
+commit, source, and license acquisition. Search stops when unique locally
+selector-matching hits can fill the remaining inspection ceiling. The
+production GitHub adapter obtains source type and exact bytes from one Contents
+response rather than downloading the same payload twice.
 
 A search hit does not consume an inspection. An inspection is charged before
 the first detailed metadata or content request for a unique repository and path

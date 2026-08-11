@@ -82,6 +82,13 @@ type githubFileTypeService interface {
 	FileType(context.Context, string, string, string, int64) (string, int64, error)
 }
 
+// githubSourceService lets production adapters return regular-file evidence
+// and exact bytes from one provider response. Adapters without it retain the
+// narrower FileType/File seam used by lightweight tests.
+type githubSourceService interface {
+	Source(context.Context, string, string, string, int64) (string, []byte, int64, error)
+}
+
 type GitHubCodeHit struct{ Repository, Path string }
 type GitHubRepository struct {
 	FullName, HTMLURL, DefaultBranch string
@@ -124,7 +131,23 @@ func (a *githubAcquisition) ensureService() error {
 type acquisitionBudget struct {
 	limits                      CollectionLimits
 	queries, pages, inspections int
-	bytes                       int64
+	searchLimit, searchBytes    int64
+	acquisitionLimit            int64
+	acquisitionBytes            int64
+}
+
+const searchResponseBudgetDivisor = 4
+
+func newAcquisitionBudget(limits CollectionLimits) acquisitionBudget {
+	total := int64(limits.DecodedResponseBytes)
+	searchLimit := total / searchResponseBudgetDivisor
+	if searchLimit < 1 && total > 0 {
+		searchLimit = 1
+	}
+	return acquisitionBudget{
+		limits: limits, searchLimit: searchLimit,
+		acquisitionLimit: total - searchLimit,
+	}
 }
 
 type acquisitionCache struct {
@@ -160,6 +183,16 @@ func (c *hitCollector) add(items []GitHubCodeHit, query string) {
 	}
 }
 
+func (c *hitCollector) matchingCount(queries []string) int {
+	count := 0
+	for _, hit := range c.hits {
+		if qualifySourcePath(queries, hit.Path) == "" {
+			count++
+		}
+	}
+	return count
+}
+
 func hitKey(hit GitHubCodeHit) string {
 	return strings.ToLower(hit.Repository) + "\x00" + path.Clean(hit.Path)
 }
@@ -192,14 +225,24 @@ func (b *acquisitionBudget) reserveInspection() error {
 	b.inspections++
 	return nil
 }
-func (b *acquisitionBudget) remainingBytes() int64 {
-	return int64(b.limits.DecodedResponseBytes) - b.bytes
+func (b *acquisitionBudget) remainingSearchBytes() int64 {
+	return b.searchLimit - b.searchBytes
 }
-func (b *acquisitionBudget) chargeBytes(n int64) error {
-	if n < 0 || n > b.remainingBytes() {
-		return errors.New("GitHub decoded-response byte budget exhausted")
+func (b *acquisitionBudget) remainingAcquisitionBytes() int64 {
+	return b.acquisitionLimit - b.acquisitionBytes
+}
+func (b *acquisitionBudget) chargeSearchBytes(n int64) error {
+	if n < 0 || n > b.remainingSearchBytes() {
+		return errors.New("GitHub search decoded-response byte budget exhausted")
 	}
-	b.bytes += n
+	b.searchBytes += n
+	return nil
+}
+func (b *acquisitionBudget) chargeAcquisitionBytes(n int64) error {
+	if n < 0 || n > b.remainingAcquisitionBytes() {
+		return errors.New("GitHub acquisition decoded-response byte budget exhausted")
+	}
+	b.acquisitionBytes += n
 	return nil
 }
 
@@ -207,28 +250,29 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	if err := a.ensureService(); err != nil {
 		return ResearchInput{}, githubInfrastructureError(err)
 	}
-	b := acquisitionBudget{limits: a.limits}
-	if b.limits.Queries == 0 {
-		b.limits.Queries = iteration.QueryLimit
+	limits := a.limits
+	if limits.Queries == 0 {
+		limits.Queries = iteration.QueryLimit
 	}
-	if b.limits.CandidateInspections == 0 {
-		b.limits.CandidateInspections = iteration.CandidateLimit
+	if limits.CandidateInspections == 0 {
+		limits.CandidateInspections = iteration.CandidateLimit
 	}
-	if b.limits.ResultPages == 0 {
-		b.limits.ResultPages = iteration.QueryLimit
+	if limits.ResultPages == 0 {
+		limits.ResultPages = iteration.QueryLimit
 	}
-	if b.limits.DecodedResponseBytes <= 0 || b.limits.SourceBytes <= 0 {
+	if limits.DecodedResponseBytes <= 0 || limits.SourceBytes <= 0 {
 		return ResearchInput{}, errors.New("invalid GitHub acquisition byte limits")
 	}
-	queryLimit := minPositive(iteration.QueryLimit, b.limits.Queries)
-	candidateLimit := minPositive(iteration.CandidateLimit, b.limits.CandidateInspections)
+	b := newAcquisitionBudget(limits)
+	queryLimit := minPositive(iteration.QueryLimit, limits.Queries)
+	candidateLimit := minPositive(iteration.CandidateLimit, limits.CandidateInspections)
 	if len(iteration.QueryPlan) == 0 {
 		return ResearchInput{Outcome: Outcome{Result: "unsuccessful"}}, nil
 	}
 	cache := newAcquisitionCache()
 	hits := newHitCollector()
 	outcome := Outcome{Result: "unsuccessful"}
-	if err := collectSearchHits(ctx, &b, iteration, "github", iteration.QueryPlan, queryLimit, &outcome, hits, a.service.SearchCode, githubInfrastructureError); err != nil {
+	if err := collectSearchHits(ctx, &b, iteration, "github", iteration.QueryPlan, queryLimit, candidateLimit, &outcome, hits, a.service.SearchCode, githubInfrastructureError); err != nil {
 		return ResearchInput{}, err
 	}
 	candidates := make([]SourceCandidate, 0, candidateLimit)
@@ -256,6 +300,8 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 			Stage: progressQualification, Final: final,
 			Inspected: inspected, InspectionLimit: candidateLimit,
 			Qualified: len(candidates), Rejected: rejected, Filtered: filtered,
+			Budget: "acquisition", DownloadedBytes: b.acquisitionBytes,
+			ByteLimit: b.acquisitionLimit, RemainingBytes: b.remainingAcquisitionBytes(),
 		})
 	}
 	inspectHits := func(start int) error {
@@ -312,9 +358,9 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	if remainingMinimum < 0 {
 		remainingMinimum = 0
 	}
-	if a.web != nil && len(candidates) < remainingMinimum && len(candidates) < candidateLimit {
+	if a.web != nil && len(candidates) < remainingMinimum && inspected < candidateLimit {
 		previousHits := len(hits.hits)
-		if err := collectSearchHits(ctx, &b, iteration, "web", iteration.QueryPlan, queryLimit, &outcome, hits, a.web.SearchHints, webInfrastructureError); err != nil {
+		if err := collectSearchHits(ctx, &b, iteration, "web", iteration.QueryPlan, queryLimit, candidateLimit, &outcome, hits, a.web.SearchHints, webInfrastructureError); err != nil {
 			return ResearchInput{}, err
 		}
 		if err := inspectHits(previousHits); err != nil {
@@ -325,11 +371,14 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	return ResearchInput{Candidates: candidates, Outcome: outcome}, nil
 }
 
-func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration Iteration, provider string, queries []string, queryLimit int, outcome *Outcome, hits *hitCollector, search hitSearch, providerError func(error) error) error {
+func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration Iteration, provider string, queries []string, queryLimit, hitTarget int, outcome *Outcome, hits *hitCollector, search hitSearch, providerError func(error) error) error {
 	remainingQueries := queryLimit - len(outcome.Queries)
 	queryTotal := min(len(queries), max(0, remainingQueries))
 	queryIndex := 0
 	for _, query := range queries {
+		if hits.matchingCount(iteration.QueryPlan) >= hitTarget {
+			break
+		}
 		if len(outcome.Queries) >= queryLimit || budget.reserveQueries() != nil {
 			break
 		}
@@ -339,11 +388,11 @@ func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration
 			if err := budget.reservePage(); err != nil {
 				break
 			}
-			items, next, size, err := search(ctx, query, page, budget.remainingBytes())
+			items, next, size, err := search(ctx, query, page, budget.remainingSearchBytes())
 			if err != nil {
 				return providerError(err)
 			}
-			if err := budget.chargeBytes(size); err != nil {
+			if err := budget.chargeSearchBytes(size); err != nil {
 				return err
 			}
 			hits.add(items, query)
@@ -351,7 +400,12 @@ func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration
 				iteration.ReportProgress(ResearchProgress{
 					Stage: progressSearch, Provider: provider, Query: query,
 					QueryIndex: queryIndex, QueryTotal: queryTotal, Page: page, Hits: len(hits.hits),
+					Budget: "search", DownloadedBytes: budget.searchBytes,
+					ByteLimit: budget.searchLimit, RemainingBytes: budget.remainingSearchBytes(),
 				})
+			}
+			if hits.matchingCount(iteration.QueryPlan) >= hitTarget {
+				break
 			}
 			if !next {
 				break
@@ -366,11 +420,11 @@ func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, c
 	if !ok {
 		var n int64
 		var err error
-		repo, n, err = a.service.Repository(ctx, hit.Repository, b.remainingBytes())
+		repo, n, err = a.service.Repository(ctx, hit.Repository, b.remainingAcquisitionBytes())
 		if err != nil {
 			return SourceCandidate{}, "", githubInfrastructureError(err)
 		}
-		if err := b.chargeBytes(n); err != nil {
+		if err := b.chargeAcquisitionBytes(n); err != nil {
 			return SourceCandidate{}, "", err
 		}
 		cache.repositories[hit.Repository] = repo
@@ -383,11 +437,11 @@ func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, c
 	if !ok {
 		var n int64
 		var err error
-		commit, n, err = a.service.DefaultBranchHead(ctx, hit.Repository, repo.DefaultBranch, b.remainingBytes())
+		commit, n, err = a.service.DefaultBranchHead(ctx, hit.Repository, repo.DefaultBranch, b.remainingAcquisitionBytes())
 		if err != nil {
 			return SourceCandidate{}, "", githubInfrastructureError(err)
 		}
-		if err := b.chargeBytes(n); err != nil {
+		if err := b.chargeAcquisitionBytes(n); err != nil {
 			return SourceCandidate{}, "", err
 		}
 		cache.heads[headKey] = commit
@@ -395,9 +449,25 @@ func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, c
 	if len(commit) != 40 {
 		return SourceCandidate{}, reasonDefaultBranchHead, nil
 	}
-	if typed, ok := a.service.(githubFileTypeService); ok {
-		fileType, n, err := typed.FileType(ctx, hit.Repository, commit, hit.Path, b.remainingBytes())
-		if chargeErr := b.chargeBytes(n); chargeErr != nil {
+	var source []byte
+	if combined, ok := a.service.(githubSourceService); ok {
+		fileType, contents, n, err := combined.Source(ctx, hit.Repository, commit, hit.Path, b.remainingAcquisitionBytes())
+		if chargeErr := b.chargeAcquisitionBytes(n); chargeErr != nil {
+			return SourceCandidate{}, "", chargeErr
+		}
+		if err != nil {
+			if errors.Is(err, errGitHubNotFound) {
+				return SourceCandidate{}, reasonSourceNotFound, nil
+			}
+			return SourceCandidate{}, "", githubInfrastructureError(err)
+		}
+		if fileType != "file" {
+			return SourceCandidate{}, reasonSourceNotRegular, nil
+		}
+		source = contents
+	} else if typed, ok := a.service.(githubFileTypeService); ok {
+		fileType, n, err := typed.FileType(ctx, hit.Repository, commit, hit.Path, b.remainingAcquisitionBytes())
+		if chargeErr := b.chargeAcquisitionBytes(n); chargeErr != nil {
 			return SourceCandidate{}, "", chargeErr
 		}
 		if err != nil {
@@ -410,15 +480,19 @@ func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, c
 			return SourceCandidate{}, reasonSourceNotRegular, nil
 		}
 	}
-	source, byteCount, err := a.service.File(ctx, hit.Repository, commit, hit.Path, b.remainingBytes())
-	if err != nil {
-		if errors.Is(err, errGitHubNotFound) {
-			return SourceCandidate{}, reasonSourceNotFound, nil
+	if source == nil {
+		var byteCount int64
+		var err error
+		source, byteCount, err = a.service.File(ctx, hit.Repository, commit, hit.Path, b.remainingAcquisitionBytes())
+		if err != nil {
+			if errors.Is(err, errGitHubNotFound) {
+				return SourceCandidate{}, reasonSourceNotFound, nil
+			}
+			return SourceCandidate{}, "", githubInfrastructureError(err)
 		}
-		return SourceCandidate{}, "", githubInfrastructureError(err)
-	}
-	if err := b.chargeBytes(byteCount); err != nil {
-		return SourceCandidate{}, "", err
+		if err := b.chargeAcquisitionBytes(byteCount); err != nil {
+			return SourceCandidate{}, "", err
+		}
 	}
 	if len(source) == 0 || len(source) > a.limits.SourceBytes {
 		return SourceCandidate{}, reasonSourceSize, nil
@@ -503,8 +577,8 @@ func (a *githubAcquisition) license(ctx context.Context, b *acquisitionBudget, r
 			if dir != "." {
 				p = dir + "/" + name
 			}
-			contents, n, err := a.service.File(ctx, repository, commit, p, b.remainingBytes())
-			if err := b.chargeBytes(n); err != nil {
+			contents, n, err := a.service.File(ctx, repository, commit, p, b.remainingAcquisitionBytes())
+			if err := b.chargeAcquisitionBytes(n); err != nil {
 				return "", nil, "", err
 			}
 			if err == nil {
@@ -806,6 +880,23 @@ func (s *githubHTTPService) File(ctx context.Context, repository, commit, filePa
 	}
 	contents, err := base64.StdEncoding.DecodeString(strings.ReplaceAll(r.Content, "\n", ""))
 	return contents, n, err
+}
+
+func (s *githubHTTPService) Source(ctx context.Context, repository, commit, filePath string, limit int64) (string, []byte, int64, error) {
+	var r struct {
+		Type     string `json:"type"`
+		Content  string `json:"content"`
+		Encoding string `json:"encoding"`
+	}
+	n, err := s.request(ctx, "/repos/"+repository+"/contents/"+url.PathEscape(filePath)+"?ref="+url.QueryEscape(commit), limit, &r)
+	if err != nil || r.Type != "file" {
+		return r.Type, nil, n, err
+	}
+	if r.Encoding != "base64" {
+		return r.Type, nil, n, errors.New("unexpected GitHub file encoding")
+	}
+	contents, err := base64.StdEncoding.DecodeString(strings.ReplaceAll(r.Content, "\n", ""))
+	return r.Type, contents, n, err
 }
 func (s *githubHTTPService) FileType(ctx context.Context, repository, commit, filePath string, limit int64) (string, int64, error) {
 	var r struct {
