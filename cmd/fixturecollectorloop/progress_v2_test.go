@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -123,6 +124,19 @@ func TestWriteProgressSyncsParentDirectoryAfterAtomicInstall(t *testing.T) {
 	}
 	if called != filepath.Dir(path) {
 		t.Fatalf("synced directory = %q, want %q", called, filepath.Dir(path))
+	}
+}
+
+func TestWriteProgressReturnsDirectorySyncError(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "collection.yaml")
+	syncErr := errors.New("sync directory")
+	originalSync := syncProgressDirectory
+	syncProgressDirectory = func(string) error { return syncErr }
+	t.Cleanup(func() { syncProgressDirectory = originalSync })
+
+	err := writeProgress(path, validTestProgress(DetectorProgress{ID: "example", State: statePending}))
+	if !errors.Is(err, syncErr) {
+		t.Fatalf("writeProgress error = %v, want %v", err, syncErr)
 	}
 }
 
