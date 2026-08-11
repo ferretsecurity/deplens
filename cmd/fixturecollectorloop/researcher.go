@@ -109,15 +109,21 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 		input.Outcome.Result = "unsuccessful"
 		return ResearchResult{Outcome: input.Outcome, NoDistinctDecisionState: true}, nil
 	}
+	if iteration.ReportProgress != nil {
+		iteration.ReportProgress(ResearchProgress{Stage: progressSelection, Candidates: len(candidates)})
+	}
 	result, err := r.selector.Select(ctx, iteration, input.SelectionPacket)
 	if err != nil {
 		return result, err
+	}
+	if iteration.ReportProgress != nil {
+		iteration.ReportProgress(ResearchProgress{Stage: progressSelection, Final: true, Selected: len(result.Selection.Selected)})
 	}
 	if err := validateSelection(result.Selection, candidateIDSet(candidates), len(iteration.AcceptedReferences)); err != nil {
 		return ResearchResult{}, err
 	}
 	result.Decision = &decision
-	if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.Rejections) != 0 || len(input.Outcome.Omitted) != 0 {
+	if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.FilteredSearchHits) != 0 || len(input.Outcome.Rejections) != 0 || len(input.Outcome.Omitted) != 0 {
 		result.Outcome = input.Outcome
 	}
 	accepted, rejected, err := materializeSelectedCandidates(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection, len(iteration.AcceptedReferences))

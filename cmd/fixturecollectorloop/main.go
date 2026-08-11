@@ -17,6 +17,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -76,33 +77,35 @@ type Recovery struct {
 }
 
 type DetectorProgress struct {
-	ID                string            `yaml:"id"`
-	Form              string            `yaml:"form,omitempty"`
-	Roles             []string          `yaml:"roles,omitempty"`
-	State             string            `yaml:"state"`
-	Iterations        int               `yaml:"iterations"`
-	Examples          []string          `yaml:"examples"`
-	Target            int               `yaml:"target,omitempty"`
-	QueryPlan         []string          `yaml:"query_plan,omitempty"`
-	QueryReviewReason string            `yaml:"query_review_reason,omitempty"`
-	Queries           []string          `yaml:"queries,omitempty"`
-	Candidates        []string          `yaml:"candidates,omitempty"`
-	Rejections        []string          `yaml:"rejections,omitempty"`
-	Omitted           []string          `yaml:"omitted,omitempty"`
-	DecisionStates    []DecisionState   `yaml:"decision_states,omitempty"`
-	History           []IterationRecord `yaml:"history,omitempty"`
+	ID                 string            `yaml:"id"`
+	Form               string            `yaml:"form,omitempty"`
+	Roles              []string          `yaml:"roles,omitempty"`
+	State              string            `yaml:"state"`
+	Iterations         int               `yaml:"iterations"`
+	Examples           []string          `yaml:"examples"`
+	Target             int               `yaml:"target,omitempty"`
+	QueryPlan          []string          `yaml:"query_plan,omitempty"`
+	QueryReviewReason  string            `yaml:"query_review_reason,omitempty"`
+	Queries            []string          `yaml:"queries,omitempty"`
+	Candidates         []string          `yaml:"candidates,omitempty"`
+	FilteredSearchHits map[string]int    `yaml:"filtered_search_hits,omitempty"`
+	Rejections         []string          `yaml:"rejections,omitempty"`
+	Omitted            []string          `yaml:"omitted,omitempty"`
+	DecisionStates     []DecisionState   `yaml:"decision_states,omitempty"`
+	History            []IterationRecord `yaml:"history,omitempty"`
 }
 
 // IterationRecord is append-only, content-free evidence of a valid attempt.
 type IterationRecord struct {
-	Iteration   int            `yaml:"iteration"`
-	Result      string         `yaml:"result"`
-	AcceptedIDs []string       `yaml:"accepted_ids,omitempty"`
-	Queries     []string       `yaml:"queries,omitempty"`
-	Candidates  []string       `yaml:"candidates,omitempty"`
-	Rejections  []string       `yaml:"rejections,omitempty"`
-	Omitted     []string       `yaml:"omitted,omitempty"`
-	Decision    *DecisionState `yaml:"decision,omitempty"`
+	Iteration          int            `yaml:"iteration"`
+	Result             string         `yaml:"result"`
+	AcceptedIDs        []string       `yaml:"accepted_ids,omitempty"`
+	Queries            []string       `yaml:"queries,omitempty"`
+	Candidates         []string       `yaml:"candidates,omitempty"`
+	FilteredSearchHits map[string]int `yaml:"filtered_search_hits,omitempty"`
+	Rejections         []string       `yaml:"rejections,omitempty"`
+	Omitted            []string       `yaml:"omitted,omitempty"`
+	Decision           *DecisionState `yaml:"decision,omitempty"`
 }
 
 // DecisionState is content-free evidence used to avoid repeating an identical
@@ -125,15 +128,35 @@ type Iteration struct {
 	PresentedCandidateIDs            map[string]bool
 	SelectorConfigurationFingerprint string
 	PriorDecisionStates              []DecisionState
+	ReportProgress                   func(ResearchProgress)
+}
+
+const (
+	progressSearch        = "search"
+	progressQualification = "qualification"
+	progressSelection     = "selection"
+)
+
+// ResearchProgress carries content-free, operator-facing activity counts from
+// the Go-owned acquisition and isolated selection pipeline.
+type ResearchProgress struct {
+	Stage                              string
+	Provider, Query                    string
+	QueryIndex, QueryTotal, Page, Hits int
+	Inspected, InspectionLimit         int
+	Qualified, Rejected, Filtered      int
+	Candidates, Selected               int
+	Final                              bool
 }
 
 type Outcome struct {
-	Result     string
-	Added      []string
-	Queries    []string
-	Candidates []string
-	Rejections []string
-	Omitted    []string
+	Result             string
+	Added              []string
+	Queries            []string
+	Candidates         []string
+	FilteredSearchHits map[string]int
+	Rejections         []string
+	Omitted            []string
 }
 
 var now = time.Now
@@ -291,6 +314,7 @@ func initialize(args []string, root string, stdout, stderr io.Writer) int {
 }
 
 func collect(args []string, root string, stdout, stderr io.Writer, researcher Researcher) int {
+	stdout = &synchronizedWriter{writer: stdout}
 	fs := flag.NewFlagSet("run", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	progressPath := fs.String("progress", filepath.Join(root, ".deplens", "fixture-collection.yaml"), "collection progress path")
@@ -412,9 +436,14 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 			}
 			continue
 		}
+		examplesBefore := len(detector.Examples)
+		fmt.Fprintf(stdout, "iteration started: detector=%s iteration=%d/%d examples=%d/%d\n", detector.ID, detector.Iterations+1, maxIterations, examplesBefore, defaultTarget)
 		result := make(chan iterationResult, 1)
 		go func() {
-			code, checkpointed := runIteration(ctx, root, *progressPath, p, detector, researcher, *queryLimit, *candidateLimit, *commit, *allowDirty, stderr)
+			reportProgress := func(progress ResearchProgress) {
+				printResearchProgress(stdout, detector.ID, progress)
+			}
+			code, checkpointed := runIteration(ctx, root, *progressPath, p, detector, researcher, *queryLimit, *candidateLimit, *commit, *allowDirty, reportProgress, stderr)
 			result <- iterationResult{code: code, checkpointed: checkpointed}
 		}()
 		iteration, stopAfterIteration := waitForIteration(result, signals, cancel, stdout, stderr)
@@ -424,10 +453,56 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 		}
 		if checkpointed {
 			fmt.Fprintf(stdout, "checkpoint: %s iteration %d\n", detector.ID, detector.Iterations)
+			printSelectedExamplePaths(stdout, root, detector.ID, detector.Examples[examplesBefore:])
 		}
 		if stopAfterIteration || *single || *target != "" {
 			return collectionSummary(p, stdout)
 		}
+	}
+}
+
+type synchronizedWriter struct {
+	mu     sync.Mutex
+	writer io.Writer
+}
+
+func (w *synchronizedWriter) Write(p []byte) (int, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.writer.Write(p)
+}
+
+func printResearchProgress(stdout io.Writer, detectorID string, progress ResearchProgress) {
+	switch progress.Stage {
+	case progressSearch:
+		fmt.Fprintf(stdout, "candidate search progress: detector=%s provider=%s query=%d/%d page=%d hits=%d expression=%q\n", detectorID, progress.Provider, progress.QueryIndex, progress.QueryTotal, progress.Page, progress.Hits, progress.Query)
+	case progressQualification:
+		label := "progress"
+		if progress.Final {
+			label = "finished"
+		}
+		fmt.Fprintf(stdout, "candidate qualification %s: detector=%s inspected=%d/%d qualified=%d rejected=%d filtered=%d\n", label, detectorID, progress.Inspected, progress.InspectionLimit, progress.Qualified, progress.Rejected, progress.Filtered)
+	case progressSelection:
+		if progress.Final {
+			fmt.Fprintf(stdout, "candidate selection finished: detector=%s selected=%d\n", detectorID, progress.Selected)
+			return
+		}
+		fmt.Fprintf(stdout, "candidate selection started: detector=%s candidates=%d\n", detectorID, progress.Candidates)
+	}
+}
+
+func printSelectedExamplePaths(stdout io.Writer, root, detectorID string, examples []string) {
+	prefix := filepath.ToSlash(filepath.Join("testdata", "corpus", detectorID)) + "/"
+	for _, example := range examples {
+		source := filepath.ToSlash(example)
+		relative := strings.TrimPrefix(source, prefix)
+		candidateID, _, ok := strings.Cut(relative, "/")
+		if !ok || candidateID == "" || relative == source {
+			continue
+		}
+		fmt.Fprintf(stdout, "selected candidate source: %s\n", filepath.Join(root, filepath.FromSlash(source)))
+		provenance := filepath.Join(root, filepath.FromSlash(prefix+candidateID+"/provenance.yaml"))
+		fmt.Fprintf(stdout, "selected candidate provenance: %s\n", provenance)
 	}
 }
 
@@ -587,7 +662,7 @@ func warnBranchState(root string, stderr io.Writer) error {
 	return nil
 }
 
-func runIteration(ctx context.Context, root, progressPath string, p Progress, detector *DetectorProgress, researcher Researcher, queryLimit, candidateLimit int, commit, allowDirty bool, stderr io.Writer) (code int, checkpointed bool) {
+func runIteration(ctx context.Context, root, progressPath string, p Progress, detector *DetectorProgress, researcher Researcher, queryLimit, candidateLimit int, commit, allowDirty bool, reportProgress func(ResearchProgress), stderr io.Writer) (code int, checkpointed bool) {
 	checkpoint, err := gitOutput(root, "rev-parse", "HEAD")
 	if err != nil {
 		checkpoint = "working tree (no Git checkpoint available)"
@@ -641,6 +716,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		AcceptedReferences:    references,
 		PresentedCandidateIDs: presented,
 		PriorDecisionStates:   append([]DecisionState(nil), detector.DecisionStates...),
+		ReportProgress:        reportProgress,
 	})
 	if err != nil {
 		failure = err.Error()
@@ -743,6 +819,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	detector.Examples = append(detector.Examples, corpusExampleFiles(added)...)
 	detector.Queries = append(detector.Queries, outcome.Queries...)
 	detector.Candidates = append(detector.Candidates, outcome.Candidates...)
+	detector.FilteredSearchHits = mergeCounts(detector.FilteredSearchHits, outcome.FilteredSearchHits)
 	detector.Rejections = append(detector.Rejections, outcome.Rejections...)
 	detector.Omitted = append(detector.Omitted, outcome.Omitted...)
 	if result.Decision != nil {
@@ -890,19 +967,37 @@ func sourceCandidateFromProvenance(p Provenance, source []byte) SourceCandidate 
 
 func iterationRecord(iteration int, outcome Outcome, accepted []AcceptedCandidate, decision *DecisionState) IterationRecord {
 	record := IterationRecord{
-		Iteration:  iteration,
-		Result:     outcome.Result,
-		Queries:    append([]string(nil), outcome.Queries...),
-		Candidates: append([]string(nil), outcome.Candidates...),
-		Rejections: append([]string(nil), outcome.Rejections...),
-		Omitted:    append([]string(nil), outcome.Omitted...),
-		Decision:   decision,
+		Iteration:          iteration,
+		Result:             outcome.Result,
+		Queries:            append([]string(nil), outcome.Queries...),
+		Candidates:         append([]string(nil), outcome.Candidates...),
+		FilteredSearchHits: cloneCounts(outcome.FilteredSearchHits),
+		Rejections:         append([]string(nil), outcome.Rejections...),
+		Omitted:            append([]string(nil), outcome.Omitted...),
+		Decision:           decision,
 	}
 	for _, candidate := range accepted {
 		record.AcceptedIDs = append(record.AcceptedIDs, candidate.Candidate.ID)
 	}
 	sort.Strings(record.AcceptedIDs)
 	return record
+}
+
+func mergeCounts(dst, src map[string]int) map[string]int {
+	if len(src) == 0 {
+		return dst
+	}
+	if dst == nil {
+		dst = make(map[string]int, len(src))
+	}
+	for reason, count := range src {
+		dst[reason] += count
+	}
+	return dst
+}
+
+func cloneCounts(src map[string]int) map[string]int {
+	return mergeCounts(nil, src)
 }
 
 func newRecovery(progressPath string, detector *DetectorProgress, checkpoint string, commit, allowDirty bool) Recovery {

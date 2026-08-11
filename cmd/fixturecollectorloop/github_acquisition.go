@@ -228,39 +228,80 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	cache := newAcquisitionCache()
 	hits := newHitCollector()
 	outcome := Outcome{Result: "unsuccessful"}
-	if err := collectSearchHits(ctx, &b, iteration.QueryPlan, queryLimit, &outcome, hits, a.service.SearchCode, githubInfrastructureError); err != nil {
+	if err := collectSearchHits(ctx, &b, iteration, "github", iteration.QueryPlan, queryLimit, &outcome, hits, a.service.SearchCode, githubInfrastructureError); err != nil {
 		return ResearchInput{}, err
 	}
 	candidates := make([]SourceCandidate, 0, candidateLimit)
 	identities, contents := make(map[string]struct{}), make(map[string]struct{})
 	inspected := 0
+	rejected := 0
+	reportEvery := max(1, (candidateLimit+9)/10)
+	lastReported := -1
+	reportQualification := func(final bool) {
+		if iteration.ReportProgress == nil {
+			return
+		}
+		if !final && inspected != 1 && inspected%reportEvery != 0 {
+			return
+		}
+		if !final && inspected == lastReported {
+			return
+		}
+		lastReported = inspected
+		filtered := 0
+		for _, count := range outcome.FilteredSearchHits {
+			filtered += count
+		}
+		iteration.ReportProgress(ResearchProgress{
+			Stage: progressQualification, Final: final,
+			Inspected: inspected, InspectionLimit: candidateLimit,
+			Qualified: len(candidates), Rejected: rejected, Filtered: filtered,
+		})
+	}
 	inspectHits := func(start int) error {
 		for _, hit := range hits.hits[start:] {
+			// GitHub search qualifiers are discovery hints, not exact
+			// selectors. Discard loose matches before they consume an
+			// inspection or any repository-specific request.
+			if reason := qualifySourcePath(iteration.QueryPlan, hit.Path); reason != "" {
+				if outcome.FilteredSearchHits == nil {
+					outcome.FilteredSearchHits = make(map[string]int)
+				}
+				outcome.FilteredSearchHits[string(reason)]++
+				continue
+			}
 			if inspected >= candidateLimit || b.reserveInspection() != nil {
 				break
 			}
 			inspected++
-			candidate, reason, err := a.inspect(ctx, &b, &cache, iteration, hit)
+			candidate, reason, err := a.inspect(ctx, &b, &cache, hit)
 			if err != nil {
 				return err
 			}
 			if reason != "" {
 				outcome.Rejections = append(outcome.Rejections, string(reason))
+				rejected++
+				reportQualification(false)
 				continue
 			}
 			identity := candidate.Repository + "@" + candidate.Commit + ":" + candidate.OriginalPath
 			if _, exists := identities[identity]; exists {
 				outcome.Rejections = append(outcome.Rejections, string(reasonDuplicateIdentity))
+				rejected++
+				reportQualification(false)
 				continue
 			}
 			if _, exists := contents[candidate.SourceSHA256]; exists {
 				outcome.Rejections = append(outcome.Rejections, string(reasonDuplicateContent))
+				rejected++
+				reportQualification(false)
 				continue
 			}
 			identities[identity], contents[candidate.SourceSHA256] = struct{}{}, struct{}{}
 			candidate.DiscoveringQuery = hits.discoveringQuery[hitKey(hit)]
 			outcome.Candidates = append(outcome.Candidates, candidate.ID)
 			candidates = append(candidates, candidate)
+			reportQualification(false)
 		}
 		return nil
 	}
@@ -273,21 +314,26 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	}
 	if a.web != nil && len(candidates) < remainingMinimum && len(candidates) < candidateLimit {
 		previousHits := len(hits.hits)
-		if err := collectSearchHits(ctx, &b, iteration.QueryPlan, queryLimit, &outcome, hits, a.web.SearchHints, webInfrastructureError); err != nil {
+		if err := collectSearchHits(ctx, &b, iteration, "web", iteration.QueryPlan, queryLimit, &outcome, hits, a.web.SearchHints, webInfrastructureError); err != nil {
 			return ResearchInput{}, err
 		}
 		if err := inspectHits(previousHits); err != nil {
 			return ResearchInput{}, err
 		}
 	}
+	reportQualification(true)
 	return ResearchInput{Candidates: candidates, Outcome: outcome}, nil
 }
 
-func collectSearchHits(ctx context.Context, budget *acquisitionBudget, queries []string, queryLimit int, outcome *Outcome, hits *hitCollector, search hitSearch, providerError func(error) error) error {
+func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration Iteration, provider string, queries []string, queryLimit int, outcome *Outcome, hits *hitCollector, search hitSearch, providerError func(error) error) error {
+	remainingQueries := queryLimit - len(outcome.Queries)
+	queryTotal := min(len(queries), max(0, remainingQueries))
+	queryIndex := 0
 	for _, query := range queries {
 		if len(outcome.Queries) >= queryLimit || budget.reserveQueries() != nil {
 			break
 		}
+		queryIndex++
 		outcome.Queries = append(outcome.Queries, query)
 		for page := 1; ; page++ {
 			if err := budget.reservePage(); err != nil {
@@ -301,6 +347,12 @@ func collectSearchHits(ctx context.Context, budget *acquisitionBudget, queries [
 				return err
 			}
 			hits.add(items, query)
+			if iteration.ReportProgress != nil {
+				iteration.ReportProgress(ResearchProgress{
+					Stage: progressSearch, Provider: provider, Query: query,
+					QueryIndex: queryIndex, QueryTotal: queryTotal, Page: page, Hits: len(hits.hits),
+				})
+			}
 			if !next {
 				break
 			}
@@ -309,7 +361,7 @@ func collectSearchHits(ctx context.Context, budget *acquisitionBudget, queries [
 	return nil
 }
 
-func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, cache *acquisitionCache, iteration Iteration, hit GitHubCodeHit) (SourceCandidate, qualificationReason, error) {
+func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, cache *acquisitionCache, hit GitHubCodeHit) (SourceCandidate, qualificationReason, error) {
 	repo, ok := cache.repositories[hit.Repository]
 	if !ok {
 		var n int64
@@ -324,9 +376,6 @@ func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, c
 		cache.repositories[hit.Repository] = repo
 	}
 	if reason := qualifyRepository(repo); reason != "" {
-		return SourceCandidate{}, reason, nil
-	}
-	if reason := qualifySourcePath(iteration.QueryPlan, hit.Path); reason != "" {
 		return SourceCandidate{}, reason, nil
 	}
 	headKey := hit.Repository + "\x00" + repo.DefaultBranch

@@ -52,6 +52,14 @@ bytes are treated as data, not instructions. Go alone derives the stable
 directory, original path, hashes, URLs, license evidence, and provenance. The
 model's rationale is the sole model-authored provenance field.
 
+Provider search qualifiers are discovery hints and may return loose path
+matches. Go applies every detector's reviewed selector locally before a search
+hit consumes the candidate-inspection budget or triggers a repository-specific
+request. This keeps the same bounded acquisition behavior across all detector
+query shapes without trusting provider search semantics. Filtered search noise
+is checkpointed as bounded reason counts; it is not recorded as one candidate
+rejection per provider hit.
+
 The selector requires an installed Codex CLI with the complete isolation feature
 set and an existing Codex OAuth login. Any Codex CLI version number is eligible;
 preflight fails closed when a required feature is unavailable, and the observed
@@ -82,6 +90,15 @@ starts. Re-run the same command to resume a valid checkpoint. The first
 `SIGINT`/`SIGTERM` requests that behavior; a second cancels active research and
 records recovery-required state. Exit 0 is a valid completion or stop; exit 1
 is an operational, integrity, lock, Git, selector, or recovery failure.
+
+`run` reports the selected detector and iteration before research starts. While
+acquisition is active it reports each provider result page and approximately
+ten evenly spaced qualification tallies containing inspected, qualified,
+rejected, and cheaply filtered counts. It also brackets the isolated model call
+with selection-started and selection-finished messages. After a valid accepted
+checkpoint, it prints absolute local paths for every selected source and its
+provenance file so terminals can render them as links. Progress is
+content-free: it never prints upstream source or license bytes.
 
 ## Git, recovery, and commits
 

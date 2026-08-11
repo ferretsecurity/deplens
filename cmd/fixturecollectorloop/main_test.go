@@ -533,8 +533,15 @@ func TestRunCreatesAResumableCheckpoint(t *testing.T) {
 	if got := progressDocument.Detectors[0]; got.State != stateInProgress || got.Iterations != 1 || len(got.Examples) != 1 {
 		t.Fatalf("unexpected checkpoint: %+v", got)
 	}
-	if !strings.Contains(stdout.String(), "checkpoint: example-detector iteration 1") {
-		t.Fatalf("summary = %q", stdout.String())
+	for _, want := range []string{
+		"iteration started: detector=example-detector iteration=1/7 examples=0/3",
+		"checkpoint: example-detector iteration 1",
+		"selected candidate source: " + filepath.Join(root, "testdata", "corpus", "example-detector", "owner-repo-abc123", "project", "dependencies.txt"),
+		"selected candidate provenance: " + filepath.Join(root, "testdata", "corpus", "example-detector", "owner-repo-abc123", "provenance.yaml"),
+	} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("run output missing %q: %s", want, stdout.String())
+		}
 	}
 }
 
@@ -563,6 +570,39 @@ func TestRunPrintsEffectiveFlagValues(t *testing.T) {
 	} {
 		if !strings.Contains(stdout.String(), want) {
 			t.Fatalf("configuration missing %q: %s", want, stdout.String())
+		}
+	}
+}
+
+func TestRunPrintsResearchProgress(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, io.Discard, io.Discard, unavailableResearcher{}); got != 0 {
+		t.Fatalf("initialize exit status = %d", got)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+	var stdout, stderr bytes.Buffer
+	researcher := fakeResearcher{outcome: Outcome{Result: "unsuccessful"}, write: func(iteration Iteration) error {
+		iteration.ReportProgress(ResearchProgress{Stage: progressSearch, Provider: "github", Query: "filename:go.work", QueryIndex: 1, QueryTotal: 1, Page: 1, Hits: 100})
+		iteration.ReportProgress(ResearchProgress{Stage: progressQualification, Inspected: 4, InspectionLimit: 40, Qualified: 1, Rejected: 3, Filtered: 12})
+		iteration.ReportProgress(ResearchProgress{Stage: progressQualification, Final: true, Inspected: 40, InspectionLimit: 40, Qualified: 9, Rejected: 31, Filtered: 105})
+		iteration.ReportProgress(ResearchProgress{Stage: progressSelection, Candidates: 9})
+		iteration.ReportProgress(ResearchProgress{Stage: progressSelection, Final: true, Selected: 3})
+		return nil
+	}}
+	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, researcher); got != 0 {
+		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
+	}
+	for _, want := range []string{
+		`candidate search progress: detector=example-detector provider=github query=1/1 page=1 hits=100 expression="filename:go.work"`,
+		"candidate qualification progress: detector=example-detector inspected=4/40 qualified=1 rejected=3 filtered=12",
+		"candidate qualification finished: detector=example-detector inspected=40/40 qualified=9 rejected=31 filtered=105",
+		"candidate selection started: detector=example-detector candidates=9",
+		"candidate selection finished: detector=example-detector selected=3",
+	} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("run output missing %q: %s", want, stdout.String())
 		}
 	}
 }

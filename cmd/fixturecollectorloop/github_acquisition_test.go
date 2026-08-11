@@ -52,6 +52,54 @@ func TestGitHubAcquisitionQualificationUsesOrderedClosedReasons(t *testing.T) {
 	}
 }
 
+func TestGitHubAcquisitionFiltersSearchNoiseBeforeInspectionBudget(t *testing.T) {
+	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	service := &fakeGitHubService{
+		searches: map[string][]GitHubCodeHit{"filename:go.work": {
+			{Repository: "octo/noise", Path: "go.work.example"},
+			{Repository: "octo/project", Path: "nested/go.work"},
+		}},
+		repositories: map[string]GitHubRepository{
+			"octo/noise":   {FullName: "octo/noise", HTMLURL: "https://github.com/octo/noise", DefaultBranch: "main"},
+			"octo/project": {FullName: "octo/project", HTMLURL: "https://github.com/octo/project", DefaultBranch: "main"},
+		},
+		heads: map[string]string{"octo/project/main": commit},
+		files: map[string][]byte{
+			"octo/project@" + commit + ":nested/go.work": []byte("go 1.22\nuse ./module\n"),
+			"octo/project@" + commit + ":LICENSE":        []byte("MIT License\n"),
+		},
+	}
+	var progress []ResearchProgress
+	input, err := newGitHubAcquisition(service, CollectionLimits{
+		Queries: 1, ResultPages: 1, CandidateInspections: 1,
+		DecodedResponseBytes: 4096, SourceBytes: 1024,
+	}).Acquire(context.Background(), Iteration{
+		QueryPlan: []string{"filename:go.work"}, QueryLimit: 1, CandidateLimit: 1,
+		ReportProgress: func(update ResearchProgress) {
+			progress = append(progress, update)
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(input.Candidates) != 1 || input.Candidates[0].OriginalPath != "nested/go.work" {
+		t.Fatalf("qualified candidates = %#v", input.Candidates)
+	}
+	if service.repositoryCalls != 1 {
+		t.Fatalf("repository calls = %d, want one exact-path inspection", service.repositoryCalls)
+	}
+	if len(input.Outcome.Rejections) != 0 || input.Outcome.FilteredSearchHits[string(reasonSourceSelector)] != 1 {
+		t.Fatalf("filtered search hits = %v, rejections = %q", input.Outcome.FilteredSearchHits, input.Outcome.Rejections)
+	}
+	if len(progress) < 2 || progress[0].Stage != progressSearch || progress[0].Page != 1 || progress[0].Hits != 2 {
+		t.Fatalf("search progress = %+v", progress)
+	}
+	final := progress[len(progress)-1]
+	if final.Stage != progressQualification || !final.Final || final.Inspected != 1 || final.InspectionLimit != 1 || final.Qualified != 1 || final.Rejected != 0 || final.Filtered != 1 {
+		t.Fatalf("final qualification progress = %+v", final)
+	}
+}
+
 func TestGitHubAcquisitionRejectsConflictingNearestLicense(t *testing.T) {
 	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 	service := &fakeGitHubService{

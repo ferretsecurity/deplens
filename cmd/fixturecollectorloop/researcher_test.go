@@ -171,9 +171,10 @@ func TestTargetedCommandCheckpointsNoCandidatesWithoutSelector(t *testing.T) {
 	commitGitChanges(t, root)
 
 	wantOutcome := Outcome{
-		Result:     "unsuccessful",
-		Queries:    []string{"filename:go.work"},
-		Rejections: []string{"source-selector-mismatch", "license-ambiguous"},
+		Result:             "unsuccessful",
+		Queries:            []string{"filename:go.work"},
+		FilteredSearchHits: map[string]int{"source-selector-mismatch": 31},
+		Rejections:         []string{"license-ambiguous"},
 	}
 	acquisition := fakeAcquisition{input: ResearchInput{Outcome: wantOutcome}}
 	selector := fakeSelector{}
@@ -190,7 +191,7 @@ func TestTargetedCommandCheckpointsNoCandidatesWithoutSelector(t *testing.T) {
 	if selector.called || p.Recovery != nil || detector.State != stateInProgress || detector.Iterations != 1 || len(detector.History) != 1 || detector.History[0].Result != "unsuccessful" {
 		t.Fatalf("selector called = %t, progress = %+v", selector.called, p)
 	}
-	if !sameStrings(detector.History[0].Queries, wantOutcome.Queries) || !sameStrings(detector.History[0].Rejections, wantOutcome.Rejections) {
+	if !sameStrings(detector.History[0].Queries, wantOutcome.Queries) || !sameStrings(detector.History[0].Rejections, wantOutcome.Rejections) || detector.FilteredSearchHits["source-selector-mismatch"] != 31 || detector.History[0].FilteredSearchHits["source-selector-mismatch"] != 31 {
 		t.Fatalf("history = %+v", detector.History[0])
 	}
 }
@@ -208,9 +209,10 @@ func fmtHash(sum [sha256.Size]byte) string { return fmt.Sprintf("%x", sum) }
 
 func TestComposedResearcherCheckpointsNoCandidatesWithoutSelector(t *testing.T) {
 	wantOutcome := Outcome{
-		Result:     "unsuccessful",
-		Queries:    []string{"filename:go.work"},
-		Rejections: []string{"source-selector-mismatch", "license-ambiguous"},
+		Result:             "unsuccessful",
+		Queries:            []string{"filename:go.work"},
+		FilteredSearchHits: map[string]int{"source-selector-mismatch": 31},
+		Rejections:         []string{"license-ambiguous"},
 	}
 	acquisition := fakeAcquisition{input: ResearchInput{Outcome: wantOutcome}}
 	selector := fakeSelector{}
@@ -224,7 +226,7 @@ func TestComposedResearcherCheckpointsNoCandidatesWithoutSelector(t *testing.T) 
 	if !acquisition.called || selector.called {
 		t.Fatalf("acquisition called = %t, selector called = %t", acquisition.called, selector.called)
 	}
-	if result.Outcome.Result != wantOutcome.Result || !sameStrings(result.Outcome.Queries, wantOutcome.Queries) || !sameStrings(result.Outcome.Rejections, wantOutcome.Rejections) {
+	if result.Outcome.Result != wantOutcome.Result || !sameStrings(result.Outcome.Queries, wantOutcome.Queries) || !sameStrings(result.Outcome.Rejections, wantOutcome.Rejections) || result.Outcome.FilteredSearchHits["source-selector-mismatch"] != 31 {
 		t.Fatalf("result = %+v", result)
 	}
 }
