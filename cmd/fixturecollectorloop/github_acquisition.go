@@ -72,6 +72,8 @@ type webHintService interface {
 	SearchHints(context.Context, string, int, int64) ([]GitHubCodeHit, bool, int64, error)
 }
 
+type hitSearch func(context.Context, string, int, int64) ([]GitHubCodeHit, bool, int64, error)
+
 // githubFileTypeService is kept separate so acquisition fakes that only model
 // bytes remain useful. The production service always supplies this evidence;
 // an absent implementation is treated as the legacy fixture convention of a
@@ -99,7 +101,7 @@ func newGitHubAcquisition(service githubService, limits CollectionLimits) *githu
 	return &githubAcquisition{service: service, limits: limits, now: time.Now}
 }
 
-func newGitHubAcquisitionWithWeb(service githubService, web webHintService, limits CollectionLimits) *githubAcquisition {
+func newGitHubAcquisitionWithWebHints(service githubService, web webHintService, limits CollectionLimits) *githubAcquisition {
 	return &githubAcquisition{service: service, web: web, limits: limits, now: time.Now}
 }
 
@@ -128,6 +130,38 @@ type acquisitionBudget struct {
 type acquisitionCache struct {
 	repositories map[string]GitHubRepository
 	heads        map[string]string
+}
+
+type hitCollector struct {
+	hits             []GitHubCodeHit
+	seen             map[string]struct{}
+	discoveringQuery map[string]string
+}
+
+func newHitCollector() *hitCollector {
+	return &hitCollector{
+		seen:             make(map[string]struct{}),
+		discoveringQuery: make(map[string]string),
+	}
+}
+
+func (c *hitCollector) add(items []GitHubCodeHit, query string) {
+	for _, hit := range items {
+		if hit.Repository == "" || hit.Path == "" {
+			continue
+		}
+		key := hitKey(hit)
+		if _, duplicate := c.seen[key]; duplicate {
+			continue
+		}
+		c.seen[key] = struct{}{}
+		c.hits = append(c.hits, hit)
+		c.discoveringQuery[key] = query
+	}
+}
+
+func hitKey(hit GitHubCodeHit) string {
+	return strings.ToLower(hit.Repository) + "\x00" + path.Clean(hit.Path)
 }
 
 func newAcquisitionCache() acquisitionCache {
@@ -191,58 +225,17 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	if len(iteration.QueryPlan) == 0 {
 		return ResearchInput{Outcome: Outcome{Result: "unsuccessful"}}, nil
 	}
-	seen := make(map[string]struct{})
-	firstDiscoveringQuery := make(map[string]string)
 	cache := newAcquisitionCache()
-	var hits []GitHubCodeHit
+	hits := newHitCollector()
 	outcome := Outcome{Result: "unsuccessful"}
-	addHits := func(items []GitHubCodeHit, query string) {
-		for _, hit := range items {
-			key := strings.ToLower(hit.Repository) + "\x00" + path.Clean(hit.Path)
-			if hit.Repository == "" || hit.Path == "" {
-				continue
-			}
-			if _, duplicate := seen[key]; duplicate {
-				continue
-			}
-			seen[key] = struct{}{}
-			hits = append(hits, hit)
-			firstDiscoveringQuery[key] = query
-		}
-	}
-	searchGitHub := func() error {
-		for _, query := range iteration.QueryPlan {
-			if len(outcome.Queries) >= queryLimit || b.reserveQueries() != nil {
-				break
-			}
-			outcome.Queries = append(outcome.Queries, query)
-			for page := 1; ; page++ {
-				if err := b.reservePage(); err != nil {
-					break
-				}
-				items, next, size, err := a.service.SearchCode(ctx, query, page, b.remainingBytes())
-				if err != nil {
-					return githubInfrastructureError(err)
-				}
-				if err := b.chargeBytes(size); err != nil {
-					return err
-				}
-				addHits(items, query)
-				if !next {
-					break
-				}
-			}
-		}
-		return nil
-	}
-	if err := searchGitHub(); err != nil {
+	if err := collectSearchHits(ctx, &b, iteration.QueryPlan, queryLimit, &outcome, hits, a.service.SearchCode, githubInfrastructureError); err != nil {
 		return ResearchInput{}, err
 	}
 	candidates := make([]SourceCandidate, 0, candidateLimit)
 	identities, contents := make(map[string]struct{}), make(map[string]struct{})
 	inspected := 0
 	inspectHits := func(start int) error {
-		for _, hit := range hits[start:] {
+		for _, hit := range hits.hits[start:] {
 			if inspected >= candidateLimit || b.reserveInspection() != nil {
 				break
 			}
@@ -265,7 +258,7 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 				continue
 			}
 			identities[identity], contents[candidate.SourceSHA256] = struct{}{}, struct{}{}
-			candidate.DiscoveringQuery = firstDiscoveringQuery[strings.ToLower(hit.Repository)+"\x00"+path.Clean(hit.Path)]
+			candidate.DiscoveringQuery = hits.discoveringQuery[hitKey(hit)]
 			outcome.Candidates = append(outcome.Candidates, candidate.ID)
 			candidates = append(candidates, candidate)
 		}
@@ -279,34 +272,41 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 		remainingMinimum = 0
 	}
 	if a.web != nil && len(candidates) < remainingMinimum && len(candidates) < candidateLimit {
-		previousHits := len(hits)
-		for _, query := range iteration.QueryPlan {
-			if len(outcome.Queries) >= queryLimit || b.reserveQueries() != nil {
-				break
-			}
-			outcome.Queries = append(outcome.Queries, query)
-			for page := 1; ; page++ {
-				if err := b.reservePage(); err != nil {
-					break
-				}
-				items, next, size, err := a.web.SearchHints(ctx, query, page, b.remainingBytes())
-				if err != nil {
-					return ResearchInput{}, webInfrastructureError(err)
-				}
-				if err := b.chargeBytes(size); err != nil {
-					return ResearchInput{}, err
-				}
-				addHits(items, query)
-				if !next {
-					break
-				}
-			}
+		previousHits := len(hits.hits)
+		if err := collectSearchHits(ctx, &b, iteration.QueryPlan, queryLimit, &outcome, hits, a.web.SearchHints, webInfrastructureError); err != nil {
+			return ResearchInput{}, err
 		}
 		if err := inspectHits(previousHits); err != nil {
 			return ResearchInput{}, err
 		}
 	}
 	return ResearchInput{Candidates: candidates, Outcome: outcome}, nil
+}
+
+func collectSearchHits(ctx context.Context, budget *acquisitionBudget, queries []string, queryLimit int, outcome *Outcome, hits *hitCollector, search hitSearch, providerError func(error) error) error {
+	for _, query := range queries {
+		if len(outcome.Queries) >= queryLimit || budget.reserveQueries() != nil {
+			break
+		}
+		outcome.Queries = append(outcome.Queries, query)
+		for page := 1; ; page++ {
+			if err := budget.reservePage(); err != nil {
+				break
+			}
+			items, next, size, err := search(ctx, query, page, budget.remainingBytes())
+			if err != nil {
+				return providerError(err)
+			}
+			if err := budget.chargeBytes(size); err != nil {
+				return err
+			}
+			hits.add(items, query)
+			if !next {
+				break
+			}
+		}
+	}
+	return nil
 }
 
 func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, cache *acquisitionCache, iteration Iteration, hit GitHubCodeHit) (SourceCandidate, qualificationReason, error) {

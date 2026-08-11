@@ -188,7 +188,7 @@ func TestGitHubAcquisitionUsesWebHintsOnlyAfterPrimaryCannotReachMinimum(t *test
 		{Repository: "octo/web-one", Path: "go.mod"},
 		{Repository: "octo/web-two", Path: "go.mod"},
 	}}}
-	input, err := newGitHubAcquisitionWithWeb(github, web, CollectionLimits{Queries: 2, ResultPages: 2, CandidateInspections: 3, DecodedResponseBytes: 4096, SourceBytes: 1024}).Acquire(context.Background(), Iteration{QueryPlan: []string{"filename:go.mod"}, QueryLimit: 2, CandidateLimit: 3})
+	input, err := newGitHubAcquisitionWithWebHints(github, web, CollectionLimits{Queries: 2, ResultPages: 2, CandidateInspections: 3, DecodedResponseBytes: 4096, SourceBytes: 1024}).Acquire(context.Background(), Iteration{QueryPlan: []string{"filename:go.mod"}, QueryLimit: 2, CandidateLimit: 3})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -217,7 +217,7 @@ func TestGitHubAcquisitionSkipsWebHintsWhenPrimaryMeetsMinimum(t *testing.T) {
 		github.files[repo+"@"+commit+":LICENSE"] = []byte("MIT License\n")
 	}
 	web := &fakeWebHintService{}
-	_, err := newGitHubAcquisitionWithWeb(github, web, CollectionLimits{Queries: 2, ResultPages: 2, CandidateInspections: 3, DecodedResponseBytes: 4096, SourceBytes: 1024}).Acquire(context.Background(), Iteration{QueryPlan: []string{"filename:go.mod"}, QueryLimit: 2, CandidateLimit: 3})
+	_, err := newGitHubAcquisitionWithWebHints(github, web, CollectionLimits{Queries: 2, ResultPages: 2, CandidateInspections: 3, DecodedResponseBytes: 4096, SourceBytes: 1024}).Acquire(context.Background(), Iteration{QueryPlan: []string{"filename:go.mod"}, QueryLimit: 2, CandidateLimit: 3})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -229,7 +229,7 @@ func TestGitHubAcquisitionSkipsWebHintsWhenPrimaryMeetsMinimum(t *testing.T) {
 func TestGitHubAcquisitionClassifiesWebFailureWithoutCandidateOutcome(t *testing.T) {
 	github := &fakeGitHubService{searches: map[string][]GitHubCodeHit{"filename:go.mod": nil}}
 	web := &fakeWebHintService{err: errors.New("backend secret response")}
-	_, err := newGitHubAcquisitionWithWeb(github, web, CollectionLimits{Queries: 2, ResultPages: 2, CandidateInspections: 3, DecodedResponseBytes: 4096, SourceBytes: 1024}).Acquire(context.Background(), Iteration{QueryPlan: []string{"filename:go.mod"}, QueryLimit: 2, CandidateLimit: 3})
+	_, err := newGitHubAcquisitionWithWebHints(github, web, CollectionLimits{Queries: 2, ResultPages: 2, CandidateInspections: 3, DecodedResponseBytes: 4096, SourceBytes: 1024}).Acquire(context.Background(), Iteration{QueryPlan: []string{"filename:go.mod"}, QueryLimit: 2, CandidateLimit: 3})
 	if err == nil || !strings.Contains(err.Error(), "web-search provider failure") {
 		t.Fatalf("error = %v", err)
 	}
