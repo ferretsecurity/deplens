@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"syscall"
@@ -938,10 +939,12 @@ func isLFSPointer(content string) bool {
 	return strings.HasPrefix(content, "version https://git-lfs.github.com/spec/")
 }
 func containsUnsafeContent(content string) bool {
-	lower := strings.ToLower(content)
-	return strings.Contains(lower, "password=") || strings.Contains(lower, "authorization:") ||
-		strings.Contains(lower, "private_key") || strings.Contains(lower, "ghp_") || strings.Contains(lower, "npm_")
+	return unsafeContentPattern.MatchString(content)
 }
+
+// This deliberately recognises credentials and direct personal identifiers,
+// not instruction-like prose. Qualification rejects rather than redacts.
+var unsafeContentPattern = regexp.MustCompile(`(?im)(?:\b(?:password|passwd|secret|api[_-]?key)\s*[:=]|\bauthorization\s*:|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9_]{20,}|\bnpm_[A-Za-z0-9]{20,}|\bAKIA[0-9A-Z]{16}\b|//[^\s/:]+:[^\s@/]+@[^\s/]+|:_authToken\s*[:=]|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b)`)
 
 func selectDetector(detectors []DetectorProgress, target string) *DetectorProgress {
 	for i := range detectors {
