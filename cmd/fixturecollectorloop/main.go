@@ -24,18 +24,40 @@ import (
 )
 
 const (
-	statePending    = "pending"
-	stateInProgress = "in-progress"
-	stateComplete   = "complete"
-	stateBlocked    = "blocked"
-	stateExcluded   = "excluded"
-	maxIterations   = 7
-	defaultTarget   = 3
+	statePending          = "pending"
+	stateInProgress       = "in-progress"
+	stateComplete         = "complete"
+	stateBlocked          = "blocked"
+	stateExcluded         = "excluded"
+	stateNeedsQueryReview = "needs-query-review"
+	maxIterations         = 7
+	defaultTarget         = 3
+	progressVersion       = 2
 )
+
+// CollectionLimits are reviewed hard limits. Acquisition reserves each limit
+// before consuming the corresponding resource.
+type CollectionLimits struct {
+	Queries              int `yaml:"queries"`
+	ResultPages          int `yaml:"result_pages"`
+	CandidateInspections int `yaml:"candidate_inspections"`
+	DecodedResponseBytes int `yaml:"decoded_response_bytes"`
+	PacketTokens         int `yaml:"packet_tokens"`
+	SelectorInvocations  int `yaml:"selector_invocations"`
+	SourceBytes          int `yaml:"source_bytes"`
+	ValidIterations      int `yaml:"valid_iterations"`
+}
+
+var defaultCollectionLimits = CollectionLimits{
+	Queries: 8, ResultPages: 10, CandidateInspections: 40,
+	DecodedResponseBytes: 16 << 20, PacketTokens: 50000,
+	SelectorInvocations: 2, SourceBytes: 2 << 20, ValidIterations: maxIterations,
+}
 
 type Progress struct {
 	Version              int                `yaml:"version"`
 	InventoryFingerprint string             `yaml:"inventory_fingerprint,omitempty"`
+	Limits               CollectionLimits   `yaml:"limits"`
 	Detectors            []DetectorProgress `yaml:"detectors"`
 	Recovery             *Recovery          `yaml:"recovery,omitempty"`
 }
@@ -54,16 +76,18 @@ type Recovery struct {
 }
 
 type DetectorProgress struct {
-	ID         string   `yaml:"id"`
-	Form       string   `yaml:"form,omitempty"`
-	Roles      []string `yaml:"roles,omitempty"`
-	State      string   `yaml:"state"`
-	Iterations int      `yaml:"iterations"`
-	Examples   []string `yaml:"examples"`
-	Target     int      `yaml:"target,omitempty"`
-	Queries    []string `yaml:"queries,omitempty"`
-	Candidates []string `yaml:"candidates,omitempty"`
-	Rejections []string `yaml:"rejections,omitempty"`
+	ID                string   `yaml:"id"`
+	Form              string   `yaml:"form,omitempty"`
+	Roles             []string `yaml:"roles,omitempty"`
+	State             string   `yaml:"state"`
+	Iterations        int      `yaml:"iterations"`
+	Examples          []string `yaml:"examples"`
+	Target            int      `yaml:"target,omitempty"`
+	QueryPlan         []string `yaml:"query_plan,omitempty"`
+	QueryReviewReason string   `yaml:"query_review_reason,omitempty"`
+	Queries           []string `yaml:"queries,omitempty"`
+	Candidates        []string `yaml:"candidates,omitempty"`
+	Rejections        []string `yaml:"rejections,omitempty"`
 }
 
 type Iteration struct {
@@ -159,7 +183,7 @@ func initialize(args []string, root string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "error: inspect progress path: %v\n", err)
 		return 1
 	}
-	p := Progress{Version: 1}
+	p := Progress{Version: progressVersion, Limits: defaultCollectionLimits}
 	if len(detectors) == 0 {
 		rules, err := analyze.LoadDefaultRules()
 		if err != nil {
@@ -179,7 +203,12 @@ func initialize(args []string, root string, stdout, stderr io.Writer) int {
 			for i, role := range capability.Roles {
 				roles[i] = string(role)
 			}
-			p.Detectors = append(p.Detectors, DetectorProgress{ID: string(capability.ID), Form: string(capability.Form), Roles: roles, State: statePending, Target: *target, Examples: []string{}})
+			plan := generateQueryPlan(capability)
+			state := statePending
+			if len(plan.queries) == 0 {
+				state = stateNeedsQueryReview
+			}
+			p.Detectors = append(p.Detectors, DetectorProgress{ID: string(capability.ID), Form: string(capability.Form), Roles: roles, State: state, Target: *target, Examples: []string{}, QueryPlan: plan.queries, QueryReviewReason: plan.reason})
 		}
 	} else {
 		p.Detectors = make([]DetectorProgress, len(detectors))
@@ -190,7 +219,7 @@ func initialize(args []string, root string, stdout, stderr io.Writer) int {
 				return 1
 			}
 			seen[id] = true
-			p.Detectors[i] = DetectorProgress{ID: id, State: statePending, Target: *target, Examples: []string{}}
+			p.Detectors[i] = DetectorProgress{ID: id, State: statePending, Target: *target, Examples: []string{}, QueryPlan: []string{"filename:" + id}}
 		}
 	}
 	if err := writeProgress(*progressPath, p); err != nil {
@@ -706,7 +735,7 @@ func lockProgress(progressPath string) (func(), error) {
 }
 
 func collectionSummary(p Progress, stdout io.Writer) int {
-	var complete, blocked, excluded, active int
+	var complete, blocked, excluded, queryReview, active int
 	for _, d := range p.Detectors {
 		switch d.State {
 		case stateComplete:
@@ -715,11 +744,13 @@ func collectionSummary(p Progress, stdout io.Writer) int {
 			blocked++
 		case stateExcluded:
 			excluded++
+		case stateNeedsQueryReview:
+			queryReview++
 		default:
 			active++
 		}
 	}
-	fmt.Fprintf(stdout, "collection summary: %d complete, %d blocked, %d excluded, %d remaining\n", complete, blocked, excluded, active)
+	fmt.Fprintf(stdout, "collection summary: %d complete, %d blocked, %d excluded, %d needs query review, %d remaining\n", complete, blocked, excluded, queryReview, active)
 	if blocked > 0 {
 		return 2
 	}
@@ -879,20 +910,25 @@ func readProgress(path string) (Progress, error) {
 	if err := d.Decode(&p); err != nil {
 		return Progress{}, err
 	}
-	if p.Version != 1 || len(p.Detectors) == 0 {
-		return Progress{}, errors.New("invalid collection progress schema")
+	if p.Version != progressVersion {
+		return Progress{}, errors.New("collection progress is from an older format; initialize a fresh collection with initialize-progress")
 	}
-	for _, detector := range p.Detectors {
-		if detector.ID == "" || !validState(detector.State) || detector.Iterations < 0 || detector.Iterations > maxIterations ||
-			(detector.Target != 0 && (detector.Target < 3 || detector.Target > 5)) {
-			return Progress{}, errors.New("invalid detector progress")
-		}
-	}
-	return p, nil
+	return validateProgress(p)
 }
 
 func validState(state string) bool {
-	return state == statePending || state == stateInProgress || state == stateComplete || state == stateBlocked || state == stateExcluded
+	switch state {
+	case statePending, stateInProgress, stateComplete, stateBlocked, stateExcluded, stateNeedsQueryReview:
+		return true
+	default:
+		return false
+	}
+}
+
+func validCollectionLimits(limits CollectionLimits) bool {
+	return limits.Queries > 0 && limits.ResultPages > 0 && limits.CandidateInspections > 0 &&
+		limits.DecodedResponseBytes > 0 && limits.PacketTokens > 0 && limits.SelectorInvocations > 0 &&
+		limits.SourceBytes > 0 && limits.ValidIterations == maxIterations
 }
 
 func hasCapability(capabilities []string, wanted string) bool {
@@ -937,6 +973,25 @@ func validateCoverageInventory(root string, rules analyze.Ruleset) error {
 }
 
 func writeProgress(path string, p Progress) error {
+	if p.Version == 1 {
+		// Tests and old in-memory callers may still construct the former Go
+		// value, but durable documents are always written in the fresh format.
+		p.Version = progressVersion
+	}
+	if p.Limits == (CollectionLimits{}) {
+		p.Limits = defaultCollectionLimits
+	}
+	for i := range p.Detectors {
+		if p.Detectors[i].State == stateNeedsQueryReview {
+			continue
+		}
+		if len(p.Detectors[i].QueryPlan) == 0 {
+			p.Detectors[i].QueryPlan = []string{"filename:" + p.Detectors[i].ID}
+		}
+	}
+	if _, err := validateProgress(p); err != nil {
+		return err
+	}
 	b, err := yaml.Marshal(p)
 	if err != nil {
 		return err
@@ -957,10 +1012,57 @@ func writeProgress(path string, p Progress) error {
 		tmp.Close()
 		return err
 	}
+	if err := tmp.Sync(); err != nil {
+		tmp.Close()
+		return err
+	}
 	if err := tmp.Close(); err != nil {
 		return err
 	}
 	return os.Rename(tmp.Name(), path)
+}
+
+func validateProgress(p Progress) (Progress, error) {
+	if p.Version != progressVersion || len(p.Detectors) == 0 || !validCollectionLimits(p.Limits) {
+		return Progress{}, errors.New("invalid collection progress schema")
+	}
+	seen := map[string]bool{}
+	for _, detector := range p.Detectors {
+		if detector.ID == "" || !validState(detector.State) || detector.Iterations < 0 || detector.Iterations > p.Limits.ValidIterations ||
+			(detector.Target != 0 && (detector.Target < 3 || detector.Target > 5)) {
+			return Progress{}, errors.New("invalid detector progress")
+		}
+		if seen[detector.ID] {
+			return Progress{}, errors.New("duplicate detector progress")
+		}
+		seen[detector.ID] = true
+		if detector.State == stateNeedsQueryReview {
+			if detector.Iterations != 0 || len(detector.QueryPlan) != 0 || detector.QueryReviewReason == "" {
+				return Progress{}, errors.New("invalid query-review detector progress")
+			}
+		} else if len(detector.QueryPlan) == 0 || !isSortedUnique(detector.QueryPlan) || detector.QueryReviewReason != "" {
+			return Progress{}, errors.New("invalid detector query plan")
+		}
+		target := detector.Target
+		if target == 0 {
+			target = defaultTarget
+		}
+		switch detector.State {
+		case statePending:
+			if detector.Iterations != 0 || len(detector.Examples) != 0 {
+				return Progress{}, errors.New("invalid pending detector progress")
+			}
+		case stateComplete:
+			if len(detector.Examples) < target {
+				return Progress{}, errors.New("invalid complete detector progress")
+			}
+		case stateBlocked:
+			if detector.Iterations != p.Limits.ValidIterations {
+				return Progress{}, errors.New("invalid blocked detector progress")
+			}
+		}
+	}
+	return p, nil
 }
 
 func snapshot(root string) (map[string]string, error) {
