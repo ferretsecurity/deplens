@@ -65,6 +65,13 @@ type githubService interface {
 	File(context.Context, string, string, string, int64) ([]byte, int64, error)
 }
 
+// webHintService is intentionally narrower than githubService: its results
+// are untrusted coordinates only. Acquisition always re-fetches repository,
+// commit, source, and license evidence through githubService.
+type webHintService interface {
+	SearchHints(context.Context, string, int, int64) ([]GitHubCodeHit, bool, int64, error)
+}
+
 // githubFileTypeService is kept separate so acquisition fakes that only model
 // bytes remain useful. The production service always supplies this evidence;
 // an absent implementation is treated as the legacy fixture convention of a
@@ -83,6 +90,7 @@ type GitHubRepository struct {
 
 type githubAcquisition struct {
 	service githubService
+	web     webHintService
 	limits  CollectionLimits
 	now     func() time.Time
 }
@@ -91,8 +99,12 @@ func newGitHubAcquisition(service githubService, limits CollectionLimits) *githu
 	return &githubAcquisition{service: service, limits: limits, now: time.Now}
 }
 
+func newGitHubAcquisitionWithWeb(service githubService, web webHintService, limits CollectionLimits) *githubAcquisition {
+	return &githubAcquisition{service: service, web: web, limits: limits, now: time.Now}
+}
+
 func newDefaultGitHubAcquisition(limits CollectionLimits) *githubAcquisition {
-	return &githubAcquisition{limits: limits, now: time.Now}
+	return &githubAcquisition{web: newConfiguredWebHintService(), limits: limits, now: time.Now}
 }
 
 func (a *githubAcquisition) ensureService() error {
@@ -184,67 +196,115 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	cache := newAcquisitionCache()
 	var hits []GitHubCodeHit
 	outcome := Outcome{Result: "unsuccessful"}
-	for _, query := range iteration.QueryPlan {
-		if len(outcome.Queries) >= queryLimit || b.reserveQueries() != nil {
-			break
+	addHits := func(items []GitHubCodeHit, query string) {
+		for _, hit := range items {
+			key := strings.ToLower(hit.Repository) + "\x00" + path.Clean(hit.Path)
+			if hit.Repository == "" || hit.Path == "" {
+				continue
+			}
+			if _, duplicate := seen[key]; duplicate {
+				continue
+			}
+			seen[key] = struct{}{}
+			hits = append(hits, hit)
+			firstDiscoveringQuery[key] = query
 		}
-		outcome.Queries = append(outcome.Queries, query)
-		for page := 1; ; page++ {
-			if err := b.reservePage(); err != nil {
+	}
+	searchGitHub := func() error {
+		for _, query := range iteration.QueryPlan {
+			if len(outcome.Queries) >= queryLimit || b.reserveQueries() != nil {
 				break
 			}
-			items, next, size, err := a.service.SearchCode(ctx, query, page, b.remainingBytes())
-			if err != nil {
-				return ResearchInput{}, githubInfrastructureError(err)
-			}
-			if err := b.chargeBytes(size); err != nil {
-				return ResearchInput{}, err
-			}
-			for _, hit := range items {
-				key := strings.ToLower(hit.Repository) + "\x00" + path.Clean(hit.Path)
-				if hit.Repository != "" && hit.Path != "" {
-					if _, duplicate := seen[key]; duplicate {
-						continue
-					}
-					seen[key] = struct{}{}
-					hits = append(hits, hit)
-					firstDiscoveringQuery[key] = query
+			outcome.Queries = append(outcome.Queries, query)
+			for page := 1; ; page++ {
+				if err := b.reservePage(); err != nil {
+					break
+				}
+				items, next, size, err := a.service.SearchCode(ctx, query, page, b.remainingBytes())
+				if err != nil {
+					return githubInfrastructureError(err)
+				}
+				if err := b.chargeBytes(size); err != nil {
+					return err
+				}
+				addHits(items, query)
+				if !next {
+					break
 				}
 			}
-			if !next {
-				break
-			}
 		}
+		return nil
+	}
+	if err := searchGitHub(); err != nil {
+		return ResearchInput{}, err
 	}
 	candidates := make([]SourceCandidate, 0, candidateLimit)
 	identities, contents := make(map[string]struct{}), make(map[string]struct{})
 	inspected := 0
-	for _, hit := range hits {
-		if inspected >= candidateLimit || b.reserveInspection() != nil {
-			break
+	inspectHits := func(start int) error {
+		for _, hit := range hits[start:] {
+			if inspected >= candidateLimit || b.reserveInspection() != nil {
+				break
+			}
+			inspected++
+			candidate, reason, err := a.inspect(ctx, &b, &cache, iteration, hit)
+			if err != nil {
+				return err
+			}
+			if reason != "" {
+				outcome.Rejections = append(outcome.Rejections, string(reason))
+				continue
+			}
+			identity := candidate.Repository + "@" + candidate.Commit + ":" + candidate.OriginalPath
+			if _, exists := identities[identity]; exists {
+				outcome.Rejections = append(outcome.Rejections, string(reasonDuplicateIdentity))
+				continue
+			}
+			if _, exists := contents[candidate.SourceSHA256]; exists {
+				outcome.Rejections = append(outcome.Rejections, string(reasonDuplicateContent))
+				continue
+			}
+			identities[identity], contents[candidate.SourceSHA256] = struct{}{}, struct{}{}
+			candidate.DiscoveringQuery = firstDiscoveringQuery[strings.ToLower(hit.Repository)+"\x00"+path.Clean(hit.Path)]
+			outcome.Candidates = append(outcome.Candidates, candidate.ID)
+			candidates = append(candidates, candidate)
 		}
-		inspected++
-		candidate, reason, err := a.inspect(ctx, &b, &cache, iteration, hit)
-		if err != nil {
+		return nil
+	}
+	if err := inspectHits(0); err != nil {
+		return ResearchInput{}, err
+	}
+	remainingMinimum := defaultTarget - len(iteration.AcceptedReferences)
+	if remainingMinimum < 0 {
+		remainingMinimum = 0
+	}
+	if a.web != nil && len(candidates) < remainingMinimum && len(candidates) < candidateLimit {
+		previousHits := len(hits)
+		for _, query := range iteration.QueryPlan {
+			if len(outcome.Queries) >= queryLimit || b.reserveQueries() != nil {
+				break
+			}
+			outcome.Queries = append(outcome.Queries, query)
+			for page := 1; ; page++ {
+				if err := b.reservePage(); err != nil {
+					break
+				}
+				items, next, size, err := a.web.SearchHints(ctx, query, page, b.remainingBytes())
+				if err != nil {
+					return ResearchInput{}, webInfrastructureError(err)
+				}
+				if err := b.chargeBytes(size); err != nil {
+					return ResearchInput{}, err
+				}
+				addHits(items, query)
+				if !next {
+					break
+				}
+			}
+		}
+		if err := inspectHits(previousHits); err != nil {
 			return ResearchInput{}, err
 		}
-		if reason != "" {
-			outcome.Rejections = append(outcome.Rejections, string(reason))
-			continue
-		}
-		identity := candidate.Repository + "@" + candidate.Commit + ":" + candidate.OriginalPath
-		if _, exists := identities[identity]; exists {
-			outcome.Rejections = append(outcome.Rejections, string(reasonDuplicateIdentity))
-			continue
-		}
-		if _, exists := contents[candidate.SourceSHA256]; exists {
-			outcome.Rejections = append(outcome.Rejections, string(reasonDuplicateContent))
-			continue
-		}
-		identities[identity], contents[candidate.SourceSHA256] = struct{}{}, struct{}{}
-		candidate.DiscoveringQuery = firstDiscoveringQuery[strings.ToLower(hit.Repository)+"\x00"+path.Clean(hit.Path)]
-		outcome.Candidates = append(outcome.Candidates, candidate.ID)
-		candidates = append(candidates, candidate)
 	}
 	return ResearchInput{Candidates: candidates, Outcome: outcome}, nil
 }
@@ -516,6 +576,76 @@ func minPositive(a, b int) int {
 }
 func githubInfrastructureError(err error) error {
 	return fmt.Errorf("GitHub provider failure: %w", err)
+}
+
+func webInfrastructureError(err error) error {
+	return fmt.Errorf("web-search provider failure: %w", err)
+}
+
+// webHintHTTPService has a deliberately small, replaceable response contract:
+// {"results":[{"repository":"owner/repository","path":"relative/path"}]}.
+// The endpoint and token are operational acquisition configuration; neither is
+// represented in progress nor supplied to the selector.
+type webHintHTTPService struct {
+	client   *http.Client
+	endpoint string
+	token    string
+}
+
+func newConfiguredWebHintService() webHintService {
+	endpoint := strings.TrimSpace(os.Getenv("FIXTURE_COLLECTOR_WEB_SEARCH_ENDPOINT"))
+	if endpoint == "" {
+		return nil
+	}
+	return &webHintHTTPService{
+		client: http.DefaultClient, endpoint: strings.TrimRight(endpoint, "/"),
+		token: strings.TrimSpace(os.Getenv("FIXTURE_COLLECTOR_WEB_SEARCH_TOKEN")),
+	}
+}
+
+func (s *webHintHTTPService) SearchHints(ctx context.Context, query string, page int, limit int64) ([]GitHubCodeHit, bool, int64, error) {
+	if limit < 1 {
+		return nil, false, 0, errors.New("web-search decoded-response byte budget exhausted")
+	}
+	requestURL, err := url.Parse(s.endpoint)
+	if err != nil {
+		return nil, false, 0, err
+	}
+	values := requestURL.Query()
+	values.Set("q", query)
+	values.Set("page", fmt.Sprint(page))
+	requestURL.RawQuery = values.Encode()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL.String(), nil)
+	if err != nil {
+		return nil, false, 0, err
+	}
+	if s.token != "" {
+		req.Header.Set("Authorization", "Bearer "+s.token)
+	}
+	response, err := s.client.Do(req)
+	if err != nil {
+		return nil, false, 0, err
+	}
+	defer response.Body.Close()
+	raw, err := io.ReadAll(io.LimitReader(response.Body, limit+1))
+	n := int64(len(raw))
+	if err != nil {
+		return nil, false, n, err
+	}
+	if n > limit {
+		return nil, false, n, errors.New("web-search decoded-response byte budget exhausted")
+	}
+	if response.StatusCode < http.StatusOK || response.StatusCode > http.StatusMultipleChoices-1 {
+		return nil, false, n, fmt.Errorf("web-search HTTP status %d", response.StatusCode)
+	}
+	var payload struct {
+		Results []GitHubCodeHit `json:"results"`
+		Next    bool            `json:"next"`
+	}
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		return nil, false, n, err
+	}
+	return payload.Results, payload.Next, n, nil
 }
 
 // githubHTTPService performs direct API requests. The token is held only in
