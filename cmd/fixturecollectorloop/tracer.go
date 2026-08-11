@@ -404,26 +404,27 @@ func materializeSelectedCandidates(corpusDir, detectorID string, candidates []So
 	}
 	selected := append([]SelectedCandidate(nil), selection.Selected...)
 	sort.Slice(selected, func(i, j int) bool { return selected[i].ID < selected[j].ID })
-	knownContent, err := existingCorpusSourceHashes(corpusDir, detectorID)
+	knownSourceHashes, err := corpusSourceHashes(corpusDir, detectorID)
 	if err != nil {
 		return nil, nil, err
 	}
 	accepted := make([]AcceptedCandidate, 0, len(selected))
 	rejected := make([]string, 0)
 	for _, chosen := range selected {
-		c, ok := byID[chosen.ID]
+		candidate, ok := byID[chosen.ID]
 		if !ok {
 			return nil, nil, fmt.Errorf("selector chose unknown candidate %q", chosen.ID)
 		}
-		if err := validateCandidate(c); err != nil {
+		if err := validateCandidate(candidate); err != nil {
 			rejected = append(rejected, "final-validation-candidate-invalid")
 			continue
 		}
-		if knownContent[strings.ToLower(c.SourceSHA256)] {
+		sourceHash := strings.ToLower(candidate.SourceSHA256)
+		if knownSourceHashes[sourceHash] {
 			rejected = append(rejected, "final-validation-duplicate-content")
 			continue
 		}
-		directory := c.ID
+		directory := candidate.ID
 		root := filepath.Join(corpusDir, directory)
 		if _, err := os.Stat(root); err == nil {
 			rejected = append(rejected, "final-validation-duplicate-identity")
@@ -431,34 +432,33 @@ func materializeSelectedCandidates(corpusDir, detectorID string, candidates []So
 		} else if !errors.Is(err, os.ErrNotExist) {
 			return nil, nil, err
 		}
-		sourcePath := filepath.Join(root, filepath.FromSlash(c.OriginalPath))
+		sourcePath := filepath.Join(root, filepath.FromSlash(candidate.OriginalPath))
 		if err := os.MkdirAll(filepath.Dir(sourcePath), 0o755); err != nil {
 			return nil, nil, err
 		}
-		if err := os.WriteFile(sourcePath, c.Source, 0o644); err != nil {
+		if err := os.WriteFile(sourcePath, candidate.Source, 0o644); err != nil {
 			return nil, nil, err
 		}
-		p := provenanceV2From(c, detectorID, chosen.Rationale)
-		contents, err := yaml.Marshal(p)
+		provenance := provenanceV2From(candidate, detectorID, chosen.Rationale)
+		contents, err := yaml.Marshal(provenance)
 		if err != nil {
 			return nil, nil, err
 		}
 		if err := os.WriteFile(filepath.Join(root, "provenance.yaml"), contents, 0o644); err != nil {
 			return nil, nil, err
 		}
-		accepted = append(accepted, AcceptedCandidate{Candidate: c, Directory: directory, Rationale: chosen.Rationale})
-		knownContent[strings.ToLower(c.SourceSHA256)] = true
+		accepted = append(accepted, AcceptedCandidate{Candidate: candidate, Directory: directory, Rationale: chosen.Rationale})
+		knownSourceHashes[sourceHash] = true
 	}
 	return accepted, rejected, nil
 }
 
-// existingCorpusSourceHashes confirms that previously accepted corpus files
-// remain exact before they participate in a candidate-specific duplicate check.
-func existingCorpusSourceHashes(corpusDir, detectorID string) (map[string]bool, error) {
-	known := make(map[string]bool)
+// corpusSourceHashes validates existing corpus sources and returns their hashes.
+func corpusSourceHashes(corpusDir, detectorID string) (map[string]bool, error) {
+	sourceHashes := make(map[string]bool)
 	entries, err := os.ReadDir(corpusDir)
 	if errors.Is(err, os.ErrNotExist) {
-		return known, nil
+		return sourceHashes, nil
 	}
 	if err != nil {
 		return nil, err
@@ -477,23 +477,23 @@ func existingCorpusSourceHashes(corpusDir, detectorID string) (map[string]bool, 
 		if err != nil {
 			return nil, err
 		}
-		p, err := parseProvenance(string(contents))
+		provenance, err := parseProvenance(string(contents))
 		if err != nil {
 			return nil, err
 		}
-		if err := validateProvenance(p, detectorID); err != nil {
+		if err := validateProvenance(provenance, detectorID); err != nil {
 			return nil, err
 		}
-		source, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(p.OriginalPath)))
+		source, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(provenance.OriginalPath)))
 		if err != nil {
 			return nil, err
 		}
-		if !strings.EqualFold(hash(string(source)), p.SHA256) {
+		if !strings.EqualFold(hash(string(source)), provenance.SHA256) {
 			return nil, errors.New("accepted corpus source does not match provenance hash")
 		}
-		known[strings.ToLower(p.SHA256)] = true
+		sourceHashes[strings.ToLower(provenance.SHA256)] = true
 	}
-	return known, nil
+	return sourceHashes, nil
 }
 
 func candidateIDs(candidates map[string]SourceCandidate) map[string]struct{} {
