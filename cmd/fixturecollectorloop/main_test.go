@@ -132,6 +132,11 @@ func (a blockingAgent) Run(ctx context.Context, _ Iteration) (Outcome, error) {
 	return Outcome{}, ctx.Err()
 }
 
+func (a blockingAgent) Research(ctx context.Context, iteration Iteration) (ResearchResult, error) {
+	outcome, err := a.Run(ctx, iteration)
+	return ResearchResult{Outcome: outcome}, err
+}
+
 func initializeGitRepository(t *testing.T, root string) {
 	t.Helper()
 	for _, args := range [][]string{{"init", "-q"}, {"config", "user.name", "Fixture Collector Test"}, {"config", "user.email", "fixture-collector@example.test"}} {
@@ -370,6 +375,32 @@ func TestRunRequiresGitCheckout(t *testing.T) {
 	}
 }
 
+func TestRunConsumesAnInMemoryResearchResult(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, &stdout, &stderr, unavailableResearcher{}); got != 0 {
+		t.Fatalf("initialize exit status = %d, stderr = %s", got, stderr.String())
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+
+	researcher := &fakeResearcher{result: ResearchResult{Outcome: Outcome{Result: "unsuccessful"}}}
+	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, researcher); got != 0 {
+		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
+	}
+	if !researcher.called {
+		t.Fatal("researcher was not called")
+	}
+	stored, err := readProgress(progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stored.Detectors[0].Iterations != 1 {
+		t.Fatalf("iterations = %d, want 1", stored.Detectors[0].Iterations)
+	}
+}
+
 type fakeAgent struct {
 	write   func(Iteration) error
 	outcome Outcome
@@ -377,6 +408,21 @@ type fakeAgent struct {
 
 func (f fakeAgent) Run(_ context.Context, iteration Iteration) (Outcome, error) {
 	return f.outcome, f.write(iteration)
+}
+
+func (f fakeAgent) Research(ctx context.Context, iteration Iteration) (ResearchResult, error) {
+	outcome, err := f.Run(ctx, iteration)
+	return ResearchResult{Outcome: outcome}, err
+}
+
+type fakeResearcher struct {
+	called bool
+	result ResearchResult
+}
+
+func (f *fakeResearcher) Research(context.Context, Iteration) (ResearchResult, error) {
+	f.called = true
+	return f.result, nil
 }
 
 var acceptedOutcome = Outcome{Result: "accepted", Added: []string{"owner-repo-abc123/project/dependencies.txt", "owner-repo-abc123/provenance.yaml"}}

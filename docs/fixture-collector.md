@@ -33,12 +33,13 @@ The collector selects an `in-progress` detector before a `pending` detector;
 have at most seven valid iterations. Three examples are required by default,
 and the reviewed target may be from three through five.
 
-The command entry point deliberately has an injected fresh-agent seam. A
-production invocation must supply the configured fresh Codex session through
-that seam; the repository's ordinary test command supplies a fake agent and
-never contacts GitHub. The agent is responsible for public-GitHub discovery and
-retrieval; the wrapper is responsible for validating and checkpointing its
-local changes.
+The command entry point deliberately has an injected `Researcher` seam. A
+research attempt returns an in-memory result to the wrapper, which retains
+recovery, mutation validation, checkpointing, and Git ownership. The current
+fresh Codex agent is temporarily adapted behind that seam while the redesigned
+Go-owned acquisition and selector implementations are introduced. The
+repository's ordinary test command supplies fake researchers and never contacts
+GitHub.
 
 ## Run and resume
 
