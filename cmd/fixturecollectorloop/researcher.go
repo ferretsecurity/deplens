@@ -50,6 +50,22 @@ type Selector interface {
 	Select(context.Context, Iteration, []byte) (ResearchResult, error)
 }
 
+type selectorConfigurationFingerprinter interface {
+	configurationFingerprint() string
+}
+
+func selectorConfigurationFingerprint(iteration Iteration, selector Selector) string {
+	if iteration.SelectorConfigurationFingerprint != "" {
+		return iteration.SelectorConfigurationFingerprint
+	}
+	if fingerprint, ok := selector.(selectorConfigurationFingerprinter); ok {
+		if configuration := fingerprint.configurationFingerprint(); configuration != "" {
+			return configuration
+		}
+	}
+	return hash("fixture-collector-selector-configuration-v1")
+}
+
 // ResearchInput is the bounded, in-memory handoff from acquisition to
 // selection. The packet is intentionally opaque to the command wrapper.
 type ResearchInput struct {
@@ -98,10 +114,7 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 		input.SelectionPacket = packet.Bytes
 		candidates = packet.Candidates
 		input.Outcome.Omitted = append(input.Outcome.Omitted, packet.OmittedIDs...)
-		configuration := iteration.SelectorConfigurationFingerprint
-		if configuration == "" {
-			configuration = hash("fixture-collector-selector-configuration-v1")
-		}
+		configuration := selectorConfigurationFingerprint(iteration, r.selector)
 		decision := DecisionState{PacketFingerprint: packet.PacketFingerprint, AcceptedCorpusFingerprint: packet.AcceptedFingerprint, SelectorConfiguration: configuration}
 		if containsDecisionState(iteration.PriorDecisionStates, decision) {
 			input.Outcome.Result = "unsuccessful"
