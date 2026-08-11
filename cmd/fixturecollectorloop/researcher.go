@@ -54,6 +54,7 @@ type Selector interface {
 type ResearchInput struct {
 	SelectionPacket []byte
 	Candidates      []SourceCandidate
+	Outcome         Outcome
 }
 
 type unconfiguredAcquisition struct{}
@@ -90,6 +91,9 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 		}
 	}
 	result, err := r.selector.Select(ctx, iteration, input.SelectionPacket)
+	if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.Rejections) != 0 {
+		result.Outcome = input.Outcome
+	}
 	if err != nil || len(candidates) == 0 {
 		return result, err
 	}
@@ -98,7 +102,7 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 		return ResearchResult{}, err
 	}
 	result.Accepted = accepted
-	result.Outcome = Outcome{Result: "accepted"}
+	result.Outcome.Result = "accepted"
 	for _, accepted := range accepted {
 		result.Outcome.Added = append(result.Outcome.Added, accepted.Directory+"/"+accepted.Candidate.OriginalPath, accepted.Directory+"/provenance.yaml")
 	}
