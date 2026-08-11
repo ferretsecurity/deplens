@@ -23,6 +23,11 @@ var errGitHubNotFound = errors.New("GitHub resource not found")
 
 var licenseFilenames = []string{"LICENSE", "LICENSE.md", "LICENSE.txt"}
 
+const (
+	packetTokenBytes  = 4
+	packetFramingSize = 512
+)
+
 // qualificationReason is deliberately closed: progress stores only one of
 // these stable codes, never upstream response text or rejected payload bytes.
 type qualificationReason string
@@ -312,10 +317,11 @@ func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, c
 	if sourceExceedsPacketCeiling(source, a.limits.PacketTokens) {
 		return SourceCandidate{}, reasonSourcePacketSize, nil
 	}
-	if isLFSPointer(string(source)) {
+	content := string(source)
+	if isLFSPointer(content) {
 		return SourceCandidate{}, reasonSourceLFS, nil
 	}
-	if containsUnsafeContent(string(source)) {
+	if containsUnsafeContent(content) {
 		return SourceCandidate{}, reasonSensitiveContent, nil
 	}
 	licensePath, license, licenseReason, err := a.license(ctx, b, hit.Repository, commit, hit.Path)
@@ -365,7 +371,7 @@ func sourceExceedsPacketCeiling(source []byte, packetTokens int) bool {
 		return false
 	}
 	encoded, err := json.Marshal(string(source))
-	return err != nil || len(encoded)+512 > packetTokens*4
+	return err != nil || len(encoded)+packetFramingSize > packetTokens*packetTokenBytes
 }
 
 // license resolves all recognized license-file names at a directory before
@@ -383,15 +389,12 @@ func (a *githubAcquisition) license(ctx context.Context, b *acquisitionBudget, r
 				p = dir + "/" + name
 			}
 			contents, n, err := a.service.File(ctx, repository, commit, p, b.remainingBytes())
-			if err == nil {
-				if err := b.chargeBytes(n); err != nil {
-					return "", nil, "", err
-				}
-				found = append(found, foundLicense{p, contents})
-				continue
-			}
 			if err := b.chargeBytes(n); err != nil {
 				return "", nil, "", err
+			}
+			if err == nil {
+				found = append(found, foundLicense{p, contents})
+				continue
 			}
 			if !errors.Is(err, errGitHubNotFound) {
 				return "", nil, "", githubInfrastructureError(err)
@@ -441,30 +444,39 @@ func qualifySourcePath(queries []string, sourcePath string) qualificationReason 
 	if sourcePath == "" || strings.HasPrefix(clean, "../") || clean == ".." || strings.HasPrefix(sourcePath, "/") {
 		return reasonSourcePath
 	}
-	// Query plans are generated directly from the detector selectors. Matching
-	// their selector terms here validates only the path, never analyzer output.
 	for _, query := range queries {
-		matched := true
-		for _, term := range strings.Fields(query) {
-			key, value, ok := strings.Cut(term, ":")
-			if !ok {
-				continue
-			}
-			value = strings.Trim(value, `"`)
-			switch key {
-			case "filename":
-				matched = matched && path.Base(clean) == value
-			case "path":
-				matched = matched && (clean == value || strings.HasPrefix(clean, strings.TrimSuffix(value, "/")+"/"))
-			case "extension":
-				matched = matched && strings.EqualFold(path.Ext(clean), "."+value)
-			}
-		}
-		if matched {
+		if queryMatchesSourcePath(query, clean) {
 			return ""
 		}
 	}
 	return reasonSourceSelector
+}
+
+// Query plans are generated directly from detector selectors. This validates
+// selector terms against the path only; it does not involve analyzer output.
+func queryMatchesSourcePath(query, sourcePath string) bool {
+	for _, term := range strings.Fields(query) {
+		key, value, ok := strings.Cut(term, ":")
+		if !ok {
+			continue
+		}
+		value = strings.Trim(value, `"`)
+		switch key {
+		case "filename":
+			if path.Base(sourcePath) != value {
+				return false
+			}
+		case "path":
+			if sourcePath != value && !strings.HasPrefix(sourcePath, strings.TrimSuffix(value, "/")+"/") {
+				return false
+			}
+		case "extension":
+			if !strings.EqualFold(path.Ext(sourcePath), "."+value) {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func detectSPDX(contents []byte) string {
@@ -564,7 +576,16 @@ func (s *githubHTTPService) Repository(ctx context.Context, repository string, l
 		Topics        []string `json:"topics"`
 	}
 	n, err := s.request(ctx, "/repos/"+repository, limit, &r)
-	return GitHubRepository{FullName: r.FullName, HTMLURL: r.HTMLURL, DefaultBranch: r.DefaultBranch, Private: r.Private, Fork: r.Fork, Template: r.Template, Description: r.Description, Topics: r.Topics}, n, err
+	return GitHubRepository{
+		FullName:      r.FullName,
+		HTMLURL:       r.HTMLURL,
+		DefaultBranch: r.DefaultBranch,
+		Private:       r.Private,
+		Fork:          r.Fork,
+		Template:      r.Template,
+		Description:   r.Description,
+		Topics:        r.Topics,
+	}, n, err
 }
 func (s *githubHTTPService) DefaultBranchHead(ctx context.Context, repository, branch string, limit int64) (string, int64, error) {
 	var r struct {
