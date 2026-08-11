@@ -596,7 +596,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	} else {
 		checkpoint = strings.TrimSpace(checkpoint)
 	}
-	recovery := newRecovery(root, progressPath, detector, checkpoint, commit, allowDirty)
+	recovery := newRecovery(progressPath, detector, checkpoint, commit, allowDirty)
 	p.Recovery = &recovery
 	if err := writeProgress(progressPath, p); err != nil {
 		fmt.Fprintf(stderr, "error: checkpoint recovery state: %v\n", err)
@@ -907,7 +907,7 @@ func iterationRecord(iteration int, outcome Outcome, accepted []AcceptedCandidat
 	return record
 }
 
-func newRecovery(root, progressPath string, detector *DetectorProgress, checkpoint string, commit, allowDirty bool) Recovery {
+func newRecovery(progressPath string, detector *DetectorProgress, checkpoint string, commit, allowDirty bool) Recovery {
 	runID := fmt.Sprintf("%d", now().UnixNano())
 	return Recovery{
 		RunID:          runID,
