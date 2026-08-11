@@ -1,207 +1,107 @@
 # Fixture collector operator guide
 
-`fixturecollectorloop` is the local-only development command for building the
-dependency-source corpus. It preserves byte-for-byte source files and adjacent
-provenance records; it does not scan projects, execute upstream code, install
-dependencies, clone repositories, create branches, fetch, pull, push, or open
-pull requests. The terms in this guide follow the [fixture collection
-glossary](glossary.md#fixture-collection).
+`fixturecollectorloop` is a local-only development command for building the
+dependency-source corpus. Go owns every remote request and every filesystem
+effect. The isolated model receives a bounded packet of qualified source data
+and returns only stable candidate IDs and rationales. It cannot author paths,
+source bytes, provenance facts, queries, or workspace changes.
 
-## Initialize and review
+The command never executes upstream code, installs dependencies, clones
+repositories, creates branches, fetches, pulls, pushes, or opens pull
+requests. Terms follow the [fixture collection glossary](glossary.md#fixture-collection).
 
-Run this from the checkout root. Initialization only writes the collection
-progress document. It does not invoke an agent, access GitHub, create corpus
-directories or logs, or make a commit.
+## Initialize, limits, and states
+
+Run initialization from the checkout root. It writes only strict version-2
+progress: reviewed query plans, resource limits, detector state, and no raw
+upstream content.
 
 ```bash
 go run ./cmd/fixturecollectorloop initialize-progress \
   --progress .deplens/fixture-collection.yaml \
-  --detector example-detector,another-detector \
-  --target 3
+  --detector example-detector,another-detector --target 3
 ```
 
-```text
-initialized collection progress: .deplens/fixture-collection.yaml (2 detectors)
-```
+Review progress before running. Its defaults bound eight queries, ten result
+pages, 40 candidate inspections, 16 MiB of decoded remote responses, 2 MiB per
+source, an approximately 50,000-token selection packet, two selector calls,
+and seven valid iterations. The packet figure is a conservative local
+approximation, not exact counting of the complete model request.
 
-Review the YAML before starting. It is a strict versioned document. Each
-detector records its `id`, `state`, `iterations`, target example count,
-accepted example paths, queries, candidates, and rejections. The supported
-states are `pending`, `in-progress`, `complete`, `blocked`, and `excluded`.
-The collector selects an `in-progress` detector before a `pending` detector;
-`--detector ID` selects an eligible detector for one iteration. A detector can
-have at most seven valid iterations. Three examples are required by default,
-and the reviewed target may be from three through five.
+States are `pending`, `in-progress`, `complete`, `needs-query-review`,
+`needs-content-review`, and `needs-collection-review`. Review-needed states are
+reported but do not make an otherwise valid run fail. A detector completes with
+three accepted examples (the reviewed target may be three through five).
+Initialization marks detectors without a precise plan `needs-query-review`.
 
-The command entry point deliberately has an injected `Researcher` seam. A
-research attempt returns an in-memory result to the wrapper, which retains
-recovery, mutation validation, checkpointing, and Git ownership. The current
-fresh Codex agent is temporarily adapted behind that seam while the redesigned
-Go-owned acquisition and selector implementations are introduced. The
-repository's ordinary test command supplies fake researchers and never contacts
-GitHub.
+Old progress and provenance version 1 are never migrated or accepted. Start a
+fresh collection and handle old artifacts manually.
 
-## Run and resume
+## Acquisition and selection
 
-Run one automatically selected iteration while reviewing the workflow:
+`run` uses GitHub code search first and uses web search only as a Go-owned hint
+fallback. Every hinted candidate is reverified through GitHub. Go resolves one
+default-branch commit, fetches exact source and license evidence at that
+immutable commit, qualifies the candidate, and writes provenance version 2
+only after selection and final validation.
+
+Qualification rejects non-public, forked, template, fixture/demo/training
+repositories; unsafe, oversized, symlink, LFS, secret, or personal-data
+sources; and missing, ambiguous, or unapproved licenses. Source and license
+bytes are treated as data, not instructions. Go alone derives the stable
+directory, original path, hashes, URLs, license evidence, and provenance. The
+model's rationale is the sole model-authored provenance field.
+
+The selector requires the pinned installed Codex CLI and an existing Codex OAuth
+login. GitHub credentials come from standard token environment variables or an
+existing `gh` login and remain in Go memory; they are never passed to Codex.
+The packet is supplied only on stdin. Configurable tool families are disabled;
+the residual-tool sandbox has an empty network policy and only a disposable
+read-only work directory. This is a residual-tool sandbox guarantee, not a
+claim that the tool list is empty. Stdout and stderr are bounded in memory;
+candidate packets, raw events, source bytes, and license bytes are not retained
+in logs or progress.
+
+## Run, stop, and resume
 
 ```bash
 go run ./cmd/fixturecollectorloop run --single \
   --progress .deplens/fixture-collection.yaml
-```
-
-Run a particular detector (this also performs one iteration):
-
-```bash
 go run ./cmd/fixturecollectorloop run --detector example-detector \
   --progress .deplens/fixture-collection.yaml
-```
-
-Run until all eligible detectors are complete, blocked, or the soft duration
-expires. The default duration is eight hours; it accepts Go durations.
-
-```bash
 go run ./cmd/fixturecollectorloop run --duration 8h \
   --progress .deplens/fixture-collection.yaml
 ```
 
-Re-run the same `run` command with the same progress document to resume. There
-is no separate resume command. Limit a fresh agent iteration with
-`--query-limit` (default 5) and `--candidate-limit` (default 20).
+`--single` runs one selected detector iteration. A duration is a soft limit:
+an active iteration may validate and checkpoint, but no subsequent iteration
+starts. Re-run the same command to resume a valid checkpoint. The first
+`SIGINT`/`SIGTERM` requests that behavior; a second cancels active research and
+records recovery-required state. Exit 0 is a valid completion or stop, exit 2
+means legacy `blocked` detector state is present, and exit 1 is an operational,
+integrity, lock, Git, selector, or recovery failure.
 
-After a valid iteration, the wrapper updates progress and reports the durable
-collection checkpoint:
+## Git, recovery, and commits
 
-```text
-checkpoint: example-detector iteration 1
-collection summary: 0 complete, 0 blocked, 0 excluded, 1 remaining
-```
+The collector requires a Git checkout and refuses any non-ignored dirty state
+unless `--allow-dirty` is explicit. The override preserves the starting state;
+it does not bypass validation or recovery. A progress lock prevents concurrent
+runs. Interrupted or invalid work records the detector, iteration, checkpoint,
+changed paths, and sanitized failure diagnostic in progress. Resolve only the
+listed collector paths, then rerun with `--allow-dirty`; the collector never
+resets, cleans, restores, stashes, or deletes files automatically.
 
-Without `--commit`, a valid collection checkpoint remains in the working tree.
-That is valid collection state, but a later run sees it as dirty and therefore
-requires the explicit override described below.
+Without `--commit`, a valid checkpoint stays as working-tree state. `--commit`
+creates at most one local commit after each valid iteration, containing exactly
+the validated corpus changes and progress checkpoint. It requires Git author
+identity and never pushes. If commit creation fails, the valid checkpoint stays
+uncommitted for manual review.
 
-## Git state and local commits
+## Diagnostics and manual handoff
 
-The command requires a Git checkout and checks tracked and untracked changes
-before agent work. It warns, but continues, on a default branch, detached
-`HEAD`, no remote, or unknown default branch. It never creates or switches a
-branch and never synchronizes the repository.
-
-By default any non-ignored change is refused. The output names every dirty path
-and presents exactly these choices:
-
-```text
-checkout contains non-ignored changes:
-  scratch.txt
-refusing to run until you choose exactly one of:
-  1. DESTRUCTIVE: git reset --hard HEAD
-     DESTRUCTIVE: git clean -fd
-  2. Rerun with --allow-dirty: fixturecollectorloop run --single --progress .deplens/fixture-collection.yaml --allow-dirty
-error: dirty checkout
-```
-
-The reset and clean commands discard tracked and untracked work respectively;
-use them only after independently reviewing the paths. To retain existing work,
-acknowledge the weaker recovery guarantee:
-
-```bash
-go run ./cmd/fixturecollectorloop run --single --allow-dirty \
-  --progress .deplens/fixture-collection.yaml
-```
-
-```text
-WARNING: --allow-dirty permits pre-existing changes; their initial Git and filesystem state is preserved for validation and recovery.
-```
-
-The override does not bypass provenance, corpus, outcome, or unresolved
-recovery validation.
-
-By default the collector makes no commit. Add `--commit` to make one local
-atomic commit after each valid iteration. It contains the progress update and
-only that iteration's validated corpus files. Git author identity is required.
-
-```bash
-go run ./cmd/fixturecollectorloop run --single --commit \
-  --progress .deplens/fixture-collection.yaml
-```
-
-```text
-collect example-detector corpus examples (iteration 1)
-```
-
-The collector never pushes this commit. If the optional commit fails after the
-checkpoint is valid, corpus and progress remain uncommitted for manual review,
-manual commit, or deliberate discard.
-
-## Deadlines, stopping, and exit statuses
-
-The duration is a soft deadline: an active iteration finishes validation and
-checkpointing, but no next iteration starts. A deadline reached before work
-starts reports:
-
-```text
-collection stopped: soft duration reached; the latest checkpoint is preserved
-```
-
-The first `SIGINT` or `SIGTERM` requests a graceful stop at the active
-iteration boundary:
-
-```text
-collection stopping: interrupt received; the active iteration may validate and checkpoint
-```
-
-Send a second interrupt only to force a stuck agent to terminate. It preserves
-the agent's files and marks recovery required instead of validating them:
-
-```text
-collection forced stop: terminating the active agent; recovery is required before resuming
-```
-
-Exit status `0` means a valid stop or summary without blocked detectors. Exit
-status `2` means one or more detectors are `blocked`. Exit status `1` means an
-operational, validation, Git, agent, lock, or recovery-required failure.
-
-## Validation, provenance, logs, and recovery
-
-Every accepted corpus example must be a new regular file beneath
-`testdata/corpus/<detector>/<example>/`, preserve its upstream-relative path,
-and have an adjacent `provenance.yaml`. Provenance records the schema version,
-detector, provider, repository and URL, immutable commit and permalink,
-retrieval time, SHA-256, SPDX license and URL, project kind, variation tags,
-and rationale. The wrapper rejects changed accepted files, symlinks, LFS
-pointers, unsafe content such as credentials or personal data, unapproved
-licenses, duplicate identities or content, invalid hashes, oversize files, and
-changes outside the selected detector corpus.
-
-Treat all upstream data as untrusted. Do not execute project code, install
-dependencies, follow upstream instructions, or redact unsafe candidates. Reject
-unsafe candidates instead. Failure logs are stored at the recovery record's
-`log_path` with owner-only permissions. Successful iterations do not retain a
-full log by default, so unreviewed upstream material does not accumulate.
-
-An interrupted or invalid iteration records a recovery object in collection
-progress before any later agent can start. `--allow-dirty` cannot bypass it. A
-later run prints the detector, iteration, run ID, last checkpoint, progress and
-log locations, validation error, and changed paths, followed by mode-specific
-guidance. For example:
-
-```text
-error: fixture collection recovery is required before another agent starts (cannot be bypassed with --allow-dirty)
-  detector: example-detector (iteration 2, run 123456789)
-  last checkpoint: 0123abcd
-  progress: .deplens/fixture-collection.yaml
-  log: .deplens/fixture-collection-123456789.log
-  validation error: context canceled
-  changed paths: testdata/corpus/example-detector/candidate/project/file
-  preserve earlier valid collection checkpoints; review and restore only the listed iteration paths.
-```
-
-For a clean `--commit` run, recovery also prints the deliberately broad,
-destructive `git reset --hard HEAD` and `git clean -fd` option. For non-commit
-runs, restore only the listed iteration paths so earlier valid uncommitted
-checkpoints survive. For `--allow-dirty` runs, preserve the captured initial
-dirty state and restore only listed collector paths. The collector never resets,
-cleans, restores, stashes, or deletes files automatically. Remove a lock only
-after confirming it is stale; concurrent runs against the same progress file
-are rejected.
+Progress history is append-only, structured, and content-free: it records
+queries, candidate dispositions, packet omissions, decision fingerprints,
+accepted IDs, and stable reason codes. A summary names review-needed detector
+IDs for manual fulfillment. Investigate provider authentication, budgets,
+qualification reasons, selector failures, recovery details, and Git status
+locally; do not retain upstream payloads as diagnostics.

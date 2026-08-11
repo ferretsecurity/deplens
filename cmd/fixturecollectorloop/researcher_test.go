@@ -246,25 +246,6 @@ func TestSelectionValidationUsesPacketMembershipAndPartialBounds(t *testing.T) {
 	}
 }
 
-func TestLegacyAgentResearcherDelegatesResearchLifecycle(t *testing.T) {
-	agent := &lifecycleAgent{outcome: Outcome{Result: "unsuccessful"}, retainLogs: true}
-	researcher := newLegacyAgentResearcher(agent)
-
-	if err := researcher.(researcherPreflighter).Preflight(); err != nil {
-		t.Fatal(err)
-	}
-	researcher.(researchLogConfigurer).SetRetainLogs(false)
-	result, err := researcher.Research(context.Background(), Iteration{DetectorID: "example-detector"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	researcher.(researchFinalizer).FinalizeResearch(true)
-
-	if result.Outcome.Result != agent.outcome.Result || !agent.preflightCalled || agent.retainLogs || !agent.finalized || !agent.finalizeSuccess {
-		t.Fatalf("agent lifecycle = %+v", agent)
-	}
-}
-
 type fakeAcquisition struct {
 	called bool
 	input  ResearchInput
@@ -285,30 +266,4 @@ func (f *fakeSelector) Select(_ context.Context, _ Iteration, packet []byte) (Re
 	f.called = true
 	f.packet = packet
 	return f.result, nil
-}
-
-type lifecycleAgent struct {
-	outcome         Outcome
-	preflightCalled bool
-	retainLogs      bool
-	finalized       bool
-	finalizeSuccess bool
-}
-
-func (a *lifecycleAgent) Run(context.Context, Iteration) (Outcome, error) {
-	return a.outcome, nil
-}
-
-func (a *lifecycleAgent) SetRetainLogs(retain bool) {
-	a.retainLogs = retain
-}
-
-func (a *lifecycleAgent) Preflight() error {
-	a.preflightCalled = true
-	return nil
-}
-
-func (a *lifecycleAgent) FinalizeIteration(success bool) {
-	a.finalized = true
-	a.finalizeSuccess = success
 }

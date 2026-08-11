@@ -12,22 +12,8 @@ type Researcher interface {
 	Research(context.Context, Iteration) (ResearchResult, error)
 }
 
-// Optional Researcher capabilities preserve the legacy session lifecycle while
-// allowing new implementations to own only research.
-type researchLogConfigurer interface {
-	SetRetainLogs(bool)
-}
-
 type researcherPreflighter interface {
 	Preflight() error
-}
-
-type researchFinalizer interface {
-	FinalizeResearch(bool)
-}
-
-type iterationFinalizer interface {
-	FinalizeIteration(bool)
 }
 
 // ResearchResult is the in-memory output of one research attempt.
@@ -172,40 +158,4 @@ func containsDecisionState(states []DecisionState, wanted DecisionState) bool {
 		}
 	}
 	return false
-}
-
-// Agent is the temporary implementation boundary retained while research is
-// migrated out of the existing Codex session.
-type Agent interface {
-	Run(context.Context, Iteration) (Outcome, error)
-}
-
-type legacyAgentResearcher struct{ agent Agent }
-
-func newLegacyAgentResearcher(agent Agent) Researcher {
-	return legacyAgentResearcher{agent: agent}
-}
-
-func (r legacyAgentResearcher) Research(ctx context.Context, iteration Iteration) (ResearchResult, error) {
-	outcome, err := r.agent.Run(ctx, iteration)
-	return ResearchResult{Outcome: outcome}, err
-}
-
-func (r legacyAgentResearcher) SetRetainLogs(retain bool) {
-	if configurable, ok := r.agent.(researchLogConfigurer); ok {
-		configurable.SetRetainLogs(retain)
-	}
-}
-
-func (r legacyAgentResearcher) Preflight() error {
-	if preflight, ok := r.agent.(researcherPreflighter); ok {
-		return preflight.Preflight()
-	}
-	return nil
-}
-
-func (r legacyAgentResearcher) FinalizeResearch(success bool) {
-	if finalizer, ok := r.agent.(iterationFinalizer); ok {
-		finalizer.FinalizeIteration(success)
-	}
 }

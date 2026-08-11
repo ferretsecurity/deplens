@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -83,14 +82,13 @@ func TestPrintRecoveryRequiredShowsTargetedCleanupAndDirtyResume(t *testing.T) {
 		RunID:        "run-123",
 		ProgressPath: ".deplens/fixture-collection.yaml",
 		ChangedPaths: []string{
-			".deplens/fixture-collection-run-123.log",
 			"testdata/corpus/example/owner-repo/source.lock",
 		},
 	}, &stderr)
 	for _, want := range []string{
 		"git restore --worktree -- .deplens/fixture-collection.yaml",
-		"git clean -fdn -- .deplens/fixture-collection-run-123.log testdata/corpus/example/owner-repo/source.lock",
-		"git clean -fd -- .deplens/fixture-collection-run-123.log testdata/corpus/example/owner-repo/source.lock",
+		"git clean -fdn -- testdata/corpus/example/owner-repo/source.lock",
+		"git clean -fd -- testdata/corpus/example/owner-repo/source.lock",
 		"run --single --progress .deplens/fixture-collection.yaml --allow-dirty",
 	} {
 		if !strings.Contains(stderr.String(), want) {
@@ -321,7 +319,7 @@ func TestCommandWorkflow(t *testing.T) {
 		if got := run([]string{"run", "--single", "--progress", progress}, root, io.Discard, &stderr, unavailableResearcher{}); got != 1 {
 			t.Fatalf("recovery-required exit status = %d", got)
 		}
-		if !strings.Contains(stderr.String(), "recovery is required") || !strings.Contains(stderr.String(), "git clean -fd --") {
+		if !strings.Contains(stderr.String(), "recovery is required") || strings.Contains(stderr.String(), "log:") {
 			t.Fatalf("recovery guidance = %s", stderr.String())
 		}
 	})
@@ -561,44 +559,11 @@ func TestRunPrintsEffectiveFlagValues(t *testing.T) {
 		"--duration=0s",
 		"--progress=" + progress,
 		"--query-limit=5",
-		"--retain-logs=true",
 		"--single=false",
 	} {
 		if !strings.Contains(stdout.String(), want) {
 			t.Fatalf("configuration missing %q: %s", want, stdout.String())
 		}
-	}
-}
-
-func TestRunIgnoresLocalCollectorLogsDuringCorpusValidation(t *testing.T) {
-	root := t.TempDir()
-	progress := filepath.Join(root, "collection.yaml")
-	if got := run([]string{"initialize-progress", "--progress", progress, "--detector", "example-detector"}, root, io.Discard, io.Discard, unavailableResearcher{}); got != 0 {
-		t.Fatalf("initialize exit status = %d", got)
-	}
-	initializeGitRepository(t, root)
-	commitGitChanges(t, root)
-	contents := []byte("example dependency\n")
-	agent := fakeResearcher{outcome: acceptedOutcome, write: func(iteration Iteration) error {
-		path := filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "project", "dependencies.txt")
-		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-			return err
-		}
-		if err := os.WriteFile(path, contents, 0o644); err != nil {
-			return err
-		}
-		if err := os.WriteFile(filepath.Join(iteration.CorpusDir, "owner-repo-abc123", "provenance.yaml"), provenance(iteration.DetectorID, "project/dependencies.txt", contents), 0o644); err != nil {
-			return err
-		}
-		logPath := filepath.Join(root, ".deplens", "fixture-collection-logs", "example-detector-1.jsonl")
-		if err := os.MkdirAll(filepath.Dir(logPath), 0o700); err != nil {
-			return err
-		}
-		return os.WriteFile(logPath, []byte(`{"type":"item.completed"}`+"\n"), 0o600)
-	}}
-	var stdout, stderr bytes.Buffer
-	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, agent); got != 0 {
-		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
 	}
 }
 
@@ -856,7 +821,7 @@ func TestRunRejectsProtocolThatDisagreesWithCorpus(t *testing.T) {
 	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, agent); got != 1 {
 		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
 	}
-	if !strings.Contains(stderr.String(), "protocol does not match") {
+	if !strings.Contains(stderr.String(), "research result does not match") {
 		t.Fatalf("stderr = %q", stderr.String())
 	}
 }
@@ -963,86 +928,5 @@ func TestRunStopsBeforeSchedulingAtSoftDuration(t *testing.T) {
 	}
 	if !strings.Contains(stdout.String(), "soft duration reached") {
 		t.Fatalf("stdout = %q", stdout.String())
-	}
-}
-
-type fakeCommandRunner struct {
-	calls [][]string
-	final Outcome
-	err   error
-}
-
-func (f *fakeCommandRunner) Run(_ context.Context, _ string, name string, args []string) ([]byte, error) {
-	f.calls = append(f.calls, append([]string{name}, args...))
-	if name != "codex" || len(args) == 0 || args[0] != "exec" {
-		return []byte("authenticated"), nil
-	}
-	for i := range args {
-		if args[i] == "--output-last-message" && i+1 < len(args) {
-			contents, _ := json.Marshal(f.final)
-			if err := os.WriteFile(args[i+1], contents, 0o600); err != nil {
-				return nil, err
-			}
-		}
-	}
-	return []byte(`{"type":"item.completed"}` + "\n"), f.err
-}
-
-func TestCodexAgentRetainsSuccessfulLogsByDefault(t *testing.T) {
-	root := t.TempDir()
-	var stdout bytes.Buffer
-	runner := &fakeCommandRunner{final: Outcome{Result: "unsuccessful", Added: []string{}, Queries: []string{}, Candidates: []string{}, Rejections: []string{}}}
-	agent := newCodexAgent(root, &stdout)
-	agent.runner = runner
-	if err := agent.Preflight(); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := agent.Run(context.Background(), Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 2, QueryLimit: 5, CandidateLimit: 20}); err != nil {
-		t.Fatal(err)
-	}
-	if len(runner.calls) != 3 || strings.Join(runner.calls[0], " ") != "codex login status" || strings.Join(runner.calls[1], " ") != "gh auth status --hostname github.com" {
-		t.Fatalf("preflight calls = %#v", runner.calls)
-	}
-	call := strings.Join(runner.calls[2], " ")
-	for _, want := range []string{"codex exec", "--json", "--sandbox workspace-write", "--output-schema", "--output-last-message", "default branch to a commit SHA", "at most 5 search queries", "provenance.yaml", "Do not use provenance.json"} {
-		if !strings.Contains(call, want) {
-			t.Fatalf("session command missing %q: %s", want, call)
-		}
-	}
-	agent.FinalizeIteration(true)
-	logs, err := filepath.Glob(filepath.Join(root, ".deplens", "fixture-collection-logs", "*.jsonl"))
-	if err != nil || len(logs) != 1 {
-		t.Fatalf("successful retained logs = %v, err = %v", logs, err)
-	}
-}
-
-func TestCodexAgentRetainsFailureLogsOwnerOnly(t *testing.T) {
-	root := t.TempDir()
-	runner := &fakeCommandRunner{final: Outcome{}, err: fmt.Errorf("simulated failure")}
-	agent := &codexAgent{root: root, stdout: io.Discard, runner: runner}
-	_, err := agent.Run(context.Background(), Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 1})
-	if err == nil || !strings.Contains(err.Error(), "log retained") || !strings.Contains(err.Error(), "sensitive") {
-		t.Fatalf("error = %v", err)
-	}
-	path := filepath.Join(root, ".deplens", "fixture-collection-logs", "npm-1.jsonl")
-	info, statErr := os.Stat(path)
-	if statErr != nil {
-		t.Fatalf("stat failure log: %v", statErr)
-	}
-	if info.Mode().Perm() != 0o600 {
-		t.Fatalf("failure log mode = %v", info.Mode())
-	}
-}
-
-func TestCodexAgentRetainsSuccessfulLogsOnlyWhenRequested(t *testing.T) {
-	root := t.TempDir()
-	runner := &fakeCommandRunner{final: Outcome{Result: "unsuccessful", Added: []string{}, Queries: []string{}, Candidates: []string{}, Rejections: []string{}}}
-	agent := &codexAgent{root: root, stdout: io.Discard, runner: runner, retainLogs: true}
-	if _, err := agent.Run(context.Background(), Iteration{DetectorID: "npm", CorpusDir: filepath.Join(root, "testdata", "corpus", "npm"), Iteration: 1}); err != nil {
-		t.Fatal(err)
-	}
-	agent.FinalizeIteration(true)
-	if _, err := os.Stat(filepath.Join(root, ".deplens", "fixture-collection-logs", "npm-1.jsonl")); err != nil {
-		t.Fatalf("retained success log: %v", err)
 	}
 }

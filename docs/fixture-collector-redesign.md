@@ -1,10 +1,10 @@
 # Fixture collector redesign
 
-Status: accepted design target; not yet implemented.
+Status: implemented v2 contract.
 
 This note consolidates the fixture-collector grilling decisions. It is not an
-ADR. Until the redesign is implemented, `docs/fixture-collector.md` remains the
-description of current behavior.
+ADR. The [operator guide](fixture-collector.md) describes the production
+workflow; this note records its design rationale.
 
 ## Objective and ownership
 
