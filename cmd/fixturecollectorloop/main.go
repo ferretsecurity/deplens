@@ -345,7 +345,7 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 		}
 		fmt.Fprintf(stderr, "WARNING: --allow-dirty is resuming after recovery for %s iteration %d; preserving the listed unvalidated changes as pre-existing dirty state.\n", recovery.DetectorID, recovery.Iteration)
 	}
-	if *target != "" && !hasDetector(p.Detectors, *target) {
+	if *target != "" && findDetector(p.Detectors, *target) == nil {
 		fmt.Fprintf(stderr, "error: unknown detector %q in collection progress\n", *target)
 		return 1
 	}
@@ -1172,10 +1172,9 @@ var unsafeContentPattern = regexp.MustCompile(`(?im)(?:\b(?:password|passwd|secr
 
 func selectDetector(detectors []DetectorProgress, target string) *DetectorProgress {
 	if target != "" {
-		for i := range detectors {
-			if detectors[i].ID == target && isEligible(detectors[i]) {
-				return &detectors[i]
-			}
+		detector := findDetector(detectors, target)
+		if detector != nil && isEligible(*detector) {
+			return detector
 		}
 		return nil
 	}
@@ -1192,13 +1191,13 @@ func selectDetector(detectors []DetectorProgress, target string) *DetectorProgre
 	return nil
 }
 
-func hasDetector(detectors []DetectorProgress, target string) bool {
-	for _, detector := range detectors {
-		if detector.ID == target {
-			return true
+func findDetector(detectors []DetectorProgress, id string) *DetectorProgress {
+	for i := range detectors {
+		if detectors[i].ID == id {
+			return &detectors[i]
 		}
 	}
-	return false
+	return nil
 }
 
 func isEligible(d DetectorProgress) bool {

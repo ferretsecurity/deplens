@@ -414,6 +414,7 @@ func TestRunTargetedModeNeverFallsBackToAnotherDetector(t *testing.T) {
 	progress := filepath.Join(root, "collection.yaml")
 	p := validTestProgress(
 		DetectorProgress{ID: "review", State: stateNeedsQueryReview, QueryReviewReason: "manual query required"},
+		DetectorProgress{ID: "complete", State: stateComplete, Examples: []string{"one", "two", "three"}},
 		DetectorProgress{ID: "ready", State: statePending},
 	)
 	if err := writeProgress(progress, p); err != nil {
@@ -424,18 +425,20 @@ func TestRunTargetedModeNeverFallsBackToAnotherDetector(t *testing.T) {
 
 	researcher := &trackingResearcher{result: ResearchResult{Outcome: Outcome{Result: "unsuccessful"}}}
 	var stdout, stderr bytes.Buffer
-	if got := run([]string{"run", "--detector", "review", "--progress", progress}, root, &stdout, &stderr, researcher); got != 0 {
-		t.Fatalf("review-targeted run = %d, stderr = %s", got, stderr.String())
-	}
-	if researcher.called {
-		t.Fatal("targeted review detector fell back to a different detector")
+	for _, target := range []string{"review", "complete"} {
+		if got := run([]string{"run", "--detector", target, "--progress", progress}, root, &stdout, &stderr, researcher); got != 0 {
+			t.Fatalf("%s-targeted run = %d, stderr = %s", target, got, stderr.String())
+		}
+		if researcher.called {
+			t.Fatalf("targeted %s detector fell back to a different detector", target)
+		}
 	}
 	stored, err := readProgress(progress)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if stored.Detectors[1].Iterations != 0 {
-		t.Fatalf("unrelated detector was run: %+v", stored.Detectors[1])
+	if stored.Detectors[2].Iterations != 0 {
+		t.Fatalf("unrelated detector was run: %+v", stored.Detectors[2])
 	}
 
 	stderr.Reset()
