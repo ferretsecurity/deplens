@@ -47,6 +47,30 @@ func TestComposedResearcherMaterializesThreeSelectedCandidatesFromIDsOnly(t *tes
 	}
 }
 
+func TestComposedResearcherPreservesSelectedSurvivorsWhenPeerFailsFinalValidation(t *testing.T) {
+	iteration := Iteration{DetectorID: "example-detector", CorpusDir: filepath.Join(t.TempDir(), "corpus"), Iteration: 1}
+	good := candidate("github", "Owner/good", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "go.mod", "module good\n")
+	goodTwo := candidate("github", "Owner/good-two", "cccccccccccccccccccccccccccccccccccccccc", "go.mod", "module good two\n")
+	bad := candidate("github", "Owner/bad", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "go.mod", "module bad\n")
+	if err := os.MkdirAll(filepath.Join(iteration.CorpusDir, bad.ID), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	selector := fakeSelector{result: ResearchResult{Selection: Selection{Selected: []SelectedCandidate{
+		{ID: good.ID, Rationale: "valid survivor"}, {ID: goodTwo.ID, Rationale: "second survivor"}, {ID: bad.ID, Rationale: "bad peer"},
+	}}}}
+
+	result, err := newComposedResearcher(&fakeAcquisition{input: ResearchInput{Candidates: []SourceCandidate{good, goodTwo, bad}}}, &selector).Research(context.Background(), iteration)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !selector.called || result.Outcome.Result != "accepted" || len(result.Accepted) != 2 || result.Accepted[0].Candidate.ID != good.ID {
+		t.Fatalf("result = %+v", result)
+	}
+	if !sameStrings(result.Outcome.Rejections, []string{"final-validation-duplicate-identity"}) {
+		t.Fatalf("rejections = %v", result.Outcome.Rejections)
+	}
+}
+
 func TestTargetedCommandCollectsQualifiedBatchWithoutSelectorWorkspaceWrites(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")

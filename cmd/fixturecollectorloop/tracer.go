@@ -379,50 +379,69 @@ func materializeCandidates(corpusDir, detectorID string, candidates []SourceCand
 }
 
 func materializeCandidatesWithAcceptedCount(corpusDir, detectorID string, candidates []SourceCandidate, selection Selection, acceptedCount int) ([]AcceptedCandidate, error) {
+	accepted, rejected, err := materializeSelectedCandidates(corpusDir, detectorID, candidates, selection, acceptedCount)
+	if err != nil {
+		return nil, err
+	}
+	if len(rejected) != 0 {
+		return nil, errors.New("selected candidate failed final validation")
+	}
+	return accepted, nil
+}
+
+// materializeSelectedCandidates keeps candidate-specific final validation
+// failures local to that candidate. I/O failures remain infrastructure errors.
+func materializeSelectedCandidates(corpusDir, detectorID string, candidates []SourceCandidate, selection Selection, acceptedCount int) ([]AcceptedCandidate, []string, error) {
 	byID := make(map[string]SourceCandidate, len(candidates))
 	for _, c := range candidates {
-		if err := validateCandidate(c); err != nil {
-			return nil, err
-		}
 		if _, exists := byID[c.ID]; exists {
-			return nil, errors.New("duplicate candidate ID")
+			return nil, nil, errors.New("duplicate candidate ID")
 		}
 		byID[c.ID] = c
 	}
 	if err := validateSelection(selection, candidateIDs(byID), acceptedCount); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	selected := append([]SelectedCandidate(nil), selection.Selected...)
 	sort.Slice(selected, func(i, j int) bool { return selected[i].ID < selected[j].ID })
 	accepted := make([]AcceptedCandidate, 0, len(selected))
+	rejected := make([]string, 0)
 	for _, chosen := range selected {
 		c, ok := byID[chosen.ID]
 		if !ok {
-			return nil, fmt.Errorf("selector chose unknown candidate %q", chosen.ID)
+			return nil, nil, fmt.Errorf("selector chose unknown candidate %q", chosen.ID)
+		}
+		if err := validateCandidate(c); err != nil {
+			rejected = append(rejected, "final-validation-candidate-invalid")
+			continue
 		}
 		directory := c.ID
 		root := filepath.Join(corpusDir, directory)
 		if _, err := os.Stat(root); !errors.Is(err, os.ErrNotExist) {
-			return nil, fmt.Errorf("example directory already exists: %s", directory)
+			if err == nil {
+				rejected = append(rejected, "final-validation-duplicate-identity")
+				continue
+			}
+			return nil, nil, err
 		}
 		sourcePath := filepath.Join(root, filepath.FromSlash(c.OriginalPath))
 		if err := os.MkdirAll(filepath.Dir(sourcePath), 0o755); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if err := os.WriteFile(sourcePath, c.Source, 0o644); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		p := provenanceV2From(c, detectorID, chosen.Rationale)
 		contents, err := yaml.Marshal(p)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if err := os.WriteFile(filepath.Join(root, "provenance.yaml"), contents, 0o644); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		accepted = append(accepted, AcceptedCandidate{Candidate: c, Directory: directory, Rationale: chosen.Rationale})
 	}
-	return accepted, nil
+	return accepted, rejected, nil
 }
 
 func candidateIDs(candidates map[string]SourceCandidate) map[string]struct{} {
@@ -437,24 +456,31 @@ func candidateIDs(candidates map[string]SourceCandidate) map[string]struct{} {
 // the wrapper rechecks Go's own writes against immutable acquisition evidence.
 func validateAcceptedCandidates(accepted []AcceptedCandidate, detectorID string, after map[string]string) error {
 	for _, item := range accepted {
-		if err := validateCandidate(item.Candidate); err != nil {
+		if err := validateAcceptedCandidate(item, detectorID, after); err != nil {
 			return err
 		}
-		root := "testdata/corpus/" + detectorID + "/" + item.Directory
-		sourcePath := root + "/" + filepath.ToSlash(item.Candidate.OriginalPath)
-		if after[sourcePath] != string(item.Candidate.Source) {
-			return fmt.Errorf("%s does not match acquired exact source bytes", sourcePath)
-		}
-		p, err := parseProvenance(after[root+"/provenance.yaml"])
-		if err != nil {
-			return err
-		}
-		if err := validateProvenance(p, detectorID); err != nil {
-			return err
-		}
-		if p.CandidateID != item.Candidate.ID || p.SHA256 != item.Candidate.SourceSHA256 || p.License.SHA256 != item.Candidate.License.SHA256 || p.License.SPDX != item.Candidate.License.SPDX || p.Rationale != item.Rationale {
-			return errors.New("provenance does not match Go-owned acquisition facts")
-		}
+	}
+	return nil
+}
+
+func validateAcceptedCandidate(item AcceptedCandidate, detectorID string, after map[string]string) error {
+	if err := validateCandidate(item.Candidate); err != nil {
+		return err
+	}
+	root := "testdata/corpus/" + detectorID + "/" + item.Directory
+	sourcePath := root + "/" + filepath.ToSlash(item.Candidate.OriginalPath)
+	if after[sourcePath] != string(item.Candidate.Source) {
+		return fmt.Errorf("%s does not match acquired exact source bytes", sourcePath)
+	}
+	p, err := parseProvenance(after[root+"/provenance.yaml"])
+	if err != nil {
+		return err
+	}
+	if err := validateProvenance(p, detectorID); err != nil {
+		return err
+	}
+	if p.CandidateID != item.Candidate.ID || p.SHA256 != item.Candidate.SourceSHA256 || p.License.SHA256 != item.Candidate.License.SHA256 || p.License.SPDX != item.Candidate.License.SPDX || p.Rationale != item.Rationale {
+		return errors.New("provenance does not match Go-owned acquisition facts")
 	}
 	return nil
 }

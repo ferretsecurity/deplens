@@ -32,10 +32,11 @@ type iterationFinalizer interface {
 
 // ResearchResult is the in-memory output of one research attempt.
 type ResearchResult struct {
-	Outcome   Outcome
-	Selection Selection
-	Accepted  []AcceptedCandidate
-	Decision  *DecisionState
+	Outcome                 Outcome
+	Selection               Selection
+	Accepted                []AcceptedCandidate
+	Decision                *DecisionState
+	NoDistinctDecisionState bool
 }
 
 // Acquisition obtains the bounded research input for an iteration. Its
@@ -118,7 +119,7 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 		decision := DecisionState{PacketFingerprint: packet.PacketFingerprint, AcceptedCorpusFingerprint: packet.AcceptedFingerprint, SelectorConfiguration: configuration}
 		if containsDecisionState(iteration.PriorDecisionStates, decision) {
 			input.Outcome.Result = "unsuccessful"
-			return ResearchResult{Outcome: input.Outcome}, nil
+			return ResearchResult{Outcome: input.Outcome, NoDistinctDecisionState: true}, nil
 		}
 		result, err := r.selector.Select(ctx, iteration, input.SelectionPacket)
 		if err != nil {
@@ -134,11 +135,12 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 		if len(candidates) == 0 {
 			return result, nil
 		}
-		accepted, err := materializeCandidatesWithAcceptedCount(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection, len(iteration.AcceptedReferences))
+		accepted, rejected, err := materializeSelectedCandidates(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection, len(iteration.AcceptedReferences))
 		if err != nil {
 			return ResearchResult{}, err
 		}
 		result.Accepted = accepted
+		result.Outcome.Rejections = append(result.Outcome.Rejections, rejected...)
 		if len(accepted) > 0 {
 			result.Outcome.Result = "accepted"
 			for _, accepted := range accepted {
@@ -156,12 +158,16 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 	if err != nil || len(candidates) == 0 {
 		return result, err
 	}
-	accepted, err := materializeCandidatesWithAcceptedCount(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection, len(iteration.AcceptedReferences))
+	accepted, rejected, err := materializeSelectedCandidates(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection, len(iteration.AcceptedReferences))
 	if err != nil {
 		return ResearchResult{}, err
 	}
 	result.Accepted = accepted
-	result.Outcome.Result = "accepted"
+	result.Outcome.Rejections = append(result.Outcome.Rejections, rejected...)
+	result.Outcome.Result = "unsuccessful"
+	if len(accepted) > 0 {
+		result.Outcome.Result = "accepted"
+	}
 	for _, accepted := range accepted {
 		result.Outcome.Added = append(result.Outcome.Added, accepted.Directory+"/"+accepted.Candidate.OriginalPath, accepted.Directory+"/provenance.yaml")
 	}

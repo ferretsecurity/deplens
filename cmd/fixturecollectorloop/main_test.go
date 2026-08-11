@@ -861,7 +861,7 @@ func TestRunFullStopsAtIterationBudgetAndDoesNotAdvanceInfrastructureFailures(t 
 	var calls int
 	agent := fakeResearcher{outcome: Outcome{Result: "unsuccessful"}, write: func(Iteration) error { calls++; return nil }}
 	var stdout, stderr bytes.Buffer
-	if got := run([]string{"run", "--progress", progress}, root, &stdout, &stderr, agent); got != 2 {
+	if got := run([]string{"run", "--progress", progress}, root, &stdout, &stderr, agent); got != 0 {
 		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
 	}
 	if calls != 1 {
@@ -871,7 +871,7 @@ func TestRunFullStopsAtIterationBudgetAndDoesNotAdvanceInfrastructureFailures(t 
 	if err != nil {
 		t.Fatal(err)
 	}
-	if p.Detectors[0].Iterations != 7 || p.Detectors[0].State != stateBlocked {
+	if p.Detectors[0].Iterations != 7 || p.Detectors[0].State != stateNeedsCollectionReview {
 		t.Fatalf("progress = %+v", p.Detectors[0])
 	}
 }
