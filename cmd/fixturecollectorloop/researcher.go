@@ -82,17 +82,18 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 	if err != nil {
 		return ResearchResult{}, err
 	}
-	if len(input.Candidates) != 0 {
-		input.SelectionPacket, err = selectionPacket(input.Candidates)
+	candidates := input.Candidates
+	if len(candidates) != 0 {
+		input.SelectionPacket, err = selectionPacket(candidates)
 		if err != nil {
 			return ResearchResult{}, err
 		}
 	}
 	result, err := r.selector.Select(ctx, iteration, input.SelectionPacket)
-	if err != nil || len(input.Candidates) == 0 {
+	if err != nil || len(candidates) == 0 {
 		return result, err
 	}
-	accepted, err := materializeCandidates(iteration.CorpusDir, iteration.DetectorID, input.Candidates, result.Selection)
+	accepted, err := materializeCandidates(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection)
 	if err != nil {
 		return ResearchResult{}, err
 	}

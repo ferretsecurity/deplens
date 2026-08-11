@@ -159,7 +159,27 @@ type ProvenanceLicense struct {
 }
 
 func provenanceV2From(c SourceCandidate, detectorID, rationale string) Provenance {
-	return Provenance{Version: 2, DetectorID: detectorID, CandidateID: c.ID, Provider: c.Provider, Repository: c.Repository, RepositoryURL: c.RepositoryURL, DefaultBranch: c.DefaultBranch, Commit: c.Commit, OriginalPath: c.OriginalPath, Permalink: c.RepositoryURL + "/blob/" + c.Commit + "/" + c.OriginalPath, RetrievedAt: c.RetrievedAt, SHA256: c.SourceSHA256, License: ProvenanceLicense{SPDX: c.License.SPDX, Path: c.License.Path, Permalink: c.License.Permalink, SHA256: c.License.SHA256}, Rationale: rationale}
+	return Provenance{
+		Version:       2,
+		DetectorID:    detectorID,
+		CandidateID:   c.ID,
+		Provider:      c.Provider,
+		Repository:    c.Repository,
+		RepositoryURL: c.RepositoryURL,
+		DefaultBranch: c.DefaultBranch,
+		Commit:        c.Commit,
+		OriginalPath:  c.OriginalPath,
+		Permalink:     c.RepositoryURL + "/blob/" + c.Commit + "/" + c.OriginalPath,
+		RetrievedAt:   c.RetrievedAt,
+		SHA256:        c.SourceSHA256,
+		License: ProvenanceLicense{
+			SPDX:      c.License.SPDX,
+			Path:      c.License.Path,
+			Permalink: c.License.Permalink,
+			SHA256:    c.License.SHA256,
+		},
+		Rationale: rationale,
+	}
 }
 
 func main() {
@@ -648,12 +668,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	detector.Queries = append(detector.Queries, outcome.Queries...)
 	detector.Candidates = append(detector.Candidates, outcome.Candidates...)
 	detector.Rejections = append(detector.Rejections, outcome.Rejections...)
-	record := IterationRecord{Iteration: detector.Iterations, Result: outcome.Result, Queries: append([]string(nil), outcome.Queries...), Candidates: append([]string(nil), outcome.Candidates...), Rejections: append([]string(nil), outcome.Rejections...)}
-	for _, accepted := range result.Accepted {
-		record.AcceptedIDs = append(record.AcceptedIDs, accepted.Candidate.ID)
-	}
-	sort.Strings(record.AcceptedIDs)
-	detector.History = append(detector.History, record)
+	detector.History = append(detector.History, iterationRecord(detector.Iterations, outcome, result.Accepted))
 	if len(detector.Examples) >= detector.Target {
 		detector.State = stateComplete
 	}
@@ -675,6 +690,21 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		}
 	}
 	return 0, true
+}
+
+func iterationRecord(iteration int, outcome Outcome, accepted []AcceptedCandidate) IterationRecord {
+	record := IterationRecord{
+		Iteration:  iteration,
+		Result:     outcome.Result,
+		Queries:    append([]string(nil), outcome.Queries...),
+		Candidates: append([]string(nil), outcome.Candidates...),
+		Rejections: append([]string(nil), outcome.Rejections...),
+	}
+	for _, candidate := range accepted {
+		record.AcceptedIDs = append(record.AcceptedIDs, candidate.Candidate.ID)
+	}
+	sort.Strings(record.AcceptedIDs)
+	return record
 }
 
 func newRecovery(root, progressPath string, detector *DetectorProgress, checkpoint string, commit, allowDirty bool) Recovery {

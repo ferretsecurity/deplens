@@ -56,6 +56,21 @@ type AcceptedCandidate struct {
 	Rationale string
 }
 
+type selectionPacketCandidate struct {
+	ID         string `json:"id"`
+	Repository string `json:"repository"`
+	Path       string `json:"path"`
+	Commit     string `json:"commit"`
+	ByteLength int    `json:"byte_length"`
+	SHA256     string `json:"sha256"`
+	License    string `json:"license"`
+	Source     string `json:"source_untrusted_data"`
+}
+
+type selectionPacketData struct {
+	Candidates []selectionPacketCandidate `json:"candidates"`
+}
+
 func stableCandidateID(provider, repository, commit, originalPath string) string {
 	identity := strings.ToLower(strings.TrimSpace(provider)) + "\x00" +
 		strings.ToLower(strings.TrimSpace(repository)) + "\x00" +
@@ -66,23 +81,20 @@ func stableCandidateID(provider, repository, commit, originalPath string) string
 }
 
 func selectionPacket(candidates []SourceCandidate) ([]byte, error) {
-	type packetCandidate struct {
-		ID         string `json:"id"`
-		Repository string `json:"repository"`
-		Path       string `json:"path"`
-		Commit     string `json:"commit"`
-		ByteLength int    `json:"byte_length"`
-		SHA256     string `json:"sha256"`
-		License    string `json:"license"`
-		Source     string `json:"source_untrusted_data"`
-	}
 	sorted := append([]SourceCandidate(nil), candidates...)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].ID < sorted[j].ID })
-	packet := struct {
-		Candidates []packetCandidate `json:"candidates"`
-	}{Candidates: make([]packetCandidate, 0, len(sorted))}
+	packet := selectionPacketData{Candidates: make([]selectionPacketCandidate, 0, len(sorted))}
 	for _, c := range sorted {
-		packet.Candidates = append(packet.Candidates, packetCandidate{c.ID, c.Repository, c.OriginalPath, c.Commit, len(c.Source), c.SourceSHA256, c.License.SPDX, string(c.Source)})
+		packet.Candidates = append(packet.Candidates, selectionPacketCandidate{
+			ID:         c.ID,
+			Repository: c.Repository,
+			Path:       c.OriginalPath,
+			Commit:     c.Commit,
+			ByteLength: len(c.Source),
+			SHA256:     c.SourceSHA256,
+			License:    c.License.SPDX,
+			Source:     string(c.Source),
+		})
 	}
 	return json.Marshal(packet)
 }
