@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 )
@@ -166,6 +167,74 @@ func TestGitHubAcquisitionDeduplicatesBeforeInspectionAndPinsEvidence(t *testing
 	}
 }
 
+func TestGitHubAcquisitionUsesWebHintsOnlyAfterPrimaryCannotReachMinimum(t *testing.T) {
+	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	github := &fakeGitHubService{
+		searches: map[string][]GitHubCodeHit{"filename:go.mod": {{Repository: "octo/primary", Path: "go.mod"}}},
+		repositories: map[string]GitHubRepository{
+			"octo/primary": {FullName: "octo/primary", HTMLURL: "https://github.com/octo/primary", DefaultBranch: "main"},
+			"octo/web-one": {FullName: "octo/web-one", HTMLURL: "https://github.com/octo/web-one", DefaultBranch: "main"},
+			"octo/web-two": {FullName: "octo/web-two", HTMLURL: "https://github.com/octo/web-two", DefaultBranch: "main"},
+		},
+		heads: map[string]string{"octo/primary/main": commit, "octo/web-one/main": commit, "octo/web-two/main": commit},
+		files: map[string][]byte{
+			"octo/primary@" + commit + ":go.mod": []byte("module primary\n"), "octo/primary@" + commit + ":LICENSE": []byte("MIT License\n"),
+			"octo/web-one@" + commit + ":go.mod": []byte("module webone\n"), "octo/web-one@" + commit + ":LICENSE": []byte("MIT License\n"),
+			"octo/web-two@" + commit + ":go.mod": []byte("module webtwo\n"), "octo/web-two@" + commit + ":LICENSE": []byte("MIT License\n"),
+		},
+	}
+	web := &fakeWebHintService{searches: map[string][]GitHubCodeHit{"filename:go.mod": {
+		{Repository: "octo/primary", Path: "go.mod"}, // duplicate primary hit
+		{Repository: "octo/web-one", Path: "go.mod"},
+		{Repository: "octo/web-two", Path: "go.mod"},
+	}}}
+	input, err := newGitHubAcquisitionWithWebHints(github, web, CollectionLimits{Queries: 2, ResultPages: 2, CandidateInspections: 3, DecodedResponseBytes: 4096, SourceBytes: 1024}).Acquire(context.Background(), Iteration{QueryPlan: []string{"filename:go.mod"}, QueryLimit: 2, CandidateLimit: 3})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if web.calls != 1 || github.repositoryCalls != 3 || len(input.Candidates) != 3 {
+		t.Fatalf("web calls=%d GitHub inspections=%d candidates=%#v", web.calls, github.repositoryCalls, input.Candidates)
+	}
+	for _, candidate := range input.Candidates {
+		if candidate.Repository == "octo/web-one" && string(candidate.Source) != "module webone\n" {
+			t.Fatalf("web candidate did not use GitHub source bytes: %#v", candidate)
+		}
+	}
+	if got, want := input.Outcome.Queries, []string{"filename:go.mod", "filename:go.mod"}; !sameStrings(got, want) {
+		t.Fatalf("queries=%q want %q", got, want)
+	}
+}
+
+func TestGitHubAcquisitionSkipsWebHintsWhenPrimaryMeetsMinimum(t *testing.T) {
+	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	github := &fakeGitHubService{searches: map[string][]GitHubCodeHit{"filename:go.mod": {
+		{Repository: "octo/one", Path: "go.mod"}, {Repository: "octo/two", Path: "go.mod"}, {Repository: "octo/three", Path: "go.mod"},
+	}}, repositories: map[string]GitHubRepository{}, heads: map[string]string{}, files: map[string][]byte{}}
+	for _, repo := range []string{"octo/one", "octo/two", "octo/three"} {
+		github.repositories[repo] = GitHubRepository{FullName: repo, HTMLURL: "https://github.com/" + repo, DefaultBranch: "main"}
+		github.heads[repo+"/main"] = commit
+		github.files[repo+"@"+commit+":go.mod"] = []byte("module " + repo + "\n")
+		github.files[repo+"@"+commit+":LICENSE"] = []byte("MIT License\n")
+	}
+	web := &fakeWebHintService{}
+	_, err := newGitHubAcquisitionWithWebHints(github, web, CollectionLimits{Queries: 2, ResultPages: 2, CandidateInspections: 3, DecodedResponseBytes: 4096, SourceBytes: 1024}).Acquire(context.Background(), Iteration{QueryPlan: []string{"filename:go.mod"}, QueryLimit: 2, CandidateLimit: 3})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if web.calls != 0 {
+		t.Fatalf("web fallback called %d times after primary met minimum", web.calls)
+	}
+}
+
+func TestGitHubAcquisitionClassifiesWebFailureWithoutCandidateOutcome(t *testing.T) {
+	github := &fakeGitHubService{searches: map[string][]GitHubCodeHit{"filename:go.mod": nil}}
+	web := &fakeWebHintService{err: errors.New("backend secret response")}
+	_, err := newGitHubAcquisitionWithWebHints(github, web, CollectionLimits{Queries: 2, ResultPages: 2, CandidateInspections: 3, DecodedResponseBytes: 4096, SourceBytes: 1024}).Acquire(context.Background(), Iteration{QueryPlan: []string{"filename:go.mod"}, QueryLimit: 2, CandidateLimit: 3})
+	if err == nil || !strings.Contains(err.Error(), "web-search provider failure") {
+		t.Fatalf("error = %v", err)
+	}
+}
+
 func sameStrings(a, b []string) bool {
 	if len(a) != len(b) {
 		return false
@@ -185,6 +254,20 @@ type fakeGitHubService struct {
 	files                                          map[string][]byte
 	fileTypes                                      map[string]string
 	repositoryCalls, fileCalls, clones, executions int
+}
+
+type fakeWebHintService struct {
+	searches map[string][]GitHubCodeHit
+	calls    int
+	err      error
+}
+
+func (f *fakeWebHintService) SearchHints(_ context.Context, query string, _ int, _ int64) ([]GitHubCodeHit, bool, int64, error) {
+	f.calls++
+	if f.err != nil {
+		return nil, false, 0, f.err
+	}
+	return f.searches[query], false, int64(len(query)), nil
 }
 
 func (f *fakeGitHubService) SearchCode(_ context.Context, query string, _ int, _ int64) ([]GitHubCodeHit, bool, int64, error) {
