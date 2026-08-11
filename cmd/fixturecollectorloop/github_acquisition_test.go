@@ -72,6 +72,26 @@ func TestGitHubAcquisitionRejectsConflictingNearestLicense(t *testing.T) {
 	}
 }
 
+func TestGitHubAcquisitionRejectsAmbiguousGoverningLicense(t *testing.T) {
+	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	service := &fakeGitHubService{
+		searches:     map[string][]GitHubCodeHit{"filename:go.mod": {{Repository: "octo/project", Path: "go.mod"}}},
+		repositories: map[string]GitHubRepository{"octo/project": {FullName: "octo/project", HTMLURL: "https://github.com/octo/project", DefaultBranch: "main"}},
+		heads:        map[string]string{"octo/project/main": commit},
+		files: map[string][]byte{
+			"octo/project@" + commit + ":go.mod":  []byte("module example\n"),
+			"octo/project@" + commit + ":LICENSE": []byte("MIT License\nApache-2.0\n"),
+		},
+	}
+	input, err := newGitHubAcquisition(service, CollectionLimits{Queries: 1, ResultPages: 1, CandidateInspections: 1, DecodedResponseBytes: 4096, SourceBytes: 1024}).Acquire(context.Background(), Iteration{QueryPlan: []string{"filename:go.mod"}, QueryLimit: 1, CandidateLimit: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(input.Candidates) != 0 || !sameStrings(input.Outcome.Rejections, []string{"license-ambiguous"}) {
+		t.Fatalf("input = %#v", input)
+	}
+}
+
 func TestGitHubAcquisitionRejectsNonRegularFileBeforeReadingBytes(t *testing.T) {
 	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 	service := &fakeGitHubService{

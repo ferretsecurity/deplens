@@ -334,7 +334,10 @@ func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, c
 	if licenseReason != "" {
 		return SourceCandidate{}, licenseReason, nil
 	}
-	spdx := detectSPDX(license)
+	spdx, ambiguous := detectSPDX(license)
+	if ambiguous {
+		return SourceCandidate{}, reasonLicenseAmbiguous, nil
+	}
 	if !approvedLicenses[spdx] {
 		return SourceCandidate{}, reasonLicenseDisallowed, nil
 	}
@@ -404,9 +407,16 @@ func (a *githubAcquisition) license(ctx context.Context, b *acquisitionBudget, r
 			return found[0].path, found[0].bytes, "", nil
 		}
 		if len(found) > 1 {
-			spdx := detectSPDX(found[0].bytes)
+			spdx, ambiguous := detectSPDX(found[0].bytes)
+			if ambiguous {
+				return "", nil, reasonLicenseAmbiguous, nil
+			}
 			for _, item := range found[1:] {
-				if detectSPDX(item.bytes) != spdx {
+				itemSPDX, itemAmbiguous := detectSPDX(item.bytes)
+				if itemAmbiguous {
+					return "", nil, reasonLicenseAmbiguous, nil
+				}
+				if itemSPDX != spdx {
 					return "", nil, reasonLicenseConflicting, nil
 				}
 			}
@@ -479,14 +489,18 @@ func queryMatchesSourcePath(query, sourcePath string) bool {
 	return true
 }
 
-func detectSPDX(contents []byte) string {
+func detectSPDX(contents []byte) (string, bool) {
 	s := strings.ToLower(string(contents))
-	for id := range approvedLicenses {
+	var matches []string
+	for _, id := range []string{"MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "0BSD", "CC0-1.0", "Unlicense"} {
 		if strings.Contains(s, strings.ToLower(id)) || (id == "MIT" && strings.Contains(s, "mit license")) {
-			return id
+			matches = append(matches, id)
 		}
 	}
-	return ""
+	if len(matches) != 1 {
+		return "", len(matches) > 1
+	}
+	return matches[0], false
 }
 func minPositive(a, b int) int {
 	if a <= 0 {
