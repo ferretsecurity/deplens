@@ -417,11 +417,10 @@ func materializeSelectedCandidates(corpusDir, detectorID string, candidates []So
 		}
 		directory := c.ID
 		root := filepath.Join(corpusDir, directory)
-		if _, err := os.Stat(root); !errors.Is(err, os.ErrNotExist) {
-			if err == nil {
-				rejected = append(rejected, "final-validation-duplicate-identity")
-				continue
-			}
+		if _, err := os.Stat(root); err == nil {
+			rejected = append(rejected, "final-validation-duplicate-identity")
+			continue
+		} else if !errors.Is(err, os.ErrNotExist) {
 			return nil, nil, err
 		}
 		sourcePath := filepath.Join(root, filepath.FromSlash(c.OriginalPath))

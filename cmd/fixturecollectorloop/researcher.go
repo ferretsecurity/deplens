@@ -102,61 +102,36 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 		return ResearchResult{}, err
 	}
 	candidates := input.Candidates
-	if len(candidates) != 0 {
-		packet, packetErr := buildSelectionPacket(SelectionPacketOptions{
-			Candidates: candidates, AcceptedReferences: iteration.AcceptedReferences,
-			QueryPlan: iteration.QueryPlan, PacketTokens: iteration.PacketTokens,
-			PresentedIDs: iteration.PresentedCandidateIDs,
-		})
-		err = packetErr
-		if err != nil {
-			return ResearchResult{}, err
-		}
-		input.SelectionPacket = packet.Bytes
-		candidates = packet.Candidates
-		input.Outcome.Omitted = append(input.Outcome.Omitted, packet.OmittedIDs...)
-		configuration := selectorConfigurationFingerprint(iteration, r.selector)
-		decision := DecisionState{PacketFingerprint: packet.PacketFingerprint, AcceptedCorpusFingerprint: packet.AcceptedFingerprint, SelectorConfiguration: configuration}
-		if containsDecisionState(iteration.PriorDecisionStates, decision) {
-			input.Outcome.Result = "unsuccessful"
-			return ResearchResult{Outcome: input.Outcome, NoDistinctDecisionState: true}, nil
-		}
-		result, err := r.selector.Select(ctx, iteration, input.SelectionPacket)
-		if err != nil {
-			return result, err
-		}
-		if err := validateSelection(result.Selection, candidateIDSet(candidates), len(iteration.AcceptedReferences)); err != nil {
-			return ResearchResult{}, err
-		}
-		result.Decision = &decision
-		if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.Rejections) != 0 || len(input.Outcome.Omitted) != 0 {
-			result.Outcome = input.Outcome
-		}
-		if len(candidates) == 0 {
-			return result, nil
-		}
-		accepted, rejected, err := materializeSelectedCandidates(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection, len(iteration.AcceptedReferences))
-		if err != nil {
-			return ResearchResult{}, err
-		}
-		result.Accepted = accepted
-		result.Outcome.Rejections = append(result.Outcome.Rejections, rejected...)
-		if len(accepted) > 0 {
-			result.Outcome.Result = "accepted"
-			for _, accepted := range accepted {
-				result.Outcome.Added = append(result.Outcome.Added, accepted.Directory+"/"+accepted.Candidate.OriginalPath, accepted.Directory+"/provenance.yaml")
-			}
-		} else {
-			result.Outcome.Result = "unsuccessful"
-		}
-		return result, nil
+	if len(candidates) == 0 {
+		return r.selectWithoutCandidates(ctx, iteration, input)
+	}
+	packet, err := buildSelectionPacket(SelectionPacketOptions{
+		Candidates: candidates, AcceptedReferences: iteration.AcceptedReferences,
+		QueryPlan: iteration.QueryPlan, PacketTokens: iteration.PacketTokens,
+		PresentedIDs: iteration.PresentedCandidateIDs,
+	})
+	if err != nil {
+		return ResearchResult{}, err
+	}
+	input.SelectionPacket = packet.Bytes
+	candidates = packet.Candidates
+	input.Outcome.Omitted = append(input.Outcome.Omitted, packet.OmittedIDs...)
+	configuration := selectorConfigurationFingerprint(iteration, r.selector)
+	decision := DecisionState{PacketFingerprint: packet.PacketFingerprint, AcceptedCorpusFingerprint: packet.AcceptedFingerprint, SelectorConfiguration: configuration}
+	if containsDecisionState(iteration.PriorDecisionStates, decision) {
+		input.Outcome.Result = "unsuccessful"
+		return ResearchResult{Outcome: input.Outcome, NoDistinctDecisionState: true}, nil
 	}
 	result, err := r.selector.Select(ctx, iteration, input.SelectionPacket)
-	if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.Rejections) != 0 {
-		result.Outcome = input.Outcome
-	}
-	if err != nil || len(candidates) == 0 {
+	if err != nil {
 		return result, err
+	}
+	if err := validateSelection(result.Selection, candidateIDSet(candidates), len(iteration.AcceptedReferences)); err != nil {
+		return ResearchResult{}, err
+	}
+	result.Decision = &decision
+	if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.Rejections) != 0 || len(input.Outcome.Omitted) != 0 {
+		result.Outcome = input.Outcome
 	}
 	accepted, rejected, err := materializeSelectedCandidates(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection, len(iteration.AcceptedReferences))
 	if err != nil {
@@ -172,6 +147,14 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 		result.Outcome.Added = append(result.Outcome.Added, accepted.Directory+"/"+accepted.Candidate.OriginalPath, accepted.Directory+"/provenance.yaml")
 	}
 	return result, nil
+}
+
+func (r composedResearcher) selectWithoutCandidates(ctx context.Context, iteration Iteration, input ResearchInput) (ResearchResult, error) {
+	result, err := r.selector.Select(ctx, iteration, input.SelectionPacket)
+	if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.Rejections) != 0 {
+		result.Outcome = input.Outcome
+	}
+	return result, err
 }
 
 func candidateIDSet(candidates []SourceCandidate) map[string]struct{} {
