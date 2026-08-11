@@ -44,10 +44,12 @@ func newIsolatedCodexSelector(config IsolatedCodexSelectorConfig) *isolatedCodex
 }
 
 func (s *isolatedCodexSelector) configurationFingerprint() string {
-	return hash(strings.Join([]string{"isolated-codex-selector-v1", pinnedCodexVersion, s.config.Model, s.config.ReasoningEffort, strings.Join(requiredCodexFeatures, ",")}, "\x00"))
+	return hash(strings.Join([]string{"isolated-codex-selector-v1", pinnedCodexVersion, s.config.Model, s.config.ReasoningEffort, strings.Join(disabledCodexFeatures, ",")}, "\x00"))
 }
 
-var requiredCodexFeatures = []string{
+// disabledCodexFeatures must be available in the pinned CLI so the selector
+// can explicitly disable every capability outside its narrow protocol.
+var disabledCodexFeatures = []string{
 	"shell_tool", "unified_exec", "shell_snapshot", "hooks", "multi_agent",
 	"apps", "plugins", "remote_plugin", "plugin_sharing", "tool_suggest",
 	"skill_search", "skill_mcp_dependency_install", "in_app_browser", "browser_use",
@@ -69,7 +71,7 @@ func (s *isolatedCodexSelector) Preflight() error {
 		return errors.New("cannot list installed Codex isolation features")
 	}
 	available := featureSet(string(features))
-	for _, feature := range requiredCodexFeatures {
+	for _, feature := range disabledCodexFeatures {
 		if !available[feature] {
 			return fmt.Errorf("installed Codex lacks required isolation feature %q", feature)
 		}
@@ -134,7 +136,7 @@ func (s *isolatedCodexSelector) Select(ctx context.Context, _ Iteration, packet 
 
 func (s *isolatedCodexSelector) arguments(workDir, schemaPath string) []string {
 	args := []string{"exec", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--strict-config", "--skip-git-repo-check", "--cd", workDir, "--model", s.config.Model, "--output-schema", schemaPath}
-	for _, feature := range requiredCodexFeatures {
+	for _, feature := range disabledCodexFeatures {
 		args = append(args, "--disable", feature)
 	}
 	readRoot := fmt.Sprintf("permissions.fixture-selector.filesystem={%q=\"read\"}", workDir)
