@@ -917,7 +917,12 @@ func readProgress(path string) (Progress, error) {
 }
 
 func validState(state string) bool {
-	return state == statePending || state == stateInProgress || state == stateComplete || state == stateBlocked || state == stateExcluded || state == stateNeedsQueryReview
+	switch state {
+	case statePending, stateInProgress, stateComplete, stateBlocked, stateExcluded, stateNeedsQueryReview:
+		return true
+	default:
+		return false
+	}
 }
 
 func validCollectionLimits(limits CollectionLimits) bool {

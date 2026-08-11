@@ -12,6 +12,8 @@ import (
 
 const maxGeneratedFilenames = 16
 
+var simpleExtensionPattern = regexp.MustCompile(`^\^?\.\*\\\.([A-Za-z0-9_-]+)\$$`)
+
 type queryPlan struct {
 	queries []string
 	reason  string
@@ -45,7 +47,7 @@ func generateQueryPlan(detector analyze.DetectorCapability) queryPlan {
 		return queryPlan{reason: "detector has no selector"}
 	}
 	sort.Strings(queries)
-	return queryPlan{queries: deduplicate(queries)}
+	return queryPlan{queries: deduplicateSorted(queries)}
 }
 
 func finiteFilenames(pattern string) ([]string, bool) {
@@ -63,7 +65,7 @@ func finiteFilenames(pattern string) ([]string, bool) {
 		}
 	}
 	sort.Strings(values)
-	return deduplicate(values), true
+	return deduplicateSorted(values), true
 }
 
 func enumerate(re *syntax.Regexp) ([]string, bool) {
@@ -126,12 +128,11 @@ func enumerate(re *syntax.Regexp) ([]string, bool) {
 }
 
 func simpleExtension(pattern string) (string, bool) {
-	match := regexp.MustCompile(`^\^?\.\*\\\.([A-Za-z0-9_-]+)\$$`).FindStringSubmatch(pattern)
-	returnValue := ""
-	if len(match) == 2 {
-		returnValue = match[1]
+	match := simpleExtensionPattern.FindStringSubmatch(pattern)
+	if len(match) != 2 {
+		return "", false
 	}
-	return returnValue, len(match) == 2
+	return match[1], true
 }
 
 func pathGlobQuery(glob string) (string, bool) {
@@ -160,7 +161,9 @@ func quoteIfNeeded(value string) string {
 	}
 	return value
 }
-func deduplicate(values []string) []string {
+
+// deduplicateSorted removes adjacent duplicates from a sorted slice.
+func deduplicateSorted(values []string) []string {
 	result := values[:0]
 	for _, value := range values {
 		if len(result) == 0 || result[len(result)-1] != value {
@@ -170,5 +173,13 @@ func deduplicate(values []string) []string {
 	return result
 }
 func isSortedUnique(values []string) bool {
-	return len(values) > 0 && sort.SliceIsSorted(values, func(i, j int) bool { return values[i] < values[j] }) && len(deduplicate(append([]string(nil), values...))) == len(values)
+	if len(values) == 0 {
+		return false
+	}
+	for i := 1; i < len(values); i++ {
+		if values[i-1] >= values[i] {
+			return false
+		}
+	}
+	return true
 }
