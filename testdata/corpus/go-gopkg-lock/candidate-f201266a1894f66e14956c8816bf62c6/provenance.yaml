@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-gopkg-lock
+candidate_id: candidate-f201266a1894f66e14956c8816bf62c6
+provider: github
+repository: velopert/gin-rest-api-sample
+repository_url: https://github.com/velopert/gin-rest-api-sample
+default_branch: master
+commit: f55a03f18d3157765d27cd31bcd5aa7d9b633755
+original_path: Gopkg.lock
+permalink: https://github.com/velopert/gin-rest-api-sample/blob/f55a03f18d3157765d27cd31bcd5aa7d9b633755/Gopkg.lock
+retrieved_at: "2026-08-12T20:58:03Z"
+sha256: 603e8a18b834254ffd28bb9270d753d5fa246c85ca663147c45e4487b417f8ae
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/velopert/gin-rest-api-sample/blob/f55a03f18d3157765d27cd31bcd5aa7d9b633755/LICENSE
+    sha256: d3f3c46c3ced27d0b54c3a608b7998e40512d34d88be795018fdc62733829589
+rationale: 'Representative common production Go service: REST API stack with Gin, JWT auth, MySQL, and GORM.'

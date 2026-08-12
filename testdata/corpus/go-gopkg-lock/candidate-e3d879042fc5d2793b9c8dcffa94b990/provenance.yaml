@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-gopkg-lock
+candidate_id: candidate-e3d879042fc5d2793b9c8dcffa94b990
+provider: github
+repository: JamesStewy/go-mysqldump
+repository_url: https://github.com/JamesStewy/go-mysqldump
+default_branch: master
+commit: d04ec8e39caba3f5b69da33bfe540f9818867104
+original_path: Gopkg.lock
+permalink: https://github.com/JamesStewy/go-mysqldump/blob/d04ec8e39caba3f5b69da33bfe540f9818867104/Gopkg.lock
+retrieved_at: "2026-08-12T20:59:34Z"
+sha256: ec0692b5e9ae137d76d7989b6f2587d5c613526bd0aef680faa3709eac39d1c9
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/JamesStewy/go-mysqldump/blob/d04ec8e39caba3f5b69da33bfe540f9818867104/LICENSE
+    sha256: f80a4c72c08278f8a741888489b70a4d456201808ccbd54e2d08c41b85200102
+rationale: 'Smallest useful edge case: a valid lockfile with just one dependency.'

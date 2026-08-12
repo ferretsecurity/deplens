@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-gopkg-lock
+candidate_id: candidate-0b67b0e608f51a752bf41719356820b7
+provider: github
+repository: feedocean/rss2full
+repository_url: https://github.com/feedocean/rss2full
+default_branch: master
+commit: 9de287e0b4c1e51150c326e76fa3a6e832625010
+original_path: Gopkg.lock
+permalink: https://github.com/feedocean/rss2full/blob/9de287e0b4c1e51150c326e76fa3a6e832625010/Gopkg.lock
+retrieved_at: "2026-08-12T20:59:14Z"
+sha256: 5ccdaa9f07e84b9e224adb05ddade51eac3a1fbeb6e5657d089c38e6bc8efee6
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/feedocean/rss2full/blob/9de287e0b4c1e51150c326e76fa3a6e832625010/LICENSE
+    sha256: c181eed254a608399a1059ddf5cb72cb1f1a5841a083aaa30f3e6713853ddf9f
+rationale: Adds a realistic dep lockfile using digest and pruneopts fields, plus mixed branch and version resolution.
