@@ -186,16 +186,6 @@ func (c *hitCollector) add(items []GitHubCodeHit, query string) {
 	}
 }
 
-func (c *hitCollector) matchingCount(queries []string) int {
-	count := 0
-	for _, hit := range c.hits {
-		if qualifySourcePath(queries, hit.Path) == "" {
-			count++
-		}
-	}
-	return count
-}
-
 func hitKey(hit GitHubCodeHit) string {
 	return strings.ToLower(hit.Repository) + "\x00" + path.Clean(hit.Path)
 }
@@ -221,12 +211,8 @@ func (b *acquisitionBudget) reservePage() error {
 	b.pages++
 	return nil
 }
-func (b *acquisitionBudget) reserveInspection() error {
-	if b.inspections >= b.limits.CandidateInspections {
-		return errors.New("GitHub inspection budget exhausted")
-	}
+func (b *acquisitionBudget) recordInspection() {
 	b.inspections++
-	return nil
 }
 func (b *acquisitionBudget) remainingSearchBytes() int64 {
 	return b.searchLimit - b.searchBytes
@@ -272,22 +258,19 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	}
 	b := newAcquisitionBudget(limits)
 	queryLimit := minPositive(iteration.QueryLimit, limits.Queries)
-	candidateLimit := minPositive(iteration.CandidateLimit, limits.CandidateInspections)
+	inspectionTarget := minPositive(iteration.CandidateLimit, limits.CandidateInspections)
 	if len(iteration.QueryPlan) == 0 {
 		return ResearchInput{Outcome: Outcome{Result: "unsuccessful"}}, nil
 	}
 	cache := newAcquisitionCache()
 	hits := newHitCollector()
 	outcome := Outcome{Result: "unsuccessful"}
-	if err := collectSearchHits(ctx, &b, iteration, "github", iteration.QueryPlan, queryLimit, candidateLimit, &outcome, hits, a.service.SearchCode, githubInfrastructureError); err != nil {
-		return ResearchInput{}, err
-	}
-	candidates := make([]SourceCandidate, 0, candidateLimit)
+	candidates := make([]SourceCandidate, 0, inspectionTarget)
 	identities, contents := make(map[string]struct{}), make(map[string]struct{})
 	inspected := 0
 	rejected := 0
 	acquisitionBudgetExhausted := false
-	reportEvery := max(1, (candidateLimit+9)/10)
+	reportEvery := max(1, (inspectionTarget+9)/10)
 	lastReported := -1
 	reportQualification := func(final bool) {
 		if iteration.ReportProgress == nil {
@@ -306,14 +289,20 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 		}
 		iteration.ReportProgress(ResearchProgress{
 			Stage: progressQualification, Final: final,
-			Inspected: inspected, InspectionLimit: candidateLimit,
+			Inspected: inspected, InspectionLimit: inspectionTarget,
 			Qualified: len(candidates), Rejected: rejected, Filtered: filtered,
 			Budget: "acquisition", DownloadedBytes: b.acquisitionBytes,
 			ByteLimit: b.acquisitionLimit, RemainingBytes: b.remainingAcquisitionBytes(),
 		})
 	}
-	inspectHits := func(start int) error {
+	qualificationComplete := func() bool {
+		return inspected >= inspectionTarget && len(candidates) >= minimumQualifiedCandidates
+	}
+	inspectHits := func(start int) (bool, error) {
 		for _, hit := range hits.hits[start:] {
+			if qualificationComplete() {
+				return true, nil
+			}
 			// GitHub search qualifiers are discovery hints, not exact
 			// selectors. Discard loose matches before they consume an
 			// inspection or any repository-specific request.
@@ -324,18 +313,16 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 				outcome.FilteredSearchHits[string(reason)]++
 				continue
 			}
-			if inspected >= candidateLimit || b.reserveInspection() != nil {
-				break
-			}
+			b.recordInspection()
 			inspected++
 			candidate, reason, err := a.inspect(ctx, &b, &cache, hit)
 			if err != nil {
 				if errors.Is(err, errGitHubDecodedResponseBudgetExhausted) {
 					b.acquisitionBytes = b.acquisitionLimit
 					acquisitionBudgetExhausted = true
-					break
+					return true, nil
 				}
-				return err
+				return false, err
 			}
 			if reason != "" {
 				outcome.Rejections = append(outcome.Rejections, string(reason))
@@ -362,21 +349,13 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 			candidates = append(candidates, candidate)
 			reportQualification(false)
 		}
-		return nil
+		return qualificationComplete(), nil
 	}
-	if err := inspectHits(0); err != nil {
+	if _, err := collectSearchHits(ctx, &b, iteration, "github", iteration.QueryPlan, queryLimit, &outcome, hits, a.service.SearchCode, githubInfrastructureError, qualificationComplete, inspectHits); err != nil {
 		return ResearchInput{}, err
 	}
-	remainingMinimum := defaultTarget - len(iteration.AcceptedReferences)
-	if remainingMinimum < 0 {
-		remainingMinimum = 0
-	}
-	if a.web != nil && !acquisitionBudgetExhausted && len(candidates) < remainingMinimum && inspected < candidateLimit {
-		previousHits := len(hits.hits)
-		if err := collectSearchHits(ctx, &b, iteration, "web", iteration.QueryPlan, queryLimit, candidateLimit, &outcome, hits, a.web.SearchHints, webInfrastructureError); err != nil {
-			return ResearchInput{}, err
-		}
-		if err := inspectHits(previousHits); err != nil {
+	if a.web != nil && !acquisitionBudgetExhausted && len(candidates) < minimumQualifiedCandidates {
+		if _, err := collectSearchHits(ctx, &b, iteration, "web", iteration.QueryPlan, queryLimit, &outcome, hits, a.web.SearchHints, webInfrastructureError, qualificationComplete, inspectHits); err != nil {
 			return ResearchInput{}, err
 		}
 	}
@@ -384,13 +363,15 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	return ResearchInput{Candidates: candidates, Outcome: outcome}, nil
 }
 
-func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration Iteration, provider string, queries []string, queryLimit, hitTarget int, outcome *Outcome, hits *hitCollector, search hitSearch, providerError func(error) error) error {
+const minimumQualifiedCandidates = 5
+
+func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration Iteration, provider string, queries []string, queryLimit int, outcome *Outcome, hits *hitCollector, search hitSearch, providerError func(error) error, stop func() bool, inspect func(int) (bool, error)) (bool, error) {
 	remainingQueries := queryLimit - len(outcome.Queries)
 	queryTotal := min(len(queries), max(0, remainingQueries))
 	queryIndex := 0
 	for _, query := range queries {
-		if hits.matchingCount(iteration.QueryPlan) >= hitTarget {
-			break
+		if stop() {
+			return true, nil
 		}
 		if len(outcome.Queries) >= queryLimit || budget.reserveQueries() != nil {
 			break
@@ -403,11 +384,12 @@ func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration
 			}
 			items, next, size, err := search(ctx, query, page, budget.remainingSearchBytes())
 			if err != nil {
-				return providerError(err)
+				return false, providerError(err)
 			}
 			if err := budget.chargeSearchBytes(size); err != nil {
-				return err
+				return false, err
 			}
+			firstNewHit := len(hits.hits)
 			hits.add(items, query)
 			if iteration.ReportProgress != nil {
 				iteration.ReportProgress(ResearchProgress{
@@ -417,15 +399,19 @@ func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration
 					ByteLimit: budget.searchLimit, RemainingBytes: budget.remainingSearchBytes(),
 				})
 			}
-			if hits.matchingCount(iteration.QueryPlan) >= hitTarget {
-				break
+			stopped, err := inspect(firstNewHit)
+			if err != nil {
+				return false, err
+			}
+			if stopped {
+				return true, nil
 			}
 			if !next {
 				break
 			}
 		}
 	}
-	return nil
+	return stop(), nil
 }
 
 func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, cache *acquisitionCache, hit GitHubCodeHit) (SourceCandidate, qualificationReason, error) {

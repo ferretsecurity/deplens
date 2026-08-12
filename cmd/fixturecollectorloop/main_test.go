@@ -534,7 +534,7 @@ func TestRunCreatesAResumableCheckpoint(t *testing.T) {
 		t.Fatalf("unexpected checkpoint: %+v", got)
 	}
 	for _, want := range []string{
-		"iteration started: detector=example-detector iteration=1/7 examples=0/3",
+		"detector started: detector=example-detector attempted=1/1 remaining=1 run-elapsed=0s iteration=1/7 examples=0/3",
 		"checkpoint: example-detector iteration 1",
 		"selected candidate source: " + filepath.Join(root, "testdata", "corpus", "example-detector", "owner-repo-abc123", "project", "dependencies.txt"),
 		"selected candidate provenance: " + filepath.Join(root, "testdata", "corpus", "example-detector", "owner-repo-abc123", "provenance.yaml"),
@@ -596,13 +596,41 @@ func TestRunPrintsResearchProgress(t *testing.T) {
 	}
 	for _, want := range []string{
 		`candidate search progress: detector=example-detector provider=github query=1/1 page=1 hits=100 expression="filename:go.work" search-bytes=512.0KiB/4.0MiB remaining=3.5MiB`,
-		"candidate qualification progress: detector=example-detector inspected=4/40 qualified=1 rejected=3 filtered=12 acquisition-bytes=2.0MiB/12.0MiB remaining=10.0MiB",
-		"candidate qualification finished: detector=example-detector inspected=40/40 qualified=9 rejected=31 filtered=105 acquisition-bytes=8.0MiB/12.0MiB remaining=4.0MiB",
+		"candidate qualification progress: detector=example-detector inspected=4 target=40 qualified=1 minimum=5 rejected=3 filtered=12 acquisition-bytes=2.0MiB/12.0MiB remaining=10.0MiB",
+		"candidate qualification finished: detector=example-detector inspected=40 target=40 qualified=9 minimum=5 rejected=31 filtered=105 acquisition-bytes=8.0MiB/12.0MiB remaining=4.0MiB",
 		"candidate selection started: detector=example-detector candidates=9",
 		"candidate selection finished: detector=example-detector selected=3",
 	} {
 		if !strings.Contains(stdout.String(), want) {
 			t.Fatalf("run output missing %q: %s", want, stdout.String())
+		}
+	}
+}
+
+func TestCollectionRunProgressReportsDetectorCountsTimingAndEstimate(t *testing.T) {
+	startedAt := time.Unix(100, 0)
+	detectors := []DetectorProgress{
+		{ID: "one", State: statePending, QueryPlan: []string{"filename:one"}},
+		{ID: "two", State: statePending, QueryPlan: []string{"filename:two"}},
+	}
+	progress := newCollectionRunProgress(startedAt, detectors, "")
+	var output bytes.Buffer
+	progress.printStarted(&output, 15*time.Minute)
+	progress.printDetectorStarted(&output, &detectors[0], detectors, "", startedAt, 0)
+	detectors[0].State = stateComplete
+	detectors[0].Examples = []string{"one", "two", "three"}
+	progress.iterations++
+	progress.printDetectorFinished(&output, &detectors[0], detectors, "", startedAt, startedAt.Add(2*time.Minute))
+	progress.printSummary(&output, detectors, "", startedAt.Add(2*time.Minute))
+	for _, want := range []string{
+		"collection run started: detectors=2 duration=15m0s",
+		"detector started: detector=one attempted=1/2 remaining=2 run-elapsed=0s iteration=1/7 examples=0/3",
+		"detector finished: detector=one state=complete elapsed=2m0s",
+		"collection run progress: attempted=1 finished=1 iterations=1 remaining=1 elapsed=2m0s average-per-finished=2m0s estimated-remaining=2m0s",
+		"collection run summary: attempted=1 finished=1 iterations=1 remaining=1 elapsed=2m0s average-per-finished=2m0s estimated-remaining=2m0s",
+	} {
+		if !strings.Contains(output.String(), want) {
+			t.Fatalf("run progress output missing %q: %s", want, output.String())
 		}
 	}
 }

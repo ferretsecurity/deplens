@@ -162,7 +162,7 @@ func TestGitHubAcquisitionStopsGracefullyAtDecodedResponseBudget(t *testing.T) {
 	}
 }
 
-func TestGitHubAcquisitionStopsSearchWhenInspectionPoolIsFull(t *testing.T) {
+func TestGitHubAcquisitionStopsSearchWhenInspectionTargetAndQualifiedMinimumAreMet(t *testing.T) {
 	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 	service := &fakeGitHubService{
 		searchPages: map[string][][]GitHubCodeHit{"filename:go.work": {
@@ -170,20 +170,26 @@ func TestGitHubAcquisitionStopsSearchWhenInspectionPoolIsFull(t *testing.T) {
 				{Repository: "octo/noise", Path: "go.work.example"},
 				{Repository: "octo/one", Path: "go.work"},
 				{Repository: "octo/two", Path: "nested/go.work"},
+				{Repository: "octo/three", Path: "go.work"},
+				{Repository: "octo/four", Path: "go.work"},
+				{Repository: "octo/five", Path: "go.work"},
 			},
 			{{Repository: "octo/unneeded", Path: "go.work"}},
 		}},
-		repositories: map[string]GitHubRepository{
-			"octo/one": {FullName: "octo/one", HTMLURL: "https://github.com/octo/one", DefaultBranch: "main"},
-			"octo/two": {FullName: "octo/two", HTMLURL: "https://github.com/octo/two", DefaultBranch: "main"},
-		},
-		heads: map[string]string{"octo/one/main": commit, "octo/two/main": commit},
-		files: map[string][]byte{
-			"octo/one@" + commit + ":go.work":        []byte("go 1.22\nuse ./one\n"),
-			"octo/two@" + commit + ":nested/go.work": []byte("go 1.22\nuse ./two\n"),
-			"octo/one@" + commit + ":LICENSE":        []byte("MIT License\n"),
-			"octo/two@" + commit + ":LICENSE":        []byte("MIT License\n"),
-		},
+		repositories: map[string]GitHubRepository{},
+		heads:        map[string]string{},
+		files:        map[string][]byte{},
+	}
+	for _, name := range []string{"one", "two", "three", "four", "five"} {
+		repository := "octo/" + name
+		service.repositories[repository] = GitHubRepository{FullName: repository, HTMLURL: "https://github.com/" + repository, DefaultBranch: "main"}
+		service.heads[repository+"/main"] = commit
+		path := "go.work"
+		if name == "two" {
+			path = "nested/go.work"
+		}
+		service.files[repository+"@"+commit+":"+path] = []byte("go 1.22\nuse ./" + name + "\n")
+		service.files[repository+"@"+commit+":LICENSE"] = []byte("MIT License\n")
 	}
 	input, err := newGitHubAcquisition(service, CollectionLimits{
 		Queries: 1, ResultPages: 10, CandidateInspections: 2,
@@ -194,8 +200,60 @@ func TestGitHubAcquisitionStopsSearchWhenInspectionPoolIsFull(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if service.searchCalls != 1 || len(input.Candidates) != 2 {
+	if service.searchCalls != 1 || len(input.Candidates) != minimumQualifiedCandidates {
 		t.Fatalf("search calls = %d, candidates = %d", service.searchCalls, len(input.Candidates))
+	}
+}
+
+func TestGitHubAcquisitionContinuesPastInspectionTargetUntilFiveQualify(t *testing.T) {
+	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	service := &fakeGitHubService{
+		searchPages: map[string][][]GitHubCodeHit{"filename:go.mod": {
+			{
+				{Repository: "octo/rejected-one", Path: "go.mod"},
+				{Repository: "octo/rejected-two", Path: "go.mod"},
+				{Repository: "octo/rejected-three", Path: "go.mod"},
+			},
+			{
+				{Repository: "octo/one", Path: "go.mod"},
+				{Repository: "octo/two", Path: "go.mod"},
+				{Repository: "octo/three", Path: "go.mod"},
+				{Repository: "octo/four", Path: "go.mod"},
+				{Repository: "octo/five", Path: "go.mod"},
+			},
+		}},
+		repositories: map[string]GitHubRepository{},
+		heads:        map[string]string{},
+		files:        map[string][]byte{},
+	}
+	for _, name := range []string{"rejected-one", "rejected-two", "rejected-three"} {
+		repository := "octo/" + name
+		service.repositories[repository] = GitHubRepository{FullName: repository, Private: true, DefaultBranch: "main"}
+	}
+	for _, name := range []string{"one", "two", "three", "four", "five"} {
+		repository := "octo/" + name
+		service.repositories[repository] = GitHubRepository{FullName: repository, HTMLURL: "https://github.com/" + repository, DefaultBranch: "main"}
+		service.heads[repository+"/main"] = commit
+		service.files[repository+"@"+commit+":go.mod"] = []byte("module " + name + "\n")
+		service.files[repository+"@"+commit+":LICENSE"] = []byte("MIT License\n")
+	}
+	var final ResearchProgress
+	input, err := newGitHubAcquisition(service, CollectionLimits{
+		Queries: 1, ResultPages: 2, CandidateInspections: 3,
+		DecodedResponseBytes: 4096, SourceBytes: 1024,
+	}).Acquire(context.Background(), Iteration{
+		QueryPlan: []string{"filename:go.mod"}, QueryLimit: 1, CandidateLimit: 3,
+		ReportProgress: func(update ResearchProgress) {
+			if update.Final {
+				final = update
+			}
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(input.Candidates) != minimumQualifiedCandidates || final.Inspected != 8 || final.InspectionLimit != 3 || service.searchCalls != 2 {
+		t.Fatalf("candidates=%d final=%+v search calls=%d", len(input.Candidates), final, service.searchCalls)
 	}
 }
 
@@ -397,8 +455,9 @@ func TestGitHubAcquisitionSkipsWebHintsWhenPrimaryMeetsMinimum(t *testing.T) {
 	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 	github := &fakeGitHubService{searches: map[string][]GitHubCodeHit{"filename:go.mod": {
 		{Repository: "octo/one", Path: "go.mod"}, {Repository: "octo/two", Path: "go.mod"}, {Repository: "octo/three", Path: "go.mod"},
+		{Repository: "octo/four", Path: "go.mod"}, {Repository: "octo/five", Path: "go.mod"},
 	}}, repositories: map[string]GitHubRepository{}, heads: map[string]string{}, files: map[string][]byte{}}
-	for _, repo := range []string{"octo/one", "octo/two", "octo/three"} {
+	for _, repo := range []string{"octo/one", "octo/two", "octo/three", "octo/four", "octo/five"} {
 		github.repositories[repo] = GitHubRepository{FullName: repo, HTMLURL: "https://github.com/" + repo, DefaultBranch: "main"}
 		github.heads[repo+"/main"] = commit
 		github.files[repo+"@"+commit+":go.mod"] = []byte("module " + repo + "\n")

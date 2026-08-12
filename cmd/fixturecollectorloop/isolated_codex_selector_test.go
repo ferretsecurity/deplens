@@ -33,7 +33,7 @@ printf '{"selected":[{"id":"candidate-1","rationale":"common usage"},{"id":"cand
 	if err := os.WriteFile(fake, []byte(script), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	selector := newIsolatedCodexSelector(IsolatedCodexSelectorConfig{Executable: fake, Model: "gpt-5.4", ReasoningEffort: "high"})
+	selector := newIsolatedCodexSelector(IsolatedCodexSelectorConfig{Executable: fake, Model: "gpt-5.6-terra", ReasoningEffort: "medium"})
 	if err := selector.Preflight(); err != nil {
 		t.Fatalf("Preflight() error = %v", err)
 	}
@@ -57,7 +57,7 @@ printf '{"selected":[{"id":"candidate-1","rationale":"common usage"},{"id":"cand
 		t.Fatal(err)
 	}
 	text := string(log)
-	for _, want := range []string{"--ephemeral", "--ignore-user-config", "--ignore-rules", "--strict-config", "--output-schema", "--disable shell_tool", "--config approval_policy=\"never\"", "--config web_search=\"disabled\"", "--model gpt-5.4", "model_reasoning_effort=\"high\"", " -"} {
+	for _, want := range []string{"--ephemeral", "--ignore-user-config", "--ignore-rules", "--strict-config", "--output-schema", "--disable shell_tool", "--config approval_policy=\"never\"", "--config web_search=\"disabled\"", "--model gpt-5.6-terra", "model_reasoning_effort=\"medium\"", " -"} {
 		if !strings.Contains(text, want) {
 			t.Errorf("invocation missing %q:\n%s", want, text)
 		}
@@ -75,6 +75,13 @@ printf '{"selected":[{"id":"candidate-1","rationale":"common usage"},{"id":"cand
 		if strings.Contains(text, forbidden) {
 			t.Errorf("child inherited forbidden environment %q", forbidden)
 		}
+	}
+}
+
+func TestDefaultIsolatedCodexSelectorUsesReviewedModel(t *testing.T) {
+	config := defaultIsolatedCodexSelectorConfig()
+	if config.Model != "gpt-5.6-terra" || config.ReasoningEffort != "medium" {
+		t.Fatalf("default selector config = %+v", config)
 	}
 }
 

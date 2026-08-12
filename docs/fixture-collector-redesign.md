@@ -59,28 +59,31 @@ repository-and-path hits across queries are collapsed before inspection.
 
 ## Budgets and accounting
 
-All resource bounds are explicit reviewed progress fields and are enforced by
-a shared Go budget tracker immediately before consumption. At minimum the
-budgets cover:
+All acquisition controls are explicit reviewed progress fields. Hard resource
+bounds are enforced by a shared Go budget tracker immediately before
+consumption. At minimum they cover:
 
 - search queries;
 - result pages;
-- candidate inspections;
+- a normal candidate-inspection target;
 - decoded remote-response bytes, partitioned between discovery and detailed
   acquisition and including metadata and evidence;
 - selection-packet tokens; and
 - selector invocations.
 
-The established defaults are eight queries, 100 inspections, a 2 MiB source
-ceiling, a 50,000-token candidate-packet target, seven valid iterations per
-detector, and two selector invocations per iteration. Page and aggregate-byte
-limits are mandatory reviewed values rather than hidden implementation
-defaults.
+The established defaults are eight queries, a target of 100 inspections, a 2
+MiB source ceiling, a 50,000-token candidate-packet target, seven valid
+iterations per detector, and two selector invocations per iteration. Page and
+aggregate-byte limits are mandatory reviewed values rather than hidden
+implementation defaults.
 
 The aggregate decoded-response allowance is deterministically partitioned: one
 quarter is reserved for search responses and three quarters for repository,
-commit, source, and license acquisition. Search stops when unique locally
-selector-matching hits can fill the remaining inspection ceiling. The
+commit, source, and license acquisition. Qualification inspects up to the
+normal target even when five candidates qualify early. If fewer than five
+qualify at that point, it continues until five qualify or a hard query,
+result-page, or decoded-byte bound is reached. Search stops when both
+the inspection target and qualified minimum are satisfied. The
 production GitHub adapter obtains source type and exact bytes from one Contents
 response rather than downloading the same payload twice.
 
@@ -247,7 +250,7 @@ removed where supported, and residual local tools are ineffective outside the
 sandbox. The exact invocation and first-party citations are documented in
 `docs/research/selector-transport-options.md`.
 
-The model identifier, reasoning effort, observed Codex version,
+The model identifier (`gpt-5.6-terra`), reasoning effort (`medium`), observed Codex version,
 isolation-feature set, and packet format version are included in the
 selector-state fingerprint. They are never inherited silently from user
 configuration.

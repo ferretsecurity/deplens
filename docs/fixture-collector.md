@@ -23,13 +23,13 @@ go run ./cmd/fixturecollectorloop initialize-progress \
 ```
 
 Review progress before running. Its defaults bound eight queries, ten result
-pages, 100 candidate inspections, 16 MiB of decoded remote responses, 2 MiB per
-source, an approximately 50,000-token selection packet, two selector calls,
-and seven valid iterations. One quarter of the decoded-response allowance is
-reserved for search and three quarters for detailed acquisition, so result
-pages cannot consume source and license capacity. The packet figure is a
-conservative local approximation, not exact counting of the complete model
-request.
+pages, 16 MiB of decoded remote responses, 2 MiB per source, an approximately
+50,000-token selection packet, two selector calls, and seven valid iterations.
+The normal candidate-inspection target is 100. One quarter of the
+decoded-response allowance is reserved for search and three quarters for
+detailed acquisition, so result pages cannot consume source and license
+capacity. The packet figure is a conservative local approximation, not exact
+counting of the complete model request.
 
 States are `pending`, `in-progress`, `complete`, `needs-query-review`,
 `needs-content-review`, and `needs-collection-review`. Review-needed states are
@@ -63,16 +63,20 @@ query shapes without trusting provider search semantics. Filtered search noise
 is checkpointed as bounded reason counts; it is not recorded as one candidate
 rejection per provider hit.
 
-Search pagination stops as soon as the unique selector-matching hit pool can
-fill the remaining inspection ceiling; a popular query therefore does not
-download unused result pages. Production source inspection obtains the file
+Qualification normally inspects 100 candidates. If fewer than five qualify,
+it continues through later result pages until five qualify or a hard query,
+result-page, or decoded-byte bound stops the work. Once both the
+inspection target and five qualified candidates are reached, no unused result
+pages are downloaded. Production source inspection obtains the file
 type and exact bytes from one GitHub Contents response. Search and acquisition
 charge independent portions of the reviewed aggregate byte allowance.
 
 The selector requires an installed Codex CLI with the complete isolation feature
 set and an existing Codex OAuth login. Any Codex CLI version number is eligible;
 preflight fails closed when a required feature is unavailable, and the observed
-version is included in the selector-state fingerprint. GitHub credentials come
+version is included in the selector-state fingerprint. Selection is pinned to
+`gpt-5.6-terra` with `medium` reasoning rather than inheriting user model
+defaults. GitHub credentials come
 from standard token environment variables or an existing `gh` login and remain
 in Go memory; they are never passed to Codex.
 
@@ -107,10 +111,16 @@ starts. Re-run the same command to resume a valid checkpoint. The first
 records recovery-required state. Exit 0 is a valid completion or stop; exit 1
 is an operational, integrity, lock, Git, selector, or recovery failure.
 
-`run` reports the selected detector and iteration before research starts. While
+`run` reports the run's detector count and duration, then reports each detector
+start and finish. After every finished detector it prints detectors attempted,
+finished, and remaining in this run, the iteration count, elapsed time, average
+time per finished detector, and an estimated time for the remaining detectors.
+The same figures appear in a run summary on normal completion or a soft stop.
+The estimate is `n/a` until one detector finishes. While
 acquisition is active it reports each provider result page and approximately
-ten evenly spaced qualification tallies containing inspected, qualified,
-rejected, and cheaply filtered counts. Search lines show the search-byte
+ten evenly spaced qualification tallies containing inspected, the normal
+inspection target, qualified progress toward five, rejected, and cheaply
+filtered counts. Search lines show the search-byte
 allowance; qualification lines show the acquisition-byte allowance, including
 downloaded and remaining amounts. It also brackets the isolated model call with
 selection-started and selection-finished messages. After a valid accepted

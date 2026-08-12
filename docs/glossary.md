@@ -134,13 +134,17 @@ The mandatory record of actual discovery, acquisition, qualification, and select
 
 The first detailed metadata or content request for one unique repository-and-path pair in one collection iteration. Duplicate search hits do not consume another inspection, but a failed request and deliberate reconsideration in a later iteration do.
 
+### Candidate inspection target
+
+The normal number of candidate inspections attempted in one collection iteration. It is not a hard ceiling: when fewer than five candidates qualify at the target, qualification continues until five qualify or another hard collection budget is exhausted.
+
 ### Outcome reason code
 
 A closed, stage-specific Go enum identifying a durable candidate or infrastructure outcome. Optional bounded diagnostic detail may accompany it, but external error text and free-form wording never determine control flow.
 
 ### Collection budget
 
-A configurable hard limit on resource-consuming collection activity, enforced by Go at the point of consumption. Queries, result pages, candidate inspections, downloaded bytes, selection-packet tokens, and selector invocations are budgeted; derived outcomes are only accounted for.
+A configurable hard limit on resource-consuming collection activity, enforced by Go at the point of consumption. Queries, result pages, downloaded bytes, selection-packet tokens, and selector invocations are budgeted; derived outcomes and the candidate-inspection target are only accounted for.
 
 ### License evidence
 

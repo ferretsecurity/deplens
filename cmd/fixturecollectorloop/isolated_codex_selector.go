@@ -29,7 +29,7 @@ type IsolatedCodexSelectorConfig struct {
 
 func defaultIsolatedCodexSelectorConfig() IsolatedCodexSelectorConfig {
 	return IsolatedCodexSelectorConfig{
-		Executable: "codex", Model: "gpt-5.4", ReasoningEffort: "high",
+		Executable: "codex", Model: "gpt-5.6-terra", ReasoningEffort: "medium",
 	}
 }
 
