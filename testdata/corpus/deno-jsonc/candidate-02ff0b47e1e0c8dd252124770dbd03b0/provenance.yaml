@@ -1,0 +1,18 @@
+version: 2
+detector_id: deno-jsonc
+candidate_id: candidate-02ff0b47e1e0c8dd252124770dbd03b0
+provider: github
+repository: W4G1/multithreading
+repository_url: https://github.com/W4G1/multithreading
+default_branch: main
+commit: a42ce15cf8fb3c61d2b190222cf5b9a49fc34442
+original_path: deno.jsonc
+permalink: https://github.com/W4G1/multithreading/blob/a42ce15cf8fb3c61d2b190222cf5b9a49fc34442/deno.jsonc
+retrieved_at: "2026-08-12T08:55:27Z"
+sha256: f6e2aa048101284c4da8b584b9b71e94649b04e3da76cd3e34ffd0f5b63f7759
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/W4G1/multithreading/blob/a42ce15cf8fb3c61d2b190222cf5b9a49fc34442/LICENSE.md
+    sha256: 14af0b82ebcb46afe9a7862bf59fefbb9727221361eabc61e3ba46f586b6980e
+rationale: Covers a compact strict TypeScript configuration for a worker-focused project, including advanced compiler checks.

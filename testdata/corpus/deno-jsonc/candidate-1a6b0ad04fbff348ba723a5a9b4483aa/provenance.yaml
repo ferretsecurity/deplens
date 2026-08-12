@@ -1,0 +1,18 @@
+version: 2
+detector_id: deno-jsonc
+candidate_id: candidate-1a6b0ad04fbff348ba723a5a9b4483aa
+provider: github
+repository: runreal/cli
+repository_url: https://github.com/runreal/cli
+default_branch: main
+commit: 683c3831eb3ef4fa4576a662dd930f9c97469b89
+original_path: deno.jsonc
+permalink: https://github.com/runreal/cli/blob/683c3831eb3ef4fa4576a662dd930f9c97469b89/deno.jsonc
+retrieved_at: "2026-08-12T08:57:34Z"
+sha256: 66544251e4385fea9ef572ba312cbb73a1998d03308e581422829069394cac61
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/runreal/cli/blob/683c3831eb3ef4fa4576a662dd930f9c97469b89/LICENSE
+    sha256: d3369b0ce5c5ca5dc72aeb63f67d222f5c5877c37234b1c5d7a041df46d162c3
+rationale: 'Representative real-world published CLI: metadata, tasks, imports, exports, lint, formatting, and publish settings.'

@@ -1,0 +1,18 @@
+version: 2
+detector_id: deno-jsonc
+candidate_id: candidate-f60796b3879932680827511d29921cb1
+provider: github
+repository: JLarky/lift-html
+repository_url: https://github.com/JLarky/lift-html
+default_branch: main
+commit: 45fca69dd972bc4d912988f17c5e00a98656195c
+original_path: deno.jsonc
+permalink: https://github.com/JLarky/lift-html/blob/45fca69dd972bc4d912988f17c5e00a98656195c/deno.jsonc
+retrieved_at: "2026-08-12T08:57:20Z"
+sha256: 2d65a137868832813c2011e9f4c519aee7c550c5d0cea1d911ef73f7fb5ca8b0
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/JLarky/lift-html/blob/45fca69dd972bc4d912988f17c5e00a98656195c/LICENSE
+    sha256: fedaf54df1562c2553c9581d59bc02a00db3ce08e3aba562dfe872d9ee5c8a94
+rationale: Adds a practical multi-package workspace with Node-module integration and browser-oriented compiler libraries.

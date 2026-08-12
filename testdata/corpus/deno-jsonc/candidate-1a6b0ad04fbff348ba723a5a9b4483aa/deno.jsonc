@@ -1,0 +1,81 @@
+{
+	"$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
+	"name": "@runreal/cli",
+	"version": "1.9.0",
+	"description": "The open source Unreal Engine toolkit",
+	"license": "MIT",
+	"tasks": {
+		"dev": "deno run -A --watch=src src/index.ts",
+		"test": "deno test -A --watch",
+		"run": "deno run -A src/index.ts",
+		"install": "deno install -A --force --global --name runreal src/index.ts --config deno.jsonc",
+		"compile-win": "deno compile -A --target x86_64-pc-windows-msvc --output build/runreal-win-x64 src/index.ts",
+		"compile-linux": "deno compile -A --target x86_64-unknown-linux-gnu --output build/runreal-linux-x64 src/index.ts",
+		"compile-macos": "deno compile -A --target aarch64-apple-darwin --output build/runreal-macos-arm src/index.ts",
+		"generate-schema": "deno run -A src/generate-schema.ts"
+	},
+	"lint": {
+		"include": [
+			"src/",
+			"tests/"
+		],
+		"rules": {
+			"tags": [
+				"recommended"
+			],
+			"include": [
+				"ban-untagged-todo"
+			],
+			"exclude": [
+				"no-unused-vars",
+				"no-explicit-any"
+			]
+		}
+	},
+	"fmt": {
+		"include": [
+			"src/",
+			"tests/",
+			"deno.jsonc",
+			"release-please-config.json"
+		],
+		"useTabs": true,
+		"lineWidth": 120,
+		"indentWidth": 2,
+		"singleQuote": true,
+		"proseWrap": "preserve",
+		"semiColons": false
+	},
+	"imports": {
+		"@cliffy/ansi": "jsr:@cliffy/ansi@1.0.0-rc.7",
+		"@cliffy/command": "jsr:@cliffy/command@1.0.0-rc.7",
+		"@cliffy/prompt": "jsr:@cliffy/prompt@1.0.0-rc.7",
+		"@cliffy/testing": "jsr:@cliffy/testing@1.0.0-rc.7",
+		"@david/dax": "jsr:@david/dax@0.42.0",
+		"@luca/esbuild-deno-loader": "jsr:@luca/esbuild-deno-loader@0.11.1",
+		"@rebeccastevens/deepmerge": "jsr:@rebeccastevens/deepmerge@7.1.5",
+		"@std/assert": "jsr:@std/assert@1.0.12",
+		"@std/dotenv": "jsr:@std/dotenv@0.225.3",
+		"@std/fmt": "jsr:@std/fmt@1.0.6",
+		"@std/fs": "jsr:@std/fs@^1.0.16",
+		"@std/json": "jsr:@std/json@^1.0.2",
+		"@std/jsonc": "jsr:@std/jsonc@1.0.1",
+		"@std/path": "jsr:@std/path@1.0.8",
+		"@std/streams": "jsr:@std/streams@^1.0.9",
+		"@std/testing": "jsr:@std/testing@1.0.11",
+		"@std/ulid": "jsr:@std/ulid@^1.0.0",
+		"esbuild": "npm:esbuild@0.25.2",
+		"ueblueprint": "npm:ueblueprint@2.0.0",
+		"zod": "npm:zod@next",
+		"nanoid": "npm:nanoid@5.1"
+	},
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"publish": {
+		"include": [
+			"README.md",
+			"src"
+		]
+	}
+}
