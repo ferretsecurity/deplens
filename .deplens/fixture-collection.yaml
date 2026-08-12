@@ -12352,13 +12352,14 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: in-progress
-      iterations: 6
+      state: needs-collection-review
+      iterations: 7
       examples: []
       target: 3
       query_plan:
         - path:.config/dotnet-tools.json
       queries:
+        - path:.config/dotnet-tools.json
         - path:.config/dotnet-tools.json
         - path:.config/dotnet-tools.json
         - path:.config/dotnet-tools.json
@@ -12387,6 +12388,10 @@ detectors:
           queries:
             - path:.config/dotnet-tools.json
         - iteration: 6
+          result: unsuccessful
+          queries:
+            - path:.config/dotnet-tools.json
+        - iteration: 7
           result: unsuccessful
           queries:
             - path:.config/dotnet-tools.json
