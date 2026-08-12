@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-bun-lock
+candidate_id: candidate-1ed97dafca6df36e305fa5ab335c2b2b
+provider: github
+repository: Mohamed-faaris/Ajrasakha-Hackathon
+repository_url: https://github.com/Mohamed-faaris/Ajrasakha-Hackathon
+default_branch: main
+commit: 323c9b38782b638404d4315d085d95c4e945e0cf
+original_path: seeder/bun.lock
+permalink: https://github.com/Mohamed-faaris/Ajrasakha-Hackathon/blob/323c9b38782b638404d4315d085d95c4e945e0cf/seeder/bun.lock
+retrieved_at: "2026-08-12T08:36:03Z"
+sha256: cf32ff0ac0aba6fca6a5bc6539dc5760eb0183571b9261e0382760e47d64b55d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Mohamed-faaris/Ajrasakha-Hackathon/blob/323c9b38782b638404d4315d085d95c4e945e0cf/LICENSE
+    sha256: cd1c98c8b7f7112cacd80d4eceb30c3d30dea5bb1018701ccb40191911957ef9
+rationale: Compact production-oriented seeder with one database dependency; covers configVersion and a focused transitive graph.

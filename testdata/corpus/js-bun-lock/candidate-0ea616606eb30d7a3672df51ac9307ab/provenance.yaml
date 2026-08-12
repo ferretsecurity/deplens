@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-bun-lock
+candidate_id: candidate-0ea616606eb30d7a3672df51ac9307ab
+provider: github
+repository: univeous/Pixel-Extractor
+repository_url: https://github.com/univeous/Pixel-Extractor
+default_branch: main
+commit: 03ebb8633f8e9c13c4e607d3e24841dcfbabad77
+original_path: bun.lock
+permalink: https://github.com/univeous/Pixel-Extractor/blob/03ebb8633f8e9c13c4e607d3e24841dcfbabad77/bun.lock
+retrieved_at: "2026-08-12T08:35:20Z"
+sha256: a06537cb1b068b8be99ec9c20079026a4bd90b4e6ba76c909878561be0950db2
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/univeous/Pixel-Extractor/blob/03ebb8633f8e9c13c4e607d3e24841dcfbabad77/LICENSE
+    sha256: e709c47a66fd915f5535867b22c23048b2fe3d896c793adc34af93479e1bc51b
+rationale: 'Most common case: a standard single-workspace React/Vite app with normal runtime and development dependencies.'

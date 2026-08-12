@@ -1288,12 +1288,226 @@ detectors:
       roles:
         - resolution
         - integrity
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/js-bun-lock/candidate-0ea616606eb30d7a3672df51ac9307ab/bun.lock
+        - testdata/corpus/js-bun-lock/candidate-1ed97dafca6df36e305fa5ab335c2b2b/seeder/bun.lock
+        - testdata/corpus/js-bun-lock/candidate-3f494c538ef9bdc2bcb48f903228a2bd/bun.lock
       target: 3
       query_plan:
         - filename:bun.lock
+      queries:
+        - filename:bun.lock
+      candidates:
+        - candidate-95681b44bf03d8ad8a13247af297248d
+        - candidate-68eae9c74f7321761a364961572f0b76
+        - candidate-44b7fb093ede6bda3d60e42c276f45d4
+        - candidate-3f494c538ef9bdc2bcb48f903228a2bd
+        - candidate-d48b13122e10a4d9e7cd0285e365f3fa
+        - candidate-d092261a47ad12a1666338291728ba5d
+        - candidate-2127bd6e118be8c18df4c3495f3185f7
+        - candidate-0ea616606eb30d7a3672df51ac9307ab
+        - candidate-71a41c12560f44f47fec48b19731e827
+        - candidate-a291246f658ee88b5016dd5c73da6fa1
+        - candidate-18af76d6156a72c342537cb6730532c9
+        - candidate-a4174f844d14f39710deb7e2fe710fac
+        - candidate-155db14f80a86206b5b392944a0465cc
+        - candidate-c9997af686c6d378980b7de34aa400c6
+        - candidate-e23f582f24a6896c2de1227d63fc91a8
+        - candidate-da27f20a793cd875f37151456edf0cdd
+        - candidate-7ba04a53649bbe6b4cf252f6d4af9daa
+        - candidate-88aba62938fac884846bf7b8432b99ce
+        - candidate-ae2d8898765a6b6dca8f0510239b7db7
+        - candidate-1ed97dafca6df36e305fa5ab335c2b2b
+        - candidate-d813458e797ee853ec9783d4457054b3
+      filtered_search_hits:
+        source-selector-mismatch: 90
+      rejections:
+        - not-model-presentable-packet-size
+        - repository-template
+        - license-missing
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - repository-template
+        - license-missing
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - license-missing
+        - not-model-presentable-packet-size
+        - license-missing
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - license-missing
+        - not-model-presentable-packet-size
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - not-model-presentable-packet-size
+        - license-missing
+        - license-missing
+        - not-model-presentable-packet-size
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+      omitted:
+        - candidate-18af76d6156a72c342537cb6730532c9
+        - candidate-2127bd6e118be8c18df4c3495f3185f7
+        - candidate-44b7fb093ede6bda3d60e42c276f45d4
+        - candidate-68eae9c74f7321761a364961572f0b76
+        - candidate-71a41c12560f44f47fec48b19731e827
+        - candidate-7ba04a53649bbe6b4cf252f6d4af9daa
+        - candidate-88aba62938fac884846bf7b8432b99ce
+        - candidate-95681b44bf03d8ad8a13247af297248d
+        - candidate-a291246f658ee88b5016dd5c73da6fa1
+        - candidate-a4174f844d14f39710deb7e2fe710fac
+        - candidate-ae2d8898765a6b6dca8f0510239b7db7
+        - candidate-d092261a47ad12a1666338291728ba5d
+        - candidate-d813458e797ee853ec9783d4457054b3
+        - candidate-e23f582f24a6896c2de1227d63fc91a8
+      decision_states:
+        - packet_fingerprint: 98bc485aa181da2df2ba82f084b5811caa19279660cc41454ba47502fe6d9fab
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-0ea616606eb30d7a3672df51ac9307ab
+            - candidate-1ed97dafca6df36e305fa5ab335c2b2b
+            - candidate-3f494c538ef9bdc2bcb48f903228a2bd
+          queries:
+            - filename:bun.lock
+          candidates:
+            - candidate-95681b44bf03d8ad8a13247af297248d
+            - candidate-68eae9c74f7321761a364961572f0b76
+            - candidate-44b7fb093ede6bda3d60e42c276f45d4
+            - candidate-3f494c538ef9bdc2bcb48f903228a2bd
+            - candidate-d48b13122e10a4d9e7cd0285e365f3fa
+            - candidate-d092261a47ad12a1666338291728ba5d
+            - candidate-2127bd6e118be8c18df4c3495f3185f7
+            - candidate-0ea616606eb30d7a3672df51ac9307ab
+            - candidate-71a41c12560f44f47fec48b19731e827
+            - candidate-a291246f658ee88b5016dd5c73da6fa1
+            - candidate-18af76d6156a72c342537cb6730532c9
+            - candidate-a4174f844d14f39710deb7e2fe710fac
+            - candidate-155db14f80a86206b5b392944a0465cc
+            - candidate-c9997af686c6d378980b7de34aa400c6
+            - candidate-e23f582f24a6896c2de1227d63fc91a8
+            - candidate-da27f20a793cd875f37151456edf0cdd
+            - candidate-7ba04a53649bbe6b4cf252f6d4af9daa
+            - candidate-88aba62938fac884846bf7b8432b99ce
+            - candidate-ae2d8898765a6b6dca8f0510239b7db7
+            - candidate-1ed97dafca6df36e305fa5ab335c2b2b
+            - candidate-d813458e797ee853ec9783d4457054b3
+          filtered_search_hits:
+            source-selector-mismatch: 90
+          rejections:
+            - not-model-presentable-packet-size
+            - repository-template
+            - license-missing
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - repository-template
+            - license-missing
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - license-missing
+            - not-model-presentable-packet-size
+            - license-missing
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - license-missing
+            - not-model-presentable-packet-size
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - not-model-presentable-packet-size
+            - license-missing
+            - license-missing
+            - not-model-presentable-packet-size
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+          omitted:
+            - candidate-18af76d6156a72c342537cb6730532c9
+            - candidate-2127bd6e118be8c18df4c3495f3185f7
+            - candidate-44b7fb093ede6bda3d60e42c276f45d4
+            - candidate-68eae9c74f7321761a364961572f0b76
+            - candidate-71a41c12560f44f47fec48b19731e827
+            - candidate-7ba04a53649bbe6b4cf252f6d4af9daa
+            - candidate-88aba62938fac884846bf7b8432b99ce
+            - candidate-95681b44bf03d8ad8a13247af297248d
+            - candidate-a291246f658ee88b5016dd5c73da6fa1
+            - candidate-a4174f844d14f39710deb7e2fe710fac
+            - candidate-ae2d8898765a6b6dca8f0510239b7db7
+            - candidate-d092261a47ad12a1666338291728ba5d
+            - candidate-d813458e797ee853ec9783d4457054b3
+            - candidate-e23f582f24a6896c2de1227d63fc91a8
+          decision:
+            packet_fingerprint: 98bc485aa181da2df2ba82f084b5811caa19279660cc41454ba47502fe6d9fab
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: js-bun-lockb
       form: lockfile
       roles:

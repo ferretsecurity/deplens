@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-bun-lock
+candidate_id: candidate-3f494c538ef9bdc2bcb48f903228a2bd
+provider: github
+repository: NobleMajo/bun-route
+repository_url: https://github.com/NobleMajo/bun-route
+default_branch: main
+commit: 05a6ac2a54c15da6011c532b3ad51187c6c55f35
+original_path: bun.lock
+permalink: https://github.com/NobleMajo/bun-route/blob/05a6ac2a54c15da6011c532b3ad51187c6c55f35/bun.lock
+retrieved_at: "2026-08-12T08:35:14Z"
+sha256: d25fe5c70a09983210b42fa42bef5d272a027374eb9a6f02ba3026f04ed4578e
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/NobleMajo/bun-route/blob/05a6ac2a54c15da6011c532b3ad51187c6c55f35/LICENSE
+    sha256: 974067fa787368d5d3350ec83712e8cd4f8efea8c455db0faf3822c16a8a0172
+rationale: Small library-style lockfile that adds peer dependencies and Bun-specific type/tooling structure.
