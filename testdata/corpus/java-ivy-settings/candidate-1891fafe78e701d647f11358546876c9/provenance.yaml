@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-ivy-settings
+candidate_id: candidate-1891fafe78e701d647f11358546876c9
+provider: github
+repository: EngineeringSoftware/mcoq
+repository_url: https://github.com/EngineeringSoftware/mcoq
+default_branch: master
+commit: fbeb89402931f477eed41c855c4f2b010b2cd82e
+original_path: jsexp/ivysettings.xml
+permalink: https://github.com/EngineeringSoftware/mcoq/blob/fbeb89402931f477eed41c855c4f2b010b2cd82e/jsexp/ivysettings.xml
+retrieved_at: "2026-08-12T11:00:27Z"
+sha256: 15e52e5480376aa9adc2660b1d7b572ebdbacc4df0e6c4ffcf1c97a495882563
+governing_license:
+    spdx: MIT
+    path: jsexp/LICENSE.txt
+    permalink: https://github.com/EngineeringSoftware/mcoq/blob/fbeb89402931f477eed41c855c4f2b010b2cd82e/jsexp/LICENSE.txt
+    sha256: 9ccf26cfe845e0eb8bb58053e47366e7ab6b697ae010f7650978d4b71b7d1fc1
+rationale: Adds a local filesystem repository before Maven Central, covering project-built artifacts.

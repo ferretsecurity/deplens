@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-ivy-settings
+candidate_id: candidate-61dfd6fafacd1d997719f812638c268b
+provider: github
+repository: yugabyte/tpcc
+repository_url: https://github.com/yugabyte/tpcc
+default_branch: master
+commit: 53a41dd792dea66fa420ae0a6d9b109383bbd8fc
+original_path: ivysettings.xml
+permalink: https://github.com/yugabyte/tpcc/blob/53a41dd792dea66fa420ae0a6d9b109383bbd8fc/ivysettings.xml
+retrieved_at: "2026-08-12T10:58:32Z"
+sha256: 60d86452eec1987f5e699b9ee74884bce4ca585bf7eff38e517c0e0c95a96716
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/yugabyte/tpcc/blob/53a41dd792dea66fa420ae0a6d9b109383bbd8fc/LICENSE
+    sha256: 994e111e47787fd746b14dfbb3c18689d9419780e72d5f2b3305f9a0172be199
+rationale: 'The common, minimal real-world setup: one Maven Central resolver.'

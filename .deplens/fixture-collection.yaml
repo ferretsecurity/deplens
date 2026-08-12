@@ -5466,12 +5466,242 @@ detectors:
       form: tool-config
       roles:
         - configuration
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/java-ivy-settings/candidate-1891fafe78e701d647f11358546876c9/jsexp/ivysettings.xml
+        - testdata/corpus/java-ivy-settings/candidate-5b78afd82896327e90d138b2bc6e34bb/ivysettings.xml
+        - testdata/corpus/java-ivy-settings/candidate-61dfd6fafacd1d997719f812638c268b/ivysettings.xml
       target: 3
       query_plan:
         - filename:ivysettings.xml
+      queries:
+        - filename:ivysettings.xml
+      candidates:
+        - candidate-34490fcc1b90256f8c7aefca8b88bf54
+        - candidate-95a0f6d63bf9b61f0cccb90498f3ad96
+        - candidate-5b78afd82896327e90d138b2bc6e34bb
+        - candidate-df85a8dd8804464e2df132c3cee8f23c
+        - candidate-61dfd6fafacd1d997719f812638c268b
+        - candidate-ef60cd5d49155ab7a398ee64db76318f
+        - candidate-934050576b07a8c9b0888031feb6aaa8
+        - candidate-931f985566b20240e5f07a0d9fe36015
+        - candidate-16aaa8c3d3448f20777d62664111d6c1
+        - candidate-a99a12690fbb797c701d5abfcedbc82e
+        - candidate-1891fafe78e701d647f11358546876c9
+      filtered_search_hits:
+        source-selector-mismatch: 4
+      rejections:
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - license-disallowed
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-disallowed
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+      decision_states:
+        - packet_fingerprint: b25683fcd14ab7678117c50e1b840b80e36a9f7df60688286312805d66272fae
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-1891fafe78e701d647f11358546876c9
+            - candidate-5b78afd82896327e90d138b2bc6e34bb
+            - candidate-61dfd6fafacd1d997719f812638c268b
+          queries:
+            - filename:ivysettings.xml
+          candidates:
+            - candidate-34490fcc1b90256f8c7aefca8b88bf54
+            - candidate-95a0f6d63bf9b61f0cccb90498f3ad96
+            - candidate-5b78afd82896327e90d138b2bc6e34bb
+            - candidate-df85a8dd8804464e2df132c3cee8f23c
+            - candidate-61dfd6fafacd1d997719f812638c268b
+            - candidate-ef60cd5d49155ab7a398ee64db76318f
+            - candidate-934050576b07a8c9b0888031feb6aaa8
+            - candidate-931f985566b20240e5f07a0d9fe36015
+            - candidate-16aaa8c3d3448f20777d62664111d6c1
+            - candidate-a99a12690fbb797c701d5abfcedbc82e
+            - candidate-1891fafe78e701d647f11358546876c9
+          filtered_search_hits:
+            source-selector-mismatch: 4
+          rejections:
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - license-disallowed
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-disallowed
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+          decision:
+            packet_fingerprint: b25683fcd14ab7678117c50e1b840b80e36a9f7df60688286312805d66272fae
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: ruby-gemspec
       form: manifest
       roles:
