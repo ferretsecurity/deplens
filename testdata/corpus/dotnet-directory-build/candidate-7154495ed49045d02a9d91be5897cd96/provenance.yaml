@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-directory-build
+candidate_id: candidate-7154495ed49045d02a9d91be5897cd96
+provider: github
+repository: Raiffeisen-DGTL/ViennaNET
+repository_url: https://github.com/Raiffeisen-DGTL/ViennaNET
+default_branch: master
+commit: 88900951349da7def912189ccbf5306271fda82c
+original_path: Directory.Build.props
+permalink: https://github.com/Raiffeisen-DGTL/ViennaNET/blob/88900951349da7def912189ccbf5306271fda82c/Directory.Build.props
+retrieved_at: "2026-08-12T14:52:24Z"
+sha256: f13223b0589bcf15170ed13c26db612e641e8c8dc4d999f6ce71ecc2cfc3764e
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/Raiffeisen-DGTL/ViennaNET/blob/88900951349da7def912189ccbf5306271fda82c/LICENSE.txt
+    sha256: b09f321698cc5297d05fcf4437a5ee26ecbc211bb01a6148e01d3d9b9cce4535
+rationale: 'Common modern shared defaults: language version, nullable references, and implicit usings in a compact file.'

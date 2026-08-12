@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-directory-build
+candidate_id: candidate-7cecdff27c84f4a64b08b8af5dbc19c4
+provider: github
+repository: PhenX/PhenX.EntityFrameworkCore.BulkInsert
+repository_url: https://github.com/PhenX/PhenX.EntityFrameworkCore.BulkInsert
+default_branch: main
+commit: 58f3936b15a7dde07f5354df5730597624948b9b
+original_path: Directory.Build.props
+permalink: https://github.com/PhenX/PhenX.EntityFrameworkCore.BulkInsert/blob/58f3936b15a7dde07f5354df5730597624948b9b/Directory.Build.props
+retrieved_at: "2026-08-12T14:55:21Z"
+sha256: b29028baa9f3229ec597839308a73f2e2ad7aef7882060b2b44dbad8a66dd243
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/PhenX/PhenX.EntityFrameworkCore.BulkInsert/blob/58f3936b15a7dde07f5354df5730597624948b9b/LICENSE
+    sha256: ef221a0c2a4ab0e7971517c55b9631b6af198aa9fb36788a89a427486e7560d0
+rationale: Adds multi-targeting plus a configuration-dependent warnings-as-errors policy and package metadata.

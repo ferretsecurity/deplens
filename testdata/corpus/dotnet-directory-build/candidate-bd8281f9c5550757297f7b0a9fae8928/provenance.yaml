@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-directory-build
+candidate_id: candidate-bd8281f9c5550757297f7b0a9fae8928
+provider: github
+repository: colinin/abp-next-admin
+repository_url: https://github.com/colinin/abp-next-admin
+default_branch: dev
+commit: 9ec373967ff66170785024ab1fdc35c7f0ebb039
+original_path: Directory.Build.props
+permalink: https://github.com/colinin/abp-next-admin/blob/9ec373967ff66170785024ab1fdc35c7f0ebb039/Directory.Build.props
+retrieved_at: "2026-08-12T14:51:17Z"
+sha256: 42583f56e02334e9ed3e15edced09efb6f68f86071f63e930c666dff118469f5
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/colinin/abp-next-admin/blob/9ec373967ff66170785024ab1fdc35c7f0ebb039/LICENSE
+    sha256: ee52848d81bc38d2bd2e3d4a0be6cde0890440fec9b571c312d9650deb15a739
+rationale: Covers conditional project classification using MSBuild string functions and a conditional item/package reference.
