@@ -51,7 +51,7 @@ type CollectionLimits struct {
 }
 
 var defaultCollectionLimits = CollectionLimits{
-	Queries: 8, ResultPages: 10, CandidateInspections: 40,
+	Queries: 8, ResultPages: 10, CandidateInspections: 100,
 	DecodedResponseBytes: 16 << 20, PacketTokens: 50000,
 	SelectorInvocations: 2, SourceBytes: 2 << 20, ValidIterations: maxIterations,
 }
@@ -325,7 +325,7 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 	single := fs.Bool("single", false, "run one automatically selected iteration")
 	duration := fs.Duration("duration", 8*time.Hour, "soft limit for scheduling new iterations")
 	queryLimit := fs.Int("query-limit", 5, "maximum queries recorded by one iteration")
-	candidateLimit := fs.Int("candidate-limit", 20, "maximum candidates recorded by one iteration")
+	candidateLimit := fs.Int("candidate-limit", defaultCollectionLimits.CandidateInspections, "maximum candidate inspections per iteration")
 	allowDirty := fs.Bool("allow-dirty", false, "allow a checkout that already has non-ignored changes")
 	commit := fs.Bool("commit", false, "create one local collection commit for each valid iteration")
 	if err := fs.Parse(args); err != nil {
@@ -948,8 +948,9 @@ func presentedCandidateIDs(detector *DetectorProgress) map[string]bool {
 	return presented
 }
 
-// noPresentableCandidates distinguishes an exhausted candidate set from an
-// ordinary zero selection. Only the former can establish content review.
+// noPresentableCandidates distinguishes an exhausted model-presentability set
+// from other unsuccessful bounded research. Only the former establishes
+// content review.
 func noPresentableCandidates(outcome Outcome) bool {
 	if len(outcome.Candidates) != 0 {
 		return false

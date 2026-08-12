@@ -19,7 +19,10 @@ import (
 	"unicode/utf8"
 )
 
-var errGitHubNotFound = errors.New("GitHub resource not found")
+var (
+	errGitHubNotFound                       = errors.New("GitHub resource not found")
+	errGitHubDecodedResponseBudgetExhausted = errors.New("GitHub decoded-response byte budget exhausted")
+)
 
 var licenseFilenames = []string{"LICENSE", "LICENSE.md", "LICENSE.txt"}
 
@@ -239,8 +242,12 @@ func (b *acquisitionBudget) chargeSearchBytes(n int64) error {
 	return nil
 }
 func (b *acquisitionBudget) chargeAcquisitionBytes(n int64) error {
-	if n < 0 || n > b.remainingAcquisitionBytes() {
-		return errors.New("GitHub acquisition decoded-response byte budget exhausted")
+	if n < 0 {
+		return errors.New("GitHub acquisition returned a negative decoded-response byte count")
+	}
+	if n > b.remainingAcquisitionBytes() {
+		b.acquisitionBytes = b.acquisitionLimit
+		return fmt.Errorf("GitHub acquisition decoded-response byte budget exhausted: %w", errGitHubDecodedResponseBudgetExhausted)
 	}
 	b.acquisitionBytes += n
 	return nil
@@ -279,6 +286,7 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	identities, contents := make(map[string]struct{}), make(map[string]struct{})
 	inspected := 0
 	rejected := 0
+	acquisitionBudgetExhausted := false
 	reportEvery := max(1, (candidateLimit+9)/10)
 	lastReported := -1
 	reportQualification := func(final bool) {
@@ -322,6 +330,11 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 			inspected++
 			candidate, reason, err := a.inspect(ctx, &b, &cache, hit)
 			if err != nil {
+				if errors.Is(err, errGitHubDecodedResponseBudgetExhausted) {
+					b.acquisitionBytes = b.acquisitionLimit
+					acquisitionBudgetExhausted = true
+					break
+				}
 				return err
 			}
 			if reason != "" {
@@ -358,7 +371,7 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	if remainingMinimum < 0 {
 		remainingMinimum = 0
 	}
-	if a.web != nil && len(candidates) < remainingMinimum && inspected < candidateLimit {
+	if a.web != nil && !acquisitionBudgetExhausted && len(candidates) < remainingMinimum && inspected < candidateLimit {
 		previousHits := len(hits.hits)
 		if err := collectSearchHits(ctx, &b, iteration, "web", iteration.QueryPlan, queryLimit, candidateLimit, &outcome, hits, a.web.SearchHints, webInfrastructureError); err != nil {
 			return ResearchInput{}, err
@@ -784,7 +797,7 @@ func newGitHubHTTPService(token string) *githubHTTPService {
 }
 func (s *githubHTTPService) request(ctx context.Context, endpoint string, limit int64, target any) (int64, error) {
 	if limit < 1 {
-		return 0, errors.New("GitHub decoded-response byte budget exhausted")
+		return 0, errGitHubDecodedResponseBudgetExhausted
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.baseURL+endpoint, nil)
 	if err != nil {
@@ -805,7 +818,7 @@ func (s *githubHTTPService) request(ctx context.Context, endpoint string, limit 
 		return n, err
 	}
 	if n > limit {
-		return n, errors.New("GitHub decoded-response byte budget exhausted")
+		return n, errGitHubDecodedResponseBudgetExhausted
 	}
 	if response.StatusCode == http.StatusNotFound {
 		return n, errGitHubNotFound

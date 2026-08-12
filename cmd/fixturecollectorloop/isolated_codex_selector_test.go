@@ -28,7 +28,7 @@ env | sort >> %q
 printf '\nSTDIN=' >> %q
 cat >> %q
 printf '\n' >> %q
-printf '{"selected":[{"id":"candidate-1","rationale":"varied example"}]}'
+printf '{"selected":[{"id":"candidate-1","rationale":"common usage"},{"id":"candidate-2","rationale":"structural variation"},{"id":"candidate-3","rationale":"edge case"}]}'
 `, logPath, logPath, logPath, logPath, logPath, logPath)
 	if err := os.WriteFile(fake, []byte(script), 0o700); err != nil {
 		t.Fatal(err)
@@ -49,7 +49,7 @@ printf '{"selected":[{"id":"candidate-1","rationale":"varied example"}]}'
 	if err != nil {
 		t.Fatalf("Select() error = %v", err)
 	}
-	if got := result.Selection.Selected; len(got) != 1 || got[0].ID != "candidate-1" {
+	if got := result.Selection.Selected; len(got) != selectionCount || got[0].ID != "candidate-1" {
 		t.Fatalf("selection = %#v", got)
 	}
 	log, err := os.ReadFile(logPath)
@@ -62,8 +62,14 @@ printf '{"selected":[{"id":"candidate-1","rationale":"varied example"}]}'
 			t.Errorf("invocation missing %q:\n%s", want, text)
 		}
 	}
-	if strings.Contains(text, "untrusted source contents") && !strings.Contains(text, "STDIN={\"packet\":\"untrusted source contents\"}") {
+	if !strings.Contains(text, "Select exactly three candidates") || !strings.Contains(text, "most common real-world usage") {
+		t.Errorf("selector instructions missing from stdin: %s", text)
+	}
+	if strings.Contains(text, "untrusted source contents") && !strings.Contains(text, "SELECTION_PACKET_JSON\n{\"packet\":\"untrusted source contents\"}") {
 		t.Errorf("packet appeared outside stdin: %s", text)
+	}
+	if !strings.Contains(selectionSchema, `"minItems":3,"maxItems":3`) {
+		t.Fatalf("selection schema does not require exactly three items: %s", selectionSchema)
 	}
 	for _, forbidden := range []string{"GITHUB_TOKEN=", "GH_TOKEN=", "SSH_AUTH_SOCK=", "AWS_SECRET_ACCESS_KEY="} {
 		if strings.Contains(text, forbidden) {
@@ -80,7 +86,14 @@ func TestIsolatedCodexSelectorFailsClosedForMissingFeature(t *testing.T) {
 }
 
 func TestParseSelectionRequiresTheSchemaShape(t *testing.T) {
-	for _, output := range []string{`{}`, `{"selected":null}`, `{"selected":[],"invented":true}`, `{"selected":[]} {"selected":[]}`} {
+	for _, output := range []string{
+		`{}`,
+		`{"selected":null}`,
+		`{"selected":[]}`,
+		`{"selected":[{"id":"one","rationale":"only one"}]}`,
+		`{"selected":[],"invented":true}`,
+		`{"selected":[]} {"selected":[]}`,
+	} {
 		if _, err := parseSelection([]byte(output)); err == nil {
 			t.Errorf("parseSelection(%s) succeeded", output)
 		}

@@ -71,7 +71,7 @@ budgets cover:
 - selection-packet tokens; and
 - selector invocations.
 
-The established defaults remain eight queries, 40 inspections, a 2 MiB source
+The established defaults are eight queries, 100 inspections, a 2 MiB source
 ceiling, a 50,000-token candidate-packet target, seven valid iterations per
 detector, and two selector invocations per iteration. Page and aggregate-byte
 limits are mandatory reviewed values rather than hidden implementation
@@ -198,10 +198,11 @@ schemas. Actual post-turn input usage is recorded as an operational metric.
 
 ## Model decision
 
-The model judges which set is representative, versatile, complementary, and
-usefully covers common and edge-case structures, with a preference for short
-examples. Go does not mechanically enforce repository, project-kind, or
-variation diversity.
+The model must select exactly three candidates as one representative,
+versatile, complementary set. The set must include the best example of common
+real-world usage and use the remaining choices for useful structural variation
+or edge cases, with a preference for short examples. Go does not mechanically
+enforce repository, project-kind, or variation diversity.
 
 The model returns only:
 
@@ -215,10 +216,11 @@ verbatim in provenance. Go validates representation only and does not score or
 reinterpret its diversity claims. `project_kind` and `variation_tags` do not
 exist in the new provenance schema.
 
-For a fresh detector, a valid decision selects zero or 3-5 candidates. For a
-partial detector, a nonzero decision must select at least the number needed to
-reach three and no more than the capacity remaining below five. Zero is always
-a valid research decision.
+Every model decision selects exactly three candidates. The prompt states this
+requirement and the structured-output schema fixes both the minimum and maximum
+array length at three. If fewer than three complete candidates fit the packet,
+Go does not invoke the selector and checkpoints an unsuccessful bounded
+research iteration instead.
 
 Nonselection is contextual rather than a factual rejection. Progress records
 the packet fingerprint, accepted-corpus fingerprint, selector configuration,
@@ -254,7 +256,7 @@ configuration.
 
 Go validates the complete structured response before materializing anything:
 IDs must have appeared in the exact packet, must be unique, must satisfy the
-dynamic cardinality bound, and must have valid rationales.
+exact-three cardinality bound, and must have valid rationales.
 
 An iteration permits at most two fresh ephemeral selector processes. A retry is
 allowed only when no valid decision was produced, including malformed output,
@@ -293,9 +295,9 @@ an infrastructure failure into a valid iteration.
 
 A valid checkpointed research outcome consumes one of seven iterations even
 when it ends in search exhaustion, budget exhaustion, all candidates rejected,
-valid zero selection, or partial candidate failure. Query-review skips,
-content-review skips after their establishing outcome, and infrastructure
-failures consume nothing.
+fewer than three presentable candidates, or partial candidate failure.
+Query-review skips, content-review skips after their establishing outcome, and
+infrastructure failures consume nothing.
 
 After seven valid iterations, or earlier when no distinct decision state can be
 constructed, a detector with fewer than three examples enters
@@ -365,8 +367,8 @@ Implementation tests must cover:
   references, omissions, and non-model-presentable sources;
 - Codex argv/environment/isolation settings, stdin-only prompt transport,
   bounded capture, structured output, and retry behavior;
-- contextual nonselection, zero selection, dynamic cardinality, partial batch
-  acceptance, and no repeated decision state;
+- contextual nonselection, exact-three selection, insufficient packet
+  membership, partial batch acceptance, and no repeated decision state;
 - strict progress history, crash recovery, v2-only provenance, additive writes,
   final validation, and optional commit boundaries; and
 - proof that raw rejected or model-visible content does not enter progress,

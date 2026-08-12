@@ -123,6 +123,45 @@ func TestAcquisitionBudgetSeparatesSearchAndInspectionBytes(t *testing.T) {
 	}
 }
 
+func TestGitHubAcquisitionStopsGracefullyAtDecodedResponseBudget(t *testing.T) {
+	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	service := &fakeGitHubService{
+		searches: map[string][]GitHubCodeHit{"filename:go.mod": {
+			{Repository: "octo/one", Path: "go.mod"},
+			{Repository: "octo/two", Path: "go.mod"},
+		}},
+		repositories: map[string]GitHubRepository{
+			"octo/one": {FullName: "octo/one", HTMLURL: "https://github.com/octo/one", DefaultBranch: "main"},
+			"octo/two": {FullName: "octo/two", HTMLURL: "https://github.com/octo/two", DefaultBranch: "main"},
+		},
+		heads: map[string]string{"octo/one/main": commit, "octo/two/main": commit},
+		files: map[string][]byte{
+			"octo/one@" + commit + ":go.mod":  []byte("module one\n"),
+			"octo/two@" + commit + ":go.mod":  []byte("module two\n"),
+			"octo/one@" + commit + ":LICENSE": []byte("MIT License\n"),
+			"octo/two@" + commit + ":LICENSE": []byte("MIT License\n"),
+		},
+	}
+	var final ResearchProgress
+	input, err := newGitHubAcquisition(service, CollectionLimits{
+		Queries: 1, ResultPages: 1, CandidateInspections: 100,
+		DecodedResponseBytes: 100, SourceBytes: 1024,
+	}).Acquire(context.Background(), Iteration{
+		QueryPlan: []string{"filename:go.mod"}, QueryLimit: 1, CandidateLimit: 100,
+		ReportProgress: func(update ResearchProgress) {
+			if update.Final {
+				final = update
+			}
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(input.Candidates) != 1 || final.RemainingBytes != 0 || final.Inspected != 2 {
+		t.Fatalf("candidates = %d, final progress = %+v", len(input.Candidates), final)
+	}
+}
+
 func TestGitHubAcquisitionStopsSearchWhenInspectionPoolIsFull(t *testing.T) {
 	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 	service := &fakeGitHubService{

@@ -103,6 +103,10 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 	input.SelectionPacket = packet.Bytes
 	candidates = packet.Candidates
 	input.Outcome.Omitted = append(input.Outcome.Omitted, packet.OmittedIDs...)
+	if len(candidates) < selectionCount {
+		input.Outcome.Result = "unsuccessful"
+		return ResearchResult{Outcome: input.Outcome}, nil
+	}
 	configuration := selectorConfigurationFingerprint(iteration, r.selector)
 	decision := DecisionState{PacketFingerprint: packet.PacketFingerprint, AcceptedCorpusFingerprint: packet.AcceptedFingerprint, SelectorConfiguration: configuration}
 	if containsDecisionState(iteration.PriorDecisionStates, decision) {
@@ -119,14 +123,14 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 	if iteration.ReportProgress != nil {
 		iteration.ReportProgress(ResearchProgress{Stage: progressSelection, Final: true, Selected: len(result.Selection.Selected)})
 	}
-	if err := validateSelection(result.Selection, candidateIDSet(candidates), len(iteration.AcceptedReferences)); err != nil {
+	if err := validateSelection(result.Selection, candidateIDSet(candidates)); err != nil {
 		return ResearchResult{}, err
 	}
 	result.Decision = &decision
 	if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.FilteredSearchHits) != 0 || len(input.Outcome.Rejections) != 0 || len(input.Outcome.Omitted) != 0 {
 		result.Outcome = input.Outcome
 	}
-	accepted, rejected, err := materializeSelectedCandidates(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection, len(iteration.AcceptedReferences))
+	accepted, rejected, err := materializeSelectedCandidates(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection)
 	if err != nil {
 		return ResearchResult{}, err
 	}

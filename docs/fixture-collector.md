@@ -23,7 +23,7 @@ go run ./cmd/fixturecollectorloop initialize-progress \
 ```
 
 Review progress before running. Its defaults bound eight queries, ten result
-pages, 40 candidate inspections, 16 MiB of decoded remote responses, 2 MiB per
+pages, 100 candidate inspections, 16 MiB of decoded remote responses, 2 MiB per
 source, an approximately 50,000-token selection packet, two selector calls,
 and seven valid iterations. One quarter of the decoded-response allowance is
 reserved for search and three quarters for detailed acquisition, so result
@@ -75,12 +75,19 @@ preflight fails closed when a required feature is unavailable, and the observed
 version is included in the selector-state fingerprint. GitHub credentials come
 from standard token environment variables or an existing `gh` login and remain
 in Go memory; they are never passed to Codex.
+
 The packet is supplied only on stdin. Configurable tool families are disabled;
 the residual-tool sandbox has an empty network policy and only a disposable
 read-only work directory. This is a residual-tool sandbox guarantee, not a
 claim that the tool list is empty. Stdout and stderr are bounded in memory;
 candidate packets, raw events, source bytes, and license bytes are not retained
 in logs or progress.
+
+Codex must select exactly three candidates as one versatile set. The set must
+include the best representative of common real-world usage, while the other
+choices add useful structural variation or edge cases. If fewer than three
+complete candidates fit the approximately 50,000-token packet, Go does not
+invoke Codex for that iteration.
 
 ## Run, stop, and resume
 

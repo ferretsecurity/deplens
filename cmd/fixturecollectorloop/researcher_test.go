@@ -231,6 +231,25 @@ func TestComposedResearcherCheckpointsNoCandidatesWithoutSelector(t *testing.T) 
 	}
 }
 
+func TestComposedResearcherDoesNotInvokeSelectorWithFewerThanThreePackedCandidates(t *testing.T) {
+	candidates := []SourceCandidate{
+		candidate("github", "Owner/one", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "go.mod", "module one\n"),
+		candidate("github", "Owner/two", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "go.mod", "module two\n"),
+	}
+	outcome := Outcome{Candidates: []string{candidates[0].ID, candidates[1].ID}}
+	selector := fakeSelector{}
+	result, err := newComposedResearcher(
+		&fakeAcquisition{input: ResearchInput{Candidates: candidates, Outcome: outcome}},
+		&selector,
+	).Research(context.Background(), Iteration{PacketTokens: 50000})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if selector.called || result.Outcome.Result != "unsuccessful" || len(result.Outcome.Candidates) != 2 {
+		t.Fatalf("selector called = %t, result = %+v", selector.called, result)
+	}
+}
+
 func TestSelectionPacketPacksReferencesAndCandidatesDeterministically(t *testing.T) {
 	first := candidate("github", "owner/first", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "go.mod", "module first\n")
 	second := candidate("github", "owner/second", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "go.mod", "module second\n")
@@ -271,19 +290,20 @@ func TestSelectionPacketPacksReferencesAndCandidatesDeterministically(t *testing
 	}
 }
 
-func TestSelectionValidationUsesPacketMembershipAndPartialBounds(t *testing.T) {
-	selection := Selection{Selected: []SelectedCandidate{{ID: "candidate-a", Rationale: "useful\nvariation"}}}
-	if err := validateSelection(selection, map[string]struct{}{"candidate-a": {}}, 2); err != nil {
-		t.Fatalf("partial selection rejected: %v", err)
+func TestSelectionValidationRequiresExactlyThreePacketMembers(t *testing.T) {
+	one := Selection{Selected: []SelectedCandidate{{ID: "candidate-a", Rationale: "useful\nvariation"}}}
+	if err := validateSelection(one, map[string]struct{}{"candidate-a": {}}); err == nil {
+		t.Fatal("one-candidate selection was accepted")
 	}
-	if err := validateSelection(selection, map[string]struct{}{"candidate-a": {}}, 0); err == nil {
-		t.Fatal("fresh one-candidate selection was accepted")
-	}
-	if err := validateSelection(Selection{Selected: []SelectedCandidate{{ID: "candidate-a", Rationale: "one"}, {ID: "candidate-a", Rationale: "two"}, {ID: "candidate-b", Rationale: "three"}}}, map[string]struct{}{"candidate-a": {}, "candidate-b": {}}, 0); err == nil {
+	if err := validateSelection(Selection{Selected: []SelectedCandidate{{ID: "candidate-a", Rationale: "one"}, {ID: "candidate-a", Rationale: "two"}, {ID: "candidate-b", Rationale: "three"}}}, map[string]struct{}{"candidate-a": {}, "candidate-b": {}}); err == nil {
 		t.Fatal("duplicate selection ID was accepted")
 	}
-	if err := validateSelection(Selection{Selected: []SelectedCandidate{{ID: "candidate-a", Rationale: "bad\x01control"}, {ID: "candidate-b", Rationale: "two"}, {ID: "candidate-c", Rationale: "three"}}}, map[string]struct{}{"candidate-a": {}, "candidate-b": {}, "candidate-c": {}}, 0); err == nil {
+	if err := validateSelection(Selection{Selected: []SelectedCandidate{{ID: "candidate-a", Rationale: "bad\x01control"}, {ID: "candidate-b", Rationale: "two"}, {ID: "candidate-c", Rationale: "three"}}}, map[string]struct{}{"candidate-a": {}, "candidate-b": {}, "candidate-c": {}}); err == nil {
 		t.Fatal("forbidden rationale control was accepted")
+	}
+	valid := Selection{Selected: []SelectedCandidate{{ID: "candidate-a", Rationale: "common"}, {ID: "candidate-b", Rationale: "variation"}, {ID: "candidate-c", Rationale: "edge"}}}
+	if err := validateSelection(valid, map[string]struct{}{"candidate-a": {}, "candidate-b": {}, "candidate-c": {}}); err != nil {
+		t.Fatalf("three-candidate selection rejected: %v", err)
 	}
 }
 

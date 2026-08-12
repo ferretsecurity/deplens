@@ -3,7 +3,7 @@ inventory_fingerprint: 9fcb56e0496a1e5e1e29d1f089e780cae705aafeaabb7e9b86d1db0af
 limits:
     queries: 8
     result_pages: 10
-    candidate_inspections: 40
+    candidate_inspections: 100
     decoded_response_bytes: 16777216
     packet_tokens: 50000
     selector_invocations: 2

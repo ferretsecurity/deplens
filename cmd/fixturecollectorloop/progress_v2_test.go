@@ -68,7 +68,7 @@ func TestInitializeProgressWritesV2ReviewedPlans(t *testing.T) {
 
 func TestReadProgressRejectsOldAndInvalidV2Documents(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "collection.yaml")
-	const validLimits = "limits:\n  queries: 8\n  result_pages: 10\n  candidate_inspections: 40\n  decoded_response_bytes: 16777216\n  packet_tokens: 50000\n  selector_invocations: 2\n  source_bytes: 2097152\n  valid_iterations: 7\n"
+	const validLimits = "limits:\n  queries: 8\n  result_pages: 10\n  candidate_inspections: 100\n  decoded_response_bytes: 16777216\n  packet_tokens: 50000\n  selector_invocations: 2\n  source_bytes: 2097152\n  valid_iterations: 7\n"
 	tests := []struct {
 		name     string
 		document string

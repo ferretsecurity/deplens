@@ -560,7 +560,7 @@ func TestRunPrintsEffectiveFlagValues(t *testing.T) {
 	for _, want := range []string{
 		"run configuration:",
 		"--allow-dirty=false",
-		"--candidate-limit=20",
+		"--candidate-limit=100",
 		"--commit=false",
 		"--detector=",
 		"--duration=0s",

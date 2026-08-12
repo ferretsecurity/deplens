@@ -382,9 +382,8 @@ ineffective**, not as an equivalent no-tool guarantee.
 > and non-content operational metadata. This removes the high-risk tools that
 > Codex exposes as configurable features and makes residual local tools
 > ineffective outside the sandbox; it does not claim that the model receives an
-> empty tool list. Go generates the schema's upper bound from the detector's
-> remaining capacity and rejects a nonzero selection smaller than the number
-> needed to reach three accepted examples. The 50,000-token target applies to
-> the candidate packet and is
-> estimated locally with headroom because Codex OAuth surfaces provide no exact
-> preflight count for the complete hidden agent request.
+> empty tool list. Go requires exactly three selected IDs in both the prompt and
+> strict output schema; when fewer than three complete candidates fit, it does
+> not invoke Codex. The 50,000-token target applies to the candidate packet and
+> is estimated locally with headroom because Codex OAuth surfaces provide no
+> exact preflight count for the complete hidden agent request.

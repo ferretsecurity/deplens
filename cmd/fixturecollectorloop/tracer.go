@@ -101,6 +101,7 @@ type selectionPacketData struct {
 const (
 	selectionPacketFormatVersion = 1
 	defaultPacketHeadroomBytes   = 1024
+	selectionCount               = 3
 )
 
 // SelectionPacketOptions contains only Go-owned facts and reviewed limits.
@@ -325,19 +326,10 @@ func validRationale(rationale string) bool {
 	return true
 }
 
-func validateSelection(selection Selection, packetIDs map[string]struct{}, acceptedCount int) error {
+func validateSelection(selection Selection, packetIDs map[string]struct{}) error {
 	count := len(selection.Selected)
-	if count != 0 {
-		if acceptedCount == 0 {
-			if count < 3 || count > 5 {
-				return errors.New("fresh selection must contain zero or three through five candidates")
-			}
-		} else {
-			minimum, maximum := 3-acceptedCount, 5-acceptedCount
-			if count < minimum || count > maximum {
-				return errors.New("partial selection does not meet dynamic capacity")
-			}
-		}
+	if count != selectionCount {
+		return fmt.Errorf("selection must contain exactly %d candidates", selectionCount)
 	}
 	seen := make(map[string]struct{}, count)
 	for _, selected := range selection.Selected {
@@ -375,11 +367,7 @@ func validateCandidate(c SourceCandidate) error {
 }
 
 func materializeCandidates(corpusDir, detectorID string, candidates []SourceCandidate, selection Selection) ([]AcceptedCandidate, error) {
-	return materializeCandidatesWithAcceptedCount(corpusDir, detectorID, candidates, selection, 0)
-}
-
-func materializeCandidatesWithAcceptedCount(corpusDir, detectorID string, candidates []SourceCandidate, selection Selection, acceptedCount int) ([]AcceptedCandidate, error) {
-	accepted, rejected, err := materializeSelectedCandidates(corpusDir, detectorID, candidates, selection, acceptedCount)
+	accepted, rejected, err := materializeSelectedCandidates(corpusDir, detectorID, candidates, selection)
 	if err != nil {
 		return nil, err
 	}
@@ -391,7 +379,7 @@ func materializeCandidatesWithAcceptedCount(corpusDir, detectorID string, candid
 
 // materializeSelectedCandidates keeps candidate-specific final validation
 // failures local to that candidate. I/O failures remain infrastructure errors.
-func materializeSelectedCandidates(corpusDir, detectorID string, candidates []SourceCandidate, selection Selection, acceptedCount int) ([]AcceptedCandidate, []string, error) {
+func materializeSelectedCandidates(corpusDir, detectorID string, candidates []SourceCandidate, selection Selection) ([]AcceptedCandidate, []string, error) {
 	byID := make(map[string]SourceCandidate, len(candidates))
 	for _, c := range candidates {
 		if _, exists := byID[c.ID]; exists {
@@ -399,7 +387,7 @@ func materializeSelectedCandidates(corpusDir, detectorID string, candidates []So
 		}
 		byID[c.ID] = c
 	}
-	if err := validateSelection(selection, candidateIDs(byID), acceptedCount); err != nil {
+	if err := validateSelection(selection, candidateIDs(byID)); err != nil {
 		return nil, nil, err
 	}
 	selected := append([]SelectedCandidate(nil), selection.Selected...)
