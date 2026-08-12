@@ -1,0 +1,18 @@
+version: 2
+detector_id: elixir-mix
+candidate_id: candidate-34042bac68316fb38bd52c8e912ab572
+provider: github
+repository: okeuday/quickrand
+repository_url: https://github.com/okeuday/quickrand
+default_branch: master
+commit: 7c46da830475617e77f09085f4a12e3544fd86cc
+original_path: mix.exs
+permalink: https://github.com/okeuday/quickrand/blob/7c46da830475617e77f09085f4a12e3544fd86cc/mix.exs
+retrieved_at: "2026-08-12T23:17:34Z"
+sha256: 85c83ad581cd718ccc164b1d5d596d1f7b6dabc4f20a4b7c25d7d02e4f0a507b
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/okeuday/quickrand/blob/7c46da830475617e77f09085f4a12e3544fd86cc/LICENSE
+    sha256: b1637c445f24bf3794792c0853aef7cf503350e14ab4346880337deecae1d996
+rationale: Adds Erlang-targeted Mix configuration, including language and erlc_options, covering a distinct BEAM project structure compactly.

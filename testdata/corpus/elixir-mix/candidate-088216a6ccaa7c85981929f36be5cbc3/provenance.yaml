@@ -1,0 +1,18 @@
+version: 2
+detector_id: elixir-mix
+candidate_id: candidate-088216a6ccaa7c85981929f36be5cbc3
+provider: github
+repository: ExHammer/hammer-backend-redis
+repository_url: https://github.com/ExHammer/hammer-backend-redis
+default_branch: master
+commit: 21980c49001c18433759d2e8428d0349b576887d
+original_path: mix.exs
+permalink: https://github.com/ExHammer/hammer-backend-redis/blob/21980c49001c18433759d2e8428d0349b576887d/mix.exs
+retrieved_at: "2026-08-12T23:14:38Z"
+sha256: a471f3b4eab8d5f3a7bbe0310feebca84038fc45047b0799c44e9305430b9c1b
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/ExHammer/hammer-backend-redis/blob/21980c49001c18433759d2e8428d0349b576887d/LICENSE.md
+    sha256: 349755914bf139b381e79168bd67808cefd2f402015e2f0dc4e5ca41f99017e5
+rationale: 'Best common-case representative: a modern, conventional Hex library with runtime and scoped development dependencies, package metadata, docs, and coverage.'

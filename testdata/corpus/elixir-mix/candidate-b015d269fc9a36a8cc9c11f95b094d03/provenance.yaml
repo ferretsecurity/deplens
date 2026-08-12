@@ -1,0 +1,18 @@
+version: 2
+detector_id: elixir-mix
+candidate_id: candidate-b015d269fc9a36a8cc9c11f95b094d03
+provider: github
+repository: kanatohodets/phoenix-ricor-kv
+repository_url: https://github.com/kanatohodets/phoenix-ricor-kv
+default_branch: master
+commit: cae24fd7fcbf7575241d2e541cc37c882c692d50
+original_path: mix.exs
+permalink: https://github.com/kanatohodets/phoenix-ricor-kv/blob/cae24fd7fcbf7575241d2e541cc37c882c692d50/mix.exs
+retrieved_at: "2026-08-12T23:17:20Z"
+sha256: 32492bff79671788da5c1900e326338f55ea3f49aacbbeec8715b11f2fd7154c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/kanatohodets/phoenix-ricor-kv/blob/cae24fd7fcbf7575241d2e541cc37c882c692d50/LICENSE
+    sha256: 909305da3fb2fc9d4d3608a08089374a18a73ae4b806934878ee652ff51fcf28
+rationale: Adds the important umbrella-project edge case, using apps_path rather than a normal single-app project definition.
