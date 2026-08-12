@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-conanfile
+candidate_id: candidate-04ab94af7fe37740b3d3202ec0220d3c
+provider: github
+repository: CD3/libInterpolate
+repository_url: https://github.com/CD3/libInterpolate
+default_branch: master
+commit: f9ded0bb1457d62f36549b3a02a64aead7299553
+original_path: conanfile.txt
+permalink: https://github.com/CD3/libInterpolate/blob/f9ded0bb1457d62f36549b3a02a64aead7299553/conanfile.txt
+retrieved_at: "2026-08-12T21:14:20Z"
+sha256: cb7bf664b8d05dec7c65302b95368ac49822cf1ba50779af29462fbd654728f2
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/CD3/libInterpolate/blob/f9ded0bb1457d62f36549b3a02a64aead7299553/LICENSE.md
+    sha256: 5296e30a637bad614f1f447970d83717232ac3f32709b3bf58b467755305cbde
+rationale: 'Representative modern Conan 2 project: normal requirements, test requirements, CMake generators, an option, and cmake_layout.'

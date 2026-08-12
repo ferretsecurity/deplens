@@ -1,0 +1,17 @@
+[requires]
+boost/1.85.0
+eigen/3.4.0
+
+[test_requires]
+catch2/3.6.0
+gsl/2.7.1
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[options]
+boost/*:header_only=True
+
+[layout]
+cmake_layout

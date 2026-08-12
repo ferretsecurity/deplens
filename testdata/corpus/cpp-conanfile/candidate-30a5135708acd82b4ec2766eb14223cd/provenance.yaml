@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-conanfile
+candidate_id: candidate-30a5135708acd82b4ec2766eb14223cd
+provider: github
+repository: cbbowen/graph
+repository_url: https://github.com/cbbowen/graph
+default_branch: master
+commit: b1e38e1084a0dff6f4eb4ed9a645ed63d3e83dd2
+original_path: conanfile.txt
+permalink: https://github.com/cbbowen/graph/blob/b1e38e1084a0dff6f4eb4ed9a645ed63d3e83dd2/conanfile.txt
+retrieved_at: "2026-08-12T21:18:27Z"
+sha256: 787893ddfa1fa7328b84dc927b1eef148df971ca22df20d491fb8254cd38014b
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/cbbowen/graph/blob/b1e38e1084a0dff6f4eb4ed9a645ed63d3e83dd2/LICENSE.txt
+    sha256: 2b9ce5a0302c912848f46dd85aad64ab928dac5b5f6200680ce73e5189ab51fc
+rationale: Compact legacy-style case with a build requirement and user/channel package references using the older cmake generator.

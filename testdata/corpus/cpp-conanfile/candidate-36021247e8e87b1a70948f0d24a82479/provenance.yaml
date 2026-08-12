@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-conanfile
+candidate_id: candidate-36021247e8e87b1a70948f0d24a82479
+provider: github
+repository: DeclanRussell/IntelOIDenoiser
+repository_url: https://github.com/DeclanRussell/IntelOIDenoiser
+default_branch: master
+commit: 086458431d1549c9a3e3995333c4899d61d78259
+original_path: conanfile.txt
+permalink: https://github.com/DeclanRussell/IntelOIDenoiser/blob/086458431d1549c9a3e3995333c4899d61d78259/conanfile.txt
+retrieved_at: "2026-08-12T21:14:47Z"
+sha256: b3018600d10b22175017f25e84b4b67cbf7297c60ffdd3a38318b298076108c9
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/DeclanRussell/IntelOIDenoiser/blob/086458431d1549c9a3e3995333c4899d61d78259/LICENSE
+    sha256: ebd7b07853e483f9e9f2e36a6b884d65e657f51705f5695bc0d0dddafecd9b4f
+rationale: Modern edge case with a version range and multiple dependency options, including comments explaining dependency pruning.
