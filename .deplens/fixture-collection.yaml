@@ -4574,12 +4574,13 @@ detectors:
         - constraint
         - configuration
       state: in-progress
-      iterations: 4
+      iterations: 5
       examples: []
       target: 3
       query_plan:
         - path:project/Dependencies.scala
       queries:
+        - path:project/Dependencies.scala
         - path:project/Dependencies.scala
         - path:project/Dependencies.scala
         - path:project/Dependencies.scala
@@ -4598,6 +4599,10 @@ detectors:
           queries:
             - path:project/Dependencies.scala
         - iteration: 4
+          result: unsuccessful
+          queries:
+            - path:project/Dependencies.scala
+        - iteration: 5
           result: unsuccessful
           queries:
             - path:project/Dependencies.scala
