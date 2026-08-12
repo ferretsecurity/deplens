@@ -1,0 +1,18 @@
+version: 2
+detector_id: erlang-rebar-lock
+candidate_id: candidate-26c51d72d63a4c1edf80719e305b2f3d
+provider: github
+repository: tsloughter/erlastic_search
+repository_url: https://github.com/tsloughter/erlastic_search
+default_branch: master
+commit: 2c76e6956be8acd96b7688c1e1045f20ab73b26e
+original_path: rebar.lock
+permalink: https://github.com/tsloughter/erlastic_search/blob/2c76e6956be8acd96b7688c1e1045f20ab73b26e/rebar.lock
+retrieved_at: "2026-08-12T13:04:36Z"
+sha256: 5307ade7feb533e76dce0afc9d0a061c0659476f2b7c77e858102e42bc25d395
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/tsloughter/erlastic_search/blob/2c76e6956be8acd96b7688c1e1045f20ab73b26e/LICENSE
+    sha256: da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768
+rationale: Common package-only rebar 1.1 lockfile with a realistic HTTP/TLS dependency graph and varied dependency levels.

@@ -1,0 +1,18 @@
+version: 2
+detector_id: erlang-rebar-lock
+candidate_id: candidate-8b29e9b54c24608e46652b807911ee87
+provider: github
+repository: SemanticSugar/dinerl
+repository_url: https://github.com/SemanticSugar/dinerl
+default_branch: main
+commit: 56850c33472c7f9db7cd1170b46a1f0e8a663b08
+original_path: rebar.lock
+permalink: https://github.com/SemanticSugar/dinerl/blob/56850c33472c7f9db7cd1170b46a1f0e8a663b08/rebar.lock
+retrieved_at: "2026-08-12T13:03:29Z"
+sha256: f0ab9e4ed0ad8b45bfe78a1205ee5edec2472665e1a34951c3e0964fced262a9
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/SemanticSugar/dinerl/blob/56850c33472c7f9db7cd1170b46a1f0e8a663b08/LICENSE
+    sha256: c34eb7d2f63af3b813c4eb13ed878ae91855818ba3fc7e02352a799b74232f5b
+rationale: Modern 1.2 lockfile that mixes Hex packages with pinned Git dependencies, covering an important real-world source variant.

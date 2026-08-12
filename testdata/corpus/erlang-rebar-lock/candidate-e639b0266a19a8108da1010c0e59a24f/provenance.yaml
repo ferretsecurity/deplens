@@ -1,0 +1,18 @@
+version: 2
+detector_id: erlang-rebar-lock
+candidate_id: candidate-e639b0266a19a8108da1010c0e59a24f
+provider: github
+repository: emirozer/beamwhale
+repository_url: https://github.com/emirozer/beamwhale
+default_branch: master
+commit: 1824910de0cb5cdac929a9000e049339eb95418d
+original_path: rebar.lock
+permalink: https://github.com/emirozer/beamwhale/blob/1824910de0cb5cdac929a9000e049339eb95418d/rebar.lock
+retrieved_at: "2026-08-12T13:06:59Z"
+sha256: 4cd6e62c19236750fb29bfeb5cf935cd47a48002a92fb794e99bdf6269d66223
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/emirozer/beamwhale/blob/1824910de0cb5cdac929a9000e049339eb95418d/LICENSE
+    sha256: e031c4a6ce4b10fa025c6dbfaff3a92ca1223ce443ecc0a5001d288afc1e8636
+rationale: 'Compact legacy-format edge case: a bare dependency list with only Git-pinned dependencies and no lockfile metadata or hashes.'
