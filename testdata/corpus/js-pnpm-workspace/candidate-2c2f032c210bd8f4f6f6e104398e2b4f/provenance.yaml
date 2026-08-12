@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-pnpm-workspace
+candidate_id: candidate-2c2f032c210bd8f4f6f6e104398e2b4f
+provider: github
+repository: electron-rsbuild/electron-rsbuild
+repository_url: https://github.com/electron-rsbuild/electron-rsbuild
+default_branch: main
+commit: 96cf268b6f3755dcbb4619165888afc27f3ac99b
+original_path: pnpm-workspace.yaml
+permalink: https://github.com/electron-rsbuild/electron-rsbuild/blob/96cf268b6f3755dcbb4619165888afc27f3ac99b/pnpm-workspace.yaml
+retrieved_at: "2026-08-12T09:04:43Z"
+sha256: 9189851b4c0df6e430cd9ee26f9c8fadb7b028adf45ddcd29714b3ad2c7519c2
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/electron-rsbuild/electron-rsbuild/blob/96cf268b6f3755dcbb4619165888afc27f3ac99b/LICENSE
+    sha256: 54bb82080a7ef4502660402336a76e9c300ff9bf90aaf554a0b8933b0d7008d3
+rationale: Adds recursive glob matching and multiple exclusion patterns, an important workspace-discovery edge case.

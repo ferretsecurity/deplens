@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-pnpm-workspace
+candidate_id: candidate-13560437a6b947b2d42824cf9ae15067
+provider: github
+repository: yasserstudio/gpc
+repository_url: https://github.com/yasserstudio/gpc
+default_branch: main
+commit: ac7fb287b73cd066b9659233112f01a060698979
+original_path: pnpm-workspace.yaml
+permalink: https://github.com/yasserstudio/gpc/blob/ac7fb287b73cd066b9659233112f01a060698979/pnpm-workspace.yaml
+retrieved_at: "2026-08-12T09:04:22Z"
+sha256: 8df403cc21c456d6570084081a9b4396d80aa28883435691ee485bfdc4f94d4b
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/yasserstudio/gpc/blob/ac7fb287b73cd066b9659233112f01a060698979/LICENSE
+    sha256: f6be5ba669bb7bce69ea066c6527ce5fa8d6f31163bd00ed9ddb751dff51f28e
+rationale: 'Typical multi-package workspace: wildcard package, plugin, and app directories plus an explicit e2e project.'

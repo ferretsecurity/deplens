@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-pnpm-workspace
+candidate_id: candidate-204a2b0b607dd0e40d33379dd80f9905
+provider: github
+repository: techiejd/payloadcms-vectorize
+repository_url: https://github.com/techiejd/payloadcms-vectorize
+default_branch: main
+commit: 75071cf6a20d524b7f14fbcbee12fe9a36f795a4
+original_path: pnpm-workspace.yaml
+permalink: https://github.com/techiejd/payloadcms-vectorize/blob/75071cf6a20d524b7f14fbcbee12fe9a36f795a4/pnpm-workspace.yaml
+retrieved_at: "2026-08-12T09:03:45Z"
+sha256: 76bd0d96a97e01bf167125ab08e4772593d1801e6ac041b652b505c628f5fd79
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/techiejd/payloadcms-vectorize/blob/75071cf6a20d524b7f14fbcbee12fe9a36f795a4/LICENSE
+    sha256: 6028a31307c14b5af634497751eec53039c83899ed1b77b171b3cf7ef4696c01
+rationale: Compact example of including the repository root alongside adapter subpackages.
