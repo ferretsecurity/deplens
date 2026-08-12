@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-cpanfile-snapshot
+candidate_id: candidate-653a15727e1a28bd987d1edb35d80538
+provider: github
+repository: robinsmidsrod/unifi-controller-cli
+repository_url: https://github.com/robinsmidsrod/unifi-controller-cli
+default_branch: main
+commit: e2864e70b3ca83194858058fe9110c105e7d8c33
+original_path: cpanfile.snapshot
+permalink: https://github.com/robinsmidsrod/unifi-controller-cli/blob/e2864e70b3ca83194858058fe9110c105e7d8c33/cpanfile.snapshot
+retrieved_at: "2026-08-12T23:51:25Z"
+sha256: 27c95ccd89237678ea20d592797a359522a0cce8083d943574d43e886d43fc21
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/robinsmidsrod/unifi-controller-cli/blob/e2864e70b3ca83194858058fe9110c105e7d8c33/LICENSE
+    sha256: 3389f7294b5108c73d8c29ab2cac3ea9288a4aa70aa6f7ebf1edc55d6040396e
+rationale: Very small CLI-oriented snapshot, covering a minimal dependency graph with HTTP, JSON, CSV, and configuration.

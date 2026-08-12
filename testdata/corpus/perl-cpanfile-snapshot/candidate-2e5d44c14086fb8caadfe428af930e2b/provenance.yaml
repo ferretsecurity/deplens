@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-cpanfile-snapshot
+candidate_id: candidate-2e5d44c14086fb8caadfe428af930e2b
+provider: github
+repository: isucon/isucon7-final
+repository_url: https://github.com/isucon/isucon7-final
+default_branch: master
+commit: c9b568348fac818cadb698a06f41bcc07e1ab66c
+original_path: webapp/perl/cpanfile.snapshot
+permalink: https://github.com/isucon/isucon7-final/blob/c9b568348fac818cadb698a06f41bcc07e1ab66c/webapp/perl/cpanfile.snapshot
+retrieved_at: "2026-08-12T23:55:37Z"
+sha256: 28b9b6616f16ebdbe3fd24164ab260e7ebf8e951625d8ac106e0c71a8a6ffbe7
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/isucon/isucon7-final/blob/c9b568348fac818cadb698a06f41bcc07e1ab66c/LICENSE
+    sha256: c378bab1d13ab10276dc0d044e70f727a1e30bd50419b1e0af3ee28a5c35286a
+rationale: 'Typical production web application snapshot: Mojolicious with MySQL, DBI, and SQL layers.'

@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-cpanfile-snapshot
+candidate_id: candidate-55882f871c339933ec1ae9e14de1350b
+provider: github
+repository: robinsmidsrod/ams-han-decoder
+repository_url: https://github.com/robinsmidsrod/ams-han-decoder
+default_branch: master
+commit: 3d4d42b3bec78679b7b9cb423c6091a1410b8859
+original_path: cpanfile.snapshot
+permalink: https://github.com/robinsmidsrod/ams-han-decoder/blob/3d4d42b3bec78679b7b9cb423c6091a1410b8859/cpanfile.snapshot
+retrieved_at: "2026-08-12T23:55:52Z"
+sha256: 392c7d51c3ea242e2d9bf71ea265fe59b6f01461f74665661f9f088f0bb61933
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/robinsmidsrod/ams-han-decoder/blob/3d4d42b3bec78679b7b9cb423c6091a1410b8859/LICENSE
+    sha256: 4de4d178ac12362080c93753b2d7f76e2b36d62fc7bffc42bc4fbda50209f4d7
+rationale: Compact IoT/security edge case with MQTT, cryptography, checksums, and modern Test2 dependencies.
