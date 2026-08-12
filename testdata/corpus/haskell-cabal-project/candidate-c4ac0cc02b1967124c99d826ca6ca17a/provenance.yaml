@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-cabal-project
+candidate_id: candidate-c4ac0cc02b1967124c99d826ca6ca17a
+provider: github
+repository: dylan-thinnes/conway-wechsler
+repository_url: https://github.com/dylan-thinnes/conway-wechsler
+default_branch: master
+commit: e2cea83b64d67300c10f1b393bdab33ab6d28adc
+original_path: cabal.project
+permalink: https://github.com/dylan-thinnes/conway-wechsler/blob/e2cea83b64d67300c10f1b393bdab33ab6d28adc/cabal.project
+retrieved_at: "2026-08-12T14:01:45Z"
+sha256: e7c67733c54148c02a02f5512a76d95184313b9e7540c3e4ddcbd134f71930e8
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/dylan-thinnes/conway-wechsler/blob/e2cea83b64d67300c10f1b393bdab33ab6d28adc/LICENSE
+    sha256: a6f65cdbfb9b9fa1cf2d47874b0e48f616fb39cbb98d3addbb272a34823a0da0
+rationale: Adds the important edge case of a Git source-repository package.

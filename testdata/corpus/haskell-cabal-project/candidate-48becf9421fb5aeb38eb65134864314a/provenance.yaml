@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-cabal-project
+candidate_id: candidate-48becf9421fb5aeb38eb65134864314a
+provider: github
+repository: marcosh/crem
+repository_url: https://github.com/marcosh/crem
+default_branch: main
+commit: f06f8b47ac83d3e7448493bdee374c5f952f7f4c
+original_path: cabal.project
+permalink: https://github.com/marcosh/crem/blob/f06f8b47ac83d3e7448493bdee374c5f952f7f4c/cabal.project
+retrieved_at: "2026-08-12T14:00:57Z"
+sha256: 754277001018b37d7518c3943e7a3c0576c8f3f970d68379ce63dcfbf390b4fc
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/marcosh/crem/blob/f06f8b47ac83d3e7448493bdee374c5f952f7f4c/LICENSE
+    sha256: 2847a914fd2fd00d91e62a460dc0f54849e36a1ad00e0dc6b39ac35d7d10c0d9
+rationale: Adds reproducible index pinning plus test and environment-file settings.

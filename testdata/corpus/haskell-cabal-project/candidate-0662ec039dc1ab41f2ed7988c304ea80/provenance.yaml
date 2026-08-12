@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-cabal-project
+candidate_id: candidate-0662ec039dc1ab41f2ed7988c304ea80
+provider: github
+repository: hughjfchen/quick-cook-or-nixify-haskell-project
+repository_url: https://github.com/hughjfchen/quick-cook-or-nixify-haskell-project
+default_branch: master
+commit: bc64f5a953ec9510b7209206dc56c8ff347de418
+original_path: project-scaffold-template/application/simple-command-line/cabal.project
+permalink: https://github.com/hughjfchen/quick-cook-or-nixify-haskell-project/blob/bc64f5a953ec9510b7209206dc56c8ff347de418/project-scaffold-template/application/simple-command-line/cabal.project
+retrieved_at: "2026-08-12T14:00:32Z"
+sha256: ae1a2c2d1d1a10c1755c0c5c75bdefb9b0380fcd46c64598c0f594b48a83877e
+governing_license:
+    spdx: MIT
+    path: project-scaffold-template/application/simple-command-line/LICENSE
+    permalink: https://github.com/hughjfchen/quick-cook-or-nixify-haskell-project/blob/bc64f5a953ec9510b7209206dc56c8ff347de418/project-scaffold-template/application/simple-command-line/LICENSE
+    sha256: c0dcd6ff8897cddb6e79ff716cf5b38678d707a7921c1567ddd7bbedfcfdc482
+rationale: Canonical minimal single-package project; represents the most common real-world usage.

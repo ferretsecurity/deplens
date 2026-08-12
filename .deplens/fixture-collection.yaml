@@ -10109,12 +10109,242 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/haskell-cabal-project/candidate-0662ec039dc1ab41f2ed7988c304ea80/project-scaffold-template/application/simple-command-line/cabal.project
+        - testdata/corpus/haskell-cabal-project/candidate-48becf9421fb5aeb38eb65134864314a/cabal.project
+        - testdata/corpus/haskell-cabal-project/candidate-c4ac0cc02b1967124c99d826ca6ca17a/cabal.project
       target: 3
       query_plan:
         - filename:cabal.project
+      queries:
+        - filename:cabal.project
+      candidates:
+        - candidate-364d20ffa88723277af6efdc32da750f
+        - candidate-0ed166149828ff14c7f7e325a5cbcfcf
+        - candidate-1ac2023f33b11656f974e265453eae55
+        - candidate-80e1e9ccd2b60fe24ad895f900601cc0
+        - candidate-354b703556bde3b907611989adbdf58a
+        - candidate-83fb5a358ab670b0c7fc7955b11e416f
+        - candidate-7604d0f6608b163a5ecf391fc7b71423
+        - candidate-7206e42fd3388a43281863829043abaf
+        - candidate-b40a0096283201e0a94ce35c1d19823e
+        - candidate-cca2e124abce0abce624204e6ce99ea3
+        - candidate-6240bb8285fe3f57f7134cf0bbc553c3
+        - candidate-39a7322a37a06ff7a1e4d7af22bca20f
+        - candidate-035f7c24231a8b59284107b6fbf397c4
+        - candidate-0662ec039dc1ab41f2ed7988c304ea80
+        - candidate-48becf9421fb5aeb38eb65134864314a
+        - candidate-ebd0def29a7ef65addc667b94d96bc0a
+        - candidate-c4ac0cc02b1967124c99d826ca6ca17a
+        - candidate-c234977187a6e13d96a1ccdc9b988108
+        - candidate-4f242e89e5c8dbed5d33d8b08feb7d0d
+      filtered_search_hits:
+        source-selector-mismatch: 143
+      rejections:
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-disallowed
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+      decision_states:
+        - packet_fingerprint: f2bdfe6a03b110f2055e320be41d72aaf07415abb8487d57027f2920917f00c2
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-0662ec039dc1ab41f2ed7988c304ea80
+            - candidate-48becf9421fb5aeb38eb65134864314a
+            - candidate-c4ac0cc02b1967124c99d826ca6ca17a
+          queries:
+            - filename:cabal.project
+          candidates:
+            - candidate-364d20ffa88723277af6efdc32da750f
+            - candidate-0ed166149828ff14c7f7e325a5cbcfcf
+            - candidate-1ac2023f33b11656f974e265453eae55
+            - candidate-80e1e9ccd2b60fe24ad895f900601cc0
+            - candidate-354b703556bde3b907611989adbdf58a
+            - candidate-83fb5a358ab670b0c7fc7955b11e416f
+            - candidate-7604d0f6608b163a5ecf391fc7b71423
+            - candidate-7206e42fd3388a43281863829043abaf
+            - candidate-b40a0096283201e0a94ce35c1d19823e
+            - candidate-cca2e124abce0abce624204e6ce99ea3
+            - candidate-6240bb8285fe3f57f7134cf0bbc553c3
+            - candidate-39a7322a37a06ff7a1e4d7af22bca20f
+            - candidate-035f7c24231a8b59284107b6fbf397c4
+            - candidate-0662ec039dc1ab41f2ed7988c304ea80
+            - candidate-48becf9421fb5aeb38eb65134864314a
+            - candidate-ebd0def29a7ef65addc667b94d96bc0a
+            - candidate-c4ac0cc02b1967124c99d826ca6ca17a
+            - candidate-c234977187a6e13d96a1ccdc9b988108
+            - candidate-4f242e89e5c8dbed5d33d8b08feb7d0d
+          filtered_search_hits:
+            source-selector-mismatch: 143
+          rejections:
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-disallowed
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+          decision:
+            packet_fingerprint: f2bdfe6a03b110f2055e320be41d72aaf07415abb8487d57027f2920917f00c2
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: haskell-cabal-project-freeze
       form: lockfile
       roles:
