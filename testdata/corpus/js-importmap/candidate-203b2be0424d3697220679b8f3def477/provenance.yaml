@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-importmap
+candidate_id: candidate-203b2be0424d3697220679b8f3def477
+provider: github
+repository: PacktPublishing/Modern-Frontend-Development-with-Node.js
+repository_url: https://github.com/PacktPublishing/Modern-Frontend-Development-with-Node.js
+default_branch: main
+commit: 669ecee8fd2af882b826efa475af45bff29d2478
+original_path: Chapter11/example01/importmap.json
+permalink: https://github.com/PacktPublishing/Modern-Frontend-Development-with-Node.js/blob/669ecee8fd2af882b826efa475af45bff29d2478/Chapter11/example01/importmap.json
+retrieved_at: "2026-08-12T10:16:47Z"
+sha256: ca669e4e633ff23292db3c8f03ac5be6189640a2bd28578858e64dbd4118fd76
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/PacktPublishing/Modern-Frontend-Development-with-Node.js/blob/669ecee8fd2af882b826efa475af45bff29d2478/LICENSE
+    sha256: 8387fd17a4c8f3946dcfd9cfe644a2ae6064cf26deea1476f09ab2535c0fb759
+rationale: 'Small Deno-oriented variant covering npm: resolution and a Node built-in subpath mapped to a remote module.'

@@ -3511,12 +3511,242 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/js-importmap/candidate-203b2be0424d3697220679b8f3def477/Chapter11/example01/importmap.json
+        - testdata/corpus/js-importmap/candidate-377269f22f7c504edffe25bce086a188/importmap.json
+        - testdata/corpus/js-importmap/candidate-751356d2508f8e41ce12dd8b881e0871/bustime/static/importmap.json
       target: 3
       query_plan:
         - filename:importmap.json
+      queries:
+        - filename:importmap.json
+      candidates:
+        - candidate-506e809c4937db22f46d7034ba86fd8f
+        - candidate-a3930507f803139da3bf5a44868f851f
+        - candidate-3f4a277a543a38d7085d8ea4ca556a46
+        - candidate-8bbe0f60446a4ca67dc7439854aad610
+        - candidate-751356d2508f8e41ce12dd8b881e0871
+        - candidate-a16826d0f1c7bd4850036c68df3e8764
+        - candidate-462594dca423714afc83616ff90abc4f
+        - candidate-2c0848e20cc83939acea2dd17497f323
+        - candidate-e293233ef5b08d97ab0b4aa05645dd99
+        - candidate-203b2be0424d3697220679b8f3def477
+        - candidate-377269f22f7c504edffe25bce086a188
+        - candidate-2c338887622f1ef14b5d281ce82fead8
+        - candidate-5514def87ed70a456dab4b0145153f59
+        - candidate-29cc2ed472efff22cdaf941a9e52945d
+        - candidate-a3bb611eb7301a66b0f562fa4a4b1a1f
+        - candidate-9fe8f8e84caa41c1b31f191a40858f2b
+        - candidate-efa8a5a861e07fac22cf8ab88267cbdd
+        - candidate-b8f90b666c18d96ad4a37010e5af7006
+        - candidate-26afa04897da4ef7c9d55459be42a81f
+        - candidate-79fa4104059860398f2c747f022d9a4e
+        - candidate-c507b4f1ea082647bbb13bdea7bc1202
+        - candidate-8fa2348162ad52ccc8f6889c8058bb77
+      filtered_search_hits:
+        source-selector-mismatch: 75
+      rejections:
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-disallowed
+        - repository-purpose
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - repository-purpose
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+      decision_states:
+        - packet_fingerprint: 967a27443e74b159aa50c883aa2c98c04fec3519029d41e23bb94569620f313c
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-203b2be0424d3697220679b8f3def477
+            - candidate-377269f22f7c504edffe25bce086a188
+            - candidate-751356d2508f8e41ce12dd8b881e0871
+          queries:
+            - filename:importmap.json
+          candidates:
+            - candidate-506e809c4937db22f46d7034ba86fd8f
+            - candidate-a3930507f803139da3bf5a44868f851f
+            - candidate-3f4a277a543a38d7085d8ea4ca556a46
+            - candidate-8bbe0f60446a4ca67dc7439854aad610
+            - candidate-751356d2508f8e41ce12dd8b881e0871
+            - candidate-a16826d0f1c7bd4850036c68df3e8764
+            - candidate-462594dca423714afc83616ff90abc4f
+            - candidate-2c0848e20cc83939acea2dd17497f323
+            - candidate-e293233ef5b08d97ab0b4aa05645dd99
+            - candidate-203b2be0424d3697220679b8f3def477
+            - candidate-377269f22f7c504edffe25bce086a188
+            - candidate-2c338887622f1ef14b5d281ce82fead8
+            - candidate-5514def87ed70a456dab4b0145153f59
+            - candidate-29cc2ed472efff22cdaf941a9e52945d
+            - candidate-a3bb611eb7301a66b0f562fa4a4b1a1f
+            - candidate-9fe8f8e84caa41c1b31f191a40858f2b
+            - candidate-efa8a5a861e07fac22cf8ab88267cbdd
+            - candidate-b8f90b666c18d96ad4a37010e5af7006
+            - candidate-26afa04897da4ef7c9d55459be42a81f
+            - candidate-79fa4104059860398f2c747f022d9a4e
+            - candidate-c507b4f1ea082647bbb13bdea7bc1202
+            - candidate-8fa2348162ad52ccc8f6889c8058bb77
+          filtered_search_hits:
+            source-selector-mismatch: 75
+          rejections:
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-disallowed
+            - repository-purpose
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - repository-purpose
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+          decision:
+            packet_fingerprint: 967a27443e74b159aa50c883aa2c98c04fec3519029d41e23bb94569620f313c
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: java-gradle-settings
       form: workspace-definition
       roles:

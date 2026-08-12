@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-importmap
+candidate_id: candidate-751356d2508f8e41ce12dd8b881e0871
+provider: github
+repository: norn/bustime
+repository_url: https://github.com/norn/bustime
+default_branch: master
+commit: 78a1a80e71d6c02eb437d34fe39da905dc49dbd2
+original_path: bustime/static/importmap.json
+permalink: https://github.com/norn/bustime/blob/78a1a80e71d6c02eb437d34fe39da905dc49dbd2/bustime/static/importmap.json
+retrieved_at: "2026-08-12T10:16:09Z"
+sha256: 45015b4b555e6064b9be8d3c20e2e91bf0aa81444ec0f6f0c0d1cc93e326be21
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/norn/bustime/blob/78a1a80e71d6c02eb437d34fe39da905dc49dbd2/LICENSE
+    sha256: c71d5f7cf443374a80635c84c756dd636b3547cde40671e8224ca8d29a3d0350
+rationale: 'Common production-style browser map: several bare package names resolve to local static assets, including versioned URLs.'

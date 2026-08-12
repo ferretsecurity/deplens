@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-importmap
+candidate_id: candidate-377269f22f7c504edffe25bce086a188
+provider: github
+repository: flo-bit/youtube-party-dj
+repository_url: https://github.com/flo-bit/youtube-party-dj
+default_branch: main
+commit: 2e7b62a37165d4addb4cbf09e6ab0c83916660d0
+original_path: importmap.json
+permalink: https://github.com/flo-bit/youtube-party-dj/blob/2e7b62a37165d4addb4cbf09e6ab0c83916660d0/importmap.json
+retrieved_at: "2026-08-12T10:16:52Z"
+sha256: 3d512048862532b155f2b7f89c205378740d4ee9977ef6d9327689e9b1f647a6
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/flo-bit/youtube-party-dj/blob/2e7b62a37165d4addb4cbf09e6ab0c83916660d0/LICENSE
+    sha256: 85ff80efc6cadc80550b493b307de5f9dac688c3f9ebdd0918696cd9e08b008f
+rationale: Adds exact and trailing-slash prefix mappings for the same packages, covering submodule-resolution behavior.
