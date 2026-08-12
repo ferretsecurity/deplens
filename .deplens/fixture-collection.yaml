@@ -4233,13 +4233,14 @@ detectors:
       form: tool-config
       roles:
         - configuration
-      state: in-progress
-      iterations: 6
+      state: needs-collection-review
+      iterations: 7
       examples: []
       target: 3
       query_plan:
         - path:gradle/wrapper/gradle-wrapper.properties
       queries:
+        - path:gradle/wrapper/gradle-wrapper.properties
         - path:gradle/wrapper/gradle-wrapper.properties
         - path:gradle/wrapper/gradle-wrapper.properties
         - path:gradle/wrapper/gradle-wrapper.properties
@@ -4268,6 +4269,10 @@ detectors:
           queries:
             - path:gradle/wrapper/gradle-wrapper.properties
         - iteration: 6
+          result: unsuccessful
+          queries:
+            - path:gradle/wrapper/gradle-wrapper.properties
+        - iteration: 7
           result: unsuccessful
           queries:
             - path:gradle/wrapper/gradle-wrapper.properties
