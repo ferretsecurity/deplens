@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-cmake
+candidate_id: candidate-93ac0c1dec88ab8636bbd7934c932c91
+provider: github
+repository: Protestator-Research/cpp-dependencies
+repository_url: https://github.com/Protestator-Research/cpp-dependencies
+default_branch: master
+commit: f9713c324d5a5f69f638e1a687a33630e76a982e
+original_path: unicorn/all/test_package/CMakeLists.txt
+permalink: https://github.com/Protestator-Research/cpp-dependencies/blob/f9713c324d5a5f69f638e1a687a33630e76a982e/unicorn/all/test_package/CMakeLists.txt
+retrieved_at: "2026-08-12T21:54:15Z"
+sha256: 64481a0c10d6d0c7d30266fdbf6015a2597c4da243c44d81a7fbf729ca6b972a
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Protestator-Research/cpp-dependencies/blob/f9713c324d5a5f69f638e1a687a33630e76a982e/LICENSE
+    sha256: 15974d440efec3029fc41975bb188977c1bb065b317db25cb7ec7669959c119c
+rationale: 'Covers the common downstream-consumer case: find an installed package and link its namespaced imported target.'

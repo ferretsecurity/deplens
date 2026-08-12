@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-cmake
+candidate_id: candidate-0b3cbc8ad3d8de8e73b73d56b210977e
+provider: github
+repository: OpenNMT/CTranslate2
+repository_url: https://github.com/OpenNMT/CTranslate2
+default_branch: master
+commit: a93c2bfb8af9c702f42f355f17a29952289d1d1f
+original_path: cli/CMakeLists.txt
+permalink: https://github.com/OpenNMT/CTranslate2/blob/a93c2bfb8af9c702f42f355f17a29952289d1d1f/cli/CMakeLists.txt
+retrieved_at: "2026-08-12T21:38:32Z"
+sha256: e4fd58eb33a5273fd275f4a598be8df381b577e30b682f858f5e53e29e4be046
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/OpenNMT/CTranslate2/blob/a93c2bfb8af9c702f42f355f17a29952289d1d1f/LICENSE
+    sha256: 54aa79d9fe3c09e67a16dcd95b9e88676405a6ec174efda31036983cf7672ecb
+rationale: 'Representative production CLI target: source build, private include/link dependencies, output naming, and installation.'

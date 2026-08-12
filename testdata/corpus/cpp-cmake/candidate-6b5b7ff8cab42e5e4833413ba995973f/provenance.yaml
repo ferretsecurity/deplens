@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-cmake
+candidate_id: candidate-6b5b7ff8cab42e5e4833413ba995973f
+provider: github
+repository: mfocosta/feast-o-matic
+repository_url: https://github.com/mfocosta/feast-o-matic
+default_branch: main
+commit: 3948f3994e7d9143da5a6ec4549299b62876cdff
+original_path: components/Adafruit_BusIO/CMakeLists.txt
+permalink: https://github.com/mfocosta/feast-o-matic/blob/3948f3994e7d9143da5a6ec4549299b62876cdff/components/Adafruit_BusIO/CMakeLists.txt
+retrieved_at: "2026-08-12T21:44:35Z"
+sha256: 3553b0b86877e6c4067a3ef2524bd7a3b53d2d089f838f1ba13e621b1bdea1ce
+governing_license:
+    spdx: MIT
+    path: components/Adafruit_BusIO/LICENSE
+    permalink: https://github.com/mfocosta/feast-o-matic/blob/3948f3994e7d9143da5a6ec4549299b62876cdff/components/Adafruit_BusIO/LICENSE
+    sha256: 86e9fafdb50d2a85d8fef369b4635b5a1b89160603e5b1f95484df0804b49508
+rationale: Adds a compact embedded/ESP-IDF component-registration pattern, a useful nonstandard CMake integration edge case.
