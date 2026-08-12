@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-paket-references
+candidate_id: candidate-47402eaf99577074582a3c0c5d645c65
+provider: github
+repository: Tarmil/FSharp.SystemTextJson
+repository_url: https://github.com/Tarmil/FSharp.SystemTextJson
+default_branch: master
+commit: 4283f782fdd9f9b1afbb172cf5bf1ccd112417c2
+original_path: build/paket.references
+permalink: https://github.com/Tarmil/FSharp.SystemTextJson/blob/4283f782fdd9f9b1afbb172cf5bf1ccd112417c2/build/paket.references
+retrieved_at: "2026-08-12T15:03:40Z"
+sha256: d5e7abb10814d2e937b35a2efee3b196d1fe7824ec93968386706b361ec7c657
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Tarmil/FSharp.SystemTextJson/blob/4283f782fdd9f9b1afbb172cf5bf1ccd112417c2/LICENSE
+    sha256: 0461c8d8431eab249f36b7ea12f62d4faba2e39bb8e0f8af787b08e2e56d6677
+rationale: Adds a compact named-group form used for build/tooling dependencies.

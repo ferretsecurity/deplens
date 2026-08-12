@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-paket-references
+candidate_id: candidate-f76d9962710053de4b5f402916bfa8f1
+provider: github
+repository: jindraivanek/cs2fs
+repository_url: https://github.com/jindraivanek/cs2fs
+default_branch: master
+commit: 9e517c42f453aec0249127839e986ac51f21c5c2
+original_path: src/cs2fs/paket.references
+permalink: https://github.com/jindraivanek/cs2fs/blob/9e517c42f453aec0249127839e986ac51f21c5c2/src/cs2fs/paket.references
+retrieved_at: "2026-08-12T15:08:01Z"
+sha256: e8bf84b8d172f4392f2ec2adcf2c071e414605f6b9f71f5c35bae5858d62af14
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/jindraivanek/cs2fs/blob/9e517c42f453aec0249127839e986ac51f21c5c2/LICENSE
+    sha256: b776fd42d60ae890105eeec51bf710036494ae4aa414f965f465aad32120657b
+rationale: Adds the useful File directive edge case, with a normal package dependency alongside it.

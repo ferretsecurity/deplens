@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-paket-references
+candidate_id: candidate-53a8c2ea2090a3cd169bb0ca61c0fbbf
+provider: github
+repository: mleech/scotch
+repository_url: https://github.com/mleech/scotch
+default_branch: master
+commit: 22963484a11959709a99f691a4865c933306f5db
+original_path: Scotch/paket.references
+permalink: https://github.com/mleech/scotch/blob/22963484a11959709a99f691a4865c933306f5db/Scotch/paket.references
+retrieved_at: "2026-08-12T15:08:47Z"
+sha256: 158ee1d7a304acf456f2368d186f0926011fb421e61abd8107d43e6a98948db2
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/mleech/scotch/blob/22963484a11959709a99f691a4865c933306f5db/LICENSE.txt
+    sha256: 998fc303f316f636f6f2fe112fe6478fd10dd3a22d10dd0baa47eeeed02ff65a
+rationale: 'Represents the common plain project dependency list: core runtime plus HTTP and JSON.'
