@@ -1,0 +1,18 @@
+version: 2
+detector_id: julia-manifest
+candidate_id: candidate-6bb463fe5f882ecdfb7615e9d70710a5
+provider: github
+repository: mingtaoli/metapseserver
+repository_url: https://github.com/mingtaoli/metapseserver
+default_branch: main
+commit: a57f6ec9ae9ef7b1b72a2d24304523a8b60e6850
+original_path: Manifest.toml
+permalink: https://github.com/mingtaoli/metapseserver/blob/a57f6ec9ae9ef7b1b72a2d24304523a8b60e6850/Manifest.toml
+retrieved_at: "2026-08-12T23:34:28Z"
+sha256: dff525b796bff5a45d3f3af86f804a58248987d0a99910baeb11d0ab45e5ee5c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/mingtaoli/metapseserver/blob/a57f6ec9ae9ef7b1b72a2d24304523a8b60e6850/LICENSE
+    sha256: 45c0988f583fe66a7d198b2f4b5a1a654f9ac86c318e5cd38daff305e38d66b2
+rationale: Representative modern Julia 1.8 manifest for a practical HTTP service, with typical resolved dependencies.

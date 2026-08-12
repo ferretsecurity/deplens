@@ -1,0 +1,18 @@
+version: 2
+detector_id: julia-manifest
+candidate_id: candidate-c1ddc8332923e7c8c1a7e8584d2f705d
+provider: github
+repository: mtanneau/Netlib_experiments
+repository_url: https://github.com/mtanneau/Netlib_experiments
+default_branch: master
+commit: b481f22c4cb4a0abe6715699b7254a583184314a
+original_path: Manifest.toml
+permalink: https://github.com/mtanneau/Netlib_experiments/blob/b481f22c4cb4a0abe6715699b7254a583184314a/Manifest.toml
+retrieved_at: "2026-08-12T23:33:49Z"
+sha256: 6b0d27b5fbbca9ed1293ba37ed928bc6d548d6348f34525f4461c999b6582c7c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/mtanneau/Netlib_experiments/blob/b481f22c4cb4a0abe6715699b7254a583184314a/LICENSE
+    sha256: 110da529573a34227937c7489787417bbeaf3a94e88483dae8f2fd3f6b53d9e2
+rationale: Covers the older Julia manifest layout and a realistic data/optimization dependency graph.

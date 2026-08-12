@@ -1,0 +1,18 @@
+version: 2
+detector_id: julia-manifest
+candidate_id: candidate-7ecc413933e95c43321ffc9115aaf89f
+provider: github
+repository: javanile/mush
+repository_url: https://github.com/javanile/mush
+default_branch: main
+commit: bd856a4e334249549c005144e831f733f27acad7
+original_path: tests/fixtures/error-app/Manifest.toml
+permalink: https://github.com/javanile/mush/blob/bd856a4e334249549c005144e831f733f27acad7/tests/fixtures/error-app/Manifest.toml
+retrieved_at: "2026-08-12T23:32:08Z"
+sha256: 3c95ba38f5a8aa67f7ac06caa6764cddf9e16bd734af346ea3f1d15c40bf426f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/javanile/mush/blob/bd856a4e334249549c005144e831f733f27acad7/LICENSE
+    sha256: 6803bbc6b15caa661f8a267654eabc9682e6b669a5ef5a82be4ab1882a65a86c
+rationale: Tiny non-Julia Cargo manifest edge case despite the filename, useful for format identification and empty dependency handling.
