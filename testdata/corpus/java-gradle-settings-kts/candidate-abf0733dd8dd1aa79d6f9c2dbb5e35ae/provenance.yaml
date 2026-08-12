@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-gradle-settings-kts
+candidate_id: candidate-abf0733dd8dd1aa79d6f9c2dbb5e35ae
+provider: github
+repository: bennyhuo/KotlinMetaProgrammingInAction-Sources
+repository_url: https://github.com/bennyhuo/KotlinMetaProgrammingInAction-Sources
+default_branch: master
+commit: 3f8be26a7b0873db875c8e881eae0f728733a3cb
+original_path: settings.gradle.kts
+permalink: https://github.com/bennyhuo/KotlinMetaProgrammingInAction-Sources/blob/3f8be26a7b0873db875c8e881eae0f728733a3cb/settings.gradle.kts
+retrieved_at: "2026-08-12T10:23:33Z"
+sha256: efe0d23e8372bbd7f41e02f328f75a7895bf2ed70732c83eb28510f35d546376
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/bennyhuo/KotlinMetaProgrammingInAction-Sources/blob/3f8be26a7b0873db875c8e881eae0f728733a3cb/LICENSE
+    sha256: f4f53dce71e53fb1ed07f426797234484fab12c7895406dff485cb6aaba0d1d2
+rationale: Covers dynamic module discovery plus optional composite builds and plugin-resolution customization.

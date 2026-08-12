@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-gradle-settings-kts
+candidate_id: candidate-49d3d7cc84c77786fb12481805fca043
+provider: github
+repository: GeyserMC/api
+repository_url: https://github.com/GeyserMC/api
+default_branch: master
+commit: 83fe35af518451896e9aa098b3fd05f2cb6c575d
+original_path: settings.gradle.kts
+permalink: https://github.com/GeyserMC/api/blob/83fe35af518451896e9aa098b3fd05f2cb6c575d/settings.gradle.kts
+retrieved_at: "2026-08-12T10:23:48Z"
+sha256: 471ec12c43e07f5f1cde17d5cf45928623b504420d0ff0b9419f46a3b0470fa6
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/GeyserMC/api/blob/83fe35af518451896e9aa098b3fd05f2cb6c575d/LICENSE
+    sha256: 0dc4b57f7a5a23ed8948bc5578728fe792fdeffe13a89ba339604eaa7b04c96c
+rationale: Adds a conventional multi-project build with a custom repository, type-safe accessors, and an included build for build logic.

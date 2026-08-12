@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-gradle-settings-kts
+candidate_id: candidate-112f7565211eedb7166c8f4207b0eeec
+provider: github
+repository: stmtc233/WebQR-Client
+repository_url: https://github.com/stmtc233/WebQR-Client
+default_branch: main
+commit: 57db6f0e2f8e3b98e43ffebf37bf59a6bb1f35eb
+original_path: settings.gradle.kts
+permalink: https://github.com/stmtc233/WebQR-Client/blob/57db6f0e2f8e3b98e43ffebf37bf59a6bb1f35eb/settings.gradle.kts
+retrieved_at: "2026-08-12T10:24:12Z"
+sha256: 60c05f07220c29423bea77bd8749ccd364a053a454847798e2e8ecc3848a2d00
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/stmtc233/WebQR-Client/blob/57db6f0e2f8e3b98e43ffebf37bf59a6bb1f35eb/LICENSE
+    sha256: f65eb8abe46a8655b1241db3c14bc6c0e962e9fdc22de810a5a95744d0081cfa
+rationale: 'Common Android single-app settings: standard plugin and dependency repositories, strict repository mode, and :app inclusion.'
