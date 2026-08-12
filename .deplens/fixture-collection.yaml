@@ -10876,12 +10876,242 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/haskell-package-yaml/candidate-5f4c568adb28a5c38528418908804e10/exercises/practice/custom-set/package.yaml
+        - testdata/corpus/haskell-package-yaml/candidate-652a51fca99cce4b3d13fa8f98ed7f2a/package.yaml
+        - testdata/corpus/haskell-package-yaml/candidate-69f4658610d2e07bb88c99f832157002/package.yaml
       target: 3
       query_plan:
         - filename:package.yaml
+      queries:
+        - filename:package.yaml
+      candidates:
+        - candidate-69f4658610d2e07bb88c99f832157002
+        - candidate-652a51fca99cce4b3d13fa8f98ed7f2a
+        - candidate-5d485093736d0af419dc61c7c1d7f6f1
+        - candidate-7816bc8f28615037ee0aa0298948a7b1
+        - candidate-43705276fc32ef235ac058ec57f738d1
+        - candidate-5f4c568adb28a5c38528418908804e10
+        - candidate-ec1baffdfd0d0d7081c636af72cdf653
+      filtered_search_hits:
+        source-selector-mismatch: 34
+      rejections:
+        - sensitive-content
+        - license-missing
+        - repository-purpose
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+      decision_states:
+        - packet_fingerprint: 6e9058f45c85668920d9aa3b21790f9607cba8c2db50d017d308aea23f8bee95
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-5f4c568adb28a5c38528418908804e10
+            - candidate-652a51fca99cce4b3d13fa8f98ed7f2a
+            - candidate-69f4658610d2e07bb88c99f832157002
+          queries:
+            - filename:package.yaml
+          candidates:
+            - candidate-69f4658610d2e07bb88c99f832157002
+            - candidate-652a51fca99cce4b3d13fa8f98ed7f2a
+            - candidate-5d485093736d0af419dc61c7c1d7f6f1
+            - candidate-7816bc8f28615037ee0aa0298948a7b1
+            - candidate-43705276fc32ef235ac058ec57f738d1
+            - candidate-5f4c568adb28a5c38528418908804e10
+            - candidate-ec1baffdfd0d0d7081c636af72cdf653
+          filtered_search_hits:
+            source-selector-mismatch: 34
+          rejections:
+            - sensitive-content
+            - license-missing
+            - repository-purpose
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+          decision:
+            packet_fingerprint: 6e9058f45c85668920d9aa3b21790f9607cba8c2db50d017d308aea23f8bee95
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: dotnet-packages-lock
       form: lockfile
       roles:

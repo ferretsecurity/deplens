@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-package-yaml
+candidate_id: candidate-652a51fca99cce4b3d13fa8f98ed7f2a
+provider: github
+repository: dandoh/web-haskell-graphql-postgres-boilerplate
+repository_url: https://github.com/dandoh/web-haskell-graphql-postgres-boilerplate
+default_branch: master
+commit: e673e9ee07ce7a4dd9b023328038664e8fdfdd78
+original_path: package.yaml
+permalink: https://github.com/dandoh/web-haskell-graphql-postgres-boilerplate/blob/e673e9ee07ce7a4dd9b023328038664e8fdfdd78/package.yaml
+retrieved_at: "2026-08-12T14:18:35Z"
+sha256: 10ca0dd6b2d6e5f6e0c7a4b0a4c755644f4b5f28a264259fbda4eaf41e55feb4
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/dandoh/web-haskell-graphql-postgres-boilerplate/blob/e673e9ee07ce7a4dd9b023328038664e8fdfdd78/LICENSE
+    sha256: 1ca1b485f2a0581f07f558fd9528b8913d42df2e779af280b35ee4e17d05a563
+rationale: Complex web application case with many dependencies, broad extensions, and executable/test overrides.

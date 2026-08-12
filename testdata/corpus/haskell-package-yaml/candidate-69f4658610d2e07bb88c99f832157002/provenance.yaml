@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-package-yaml
+candidate_id: candidate-69f4658610d2e07bb88c99f832157002
+provider: github
+repository: lexi-lambda/higher-rank
+repository_url: https://github.com/lexi-lambda/higher-rank
+default_branch: master
+commit: 1d7533868165d2c1ce810ea8dfa91ae4801ef799
+original_path: package.yaml
+permalink: https://github.com/lexi-lambda/higher-rank/blob/1d7533868165d2c1ce810ea8dfa91ae4801ef799/package.yaml
+retrieved_at: "2026-08-12T14:18:23Z"
+sha256: 164b45c63e192d7b4dc21d0d6e833faba9e7371ab181212acdc8c51d9b280bcd
+governing_license:
+    spdx: ISC
+    path: LICENSE
+    permalink: https://github.com/lexi-lambda/higher-rank/blob/1d7533868165d2c1ce810ea8dfa91ae4801ef799/LICENSE
+    sha256: d6d2d8454e6982d5354f9fd31068aa295a2ded18572c2d66658cc3fc0a0aabe2
+rationale: 'Representative normal package: library plus executable and test suite, with common project-wide settings.'

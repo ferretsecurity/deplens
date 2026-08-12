@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-package-yaml
+candidate_id: candidate-5f4c568adb28a5c38528418908804e10
+provider: github
+repository: exercism/haskell
+repository_url: https://github.com/exercism/haskell
+default_branch: main
+commit: d30150abfe8a1b355f001db969c25c56b3f51521
+original_path: exercises/practice/custom-set/package.yaml
+permalink: https://github.com/exercism/haskell/blob/d30150abfe8a1b355f001db969c25c56b3f51521/exercises/practice/custom-set/package.yaml
+retrieved_at: "2026-08-12T14:21:00Z"
+sha256: 61d0bf6048fd8fbe50d0a3ae3155ebdc774808a5a0d8057172b5382d5c258834
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/exercism/haskell/blob/d30150abfe8a1b355f001db969c25c56b3f51521/LICENSE
+    sha256: e52f804e74f0fbd34e8927962319df346166b8194094309a0aee318693df44df
+rationale: Small library-and-test example; covers a minimal, focused package structure.
