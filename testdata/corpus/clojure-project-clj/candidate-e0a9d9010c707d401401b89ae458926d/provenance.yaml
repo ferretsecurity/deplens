@@ -1,0 +1,18 @@
+version: 2
+detector_id: clojure-project-clj
+candidate_id: candidate-e0a9d9010c707d401401b89ae458926d
+provider: github
+repository: bigmlcom/histogram
+repository_url: https://github.com/bigmlcom/histogram
+default_branch: master
+commit: ada60dbdf305f1b458aa9968bfc4fb363b68a27e
+original_path: project.clj
+permalink: https://github.com/bigmlcom/histogram/blob/ada60dbdf305f1b458aa9968bfc4fb363b68a27e/project.clj
+retrieved_at: "2026-08-12T13:18:53Z"
+sha256: d10ef96450d81a1ff97a824a75583ac6a79e3375885577e096040eca07ebb38c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/bigmlcom/histogram/blob/ada60dbdf305f1b458aa9968bfc4fb363b68a27e/LICENSE
+    sha256: e99d1275256235ba64651a758370b48edd234397aab28c123daef5700bb6cf55
+rationale: Representative production library configuration with Java sources, compiler options, aliases, and a development profile.

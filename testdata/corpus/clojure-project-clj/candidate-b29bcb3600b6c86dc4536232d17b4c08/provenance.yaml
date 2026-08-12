@@ -1,0 +1,18 @@
+version: 2
+detector_id: clojure-project-clj
+candidate_id: candidate-b29bcb3600b6c86dc4536232d17b4c08
+provider: github
+repository: jtkDvlp/cljs-workers
+repository_url: https://github.com/jtkDvlp/cljs-workers
+default_branch: master
+commit: 7156482d923c5b495cbf8d8549b92686cd40db87
+original_path: project.clj
+permalink: https://github.com/jtkDvlp/cljs-workers/blob/7156482d923c5b495cbf8d8549b92686cd40db87/project.clj
+retrieved_at: "2026-08-12T13:24:43Z"
+sha256: 7a6c3113c25cf66275913d565a2e1046b6e6b7e785d49936032690cae3d9808a
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/jtkDvlp/cljs-workers/blob/7156482d923c5b495cbf8d8549b92686cd40db87/LICENSE
+    sha256: 934adc7a0fde1829559ffd8a2d7cab70020be54f35d4db52dcabdc58b8c93d0f
+rationale: 'Adds modern ClojureScript-specific structure: provided/dev/REPL profiles, resources, plugin, and build alias.'

@@ -1,0 +1,18 @@
+version: 2
+detector_id: clojure-project-clj
+candidate_id: candidate-4acbeb6eca1bb065844e5f24f3da3951
+provider: github
+repository: Azel4231/clojure-quotes
+repository_url: https://github.com/Azel4231/clojure-quotes
+default_branch: master
+commit: 0692738614280473a1f1f74a7b1b5216796214cd
+original_path: project.clj
+permalink: https://github.com/Azel4231/clojure-quotes/blob/0692738614280473a1f1f74a7b1b5216796214cd/project.clj
+retrieved_at: "2026-08-12T13:21:52Z"
+sha256: 4d14337befc9253a04e6608f69d48fa9313e0b77b9bb753854b8a2d300d40808
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Azel4231/clojure-quotes/blob/0692738614280473a1f1f74a7b1b5216796214cd/LICENSE
+    sha256: afb11426e09da40a1ae4f8fa17ddcc6b6a52d14df04c29bc5bcd06eb8730624d
+rationale: 'Baseline small Clojure application: standard metadata, dependencies, main namespace, and source path.'
