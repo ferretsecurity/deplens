@@ -114,8 +114,16 @@ candidate rejection rather than a model judgment.
 Go uses direct GitHub API requests. Credentials are resolved from the standard
 GitHub token environment or, when absent, from the installed `gh` login without
 logging or persisting the token. Credentials remain in Go memory and are never
-passed to Codex. Provider rate limiting, authentication failure, and service
-unavailability are infrastructure failures.
+passed to Codex. Requests are serial, code search is paced to one request per
+six seconds, and `core` and `code_search` response limits are tracked
+independently. Explicit rate limits wait for `Retry-After` or reset and retry a
+bounded number of times; secondary limits use bounded exponential backoff.
+Temporary transport and 5xx failures also receive bounded retries. Other 403
+responses fail immediately. All waits are context-cancellable, every decoded
+retry response consumes the existing byte budget, and sanitized rate headers,
+request IDs, and bounded provider messages are reported to the operator.
+Authentication failure and service unavailability remain infrastructure
+failures.
 
 ## Qualification
 
@@ -363,6 +371,8 @@ Implementation tests must cover:
 - deterministic query generation and the two current query-review detectors;
 - fake GitHub/web discovery and fake Codex, with no live network;
 - budget enforcement before consumption and stable accounting after failures;
+- separate GitHub search/core pacing, rate-limit classification, interruptible
+  wait, bounded retry, retry-byte accounting, and sanitized diagnostics;
 - default-branch acquisition snapshots and governing license resolution;
 - public/fork/template/project-purpose, size, symlink, LFS, secret/PII, selector,
   duplicate identity, and duplicate-content cases;

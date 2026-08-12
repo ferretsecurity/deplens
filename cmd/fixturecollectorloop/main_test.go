@@ -588,6 +588,7 @@ func TestRunPrintsResearchProgress(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	researcher := fakeResearcher{outcome: Outcome{Result: "unsuccessful"}, write: func(iteration Iteration) error {
 		iteration.ReportProgress(ResearchProgress{Stage: progressSearch, Provider: "github", Query: "filename:go.work", QueryIndex: 1, QueryTotal: 1, Page: 1, Hits: 100, Budget: "search", DownloadedBytes: 512 << 10, ByteLimit: 4 << 20, RemainingBytes: 3584 << 10})
+		iteration.ReportProgress(ResearchProgress{Stage: progressSearch, ProviderEvent: &ProviderProgress{Action: "wait", Reason: "primary-rate-limit", Resource: "code_search", Status: 403, Attempt: 1, MaxAttempts: 4, Delay: 42 * time.Second, Reset: time.Date(2026, 8, 12, 13, 0, 0, 0, time.UTC), Remaining: 0, Limit: 10, CountersKnown: true, RequestID: "ABCD:1234"}})
 		iteration.ReportProgress(ResearchProgress{Stage: progressQualification, Inspected: 4, InspectionLimit: 40, Qualified: 1, Rejected: 3, Filtered: 12, Budget: "acquisition", DownloadedBytes: 2 << 20, ByteLimit: 12 << 20, RemainingBytes: 10 << 20})
 		iteration.ReportProgress(ResearchProgress{Stage: progressQualification, Final: true, Inspected: 40, InspectionLimit: 40, Qualified: 9, Rejected: 31, Filtered: 105, Budget: "acquisition", DownloadedBytes: 8 << 20, ByteLimit: 12 << 20, RemainingBytes: 4 << 20})
 		iteration.ReportProgress(ResearchProgress{Stage: progressSelection, Candidates: 9})
@@ -600,6 +601,7 @@ func TestRunPrintsResearchProgress(t *testing.T) {
 	for _, want := range []string{
 		"│  Candidate search",
 		`│    github query 1/1 · page 1 · 100 results · expression: "filename:go.work" · search: 512.0KiB/4.0MiB · remaining: 3.5MiB`,
+		"│    GitHub wait: resource=code_search reason=primary-rate-limit · status=403 · retry=1/4 · delay=42s · remaining=0/10 · reset=2026-08-12T13:00:00Z · request-id=ABCD:1234",
 		"│  Candidate qualification",
 		"│    Inspected 4/40 · qualified: 1/5 · rejected: 3 · filtered: 12 · acquisition: 2.0MiB/12.0MiB · remaining: 10.0MiB",
 		"│    Finished · inspected 40/40 · qualified: 9/5 · rejected: 31 · filtered: 105 · acquisition: 8.0MiB/12.0MiB · remaining: 4.0MiB",

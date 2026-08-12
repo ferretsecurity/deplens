@@ -82,6 +82,17 @@ defaults. GitHub credentials come
 from standard token environment variables or an existing `gh` login and remain
 in Go memory; they are never passed to Codex.
 
+GitHub requests are serial and identify the collector with a pinned REST API
+version. Code-search pages are paced to at most one request every six seconds,
+matching GitHub's separate authenticated limit of ten code-search requests per
+minute. The collector tracks `core` and `code_search` response headers
+separately. When GitHub reports exhaustion it waits for `Retry-After` or the
+primary reset time; identified secondary limits use bounded 60/120/240-second
+backoff. Rate-limit responses have four total attempts, while temporary
+transport and 5xx failures have three. Waits are interruptible, all decoded
+retry responses still consume the reviewed byte budget, and unrelated 403
+responses fail immediately instead of being retried.
+
 The packet is supplied only on stdin. Configurable tool families are disabled;
 the residual-tool sandbox has an empty network policy and only a disposable
 read-only work directory. This is a residual-tool sandbox guarantee, not a
@@ -132,6 +143,12 @@ isolated model call. After a valid accepted checkpoint, the selected-candidates
 section prints absolute local paths for every selected source and its provenance
 file so terminals can render them as links. Progress is content-free: it never
 prints upstream source or license bytes.
+
+Provider waits, retries, and terminal failures appear inside the active search
+or qualification section. These lines include only the request class, resource
+bucket, status, retry/wait, rate counters/reset, GitHub request ID, and a short
+sanitized GitHub message. They never include authorization data, request URLs,
+repository paths, or response payloads.
 
 ## Git, recovery, and commits
 

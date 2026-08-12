@@ -138,6 +138,18 @@ const (
 	progressSelection     = "selection"
 )
 
+// ProviderProgress is a sanitized account of provider pacing, retries, and
+// terminal failures. It never carries request URLs, credentials, or upstream
+// source/license contents.
+type ProviderProgress struct {
+	Action, Reason, Resource, RequestID, Message string
+	Status, Attempt, MaxAttempts                 int
+	Delay                                        time.Duration
+	Reset                                        time.Time
+	Remaining, Limit                             int
+	CountersKnown                                bool
+}
+
 // ResearchProgress carries content-free, operator-facing activity counts from
 // the Go-owned acquisition and isolated selection pipeline.
 type ResearchProgress struct {
@@ -151,6 +163,7 @@ type ResearchProgress struct {
 	DownloadedBytes, ByteLimit         int64
 	RemainingBytes                     int64
 	Final                              bool
+	ProviderEvent                      *ProviderProgress
 }
 
 type Outcome struct {
@@ -617,6 +630,32 @@ func (p *detectorProgressPrinter) Print(progress ResearchProgress) {
 }
 
 func printResearchProgress(stdout io.Writer, progress ResearchProgress) {
+	if event := progress.ProviderEvent; event != nil {
+		fmt.Fprintf(stdout, "│    GitHub %s: resource=%s reason=%s", event.Action, event.Resource, event.Reason)
+		if event.Status != 0 {
+			fmt.Fprintf(stdout, " · status=%d", event.Status)
+		}
+		if event.Attempt != 0 {
+			fmt.Fprintf(stdout, " · retry=%d/%d", event.Attempt, event.MaxAttempts)
+		}
+		if event.Delay > 0 {
+			fmt.Fprintf(stdout, " · delay=%s", formatRunDuration(event.Delay))
+		}
+		if event.CountersKnown {
+			fmt.Fprintf(stdout, " · remaining=%d/%d", event.Remaining, event.Limit)
+		}
+		if !event.Reset.IsZero() {
+			fmt.Fprintf(stdout, " · reset=%s", event.Reset.UTC().Format(time.RFC3339))
+		}
+		if event.RequestID != "" {
+			fmt.Fprintf(stdout, " · request-id=%s", event.RequestID)
+		}
+		if event.Message != "" {
+			fmt.Fprintf(stdout, " · message=%q", event.Message)
+		}
+		fmt.Fprintln(stdout)
+		return
+	}
 	switch progress.Stage {
 	case progressSearch:
 		fmt.Fprintf(stdout, "│    %s query %d/%d · page %d · %d results · expression: %q · %s: %s/%s · remaining: %s\n",

@@ -8,13 +8,16 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 )
@@ -29,7 +32,45 @@ var licenseFilenames = []string{"LICENSE", "LICENSE.md", "LICENSE.txt"}
 const (
 	packetTokenBytes  = 4
 	packetFramingSize = 512
+	githubUserAgent   = "deplens-fixture-collector"
+	githubAPIVersion  = "2026-03-10"
+
+	githubCodeSearchInterval = 6 * time.Second
+	githubRateLimitAttempts  = 4
+	githubTransientAttempts  = 3
+	githubErrorMessageLimit  = 256
+	githubResetMargin        = time.Second
 )
+
+type githubProgressContextKey struct{}
+
+type githubProgressReporter struct {
+	stage  string
+	report func(ResearchProgress)
+}
+
+func withGitHubProgress(ctx context.Context, stage string, report func(ResearchProgress)) context.Context {
+	if report == nil {
+		return ctx
+	}
+	return context.WithValue(ctx, githubProgressContextKey{}, githubProgressReporter{stage: stage, report: report})
+}
+
+func reportGitHubProgress(ctx context.Context, resource string, event ProviderProgress) {
+	reporter, ok := ctx.Value(githubProgressContextKey{}).(githubProgressReporter)
+	if !ok || reporter.report == nil {
+		return
+	}
+	stage := reporter.stage
+	if stage == "" {
+		stage = progressQualification
+		if resource == "code_search" {
+			stage = progressSearch
+		}
+	}
+	event.Resource = resource
+	reporter.report(ResearchProgress{Stage: stage, ProviderEvent: &event})
+}
 
 // qualificationReason is deliberately closed: progress stores only one of
 // these stable codes, never upstream response text or rejected payload bytes.
@@ -262,6 +303,7 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	if len(iteration.QueryPlan) == 0 {
 		return ResearchInput{Outcome: Outcome{Result: "unsuccessful"}}, nil
 	}
+	ctx = withGitHubProgress(ctx, "", iteration.ReportProgress)
 	cache := newAcquisitionCache()
 	hits := newHitCollector()
 	outcome := Outcome{Result: "unsuccessful"}
@@ -776,47 +818,331 @@ type githubHTTPService struct {
 	client  *http.Client
 	token   string
 	baseURL string
+	now     func() time.Time
+	sleep   func(context.Context, time.Duration) error
+
+	gateMu       sync.Mutex
+	nextRequest  map[string]time.Time
+	blockedUntil map[string]time.Time
 }
 
 func newGitHubHTTPService(token string) *githubHTTPService {
-	return &githubHTTPService{client: http.DefaultClient, token: token, baseURL: "https://api.github.com"}
+	return &githubHTTPService{
+		client: http.DefaultClient, token: token, baseURL: "https://api.github.com",
+		now: time.Now, sleep: contextSleep,
+		nextRequest: make(map[string]time.Time), blockedUntil: make(map[string]time.Time),
+	}
 }
+
+func contextSleep(ctx context.Context, delay time.Duration) error {
+	if delay <= 0 {
+		return nil
+	}
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-timer.C:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+type githubRateLimitSnapshot struct {
+	status                       int
+	resource, requestID, message string
+	limit, remaining             int
+	countersKnown                bool
+	reset                        time.Time
+	retryAfter                   time.Duration
+	retryAfterKnown              bool
+}
+
+func githubResource(endpoint string) string {
+	if strings.HasPrefix(endpoint, "/search/code") {
+		return "code_search"
+	}
+	return "core"
+}
+
+func (s *githubHTTPService) waitForGate(ctx context.Context, resource string) error {
+	now := s.now()
+	s.gateMu.Lock()
+	ready := now
+	reason := "request-pacing"
+	var reset time.Time
+	if blocked := s.blockedUntil[resource]; blocked.After(ready) {
+		ready = blocked
+		reason = "primary-rate-limit"
+		reset = blocked
+	}
+	if next := s.nextRequest[resource]; next.After(ready) {
+		ready = next
+		reason = "request-pacing"
+		reset = time.Time{}
+	}
+	if resource == "code_search" {
+		s.nextRequest[resource] = ready.Add(githubCodeSearchInterval)
+	}
+	s.gateMu.Unlock()
+	if !ready.After(now) {
+		return nil
+	}
+	delay := ready.Sub(now)
+	reportGitHubProgress(ctx, resource, ProviderProgress{Action: "wait", Reason: reason, Delay: delay, Reset: reset})
+	return s.sleep(ctx, delay)
+}
+
+func (s *githubHTTPService) rememberRateLimit(snapshot githubRateLimitSnapshot) {
+	if !snapshot.countersKnown || snapshot.remaining != 0 || snapshot.reset.IsZero() {
+		return
+	}
+	s.gateMu.Lock()
+	defer s.gateMu.Unlock()
+	blocked := snapshot.reset.Add(githubResetMargin)
+	if blocked.After(s.blockedUntil[snapshot.resource]) {
+		s.blockedUntil[snapshot.resource] = blocked
+	}
+}
+
 func (s *githubHTTPService) request(ctx context.Context, endpoint string, limit int64, target any) (int64, error) {
 	if limit < 1 {
 		return 0, errGitHubDecodedResponseBudgetExhausted
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.baseURL+endpoint, nil)
-	if err != nil {
-		return 0, err
+	resource := githubResource(endpoint)
+	var total int64
+	transientAttempt := 0
+	rateAttempt := 0
+	for {
+		if total >= limit {
+			return total, errGitHubDecodedResponseBudgetExhausted
+		}
+		if err := s.waitForGate(ctx, resource); err != nil {
+			return total, err
+		}
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.baseURL+endpoint, nil)
+		if err != nil {
+			return total, err
+		}
+		req.Header.Set("Accept", "application/vnd.github+json")
+		req.Header.Set("User-Agent", githubUserAgent)
+		req.Header.Set("X-GitHub-Api-Version", githubAPIVersion)
+		if s.token != "" {
+			req.Header.Set("Authorization", "Bearer "+s.token)
+		}
+		response, requestErr := s.client.Do(req)
+		if requestErr != nil {
+			if ctx.Err() != nil {
+				return total, ctx.Err()
+			}
+			transientAttempt++
+			if transientAttempt >= githubTransientAttempts || !retryableTransportError(requestErr) {
+				reportGitHubProgress(ctx, resource, ProviderProgress{Action: "failure", Reason: "transport-error", Attempt: transientAttempt, MaxAttempts: githubTransientAttempts})
+				return total, errors.New("GitHub transport failure")
+			}
+			delay := transientRetryDelay(transientAttempt)
+			reportGitHubProgress(ctx, resource, ProviderProgress{Action: "wait", Reason: "transport-error", Attempt: transientAttempt, MaxAttempts: githubTransientAttempts, Delay: delay})
+			if err := s.sleep(ctx, delay); err != nil {
+				return total, err
+			}
+			continue
+		}
+		raw, readErr := io.ReadAll(io.LimitReader(response.Body, limit-total+1))
+		response.Body.Close()
+		total += int64(len(raw))
+		if total > limit {
+			return total, errGitHubDecodedResponseBudgetExhausted
+		}
+		if readErr != nil {
+			if ctx.Err() != nil {
+				return total, ctx.Err()
+			}
+			transientAttempt++
+			if transientAttempt >= githubTransientAttempts || !retryableTransportError(readErr) {
+				reportGitHubProgress(ctx, resource, ProviderProgress{Action: "failure", Reason: "transport-error", Attempt: transientAttempt, MaxAttempts: githubTransientAttempts})
+				return total, errors.New("GitHub transport failure")
+			}
+			delay := transientRetryDelay(transientAttempt)
+			reportGitHubProgress(ctx, resource, ProviderProgress{Action: "wait", Reason: "transport-error", Attempt: transientAttempt, MaxAttempts: githubTransientAttempts, Delay: delay})
+			if err := s.sleep(ctx, delay); err != nil {
+				return total, err
+			}
+			continue
+		}
+		snapshot := parseGitHubRateLimitSnapshot(response, raw, resource, s.now())
+		s.rememberRateLimit(snapshot)
+		if response.StatusCode == http.StatusNotFound {
+			return total, errGitHubNotFound
+		}
+		if response.StatusCode >= 200 && response.StatusCode <= 299 {
+			if err := json.Unmarshal(raw, target); err != nil {
+				return total, err
+			}
+			return total, nil
+		}
+
+		class, retry, delay, maxAttempts := classifyGitHubResponse(snapshot, rateAttempt, transientAttempt, s.now())
+		if retry {
+			if class == "server-error" {
+				transientAttempt++
+				if transientAttempt >= maxAttempts {
+					retry = false
+				}
+			} else {
+				rateAttempt++
+				if rateAttempt >= maxAttempts {
+					retry = false
+				}
+			}
+		}
+		attempt := rateAttempt
+		if class == "server-error" {
+			attempt = transientAttempt
+		}
+		event := snapshot.providerProgress(class)
+		event.Attempt, event.MaxAttempts, event.Delay = attempt, maxAttempts, delay
+		if !retry {
+			event.Action = "failure"
+			event.Delay = 0
+			reportGitHubProgress(ctx, snapshot.resource, event)
+			return total, githubResponseError(snapshot, class)
+		}
+		event.Action = "wait"
+		reportGitHubProgress(ctx, snapshot.resource, event)
+		if err := s.sleep(ctx, delay); err != nil {
+			return total, err
+		}
 	}
-	req.Header.Set("Accept", "application/vnd.github+json")
-	if s.token != "" {
-		req.Header.Set("Authorization", "Bearer "+s.token)
-	}
-	response, err := s.client.Do(req)
-	if err != nil {
-		return 0, err
-	}
-	defer response.Body.Close()
-	raw, err := io.ReadAll(io.LimitReader(response.Body, limit+1))
-	n := int64(len(raw))
-	if err != nil {
-		return n, err
-	}
-	if n > limit {
-		return n, errGitHubDecodedResponseBudgetExhausted
-	}
-	if response.StatusCode == http.StatusNotFound {
-		return n, errGitHubNotFound
-	}
-	if response.StatusCode < 200 || response.StatusCode > 299 {
-		return n, fmt.Errorf("GitHub HTTP status %d", response.StatusCode)
-	}
-	if err := json.Unmarshal(raw, target); err != nil {
-		return n, err
-	}
-	return n, nil
 }
+
+func parseGitHubRateLimitSnapshot(response *http.Response, raw []byte, fallbackResource string, now time.Time) githubRateLimitSnapshot {
+	snapshot := githubRateLimitSnapshot{
+		status: response.StatusCode, resource: sanitizeGitHubDiagnostic(response.Header.Get("X-RateLimit-Resource")),
+		requestID: sanitizeGitHubDiagnostic(response.Header.Get("X-GitHub-Request-Id")),
+	}
+	if snapshot.resource == "" {
+		snapshot.resource = fallbackResource
+	}
+	limit, limitOK := parseGitHubHeaderInt(response.Header.Get("X-RateLimit-Limit"))
+	remaining, remainingOK := parseGitHubHeaderInt(response.Header.Get("X-RateLimit-Remaining"))
+	if limitOK && remainingOK {
+		snapshot.limit, snapshot.remaining, snapshot.countersKnown = limit, remaining, true
+	}
+	if reset, ok := parseGitHubHeaderInt64(response.Header.Get("X-RateLimit-Reset")); ok {
+		snapshot.reset = time.Unix(reset, 0)
+	}
+	if value := response.Header.Get("Retry-After"); value != "" {
+		if seconds, ok := parseGitHubHeaderInt64(value); ok {
+			snapshot.retryAfter = max(time.Second, time.Duration(seconds)*time.Second)
+			snapshot.retryAfterKnown = true
+		} else if retryAt, err := http.ParseTime(value); err == nil {
+			snapshot.retryAfter = max(time.Second, retryAt.Sub(now))
+			snapshot.retryAfterKnown = true
+		}
+	}
+	var payload struct {
+		Message string `json:"message"`
+	}
+	if json.Unmarshal(raw, &payload) == nil {
+		snapshot.message = sanitizeGitHubDiagnostic(payload.Message)
+	}
+	return snapshot
+}
+
+func parseGitHubHeaderInt(value string) (int, bool) {
+	parsed, err := strconv.Atoi(strings.TrimSpace(value))
+	return parsed, err == nil
+}
+
+func parseGitHubHeaderInt64(value string) (int64, bool) {
+	parsed, err := strconv.ParseInt(strings.TrimSpace(value), 10, 64)
+	return parsed, err == nil
+}
+
+func sanitizeGitHubDiagnostic(value string) string {
+	value = strings.Join(strings.Fields(value), " ")
+	runes := []rune(value)
+	if len(runes) > githubErrorMessageLimit {
+		value = string(runes[:githubErrorMessageLimit]) + "…"
+	}
+	return value
+}
+
+func classifyGitHubResponse(snapshot githubRateLimitSnapshot, rateAttempt, transientAttempt int, now time.Time) (class string, retry bool, delay time.Duration, maxAttempts int) {
+	if snapshot.status == http.StatusForbidden || snapshot.status == http.StatusTooManyRequests {
+		switch {
+		case snapshot.retryAfterKnown:
+			return "retry-after", true, snapshot.retryAfter, githubRateLimitAttempts
+		case snapshot.countersKnown && snapshot.remaining == 0:
+			if snapshot.reset.IsZero() {
+				return "primary-rate-limit", true, time.Minute, githubRateLimitAttempts
+			}
+			delay = snapshot.reset.Add(githubResetMargin).Sub(now)
+			return "primary-rate-limit", true, max(time.Second, delay), githubRateLimitAttempts
+		case snapshot.status == http.StatusTooManyRequests || isSecondaryRateLimitMessage(snapshot.message):
+			return "secondary-rate-limit", true, secondaryRetryDelay(rateAttempt + 1), githubRateLimitAttempts
+		default:
+			return "forbidden", false, 0, 1
+		}
+	}
+	if retryableGitHubStatus(snapshot.status) {
+		return "server-error", true, transientRetryDelay(transientAttempt + 1), githubTransientAttempts
+	}
+	return "http-error", false, 0, 1
+}
+
+func isSecondaryRateLimitMessage(message string) bool {
+	message = strings.ToLower(message)
+	return strings.Contains(message, "secondary rate limit") || strings.Contains(message, "abuse detection")
+}
+
+func retryableGitHubStatus(status int) bool {
+	switch status {
+	case http.StatusInternalServerError, http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
+		return true
+	default:
+		return false
+	}
+}
+
+func retryableTransportError(err error) bool {
+	var networkError net.Error
+	return errors.As(err, &networkError) || errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF)
+}
+
+func secondaryRetryDelay(attempt int) time.Duration {
+	return time.Minute * time.Duration(1<<max(0, attempt-1))
+}
+
+func transientRetryDelay(attempt int) time.Duration {
+	return time.Second * time.Duration(1<<max(0, attempt-1))
+}
+
+func (snapshot githubRateLimitSnapshot) providerProgress(reason string) ProviderProgress {
+	return ProviderProgress{
+		Reason: reason, Status: snapshot.status, RequestID: snapshot.requestID,
+		Message: snapshot.message, Reset: snapshot.reset,
+		Remaining: snapshot.remaining, Limit: snapshot.limit, CountersKnown: snapshot.countersKnown,
+	}
+}
+
+func githubResponseError(snapshot githubRateLimitSnapshot, class string) error {
+	diagnostic := fmt.Sprintf("GitHub HTTP status %d class=%s resource=%s", snapshot.status, class, snapshot.resource)
+	if snapshot.countersKnown {
+		diagnostic += fmt.Sprintf(" remaining=%d/%d", snapshot.remaining, snapshot.limit)
+	}
+	if !snapshot.reset.IsZero() {
+		diagnostic += " reset=" + snapshot.reset.UTC().Format(time.RFC3339)
+	}
+	if snapshot.requestID != "" {
+		diagnostic += " request-id=" + snapshot.requestID
+	}
+	if snapshot.message != "" {
+		diagnostic += fmt.Sprintf(" message=%q", snapshot.message)
+	}
+	return errors.New(diagnostic)
+}
+
 func (s *githubHTTPService) SearchCode(ctx context.Context, query string, page int, limit int64) ([]GitHubCodeHit, bool, int64, error) {
 	var response struct {
 		Items []struct {
