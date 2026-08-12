@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-bower
+candidate_id: candidate-ceadbc3241c80b17526bc2d179d517c0
+provider: github
+repository: Justin-Credible/Ionic-TypeScript-MDHA-Starter
+repository_url: https://github.com/Justin-Credible/Ionic-TypeScript-MDHA-Starter
+default_branch: master
+commit: 7ee1d87e6806a16a053bf2a7fbae7587b05d6870
+original_path: bower.json
+permalink: https://github.com/Justin-Credible/Ionic-TypeScript-MDHA-Starter/blob/7ee1d87e6806a16a053bf2a7fbae7587b05d6870/bower.json
+retrieved_at: "2026-08-12T07:54:35Z"
+sha256: e27dabdd47577eea3825f4a76ad8fb86e68959eeca58c01ca2df46938f4fec8d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Justin-Credible/Ionic-TypeScript-MDHA-Starter/blob/7ee1d87e6806a16a053bf2a7fbae7587b05d6870/LICENSE
+    sha256: 8b4ee9f08602a7552df8c96d4e218ba8993f3c4a1aacb0378aab6172ebd53bfc
+rationale: Adds app-level variation with `private`, multiple dependencies, custom `install` mapping, `ignore`, and `resolutions`, covering advanced Bower usage.

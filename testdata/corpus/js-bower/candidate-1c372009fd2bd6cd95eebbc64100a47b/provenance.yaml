@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-bower
+candidate_id: candidate-1c372009fd2bd6cd95eebbc64100a47b
+provider: github
+repository: hybridgroup/commander
+repository_url: https://github.com/hybridgroup/commander
+default_branch: master
+commit: 9901e5abc7cdeb4f4f9b113e9db190a0e09131b4
+original_path: bower.json
+permalink: https://github.com/hybridgroup/commander/blob/9901e5abc7cdeb4f4f9b113e9db190a0e09131b4/bower.json
+retrieved_at: "2026-08-12T07:55:01Z"
+sha256: c69be5c0c811bbcfbfa0d4b59a574177b1f442f2e7c0aeaf23d5be894d54313b
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/hybridgroup/commander/blob/9901e5abc7cdeb4f4f9b113e9db190a0e09131b4/LICENSE
+    sha256: 2a6762c5269d964a4f5d1ed960613ee80196cb03321ff7a4dc37992038a56ca9
+rationale: 'Adds a compact edge case: very short manifest using `devDependencies` only, a string-valued `private`, and a GitHub dependency spec.'

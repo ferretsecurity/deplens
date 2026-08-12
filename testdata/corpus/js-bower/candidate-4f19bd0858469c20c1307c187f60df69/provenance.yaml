@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-bower
+candidate_id: candidate-4f19bd0858469c20c1307c187f60df69
+provider: github
+repository: ColumbiaUniversityOfficeOfAlumni/oad-bootstrap
+repository_url: https://github.com/ColumbiaUniversityOfficeOfAlumni/oad-bootstrap
+default_branch: master
+commit: 1e7d6c4533855ebb2e6b6ca083323487814fc84b
+original_path: bower.json
+permalink: https://github.com/ColumbiaUniversityOfficeOfAlumni/oad-bootstrap/blob/1e7d6c4533855ebb2e6b6ca083323487814fc84b/bower.json
+retrieved_at: "2026-08-12T07:55:11Z"
+sha256: 759bf470074744bc0f89bae6ca7b45309325bfe5091091cc9b3c2593f99269fa
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ColumbiaUniversityOfficeOfAlumni/oad-bootstrap/blob/1e7d6c4533855ebb2e6b6ca083323487814fc84b/LICENSE
+    sha256: 13964e59d8e91ad8b02719bc498917a5ca09673ce24106267cf458c5972bb0fe
+rationale: 'Most common real-world case: a standard package manifest with core metadata, `main`, `ignore`, and a normal runtime dependency.'

@@ -1047,12 +1047,242 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/js-bower/candidate-1c372009fd2bd6cd95eebbc64100a47b/bower.json
+        - testdata/corpus/js-bower/candidate-4f19bd0858469c20c1307c187f60df69/bower.json
+        - testdata/corpus/js-bower/candidate-ceadbc3241c80b17526bc2d179d517c0/bower.json
       target: 3
       query_plan:
         - filename:bower.json
+      queries:
+        - filename:bower.json
+      candidates:
+        - candidate-85420fe13bfad6840a9624b80bfad893
+        - candidate-048d3d57ac6bb61fc2ed81a8ecf55e27
+        - candidate-b4db3ce6535b70e36079d095453e7f51
+        - candidate-fe14879f1a05c36ca6eb596082e214c9
+        - candidate-904bb9ab9b323738adeda0b36b4b23c9
+        - candidate-c7914ce02dc9acfeaaafc985e1eb8c5b
+        - candidate-98ff9185afdc909736c4a8da6c8ad4a6
+        - candidate-ceadbc3241c80b17526bc2d179d517c0
+        - candidate-4b0f55b99113d5358fcd78ddf3df4011
+        - candidate-89876570068352df89065fdae8f37457
+        - candidate-3ae3f3ebf4455ee84bb3979d823e5492
+        - candidate-1feb3815c6f45ca4f8f3f08fa8767a88
+        - candidate-1c372009fd2bd6cd95eebbc64100a47b
+        - candidate-c554f90d7a3dec60e04802d3ad5513c8
+        - candidate-4f19bd0858469c20c1307c187f60df69
+        - candidate-2a993087dbb0bbf1b17a3158b98582f5
+        - candidate-a2c1587e47b7e94a16a03b92dfd92e1a
+        - candidate-f82599784e94cf01724415eb4b09b55f
+        - candidate-f91d114ffdeec9e4bdf62d39c0b7ec75
+        - candidate-7f4899b383569b3e813912d941d659c1
+        - candidate-b71dafa5a0bac57d1f87343f16056479
+        - candidate-3e99c591a78c61a89d108264292c3f49
+        - candidate-6474e2b52294f0ba834c63fc83acaed2
+        - candidate-da3bf726800223513ae76a66cca754af
+      filtered_search_hits:
+        source-selector-mismatch: 84
+      rejections:
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - sensitive-content
+        - license-ambiguous
+        - repository-template
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-ambiguous
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+      decision_states:
+        - packet_fingerprint: f82ac4af75dda155841b704472208738bbe1b73388cf8f1200e339631023fb38
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 651855f529bbe92a2dbc708bb823b4cf046f1d92139acc0ec9dc21737e76f22f
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-1c372009fd2bd6cd95eebbc64100a47b
+            - candidate-4f19bd0858469c20c1307c187f60df69
+            - candidate-ceadbc3241c80b17526bc2d179d517c0
+          queries:
+            - filename:bower.json
+          candidates:
+            - candidate-85420fe13bfad6840a9624b80bfad893
+            - candidate-048d3d57ac6bb61fc2ed81a8ecf55e27
+            - candidate-b4db3ce6535b70e36079d095453e7f51
+            - candidate-fe14879f1a05c36ca6eb596082e214c9
+            - candidate-904bb9ab9b323738adeda0b36b4b23c9
+            - candidate-c7914ce02dc9acfeaaafc985e1eb8c5b
+            - candidate-98ff9185afdc909736c4a8da6c8ad4a6
+            - candidate-ceadbc3241c80b17526bc2d179d517c0
+            - candidate-4b0f55b99113d5358fcd78ddf3df4011
+            - candidate-89876570068352df89065fdae8f37457
+            - candidate-3ae3f3ebf4455ee84bb3979d823e5492
+            - candidate-1feb3815c6f45ca4f8f3f08fa8767a88
+            - candidate-1c372009fd2bd6cd95eebbc64100a47b
+            - candidate-c554f90d7a3dec60e04802d3ad5513c8
+            - candidate-4f19bd0858469c20c1307c187f60df69
+            - candidate-2a993087dbb0bbf1b17a3158b98582f5
+            - candidate-a2c1587e47b7e94a16a03b92dfd92e1a
+            - candidate-f82599784e94cf01724415eb4b09b55f
+            - candidate-f91d114ffdeec9e4bdf62d39c0b7ec75
+            - candidate-7f4899b383569b3e813912d941d659c1
+            - candidate-b71dafa5a0bac57d1f87343f16056479
+            - candidate-3e99c591a78c61a89d108264292c3f49
+            - candidate-6474e2b52294f0ba834c63fc83acaed2
+            - candidate-da3bf726800223513ae76a66cca754af
+          filtered_search_hits:
+            source-selector-mismatch: 84
+          rejections:
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - sensitive-content
+            - license-ambiguous
+            - repository-template
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-ambiguous
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+          decision:
+            packet_fingerprint: f82ac4af75dda155841b704472208738bbe1b73388cf8f1200e339631023fb38
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 651855f529bbe92a2dbc708bb823b4cf046f1d92139acc0ec9dc21737e76f22f
     - id: js-bun-lock
       form: lockfile
       roles:
