@@ -12353,12 +12353,13 @@ detectors:
         - declaration
         - constraint
       state: in-progress
-      iterations: 5
+      iterations: 6
       examples: []
       target: 3
       query_plan:
         - path:.config/dotnet-tools.json
       queries:
+        - path:.config/dotnet-tools.json
         - path:.config/dotnet-tools.json
         - path:.config/dotnet-tools.json
         - path:.config/dotnet-tools.json
@@ -12382,6 +12383,10 @@ detectors:
           queries:
             - path:.config/dotnet-tools.json
         - iteration: 5
+          result: unsuccessful
+          queries:
+            - path:.config/dotnet-tools.json
+        - iteration: 6
           result: unsuccessful
           queries:
             - path:.config/dotnet-tools.json
