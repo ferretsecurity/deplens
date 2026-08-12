@@ -1,0 +1,18 @@
+version: 2
+detector_id: erlang-rebar-config
+candidate_id: candidate-924c33dc71a8cf02157f1f5437cac40e
+provider: github
+repository: silviucpp/erlkaf
+repository_url: https://github.com/silviucpp/erlkaf
+default_branch: master
+commit: b46289ad5af39470755c8f5a5b1328346978a31e
+original_path: rebar.config
+permalink: https://github.com/silviucpp/erlkaf/blob/b46289ad5af39470755c8f5a5b1328346978a31e/rebar.config
+retrieved_at: "2026-08-12T13:00:43Z"
+sha256: 60d63d8b3b21e7ba86db01b5b74b6bda39e3c1660eed2c25464abfd251f03fac
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/silviucpp/erlkaf/blob/b46289ad5af39470755c8f5a5b1328346978a31e/LICENSE
+    sha256: 67d205f74debd9596d9b3f608a5763345710f272c66af64d1dfd897b79a12ae9
+rationale: 'Adds native-code integration: OS-specific build hooks, a NIF artifact, and dependency overrides.'

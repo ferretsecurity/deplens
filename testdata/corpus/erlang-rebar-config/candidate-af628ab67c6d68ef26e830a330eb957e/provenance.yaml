@@ -1,0 +1,18 @@
+version: 2
+detector_id: erlang-rebar-config
+candidate_id: candidate-af628ab67c6d68ef26e830a330eb957e
+provider: github
+repository: ferd/ReVault
+repository_url: https://github.com/ferd/ReVault
+default_branch: main
+commit: ec8e403a9268bc5c46066f3f42e998340fe047f7
+original_path: rebar.config
+permalink: https://github.com/ferd/ReVault/blob/ec8e403a9268bc5c46066f3f42e998340fe047f7/rebar.config
+retrieved_at: "2026-08-12T13:00:24Z"
+sha256: aaee329f231f2f7fbadd64b03f73c39e8b32da0b7d0d4b1732dbbbd68555c94b
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ferd/ReVault/blob/ec8e403a9268bc5c46066f3f42e998340fe047f7/LICENSE
+    sha256: 1a45b1d0a8603dfe2cfc644f9dab970b1762f92babe2aac6eb2f5d4572c4a680
+rationale: Adds a full application/release edge case with multiple profiles, relx release settings, distributed tests, and mixed dependency sources.

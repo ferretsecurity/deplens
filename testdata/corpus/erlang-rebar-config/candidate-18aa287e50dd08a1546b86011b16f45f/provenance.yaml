@@ -1,0 +1,18 @@
+version: 2
+detector_id: erlang-rebar-config
+candidate_id: candidate-18aa287e50dd08a1546b86011b16f45f
+provider: github
+repository: SemanticSugar/dinerl
+repository_url: https://github.com/SemanticSugar/dinerl
+default_branch: main
+commit: 56850c33472c7f9db7cd1170b46a1f0e8a663b08
+original_path: rebar.config
+permalink: https://github.com/SemanticSugar/dinerl/blob/56850c33472c7f9db7cd1170b46a1f0e8a663b08/rebar.config
+retrieved_at: "2026-08-12T12:57:44Z"
+sha256: 47f4af95d9bb4e7bc301eb99f1710b603941471dc663973fdb0682c881ffe70a
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/SemanticSugar/dinerl/blob/56850c33472c7f9db7cd1170b46a1f0e8a663b08/LICENSE
+    sha256: c34eb7d2f63af3b813c4eb13ed878ae91855818ba3fc7e02352a799b74232f5b
+rationale: 'Best common real-world baseline: a normal library config with dependencies, plugins, testing, coverage, static checks, and a test alias.'
