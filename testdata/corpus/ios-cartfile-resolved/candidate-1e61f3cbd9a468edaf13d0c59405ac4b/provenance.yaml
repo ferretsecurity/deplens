@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-cartfile-resolved
+candidate_id: candidate-1e61f3cbd9a468edaf13d0c59405ac4b
+provider: github
+repository: fancymax/12306ForMac
+repository_url: https://github.com/fancymax/12306ForMac
+default_branch: master
+commit: ff69af82c3d345f86b72e0b6ccedd6c3738d4456
+original_path: Cartfile.resolved
+permalink: https://github.com/fancymax/12306ForMac/blob/ff69af82c3d345f86b72e0b6ccedd6c3738d4456/Cartfile.resolved
+retrieved_at: "2026-08-12T12:41:16Z"
+sha256: 285a39311131cd2a0024a3f4a8e4aebc3a9137ef994c2aaa27f66cac39e7d79e
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/fancymax/12306ForMac/blob/ff69af82c3d345f86b72e0b6ccedd6c3738d4456/LICENSE.txt
+    sha256: 02272092010caf3639bd3f6d0de57095517d31b432737ae0314b2953bbac2516
+rationale: 'Common real-world app manifest: several GitHub dependencies, all pinned to normal semantic versions.'

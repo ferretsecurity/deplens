@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-cartfile-resolved
+candidate_id: candidate-8e051088f936cd2228096bf3a4bda041
+provider: github
+repository: attaswift/Attabench
+repository_url: https://github.com/attaswift/Attabench
+default_branch: master
+commit: 7fc2205c990ac512d53d076a479bbb318b03995b
+original_path: Cartfile.resolved
+permalink: https://github.com/attaswift/Attabench/blob/7fc2205c990ac512d53d076a479bbb318b03995b/Cartfile.resolved
+retrieved_at: "2026-08-12T12:42:12Z"
+sha256: 6c4cc34083f83899f14c947ba58407f4357770b8d2fcadc61b8af4e929aeb418
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/attaswift/Attabench/blob/7fc2205c990ac512d53d076a479bbb318b03995b/LICENSE.md
+    sha256: db5a6a790524ae779988e626ddca7dd9501827a4702ff5b3723a8f148ca7021e
+rationale: Covers a larger manifest with multiple dependencies pinned to commit hashes, including a repeated version reference.

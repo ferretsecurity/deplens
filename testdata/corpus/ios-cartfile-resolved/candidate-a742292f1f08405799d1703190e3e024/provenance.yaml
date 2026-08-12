@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-cartfile-resolved
+candidate_id: candidate-a742292f1f08405799d1703190e3e024
+provider: github
+repository: AckeeCZ/iOS-MVVM-ProjectTemplate
+repository_url: https://github.com/AckeeCZ/iOS-MVVM-ProjectTemplate
+default_branch: main
+commit: df39b593c05de912b5b3b0f1a769953ac71a51ff
+original_path: Cartfile.resolved
+permalink: https://github.com/AckeeCZ/iOS-MVVM-ProjectTemplate/blob/df39b593c05de912b5b3b0f1a769953ac71a51ff/Cartfile.resolved
+retrieved_at: "2026-08-12T12:45:02Z"
+sha256: 13a2182f64a0b2189b68ced2cdfce1d38c31358878bb0a61dc13404bffff37f7
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/AckeeCZ/iOS-MVVM-ProjectTemplate/blob/df39b593c05de912b5b3b0f1a769953ac71a51ff/LICENSE
+    sha256: 255e2ca38adda002af99a2e0bb19b30c4ac11f97f76d90969a608fdc784c56d4
+rationale: Adds the important binary dependency form alongside a standard GitHub dependency.
