@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-work
+candidate_id: candidate-2c7016bb8b53cfef30bb0da06fb8e24e
+provider: github
+repository: modiimedia/arri
+repository_url: https://github.com/modiimedia/arri
+default_branch: master
+commit: ca3db7925b8b171804d5e0634aab0606e1f53264
+original_path: go.work
+permalink: https://github.com/modiimedia/arri/blob/ca3db7925b8b171804d5e0634aab0606e1f53264/go.work
+retrieved_at: "2026-08-12T20:32:28Z"
+sha256: e52836d18431bf0c9272cd566e27c06abe9419dbcbf0c81f50be17d431b7832e
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/modiimedia/arri/blob/ca3db7925b8b171804d5e0634aab0606e1f53264/LICENSE
+    sha256: e21e308a5f51d70a02ea39fe9adfdf416284eb0416fc5a5e4623e7cd23cdbcaa
+rationale: 'Most common real-world layout: root module plus application/playground and test-server modules.'

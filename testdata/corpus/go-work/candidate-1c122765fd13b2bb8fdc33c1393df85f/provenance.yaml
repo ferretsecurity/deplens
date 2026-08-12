@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-work
+candidate_id: candidate-1c122765fd13b2bb8fdc33c1393df85f
+provider: github
+repository: onpremless/opless
+repository_url: https://github.com/onpremless/opless
+default_branch: master
+commit: e6f46e94ceb6583d8bf86849d90df1ecb06e7f3a
+original_path: go.work
+permalink: https://github.com/onpremless/opless/blob/e6f46e94ceb6583d8bf86849d90df1ecb06e7f3a/go.work
+retrieved_at: "2026-08-12T20:35:44Z"
+sha256: 03b53935b805075df9e41f42bdc51f5648b264aa7da8ebbc67fdbc07beabfaa6
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/onpremless/opless/blob/e6f46e94ceb6583d8bf86849d90df1ecb06e7f3a/LICENSE
+    sha256: f8f39ed070ef9f0a38be8b930a6974bcbff5596f2f5b841ed5ffb63da8b2f789
+rationale: Adds a practical replace directive alongside several workspace modules.

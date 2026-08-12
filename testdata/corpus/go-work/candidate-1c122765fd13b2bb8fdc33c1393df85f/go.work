@@ -1,0 +1,10 @@
+go 1.21
+
+use (
+	./common
+	./manager
+	./router
+)
+
+// Somehow it helps to use common from workspace.
+replace github.com/onpremless/opless/common v0.0.0 => ./common

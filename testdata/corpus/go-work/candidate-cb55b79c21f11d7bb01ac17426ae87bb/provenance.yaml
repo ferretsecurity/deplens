@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-work
+candidate_id: candidate-cb55b79c21f11d7bb01ac17426ae87bb
+provider: github
+repository: Meha555/pulse
+repository_url: https://github.com/Meha555/pulse
+default_branch: master
+commit: 1b3a59adcc919585f2da5a32c9f38e7404c7c741
+original_path: go.work
+permalink: https://github.com/Meha555/pulse/blob/1b3a59adcc919585f2da5a32c9f38e7404c7c741/go.work
+retrieved_at: "2026-08-12T20:34:53Z"
+sha256: 64cc89f7401dabc6d1331d5f58630c8de0903321512e545ce5957dcab04c247e
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Meha555/pulse/blob/1b3a59adcc919585f2da5a32c9f38e7404c7c741/LICENSE
+    sha256: f9356230e8a97fe91d414ef5731cefba6b58fc0720dfce0597dfa98a43ad7e93
+rationale: Adds the valid split `use`-directive form in a very short example.
