@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-conan-lock
+candidate_id: candidate-36e2c71f6bac05eed434da70a6176a48
+provider: github
+repository: lucaswang420/drogon-pay
+repository_url: https://github.com/lucaswang420/drogon-pay
+default_branch: master
+commit: db7c2ed8387b5fda09d8a0094ccb9c649bb0f4d9
+original_path: conan.lock
+permalink: https://github.com/lucaswang420/drogon-pay/blob/db7c2ed8387b5fda09d8a0094ccb9c649bb0f4d9/conan.lock
+retrieved_at: "2026-08-12T21:28:38Z"
+sha256: 3f6e3e887baa7f5801e433150cdd9c37438c0c21f65b91da780c6143e98adb06
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/lucaswang420/drogon-pay/blob/db7c2ed8387b5fda09d8a0094ccb9c649bb0f4d9/LICENSE
+    sha256: 37f95336a026fa6c31c10172942a6585c28534b42587933bc0577f0eedf93e86
+rationale: 'Representative modern Conan 2 lockfile for a real web service: normal requirements, build requirements, and overrides.'

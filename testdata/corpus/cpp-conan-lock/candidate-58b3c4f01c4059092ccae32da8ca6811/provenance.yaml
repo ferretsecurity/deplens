@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-conan-lock
+candidate_id: candidate-58b3c4f01c4059092ccae32da8ca6811
+provider: github
+repository: raplonu/emu
+repository_url: https://github.com/raplonu/emu
+default_branch: main
+commit: f283fa23e8493a90d73253f3ca79e27ddeb049d5
+original_path: conan.lock
+permalink: https://github.com/raplonu/emu/blob/f283fa23e8493a90d73253f3ca79e27ddeb049d5/conan.lock
+retrieved_at: "2026-08-12T21:28:21Z"
+sha256: 7577e5c42ebc07a2f4fd42db0d1cf4388e9cb360ece5ffdb7285b2aed90b1763
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/raplonu/emu/blob/f283fa23e8493a90d73253f3ca79e27ddeb049d5/LICENSE
+    sha256: fa5f746e9c669e54bdabbd6b0ed7d68794dbdb307e0f18cbbcc0abf2e85ecca6
+rationale: Adds the uncommon but useful python_requires case, alongside CUDA-related dependencies.

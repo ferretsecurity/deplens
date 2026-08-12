@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-conan-lock
+candidate_id: candidate-c5c44c614950bebbe58bfdd03cd0290b
+provider: github
+repository: RamilGauss/BigJack
+repository_url: https://github.com/RamilGauss/BigJack
+default_branch: OpenGL-+-SDL2
+commit: 5440c3187d4cbae2323ab94d94592e11632d6c1c
+original_path: Exe/.conan/conan.lock
+permalink: https://github.com/RamilGauss/BigJack/blob/5440c3187d4cbae2323ab94d94592e11632d6c1c/Exe/.conan/conan.lock
+retrieved_at: "2026-08-12T21:29:15Z"
+sha256: 2efb1ef362d4b6efe5dd10c34589a5d6b41e2f5329002b8de3346845e899351f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/RamilGauss/BigJack/blob/5440c3187d4cbae2323ab94d94592e11632d6c1c/LICENSE
+    sha256: 8c20a995fc526123d6d488614d6c89b6854906abf0b3c7786ce439aeb33c5103
+rationale: Compact legacy graph-lock example with resolved nodes, package options, Windows Debug profile, and a Windows-style path.
