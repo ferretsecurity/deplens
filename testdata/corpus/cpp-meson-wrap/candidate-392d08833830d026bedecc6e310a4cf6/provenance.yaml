@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-meson-wrap
+candidate_id: candidate-392d08833830d026bedecc6e310a4cf6
+provider: github
+repository: Snaipe/Criterion
+repository_url: https://github.com/Snaipe/Criterion
+default_branch: bleeding
+commit: 0586ad3ac0ed87eed427b30019ebdecfe6507b84
+original_path: subprojects/klib.wrap
+permalink: https://github.com/Snaipe/Criterion/blob/0586ad3ac0ed87eed427b30019ebdecfe6507b84/subprojects/klib.wrap
+retrieved_at: "2026-08-12T22:45:15Z"
+sha256: 081602f65d3f9b5d36b04805e877cdd3760f83d2b0822f1347227cd069321e3c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Snaipe/Criterion/blob/0586ad3ac0ed87eed427b30019ebdecfe6507b84/LICENSE
+    sha256: b9731acb69d6905ebba58319805eb564e5899a0302a45e416bd268e65e917267
+rationale: Pinned wrap-git variant with explicit directory, patch directory, and a custom provide mapping.

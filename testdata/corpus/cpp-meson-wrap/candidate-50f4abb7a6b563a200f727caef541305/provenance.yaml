@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-meson-wrap
+candidate_id: candidate-50f4abb7a6b563a200f727caef541305
+provider: github
+repository: luigifcruz/CyberEther
+repository_url: https://github.com/luigifcruz/CyberEther
+default_branch: main
+commit: ee3e72496f94aee4e1a707f27f128c83613dcdcc
+original_path: subprojects/fmt.wrap
+permalink: https://github.com/luigifcruz/CyberEther/blob/ee3e72496f94aee4e1a707f27f128c83613dcdcc/subprojects/fmt.wrap
+retrieved_at: "2026-08-12T22:47:32Z"
+sha256: 19407aecef56e2500ece55c0f9345370201b0a1736f7af023b247f5d2448bac1
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/luigifcruz/CyberEther/blob/ee3e72496f94aee4e1a707f27f128c83613dcdcc/LICENSE
+    sha256: 82ec0aca5eca8feae369e201d0c496166e9b9eef7b1fdb228abba352a35058ba
+rationale: 'Typical compact wrap-file: pinned archive, checksum, local patch directory, WrapDB version, and provided dependency.'

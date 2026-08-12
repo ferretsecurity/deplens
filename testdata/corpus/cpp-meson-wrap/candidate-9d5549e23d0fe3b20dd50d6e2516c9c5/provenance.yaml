@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-meson-wrap
+candidate_id: candidate-9d5549e23d0fe3b20dd50d6e2516c9c5
+provider: github
+repository: pragtical/pragtical
+repository_url: https://github.com/pragtical/pragtical
+default_branch: master
+commit: 59b6c0ecb1aa9640220a708b4808751a000d7f1a
+original_path: subprojects/ppm.wrap
+permalink: https://github.com/pragtical/pragtical/blob/59b6c0ecb1aa9640220a708b4808751a000d7f1a/subprojects/ppm.wrap
+retrieved_at: "2026-08-12T22:49:01Z"
+sha256: a815cd8a8386ed4afe3194ed2698f24878b5494e5388c7bc656d96302eae1d18
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/pragtical/pragtical/blob/59b6c0ecb1aa9640220a708b4808751a000d7f1a/LICENSE
+    sha256: a03b8524cd6598216b88044df552c73d6a9f1ba442e04fc8dfafce281c6f9501
+rationale: 'Minimal git edge case: shallow clone using a moving head revision and no optional directory or provide fields.'
