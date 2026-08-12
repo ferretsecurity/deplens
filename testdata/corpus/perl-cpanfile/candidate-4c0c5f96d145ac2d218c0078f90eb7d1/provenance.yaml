@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-cpanfile
+candidate_id: candidate-4c0c5f96d145ac2d218c0078f90eb7d1
+provider: github
+repository: shutterstock/task
+repository_url: https://github.com/shutterstock/task
+default_branch: master
+commit: 54a2bd4d40801ec3a1af1e6d5f7f8a75de197f9a
+original_path: cpanfile
+permalink: https://github.com/shutterstock/task/blob/54a2bd4d40801ec3a1af1e6d5f7f8a75de197f9a/cpanfile
+retrieved_at: "2026-08-12T23:41:31Z"
+sha256: 9ef71d0ac614ec43447bc27cda0952192018f374529c18bb91d49489c841111c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/shutterstock/task/blob/54a2bd4d40801ec3a1af1e6d5f7f8a75de197f9a/LICENSE
+    sha256: 38e967dc345708f915235ae317eb0bf15010afa7ef223e5a7d9b4b2aee7b0248
+rationale: Adds the frequent test and development dependency scopes, with numeric version syntax.

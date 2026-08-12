@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-cpanfile
+candidate_id: candidate-61e0414309e34584c88ce83cf18a6edd
+provider: github
+repository: ldidry/lstu
+repository_url: https://github.com/ldidry/lstu
+default_branch: master
+commit: d9ca70e877971572f0bbc5b6ef49995ba21127e7
+original_path: cpanfile
+permalink: https://github.com/ldidry/lstu/blob/d9ca70e877971572f0bbc5b6ef49995ba21127e7/cpanfile
+retrieved_at: "2026-08-12T23:39:16Z"
+sha256: 590170e54759e2dd510c8e81d6f5ff998122b4488ce3d663c35d0d2b4db5ba45
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ldidry/lstu/blob/d9ca70e877971572f0bbc5b6ef49995ba21127e7/LICENSE
+    sha256: 40f2791ae84e097cc964b740cbd974e78296a36aa1490dcb76dcc004bf865ac8
+rationale: Adds feature-gated optional dependencies, including several realistic feature variants.

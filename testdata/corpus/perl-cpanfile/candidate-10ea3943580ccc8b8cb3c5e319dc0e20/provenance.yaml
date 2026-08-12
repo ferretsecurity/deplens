@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-cpanfile
+candidate_id: candidate-10ea3943580ccc8b8cb3c5e319dc0e20
+provider: github
+repository: longnow/panlex-tools
+repository_url: https://github.com/longnow/panlex-tools
+default_branch: master
+commit: 1b10fa140af96078c7c909cd10f3f3c05f641671
+original_path: cpanfile
+permalink: https://github.com/longnow/panlex-tools/blob/1b10fa140af96078c7c909cd10f3f3c05f641671/cpanfile
+retrieved_at: "2026-08-12T23:44:04Z"
+sha256: 25cd8c8ecefdce68fb66de55f9312c7264e2fad0af5f826fad8180d47e1fe198
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/longnow/panlex-tools/blob/1b10fa140af96078c7c909cd10f3f3c05f641671/LICENSE.txt
+    sha256: bc3c7293065581320abd2970cec9fb594a704c32da9c6c0bf2324c274e718048
+rationale: 'Common compact production cpanfile: versioned runtime requirements plus a recommendation.'
