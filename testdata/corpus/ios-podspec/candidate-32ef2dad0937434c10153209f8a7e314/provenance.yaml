@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-podspec
+candidate_id: candidate-32ef2dad0937434c10153209f8a7e314
+provider: github
+repository: mercari/Mew
+repository_url: https://github.com/mercari/Mew
+default_branch: master
+commit: dd27b41c15156b9ffa1bd29ae3ee842979610849
+original_path: Mew.podspec
+permalink: https://github.com/mercari/Mew/blob/dd27b41c15156b9ffa1bd29ae3ee842979610849/Mew.podspec
+retrieved_at: "2026-08-12T12:39:10Z"
+sha256: febb19580b1205d9eca155f353aa3a7ff7da5cf42727cbd55f414f7e070b6de1
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/mercari/Mew/blob/dd27b41c15156b9ffa1bd29ae3ee842979610849/LICENSE
+    sha256: a0ccb6d9e2e307e239d4e2d9a1594c408c2a299f0d1048b34011249eb4d28b8b
+rationale: Adds a resource bundle and framework declaration to cover typical UI-library packaging.

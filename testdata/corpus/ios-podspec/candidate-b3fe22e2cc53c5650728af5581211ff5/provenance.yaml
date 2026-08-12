@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-podspec
+candidate_id: candidate-b3fe22e2cc53c5650728af5581211ff5
+provider: github
+repository: omaralbeik/Drops
+repository_url: https://github.com/omaralbeik/Drops
+default_branch: main
+commit: 5824681795286c36bdc4a493081a63e64e2a064e
+original_path: Drops.podspec
+permalink: https://github.com/omaralbeik/Drops/blob/5824681795286c36bdc4a493081a63e64e2a064e/Drops.podspec
+retrieved_at: "2026-08-12T12:39:37Z"
+sha256: 9b8e18fa9e1640a033b9d5be637a582ef8f1e91218bea290bfc394dc44df620d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/omaralbeik/Drops/blob/5824681795286c36bdc4a493081a63e64e2a064e/LICENSE
+    sha256: a6601287afa190de083b821919427c82a5c2b51bfb0dec1c0d09a755a6cdb828
+rationale: 'Common modern Swift library podspec: conventional metadata, source glob, module, ARC, deployment target, and Swift versions.'

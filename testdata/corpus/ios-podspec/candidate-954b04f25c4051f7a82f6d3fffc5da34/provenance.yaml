@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-podspec
+candidate_id: candidate-954b04f25c4051f7a82f6d3fffc5da34
+provider: github
+repository: Kudo/react-native-v8
+repository_url: https://github.com/Kudo/react-native-v8
+default_branch: main
+commit: 958a471e88b76bf59e5c590ac7c71a0edf884de1
+original_path: RNV8.podspec
+permalink: https://github.com/Kudo/react-native-v8/blob/958a471e88b76bf59e5c590ac7c71a0edf884de1/RNV8.podspec
+retrieved_at: "2026-08-12T12:39:00Z"
+sha256: 3d39cc1dd920147dbd5edf6f63d4e3badfa414f183a4251bf42845c4822a7fb7
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Kudo/react-native-v8/blob/958a471e88b76bf59e5c590ac7c71a0edf884de1/LICENSE
+    sha256: 233c10d679a63db9dd3126c8c1f556740efd53b06895edf3167c21be4d3056ff
+rationale: 'Covers a complex edge case: metadata computed from JSON, environment/version logic, C++ build configuration, and native dependencies.'
