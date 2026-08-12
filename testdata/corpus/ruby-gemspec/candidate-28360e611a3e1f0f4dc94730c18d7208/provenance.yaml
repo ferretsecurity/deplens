@@ -1,0 +1,18 @@
+version: 2
+detector_id: ruby-gemspec
+candidate_id: candidate-28360e611a3e1f0f4dc94730c18d7208
+provider: github
+repository: solana-foundation/pay-kit
+repository_url: https://github.com/solana-foundation/pay-kit
+default_branch: main
+commit: 16777d465f4446c7ac519378663d6d4bbf394877
+original_path: ruby/solana-pay-kit.gemspec
+permalink: https://github.com/solana-foundation/pay-kit/blob/16777d465f4446c7ac519378663d6d4bbf394877/ruby/solana-pay-kit.gemspec
+retrieved_at: "2026-08-12T11:02:26Z"
+sha256: 4e8bb4f6d002098a7ed247bdc9bc69027a3399590285e6d4411f5f96e48edfd1
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/solana-foundation/pay-kit/blob/16777d465f4446c7ac519378663d6d4bbf394877/LICENSE
+    sha256: fa80980ce1eadee6a9aaa1b597c2d86543a3e83621e2769a802637e4535a3871
+rationale: 'Most representative modern gemspec: explicit metadata, file selection, Ruby version, and runtime/development dependencies.'

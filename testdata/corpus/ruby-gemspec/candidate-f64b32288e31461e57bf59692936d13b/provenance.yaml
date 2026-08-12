@@ -1,0 +1,18 @@
+version: 2
+detector_id: ruby-gemspec
+candidate_id: candidate-f64b32288e31461e57bf59692936d13b
+provider: github
+repository: ORESoftware/flags-2-env
+repository_url: https://github.com/ORESoftware/flags-2-env
+default_branch: main
+commit: f06dcc8ee672943bcdd8d6c9f26c47ac5cf19f30
+original_path: clients/ruby/flags2env.gemspec
+permalink: https://github.com/ORESoftware/flags-2-env/blob/f06dcc8ee672943bcdd8d6c9f26c47ac5cf19f30/clients/ruby/flags2env.gemspec
+retrieved_at: "2026-08-12T11:04:07Z"
+sha256: 4706941a5dfcee45b7bcaa03f17471aa4e3fedc24419fb821cce256b60902858
+governing_license:
+    spdx: MIT
+    path: clients/ruby/LICENSE
+    permalink: https://github.com/ORESoftware/flags-2-env/blob/f06dcc8ee672943bcdd8d6c9f26c47ac5cf19f30/clients/ruby/LICENSE
+    sha256: cdff13e8921bb0fa577eb8b2f10d245ae25ffda349b9f11350b16a14c664e86e
+rationale: Short, static minimal gemspec with an explicit file list and nonstandard root require path.

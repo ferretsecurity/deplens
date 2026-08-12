@@ -1,0 +1,18 @@
+version: 2
+detector_id: ruby-gemspec
+candidate_id: candidate-f75ed3f3af5e88c3f6eaebfb4fe4e0da
+provider: github
+repository: jweissman/lang
+repository_url: https://github.com/jweissman/lang
+default_branch: master
+commit: 21685d421515b3ae17272e956e879e45b9c523c9
+original_path: lang.gemspec
+permalink: https://github.com/jweissman/lang/blob/21685d421515b3ae17272e956e879e45b9c523c9/lang.gemspec
+retrieved_at: "2026-08-12T11:06:34Z"
+sha256: 85b16e613cdab7d939a1b54514272003577b78c3ae7a3f350ae9275b94958c59
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/jweissman/lang/blob/21685d421515b3ae17272e956e879e45b9c523c9/LICENSE.txt
+    sha256: 2c779b000a2121f9a18f7c39b6f66665a761a169a8f4ab7c4d9e7198b74e32a2
+rationale: 'Adds a data-driven edge case: YAML-backed metadata with fallback values, globbing, extensions, and dependencies.'
