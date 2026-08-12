@@ -12352,12 +12352,19 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: pending
-      iterations: 0
+      state: in-progress
+      iterations: 1
       examples: []
       target: 3
       query_plan:
         - path:.config/dotnet-tools.json
+      queries:
+        - path:.config/dotnet-tools.json
+      history:
+        - iteration: 1
+          result: unsuccessful
+          queries:
+            - path:.config/dotnet-tools.json
     - id: go-sum
       form: checksum-file
       roles:
