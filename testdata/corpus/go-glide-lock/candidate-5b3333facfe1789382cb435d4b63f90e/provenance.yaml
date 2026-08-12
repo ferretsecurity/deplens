@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-glide-lock
+candidate_id: candidate-5b3333facfe1789382cb435d4b63f90e
+provider: github
+repository: microsoft/azurelinux
+repository_url: https://github.com/microsoft/azurelinux
+default_branch: "4.0"
+commit: edaec83c0130e45df43af505ef3594cced2fcb67
+original_path: specs/g/golang-github-gorilla-sessions/glide.lock
+permalink: https://github.com/microsoft/azurelinux/blob/edaec83c0130e45df43af505ef3594cced2fcb67/specs/g/golang-github-gorilla-sessions/glide.lock
+retrieved_at: "2026-08-12T21:12:29Z"
+sha256: 0e11c0e11957bc28bcb9734d27523701622693b0a13f58f96b0368c7997d2f41
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/microsoft/azurelinux/blob/edaec83c0130e45df43af505ef3594cced2fcb67/LICENSE
+    sha256: c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383
+rationale: Compact non-empty variation with only two dependencies, quoted timestamp, reordered top-level fields, and no testImports field.

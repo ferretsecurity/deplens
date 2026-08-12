@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-glide-lock
+candidate_id: candidate-362643ec3fcbecb5c88bc70caf709210
+provider: github
+repository: phonegapX/QuantBot
+repository_url: https://github.com/phonegapX/QuantBot
+default_branch: master
+commit: d060b71a9acbf12a3834eda206d146378478a14e
+original_path: glide.lock
+permalink: https://github.com/phonegapX/QuantBot/blob/d060b71a9acbf12a3834eda206d146378478a14e/glide.lock
+retrieved_at: "2026-08-12T21:05:59Z"
+sha256: d3c72bfc1619e0c5b58a66de143215596f638e6fc1568b29bee58856fe9ade7f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/phonegapX/QuantBot/blob/d060b71a9acbf12a3834eda206d146378478a14e/LICENSE
+    sha256: 5c26f32e1d88bc3e5bafb19e23428822178cb155343958f1fb2ebf7fbbb7aef6
+rationale: 'Representative real-world application lockfile: a moderate dependency graph with web, database, authentication, and subpackage entries.'

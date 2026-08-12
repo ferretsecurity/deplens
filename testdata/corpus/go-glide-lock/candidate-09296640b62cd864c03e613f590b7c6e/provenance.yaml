@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-glide-lock
+candidate_id: candidate-09296640b62cd864c03e613f590b7c6e
+provider: github
+repository: PacktPublishing/Learning-Functional-Programming-in-Go
+repository_url: https://github.com/PacktPublishing/Learning-Functional-Programming-in-Go
+default_branch: master
+commit: 8b849f6d58c4e7b6285516db8018d5c2f49c7ee8
+original_path: Chapter06/03_observer/glide.lock
+permalink: https://github.com/PacktPublishing/Learning-Functional-Programming-in-Go/blob/8b849f6d58c4e7b6285516db8018d5c2f49c7ee8/Chapter06/03_observer/glide.lock
+retrieved_at: "2026-08-12T21:12:38Z"
+sha256: b66c635a943ffe1108c35db6e7072766fb2309f59b8daf9698deac7dcfa7daa1
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/PacktPublishing/Learning-Functional-Programming-in-Go/blob/8b849f6d58c4e7b6285516db8018d5c2f49c7ee8/LICENSE
+    sha256: a6ef23d71dded4936bbcd4ce56dfab42380e6f45e7fbfa6b11c0fd056bd4837c
+rationale: Minimal empty-dependency edge case, covering a valid lockfile with both dependency lists empty.
