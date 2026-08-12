@@ -1,0 +1,18 @@
+version: 2
+detector_id: clojure-boot
+candidate_id: candidate-5cab3b14155374e1e54a0cb99ec52276
+provider: github
+repository: mpg-project/mpg
+repository_url: https://github.com/mpg-project/mpg
+default_branch: master
+commit: 2a799e649f1b63775e36f506f676400eb64ee682
+original_path: build.boot
+permalink: https://github.com/mpg-project/mpg/blob/2a799e649f1b63775e36f506f676400eb64ee682/build.boot
+retrieved_at: "2026-08-12T13:36:50Z"
+sha256: 7abf053d332758f4268986b31dd0da805b579561c591863cfcb25bcbd9cf86c7
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/mpg-project/mpg/blob/2a799e649f1b63775e36f506f676400eb64ee682/LICENSE
+    sha256: 37b8aaec21fe12f2484413a9b2f3862834cba11b76fb11ff5048e80d41795528
+rationale: Adds a conventional JVM/database library workflow with test setup, CI task, and JAR packaging.

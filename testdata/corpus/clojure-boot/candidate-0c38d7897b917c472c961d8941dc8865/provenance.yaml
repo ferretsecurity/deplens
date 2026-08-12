@@ -1,0 +1,18 @@
+version: 2
+detector_id: clojure-boot
+candidate_id: candidate-0c38d7897b917c472c961d8941dc8865
+provider: github
+repository: martinklepsch/electron-and-clojurescript
+repository_url: https://github.com/martinklepsch/electron-and-clojurescript
+default_branch: master
+commit: 253dcb11fab99fffcb979dbc0193d5b5229e365a
+original_path: build.boot
+permalink: https://github.com/martinklepsch/electron-and-clojurescript/blob/253dcb11fab99fffcb979dbc0193d5b5229e365a/build.boot
+retrieved_at: "2026-08-12T13:34:50Z"
+sha256: 1beca601e35c9ae5e44f5879323def31898678ab3da8cad78af12bc0d0c647d5
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/martinklepsch/electron-and-clojurescript/blob/253dcb11fab99fffcb979dbc0193d5b5229e365a/LICENSE
+    sha256: 8192d0c2ffcea27fd20bf55de9ddc2f9311abbf57505104f085e5127c6bc3b80
+rationale: 'Adds useful application variation: separate Electron main/renderer ClojureScript builds and a reloadable development flow.'

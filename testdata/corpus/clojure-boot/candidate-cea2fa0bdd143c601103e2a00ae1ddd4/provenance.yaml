@@ -1,0 +1,18 @@
+version: 2
+detector_id: clojure-boot
+candidate_id: candidate-cea2fa0bdd143c601103e2a00ae1ddd4
+provider: github
+repository: thedavidmeister/cljs-i18n
+repository_url: https://github.com/thedavidmeister/cljs-i18n
+default_branch: master
+commit: 11cd9fd777e04d8b1bc0acb9a3059eb03bc89138
+original_path: build.boot
+permalink: https://github.com/thedavidmeister/cljs-i18n/blob/11cd9fd777e04d8b1bc0acb9a3059eb03bc89138/build.boot
+retrieved_at: "2026-08-12T13:37:09Z"
+sha256: d657da47774f7c58a2a3e8bf5586ac945480f20378c9ca111e0c94d626cdac42
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/thedavidmeister/cljs-i18n/blob/11cd9fd777e04d8b1bc0acb9a3059eb03bc89138/LICENSE
+    sha256: acac9ecfd67edc5c29e1fc65dd6deb8d49a9777ab9c7c26809aa34a2c784e35f
+rationale: 'Best common-case representative: a compact ClojureScript library build with test, watch, packaging, and release tasks.'
