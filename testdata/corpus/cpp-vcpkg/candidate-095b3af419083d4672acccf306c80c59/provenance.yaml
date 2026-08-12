@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-vcpkg
+candidate_id: candidate-095b3af419083d4672acccf306c80c59
+provider: github
+repository: JPersson77/LGTVCompanion
+repository_url: https://github.com/JPersson77/LGTVCompanion
+default_branch: master
+commit: 2cd495ee2d15be45fb96639f0e0d49c2fda9377f
+original_path: vcpkg.json
+permalink: https://github.com/JPersson77/LGTVCompanion/blob/2cd495ee2d15be45fb96639f0e0d49c2fda9377f/vcpkg.json
+retrieved_at: "2026-08-12T21:30:04Z"
+sha256: 2ea98b7703df0684263becd3c9a9dc43fa8dfda924a15991c7ed7c0adcbb5d6d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/JPersson77/LGTVCompanion/blob/2cd495ee2d15be45fb96639f0e0d49c2fda9377f/LICENSE
+    sha256: ce744f62865a7c36676d5bca5e94e257f7d38d6dcc7c055814bfd6be1fe64118
+rationale: 'Typical small application manifest: schema, identity, version, and a plain dependency list.'

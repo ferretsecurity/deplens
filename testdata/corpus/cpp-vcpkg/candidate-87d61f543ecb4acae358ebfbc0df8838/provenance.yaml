@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-vcpkg
+candidate_id: candidate-87d61f543ecb4acae358ebfbc0df8838
+provider: github
+repository: fscdc/cache-replacement
+repository_url: https://github.com/fscdc/cache-replacement
+default_branch: main
+commit: 2bdef7ed3ed71ca0d6e59b00a659aeb70badb82f
+original_path: ChampSim/vcpkg/ports/libpff/vcpkg.json
+permalink: https://github.com/fscdc/cache-replacement/blob/2bdef7ed3ed71ca0d6e59b00a659aeb70badb82f/ChampSim/vcpkg/ports/libpff/vcpkg.json
+retrieved_at: "2026-08-12T21:37:36Z"
+sha256: 6b1930d7a62a505be00af74be88c729d57230d612f5bc9529b0b4b258fc80563
+governing_license:
+    spdx: MIT
+    path: ChampSim/vcpkg/LICENSE.txt
+    permalink: https://github.com/fscdc/cache-replacement/blob/2bdef7ed3ed71ca0d6e59b00a659aeb70badb82f/ChampSim/vcpkg/LICENSE.txt
+    sha256: 1ee376fc340e0aa6ad6a3581c94126e741468705096ac92263048a21daa86460
+rationale: Covers a port manifest with package metadata, platform support rules, and host-only build-tool dependencies.
