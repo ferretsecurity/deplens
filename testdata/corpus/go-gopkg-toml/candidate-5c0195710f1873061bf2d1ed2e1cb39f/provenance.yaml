@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-gopkg-toml
+candidate_id: candidate-5c0195710f1873061bf2d1ed2e1cb39f
+provider: github
+repository: govau/certwatch
+repository_url: https://github.com/govau/certwatch
+default_branch: master
+commit: c0c69448072597786b6008ef21b71221f39c812d
+original_path: Gopkg.toml
+permalink: https://github.com/govau/certwatch/blob/c0c69448072597786b6008ef21b71221f39c812d/Gopkg.toml
+retrieved_at: "2026-08-12T20:47:07Z"
+sha256: 4781d0c04e505b8bfb753e4e363be42b072c765fd6ee8d2e45127d28a2ba0bcb
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/govau/certwatch/blob/c0c69448072597786b6008ef21b71221f39c812d/LICENSE
+    sha256: d84abfe7f37c2c85fa1a6e2aa9a68db6f9be978d6caf9c2a58ce8613b8bd4684
+rationale: Compact edge case with a constraint using both a custom source and branch, plus pruning.

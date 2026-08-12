@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-gopkg-toml
+candidate_id: candidate-5b9b5762b988d16430f3416133f60aca
+provider: github
+repository: Versent/unicreds
+repository_url: https://github.com/Versent/unicreds
+default_branch: master
+commit: 40768edc415477b4aa3677310894db9dd7f9a368
+original_path: Gopkg.toml
+permalink: https://github.com/Versent/unicreds/blob/40768edc415477b4aa3677310894db9dd7f9a368/Gopkg.toml
+retrieved_at: "2026-08-12T20:41:05Z"
+sha256: 6a38105d5a7842f7977e4ba9696dd57f7c2ff5191b591efb753153496a317918
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/Versent/unicreds/blob/40768edc415477b4aa3677310894db9dd7f9a368/LICENSE.md
+    sha256: 05b27d593b1f7d5c5b0192ed812fe92bed3ae2f7e5935c62a240bc8993dc14b8
+rationale: 'Representative normal manifest: several versioned constraints plus standard prune settings.'

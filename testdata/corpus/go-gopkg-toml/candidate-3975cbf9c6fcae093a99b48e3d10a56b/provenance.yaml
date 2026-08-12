@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-gopkg-toml
+candidate_id: candidate-3975cbf9c6fcae093a99b48e3d10a56b
+provider: github
+repository: jessfraz/cni-benchmarks
+repository_url: https://github.com/jessfraz/cni-benchmarks
+default_branch: master
+commit: 46f3154bc8221e5d2a23f2d46eaa846e56c73f42
+original_path: Gopkg.toml
+permalink: https://github.com/jessfraz/cni-benchmarks/blob/46f3154bc8221e5d2a23f2d46eaa846e56c73f42/Gopkg.toml
+retrieved_at: "2026-08-12T20:43:30Z"
+sha256: 4bcd7b02f7291db5d3a7f9b28f3ae07749d65957b09bdb1abf37da99dea43a46
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/jessfraz/cni-benchmarks/blob/46f3154bc8221e5d2a23f2d46eaa846e56c73f42/LICENSE
+    sha256: 4c210b491b21d78d69b8e8390396028fd5ec5d9eae227ddf31cf089590ff9ced
+rationale: Covers override-heavy manifests, including a renamed/case-corrected source and branch overrides.
