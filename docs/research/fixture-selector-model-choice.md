@@ -5,7 +5,7 @@ Date: 2026-08-12
 ## Scope
 
 The fixture collector sends an isolated `codex exec` invocation up to about
-50,000 tokens of candidates that Go has already qualified. The model cannot do
+100,000 tokens of candidates that Go has already qualified. The model cannot do
 useful tool calls. It must return exactly three stable candidate IDs and short
 rationales. The set should include common usage and add useful structural or
 edge-case variety. These choices form a long-lived implementation corpus, so a

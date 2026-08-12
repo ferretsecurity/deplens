@@ -72,7 +72,7 @@ consumption. At minimum they cover:
 - selector invocations.
 
 The established defaults are eight queries, a target of 100 inspections, a 2
-MiB source ceiling, a 50,000-token candidate-packet target, seven valid
+MiB source ceiling, a 100,000-token candidate-packet target, seven valid
 iterations per detector, and two selector invocations per iteration. Page and
 aggregate-byte limits are mandatory reviewed values rather than hidden
 implementation defaults.
@@ -194,7 +194,7 @@ omitted for packet budget; it is not rejected. This policy favors short sources
 and exposes multiple reviewed search intents without Go making a diversity or
 quality judgment.
 
-The 50,000-token figure is a locally estimated candidate-packet target, not an
+The 100,000-token figure is a locally estimated candidate-packet target, not an
 exact count of Codex's hidden full request. The configured estimator includes
 JSON encoding and reserves headroom for selector instructions and residual tool
 schemas. Actual post-turn input usage is recorded as an operational metric.

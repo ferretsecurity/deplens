@@ -5,7 +5,7 @@ limits:
     result_pages: 10
     candidate_inspections: 100
     decoded_response_bytes: 16777216
-    packet_tokens: 50000
+    packet_tokens: 100000
     selector_invocations: 2
     source_bytes: 2097152
     valid_iterations: 7

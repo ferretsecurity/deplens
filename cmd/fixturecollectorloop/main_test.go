@@ -260,7 +260,7 @@ func TestCommandWorkflow(t *testing.T) {
 		if got := run([]string{"run", "--single", "--progress", progress, "--allow-dirty"}, root, &stdout, &stderr, accepted()); got != 0 {
 			t.Fatalf("checkpoint exit status = %d, stderr = %s", got, stderr.String())
 		}
-		if !strings.Contains(stdout.String(), "checkpoint: example-detector iteration 2") {
+		if !strings.Contains(stdout.String(), "│    Iteration 2 saved") {
 			t.Fatalf("checkpoint output = %s", stdout.String())
 		}
 		originalNow := now
@@ -534,10 +534,13 @@ func TestRunCreatesAResumableCheckpoint(t *testing.T) {
 		t.Fatalf("unexpected checkpoint: %+v", got)
 	}
 	for _, want := range []string{
-		"detector started: detector=example-detector attempted=1/1 remaining=1 run-elapsed=0s iteration=1/7 examples=0/3",
-		"checkpoint: example-detector iteration 1",
-		"selected candidate source: " + filepath.Join(root, "testdata", "corpus", "example-detector", "owner-repo-abc123", "project", "dependencies.txt"),
-		"selected candidate provenance: " + filepath.Join(root, "testdata", "corpus", "example-detector", "owner-repo-abc123", "provenance.yaml"),
+		"┌─ Detector: example-detector",
+		"│  Run position: 1/1 · remaining: 1 · run elapsed: 0s",
+		"│  Iteration: 1/7",
+		"│  Examples: 0/3",
+		"│    Iteration 1 saved",
+		"│    1. Source: " + filepath.Join(root, "testdata", "corpus", "example-detector", "owner-repo-abc123", "project", "dependencies.txt"),
+		"│       Provenance: " + filepath.Join(root, "testdata", "corpus", "example-detector", "owner-repo-abc123", "provenance.yaml"),
 	} {
 		if !strings.Contains(stdout.String(), want) {
 			t.Fatalf("run output missing %q: %s", want, stdout.String())
@@ -595,11 +598,14 @@ func TestRunPrintsResearchProgress(t *testing.T) {
 		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
 	}
 	for _, want := range []string{
-		`candidate search progress: detector=example-detector provider=github query=1/1 page=1 hits=100 expression="filename:go.work" search-bytes=512.0KiB/4.0MiB remaining=3.5MiB`,
-		"candidate qualification progress: detector=example-detector inspected=4 target=40 qualified=1 minimum=5 rejected=3 filtered=12 acquisition-bytes=2.0MiB/12.0MiB remaining=10.0MiB",
-		"candidate qualification finished: detector=example-detector inspected=40 target=40 qualified=9 minimum=5 rejected=31 filtered=105 acquisition-bytes=8.0MiB/12.0MiB remaining=4.0MiB",
-		"candidate selection started: detector=example-detector candidates=9",
-		"candidate selection finished: detector=example-detector selected=3",
+		"│  Candidate search",
+		`│    github query 1/1 · page 1 · 100 results · expression: "filename:go.work" · search: 512.0KiB/4.0MiB · remaining: 3.5MiB`,
+		"│  Candidate qualification",
+		"│    Inspected 4/40 · qualified: 1/5 · rejected: 3 · filtered: 12 · acquisition: 2.0MiB/12.0MiB · remaining: 10.0MiB",
+		"│    Finished · inspected 40/40 · qualified: 9/5 · rejected: 31 · filtered: 105 · acquisition: 8.0MiB/12.0MiB · remaining: 4.0MiB",
+		"│  Candidate selection",
+		"│    Started · candidates in context: 9",
+		"│    Finished · selected: 3/3",
 	} {
 		if !strings.Contains(stdout.String(), want) {
 			t.Fatalf("run output missing %q: %s", want, stdout.String())
@@ -615,19 +621,20 @@ func TestCollectionRunProgressReportsDetectorCountsTimingAndEstimate(t *testing.
 	}
 	progress := newCollectionRunProgress(startedAt, detectors, "")
 	var output bytes.Buffer
-	progress.printStarted(&output, 15*time.Minute)
+	progress.printStarted(&output, 15*time.Minute, 100, 100000)
 	progress.printDetectorStarted(&output, &detectors[0], detectors, "", startedAt, 0)
 	detectors[0].State = stateComplete
 	detectors[0].Examples = []string{"one", "two", "three"}
 	progress.iterations++
 	progress.printDetectorFinished(&output, &detectors[0], detectors, "", startedAt, startedAt.Add(2*time.Minute))
-	progress.printSummary(&output, detectors, "", startedAt.Add(2*time.Minute))
+	progress.printSummary(&output, detectors, "", startedAt.Add(2*time.Minute), "test completed")
 	for _, want := range []string{
-		"collection run started: detectors=2 duration=15m0s",
-		"detector started: detector=one attempted=1/2 remaining=2 run-elapsed=0s iteration=1/7 examples=0/3",
-		"detector finished: detector=one state=complete elapsed=2m0s",
-		"collection run progress: attempted=1 finished=1 iterations=1 remaining=1 elapsed=2m0s average-per-finished=2m0s estimated-remaining=2m0s",
-		"collection run summary: attempted=1 finished=1 iterations=1 remaining=1 elapsed=2m0s average-per-finished=2m0s estimated-remaining=2m0s",
+		"Run started\n  Detectors: 2\n  Time limit: 15m0s\n  Candidate inspection target: 100\n  Selection packet token limit: 100000",
+		"┌─ Detector: one",
+		"│  Run position: 1/2 · remaining: 2 · run elapsed: 0s",
+		"└─ Complete · state: complete · examples: 3/3 · elapsed: 2m0s",
+		"Run progress: 1/2 finished · 1 remaining · 1 attempted · 1 iterations · elapsed: 2m0s · average: 2m0s · estimated remaining: 2m0s",
+		"Run finished\n  Reason: test completed\n  Detectors attempted: 1\n  Detectors finished: 1/2\n  Iterations completed: 1\n  Detectors remaining: 1\n  Elapsed: 2m0s\n  Average per finished detector: 2m0s\n  Estimated remaining time: 2m0s",
 	} {
 		if !strings.Contains(output.String(), want) {
 			t.Fatalf("run progress output missing %q: %s", want, output.String())

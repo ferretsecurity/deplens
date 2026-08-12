@@ -53,7 +53,7 @@ type CollectionLimits struct {
 
 var defaultCollectionLimits = CollectionLimits{
 	Queries: 8, ResultPages: 10, CandidateInspections: 100,
-	DecodedResponseBytes: 16 << 20, PacketTokens: 50000,
+	DecodedResponseBytes: 16 << 20, PacketTokens: 100000,
 	SelectorInvocations: 2, SourceBytes: 2 << 20, ValidIterations: maxIterations,
 }
 
@@ -415,20 +415,19 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 	runStarted := now()
 	deadline := runStarted.Add(*duration)
 	runProgress := newCollectionRunProgress(runStarted, p.Detectors, *target)
-	runProgress.printStarted(stdout, *duration)
+	runProgress.printStarted(stdout, *duration, *candidateLimit, p.Limits.PacketTokens)
 	signals, stopSignals := collectionSignals()
 	defer stopSignals()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	for {
 		if !now().Before(deadline) {
-			fmt.Fprintln(stdout, "collection stopped: soft duration reached; the latest checkpoint is preserved")
-			runProgress.printSummary(stdout, p.Detectors, *target, now())
+			runProgress.printSummary(stdout, p.Detectors, *target, now(), "soft duration reached; latest checkpoint preserved")
 			return collectionSummary(p, stdout)
 		}
 		detector := selectDetector(p.Detectors, *target)
 		if detector == nil {
-			runProgress.printSummary(stdout, p.Detectors, *target, now())
+			runProgress.printSummary(stdout, p.Detectors, *target, now(), "no eligible detectors remain")
 			return collectionSummary(p, stdout)
 		}
 		if detector.Target == 0 {
@@ -449,9 +448,10 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 		detectorStarted := now()
 		runProgress.printDetectorStarted(stdout, detector, p.Detectors, *target, detectorStarted, examplesBefore)
 		result := make(chan iterationResult, 1)
+		progressPrinter := newDetectorProgressPrinter(stdout)
 		go func() {
 			reportProgress := func(progress ResearchProgress) {
-				printResearchProgress(stdout, detector.ID, progress)
+				progressPrinter.Print(progress)
 			}
 			code, checkpointed := runIteration(ctx, root, *progressPath, p, detector, researcher, *queryLimit, *candidateLimit, *commit, *allowDirty, reportProgress, stderr)
 			result <- iterationResult{code: code, checkpointed: checkpointed}
@@ -461,16 +461,20 @@ func collect(args []string, root string, stdout, stderr io.Writer, researcher Re
 		runProgress.iterations++
 		if code != 0 {
 			runProgress.printDetectorFailed(stdout, detector, detectorStarted, now())
-			runProgress.printSummary(stdout, p.Detectors, *target, now())
+			runProgress.printSummary(stdout, p.Detectors, *target, now(), "detector iteration failed")
 			return code
 		}
 		if checkpointed {
-			fmt.Fprintf(stdout, "checkpoint: %s iteration %d\n", detector.ID, detector.Iterations)
+			printIterationCheckpoint(stdout, detector.Iterations)
 			printSelectedExamplePaths(stdout, root, detector.ID, detector.Examples[examplesBefore:])
 		}
 		runProgress.printDetectorFinished(stdout, detector, p.Detectors, *target, detectorStarted, now())
 		if stopAfterIteration || *single || *target != "" {
-			runProgress.printSummary(stdout, p.Detectors, *target, now())
+			reason := "requested iteration finished"
+			if stopAfterIteration {
+				reason = "stop requested after active iteration"
+			}
+			runProgress.printSummary(stdout, p.Detectors, *target, now(), reason)
 			return collectionSummary(p, stdout)
 		}
 	}
@@ -493,13 +497,14 @@ func newCollectionRunProgress(startedAt time.Time, detectors []DetectorProgress,
 	}
 }
 
-func (p *collectionRunProgress) printStarted(stdout io.Writer, duration time.Duration) {
-	fmt.Fprintf(stdout, "collection run started: detectors=%d duration=%s\n", p.total, formatRunDuration(duration))
+func (p *collectionRunProgress) printStarted(stdout io.Writer, duration time.Duration, candidateTarget, packetTokens int) {
+	fmt.Fprintf(stdout, "Run started\n  Detectors: %d\n  Time limit: %s\n  Candidate inspection target: %d\n  Selection packet token limit: %d\n",
+		p.total, formatRunDuration(duration), candidateTarget, packetTokens)
 }
 
 func (p *collectionRunProgress) printDetectorStarted(stdout io.Writer, detector *DetectorProgress, detectors []DetectorProgress, target string, at time.Time, examples int) {
 	p.attempted[detector.ID] = struct{}{}
-	fmt.Fprintf(stdout, "detector started: detector=%s attempted=%d/%d remaining=%d run-elapsed=%s iteration=%d/%d examples=%d/%d\n",
+	fmt.Fprintf(stdout, "\n┌─ Detector: %s\n│  Run position: %d/%d · remaining: %d · run elapsed: %s\n│  Iteration: %d/%d\n│  Examples: %d/%d\n",
 		detector.ID, len(p.attempted), p.total, countEligibleDetectors(detectors, target), formatRunDuration(at.Sub(p.startedAt)), detector.Iterations+1, maxIterations, examples, defaultTarget)
 }
 
@@ -507,26 +512,34 @@ func (p *collectionRunProgress) printDetectorFinished(stdout io.Writer, detector
 	if !isEligible(*detector) {
 		p.finished[detector.ID] = struct{}{}
 	}
-	fmt.Fprintf(stdout, "detector finished: detector=%s state=%s elapsed=%s\n", detector.ID, detector.State, formatRunDuration(finishedAt.Sub(startedAt)))
+	result := "Iteration finished"
+	switch detector.State {
+	case stateComplete:
+		result = "Complete"
+	case stateNeedsQueryReview, stateNeedsContentReview, stateNeedsCollectionReview:
+		result = "Review required"
+	}
+	fmt.Fprintf(stdout, "│\n└─ %s · state: %s · examples: %d/%d · elapsed: %s\n",
+		result, detector.State, len(detector.Examples), defaultTarget, formatRunDuration(finishedAt.Sub(startedAt)))
 	p.printProgress(stdout, detectors, target, finishedAt)
 }
 
 func (p *collectionRunProgress) printDetectorFailed(stdout io.Writer, detector *DetectorProgress, startedAt, failedAt time.Time) {
-	fmt.Fprintf(stdout, "detector failed: detector=%s elapsed=%s\n", detector.ID, formatRunDuration(failedAt.Sub(startedAt)))
+	fmt.Fprintf(stdout, "│\n└─ Failed · detector: %s · elapsed: %s\n", detector.ID, formatRunDuration(failedAt.Sub(startedAt)))
 }
 
 func (p *collectionRunProgress) printProgress(stdout io.Writer, detectors []DetectorProgress, target string, at time.Time) {
 	remaining := countEligibleDetectors(detectors, target)
 	average, eta := p.estimates(at, remaining)
-	fmt.Fprintf(stdout, "collection run progress: attempted=%d finished=%d iterations=%d remaining=%d elapsed=%s average-per-finished=%s estimated-remaining=%s\n",
-		len(p.attempted), len(p.finished), p.iterations, remaining, formatRunDuration(at.Sub(p.startedAt)), average, eta)
+	fmt.Fprintf(stdout, "\nRun progress: %d/%d finished · %d remaining · %d attempted · %d iterations · elapsed: %s · average: %s · estimated remaining: %s\n",
+		len(p.finished), p.total, remaining, len(p.attempted), p.iterations, formatRunDuration(at.Sub(p.startedAt)), average, eta)
 }
 
-func (p *collectionRunProgress) printSummary(stdout io.Writer, detectors []DetectorProgress, target string, at time.Time) {
+func (p *collectionRunProgress) printSummary(stdout io.Writer, detectors []DetectorProgress, target string, at time.Time, reason string) {
 	remaining := countEligibleDetectors(detectors, target)
 	average, eta := p.estimates(at, remaining)
-	fmt.Fprintf(stdout, "collection run summary: attempted=%d finished=%d iterations=%d remaining=%d elapsed=%s average-per-finished=%s estimated-remaining=%s\n",
-		len(p.attempted), len(p.finished), p.iterations, remaining, formatRunDuration(at.Sub(p.startedAt)), average, eta)
+	fmt.Fprintf(stdout, "\nRun finished\n  Reason: %s\n  Detectors attempted: %d\n  Detectors finished: %d/%d\n  Iterations completed: %d\n  Detectors remaining: %d\n  Elapsed: %s\n  Average per finished detector: %s\n  Estimated remaining time: %s\n",
+		reason, len(p.attempted), len(p.finished), p.total, p.iterations, remaining, formatRunDuration(at.Sub(p.startedAt)), average, eta)
 }
 
 func (p *collectionRunProgress) estimates(at time.Time, remaining int) (string, string) {
@@ -575,22 +588,52 @@ func (w *synchronizedWriter) Write(p []byte) (int, error) {
 	return w.writer.Write(p)
 }
 
-func printResearchProgress(stdout io.Writer, detectorID string, progress ResearchProgress) {
+type detectorProgressPrinter struct {
+	stdout io.Writer
+	stage  string
+}
+
+func newDetectorProgressPrinter(stdout io.Writer) *detectorProgressPrinter {
+	return &detectorProgressPrinter{stdout: stdout}
+}
+
+func (p *detectorProgressPrinter) Print(progress ResearchProgress) {
+	if progress.Stage != p.stage {
+		p.stage = progress.Stage
+		title := ""
+		switch progress.Stage {
+		case progressSearch:
+			title = "Candidate search"
+		case progressQualification:
+			title = "Candidate qualification"
+		case progressSelection:
+			title = "Candidate selection"
+		}
+		if title != "" {
+			fmt.Fprintf(p.stdout, "│\n│  %s\n", title)
+		}
+	}
+	printResearchProgress(p.stdout, progress)
+}
+
+func printResearchProgress(stdout io.Writer, progress ResearchProgress) {
 	switch progress.Stage {
 	case progressSearch:
-		fmt.Fprintf(stdout, "candidate search progress: detector=%s provider=%s query=%d/%d page=%d hits=%d expression=%q %s-bytes=%s/%s remaining=%s\n", detectorID, progress.Provider, progress.QueryIndex, progress.QueryTotal, progress.Page, progress.Hits, progress.Query, progress.Budget, formatByteCount(progress.DownloadedBytes), formatByteCount(progress.ByteLimit), formatByteCount(progress.RemainingBytes))
+		fmt.Fprintf(stdout, "│    %s query %d/%d · page %d · %d results · expression: %q · %s: %s/%s · remaining: %s\n",
+			progress.Provider, progress.QueryIndex, progress.QueryTotal, progress.Page, progress.Hits, progress.Query, progress.Budget, formatByteCount(progress.DownloadedBytes), formatByteCount(progress.ByteLimit), formatByteCount(progress.RemainingBytes))
 	case progressQualification:
-		label := "progress"
+		label := "Inspected"
 		if progress.Final {
-			label = "finished"
+			label = "Finished · inspected"
 		}
-		fmt.Fprintf(stdout, "candidate qualification %s: detector=%s inspected=%d target=%d qualified=%d minimum=%d rejected=%d filtered=%d %s-bytes=%s/%s remaining=%s\n", label, detectorID, progress.Inspected, progress.InspectionLimit, progress.Qualified, minimumQualifiedCandidates, progress.Rejected, progress.Filtered, progress.Budget, formatByteCount(progress.DownloadedBytes), formatByteCount(progress.ByteLimit), formatByteCount(progress.RemainingBytes))
+		fmt.Fprintf(stdout, "│    %s %d/%d · qualified: %d/%d · rejected: %d · filtered: %d · %s: %s/%s · remaining: %s\n",
+			label, progress.Inspected, progress.InspectionLimit, progress.Qualified, minimumQualifiedCandidates, progress.Rejected, progress.Filtered, progress.Budget, formatByteCount(progress.DownloadedBytes), formatByteCount(progress.ByteLimit), formatByteCount(progress.RemainingBytes))
 	case progressSelection:
 		if progress.Final {
-			fmt.Fprintf(stdout, "candidate selection finished: detector=%s selected=%d\n", detectorID, progress.Selected)
+			fmt.Fprintf(stdout, "│    Finished · selected: %d/3\n", progress.Selected)
 			return
 		}
-		fmt.Fprintf(stdout, "candidate selection started: detector=%s candidates=%d\n", detectorID, progress.Candidates)
+		fmt.Fprintf(stdout, "│    Started · candidates in context: %d\n", progress.Candidates)
 	}
 }
 
@@ -609,8 +652,17 @@ func formatByteCount(bytes int64) string {
 	}
 }
 
+func printIterationCheckpoint(stdout io.Writer, iteration int) {
+	fmt.Fprintf(stdout, "│\n│  Checkpoint\n│    Iteration %d saved\n", iteration)
+}
+
 func printSelectedExamplePaths(stdout io.Writer, root, detectorID string, examples []string) {
+	if len(examples) == 0 {
+		return
+	}
+	fmt.Fprintln(stdout, "│\n│  Selected candidates")
 	prefix := filepath.ToSlash(filepath.Join("testdata", "corpus", detectorID)) + "/"
+	selected := 0
 	for _, example := range examples {
 		source := filepath.ToSlash(example)
 		relative := strings.TrimPrefix(source, prefix)
@@ -618,9 +670,10 @@ func printSelectedExamplePaths(stdout io.Writer, root, detectorID string, exampl
 		if !ok || candidateID == "" || relative == source {
 			continue
 		}
-		fmt.Fprintf(stdout, "selected candidate source: %s\n", filepath.Join(root, filepath.FromSlash(source)))
+		selected++
+		fmt.Fprintf(stdout, "│    %d. Source: %s\n", selected, filepath.Join(root, filepath.FromSlash(source)))
 		provenance := filepath.Join(root, filepath.FromSlash(prefix+candidateID+"/provenance.yaml"))
-		fmt.Fprintf(stdout, "selected candidate provenance: %s\n", provenance)
+		fmt.Fprintf(stdout, "│       Provenance: %s\n", provenance)
 	}
 }
 
@@ -646,7 +699,7 @@ func waitForIteration(result <-chan iterationResult, signals <-chan os.Signal, c
 	case iteration := <-result:
 		return iteration, false
 	case <-signals:
-		fmt.Fprintln(stdout, "collection stopping: interrupt received; the active iteration may validate and checkpoint")
+		fmt.Fprintln(stdout, "│\n│  Stopping requested\n│    The active iteration may validate and checkpoint")
 	}
 	select {
 	case iteration := <-result:
@@ -1227,7 +1280,8 @@ func collectionSummary(p Progress, stdout io.Writer) int {
 			active++
 		}
 	}
-	fmt.Fprintf(stdout, "collection summary: %d complete, %d needs query review (%s), %d needs content review (%s), %d needs collection review (%s), %d remaining\n", complete, queryReview, strings.Join(queryIDs, ","), contentReview, strings.Join(contentIDs, ","), collectionReview, strings.Join(collectionIDs, ","), active)
+	fmt.Fprintf(stdout, "\nCollection state\n  Complete: %d\n  Needs query review: %d (%s)\n  Needs content review: %d (%s)\n  Needs collection review: %d (%s)\n  Remaining: %d\n",
+		complete, queryReview, strings.Join(queryIDs, ","), contentReview, strings.Join(contentIDs, ","), collectionReview, strings.Join(collectionIDs, ","), active)
 	return 0
 }
 

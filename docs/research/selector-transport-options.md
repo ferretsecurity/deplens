@@ -8,7 +8,7 @@ The fixture selector must reuse the installed Codex binary and its existing
 ChatGPT/Codex OAuth login. A direct OpenAI API integration, API keys, and
 separate API billing are out of scope.
 
-Within that constraint, the selector needs to send about 50,000 tokens of
+Within that constraint, the selector needs to send about 100,000 tokens of
 untrusted GitHub source from memory, receive only selected candidate IDs and
 rationales, prevent model-invoked tools from reaching the network, GitHub
 credentials, or the host filesystem, and avoid persisting the prompt as a Codex
@@ -256,12 +256,12 @@ The schema constrains the final answer, but it does not stop the Codex agent
 from attempting intermediate tool calls. The feature disables, sandbox, approval
 policy, timeout, and post-validation are all independent controls.
 
-## Approximately 50,000 tokens
+## Approximately 100,000 tokens
 
 Codex CLI, its SDK wrappers, and app-server do not expose the Responses
 input-token-count endpoint under Codex OAuth. They report usage after a turn,
 but there is no exact preflight count that includes Codex's hidden instructions
-and tool schemas. Go should define the 50,000-token target as the **candidate
+and tool schemas. Go should define the 100,000-token target as the **candidate
 packet budget**, count or conservatively estimate that packet locally for the
 configured model, and leave headroom for selector instructions and any residual
 tool schemas. Record actual post-turn input usage as an operational metric and
@@ -384,6 +384,6 @@ ineffective**, not as an equivalent no-tool guarantee.
 > ineffective outside the sandbox; it does not claim that the model receives an
 > empty tool list. Go requires exactly three selected IDs in both the prompt and
 > strict output schema; when fewer than three complete candidates fit, it does
-> not invoke Codex. The 50,000-token target applies to the candidate packet and
+> not invoke Codex. The 100,000-token target applies to the candidate packet and
 > is estimated locally with headroom because Codex OAuth surfaces provide no
 > exact preflight count for the complete hidden agent request.

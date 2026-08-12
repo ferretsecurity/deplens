@@ -24,12 +24,14 @@ go run ./cmd/fixturecollectorloop initialize-progress \
 
 Review progress before running. Its defaults bound eight queries, ten result
 pages, 16 MiB of decoded remote responses, 2 MiB per source, an approximately
-50,000-token selection packet, two selector calls, and seven valid iterations.
+100,000-token selection packet, two selector calls, and seven valid iterations.
 The normal candidate-inspection target is 100. One quarter of the
 decoded-response allowance is reserved for search and three quarters for
 detailed acquisition, so result pages cannot consume source and license
 capacity. The packet figure is a conservative local approximation, not exact
-counting of the complete model request.
+counting of the complete model request. Initialization stores these reviewed
+limits in the progress file; changing a software default does not silently
+rewrite an existing collection's limits.
 
 States are `pending`, `in-progress`, `complete`, `needs-query-review`,
 `needs-content-review`, and `needs-collection-review`. Review-needed states are
@@ -90,7 +92,7 @@ in logs or progress.
 Codex must select exactly three candidates as one versatile set. The set must
 include the best representative of common real-world usage, while the other
 choices add useful structural variation or edge cases. If fewer than three
-complete candidates fit the approximately 50,000-token packet, Go does not
+complete candidates fit the approximately 100,000-token packet, Go does not
 invoke Codex for that iteration.
 
 ## Run, stop, and resume
@@ -111,22 +113,25 @@ starts. Re-run the same command to resume a valid checkpoint. The first
 records recovery-required state. Exit 0 is a valid completion or stop; exit 1
 is an operational, integrity, lock, Git, selector, or recovery failure.
 
-`run` reports the run's detector count and duration, then reports each detector
-start and finish. After every finished detector it prints detectors attempted,
-finished, and remaining in this run, the iteration count, elapsed time, average
-time per finished detector, and an estimated time for the remaining detectors.
-The same figures appear in a run summary on normal completion or a soft stop.
-The estimate is `n/a` until one detector finishes. While
-acquisition is active it reports each provider result page and approximately
-ten evenly spaced qualification tallies containing inspected, the normal
-inspection target, qualified progress toward five, rejected, and cheaply
-filtered counts. Search lines show the search-byte
-allowance; qualification lines show the acquisition-byte allowance, including
-downloaded and remaining amounts. It also brackets the isolated model call with
-selection-started and selection-finished messages. After a valid accepted
-checkpoint, it prints absolute local paths for every selected source and its
-provenance file so terminals can render them as links. Progress is content-free:
-it never prints upstream source or license bytes.
+`run` presents top-level run information without indentation and encloses every
+detector iteration in a `┌─`/`│`/`└─` block. Search, qualification, selection,
+checkpoint, and selected-candidate paths are indented sections inside that
+block. After every finished detector it prints detectors attempted, finished,
+and remaining in this run, the iteration count, elapsed time, average time per
+finished detector, and an estimated time for the remaining detectors. The same
+figures appear in a structured run summary on normal completion or a soft stop.
+The estimate is `n/a` until one detector finishes.
+
+While acquisition is active, the search section reports each provider result
+page and the qualification section reports approximately ten evenly spaced
+tallies containing inspected, the normal inspection target, qualified progress
+toward five, rejected, and cheaply filtered counts. Search lines show the
+search-byte allowance; qualification lines show the acquisition-byte allowance,
+including downloaded and remaining amounts. The selection section brackets the
+isolated model call. After a valid accepted checkpoint, the selected-candidates
+section prints absolute local paths for every selected source and its provenance
+file so terminals can render them as links. Progress is content-free: it never
+prints upstream source or license bytes.
 
 ## Git, recovery, and commits
 
