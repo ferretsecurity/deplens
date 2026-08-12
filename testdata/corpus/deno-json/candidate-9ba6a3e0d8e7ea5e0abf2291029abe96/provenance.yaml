@@ -1,0 +1,18 @@
+version: 2
+detector_id: deno-json
+candidate_id: candidate-9ba6a3e0d8e7ea5e0abf2291029abe96
+provider: github
+repository: vslinko/deno-csv
+repository_url: https://github.com/vslinko/deno-csv
+default_branch: master
+commit: a55e77bf9f5f037bebc3c69122c05404d692c98a
+original_path: deno.json
+permalink: https://github.com/vslinko/deno-csv/blob/a55e77bf9f5f037bebc3c69122c05404d692c98a/deno.json
+retrieved_at: "2026-08-12T08:53:21Z"
+sha256: 7b62b6913cd3b4ca09a4068bfdab1a47dd188359a627eb4f4a572ad36126c24c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/vslinko/deno-csv/blob/a55e77bf9f5f037bebc3c69122c05404d692c98a/LICENSE
+    sha256: 887b4ea7a4a8f53cfbae0292d1f622e9dd71d69a2c4c60748724d95d8df3b38c
+rationale: 'Best representation of a common Deno library: package metadata, a single export, JSR imports, tasks, scoped test/lint/fmt settings, and publish rules.'

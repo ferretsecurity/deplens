@@ -1,0 +1,18 @@
+version: 2
+detector_id: deno-json
+candidate_id: candidate-5e0ceb4106f3d6784251dd83ff065287
+provider: github
+repository: coderaiser/putout
+repository_url: https://github.com/coderaiser/putout
+default_branch: master
+commit: 3e62baa494203e47f78a893843a591642f4a2ff0
+original_path: deno.json
+permalink: https://github.com/coderaiser/putout/blob/3e62baa494203e47f78a893843a591642f4a2ff0/deno.json
+retrieved_at: "2026-08-12T08:52:47Z"
+sha256: 8cda3a3f6b98e58866179f44cfe10085b854933c06486a44b9b6a72946ea16aa
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/coderaiser/putout/blob/3e62baa494203e47f78a893843a591642f4a2ff0/LICENSE
+    sha256: 6446a33e2a72a1d8b707274339dfa3d93cf1e452a0cac565c21a5cc6ba35bf01
+rationale: Adds compact edge-case coverage for named permission sets and custom lint exclusions, with a minimal task-only project shape.

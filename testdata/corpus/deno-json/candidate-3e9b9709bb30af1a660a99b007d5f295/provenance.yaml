@@ -1,0 +1,18 @@
+version: 2
+detector_id: deno-json
+candidate_id: candidate-3e9b9709bb30af1a660a99b007d5f295
+provider: github
+repository: mooxl/mooxl.dev
+repository_url: https://github.com/mooxl/mooxl.dev
+default_branch: main
+commit: 0765c539b07a7f2454be62148a6cc397c0f28768
+original_path: deno.json
+permalink: https://github.com/mooxl/mooxl.dev/blob/0765c539b07a7f2454be62148a6cc397c0f28768/deno.json
+retrieved_at: "2026-08-12T08:53:48Z"
+sha256: 144a5438d7bc2e0bac3aef8cbd3c03d5152d428a0e7bf20095be65d56d2f9a22
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/mooxl/mooxl.dev/blob/0765c539b07a7f2454be62148a6cc397c0f28768/LICENSE
+    sha256: 9d0f15256bb02634849baba79ab33bc8a83253ed3c895d815bf6a08df0c2d581
+rationale: Adds a realistic Fresh web application configuration, including watch/build tasks, JSX settings, framework URL imports, exclusions, and Node-module support.

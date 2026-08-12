@@ -2041,12 +2041,242 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/deno-json/candidate-3e9b9709bb30af1a660a99b007d5f295/deno.json
+        - testdata/corpus/deno-json/candidate-5e0ceb4106f3d6784251dd83ff065287/deno.json
+        - testdata/corpus/deno-json/candidate-9ba6a3e0d8e7ea5e0abf2291029abe96/deno.json
       target: 3
       query_plan:
         - filename:deno.json
+      queries:
+        - filename:deno.json
+      candidates:
+        - candidate-e831c0cd34dc41520e00d2a9709a4166
+        - candidate-fcebc5d85be3f4b17b6851f9182bccdc
+        - candidate-5e0ceb4106f3d6784251dd83ff065287
+        - candidate-43dde193ce66d2d4d9cba60acfdfe082
+        - candidate-ee747fce51d455e8665bf8a8f9aa4aef
+        - candidate-c08fd4529f33089ee1a387f85aa773bc
+        - candidate-846ac3fa2de5b318fc04681de14012f1
+        - candidate-ddbf10c40f45f49e3520ce4265991b4c
+        - candidate-790e60f32c66fd57b64d0f5e22100597
+        - candidate-92191e6b95c80c1df661af63f8dd4610
+        - candidate-0a12a4b5ebb2155720ff313239eb3528
+        - candidate-79882dc1f4faf4dd7f3751536d291591
+        - candidate-628bf3844fa218bc186711e6ee037556
+        - candidate-0213610bdf547c10e1b62ae69f8bf533
+        - candidate-1e705aa1cbe402d6c4168e5d7c25496c
+        - candidate-33ca0dd4d59381cdbd6afc4b651920db
+        - candidate-48d98e28e5cfd3cdd6a059f562910030
+        - candidate-ccf5f64ccff82dffd65f338e28bcabb2
+        - candidate-006be4486fbdec802a1e7ed3ef33165d
+        - candidate-1bfbd46b191bb40cd44253c9457e9b96
+        - candidate-2cbdfc8d4da9a857856809cdce944848
+        - candidate-69858b2cbdeeeb016efc46db1a476180
+        - candidate-9ba6a3e0d8e7ea5e0abf2291029abe96
+        - candidate-350d942c47924e58cc3b374117eb248f
+        - candidate-1a11eb6034f98ca9a66de2d2e509183b
+        - candidate-ca297a5d8a8c6b768327206c75e29003
+        - candidate-b93784093ee4babfe2a4e0fb67d88ccf
+        - candidate-4655c4be4529ec78d3ab6f3967746a4c
+        - candidate-d635fad8b07a686c2d772ffc456869cd
+        - candidate-80ba4bc6cffc664f5c2089ee6582d3a1
+        - candidate-f3d216c36bcb0fe670dfd6f1b33c7185
+        - candidate-ad5ac1b81e174b590aaea5a264eb7215
+        - candidate-ed291a66355123d248ae07737789618c
+        - candidate-3e9b9709bb30af1a660a99b007d5f295
+        - candidate-9b62d4f83670b752b5785a0993169162
+        - candidate-5e0bb4129dff49e3cc0a269b0f7c0852
+        - candidate-cfb41df592ceca4a3b1a735c1933f3cd
+        - candidate-d3fbd9c442640f9d3f9769582174253e
+        - candidate-7bda5be7a5a6dd72098a558aa92bab98
+        - candidate-8fc8240a60ac01d6282e712909edda36
+        - candidate-3926454c0fa62d2c8b02d41aff710582
+        - candidate-fbb7872adfc62b994afd43b115ef8cd6
+        - candidate-3569569a478af6a9b03493c67581c257
+        - candidate-4781921c03b2dfe7b6cfefec6e10b839
+        - candidate-26459fbb016dc244c29bfbfcca0854e0
+        - candidate-13ceb70ca92d9108c55157deb355359b
+        - candidate-3518e508107a5cf4e928375c649ef968
+        - candidate-55951ff5767158f3e3084f6448602b6b
+        - candidate-ac9b3210e61ced2422196feb8ee1c5c7
+        - candidate-e13b31688441696b94d88a8c3c4b9de3
+        - candidate-06837989a1502c1bc9312d7955fc95e7
+        - candidate-c4e75e4bca827962f6d02242bc14946f
+        - candidate-37d3c292492b5b657e9fecd4c0a65d52
+        - candidate-53eb4cc948a907352d66d19a74ada728
+        - candidate-11ffc65a6ed5f32b0e015fe28a88c925
+        - candidate-467fa85bd532b96e59ab1c1521f074ad
+        - candidate-7926f76684f77f44e1bd700bb112dc91
+        - candidate-f1d1162f3537d6dad28429c1cc1b6cdf
+        - candidate-51996077f12bb135cb05d708904165c7
+        - candidate-6391653877716d0f0b6eec2a044b0c0f
+        - candidate-8e55d0bcc1ebcd160bc2296b866bd7d4
+        - candidate-90f175826f8bad4e3ed6ab04d39f875d
+        - candidate-57972d0caae84c9f07724c62126c385a
+      filtered_search_hits:
+        source-selector-mismatch: 24
+      rejections:
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - sensitive-content
+        - repository-template
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - repository-purpose
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - license-ambiguous
+        - license-missing
+      decision_states:
+        - packet_fingerprint: 8985a49c6ac27642eb2661c5ba9ac408a9bde14b3f03615356338e50f6a411da
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-3e9b9709bb30af1a660a99b007d5f295
+            - candidate-5e0ceb4106f3d6784251dd83ff065287
+            - candidate-9ba6a3e0d8e7ea5e0abf2291029abe96
+          queries:
+            - filename:deno.json
+          candidates:
+            - candidate-e831c0cd34dc41520e00d2a9709a4166
+            - candidate-fcebc5d85be3f4b17b6851f9182bccdc
+            - candidate-5e0ceb4106f3d6784251dd83ff065287
+            - candidate-43dde193ce66d2d4d9cba60acfdfe082
+            - candidate-ee747fce51d455e8665bf8a8f9aa4aef
+            - candidate-c08fd4529f33089ee1a387f85aa773bc
+            - candidate-846ac3fa2de5b318fc04681de14012f1
+            - candidate-ddbf10c40f45f49e3520ce4265991b4c
+            - candidate-790e60f32c66fd57b64d0f5e22100597
+            - candidate-92191e6b95c80c1df661af63f8dd4610
+            - candidate-0a12a4b5ebb2155720ff313239eb3528
+            - candidate-79882dc1f4faf4dd7f3751536d291591
+            - candidate-628bf3844fa218bc186711e6ee037556
+            - candidate-0213610bdf547c10e1b62ae69f8bf533
+            - candidate-1e705aa1cbe402d6c4168e5d7c25496c
+            - candidate-33ca0dd4d59381cdbd6afc4b651920db
+            - candidate-48d98e28e5cfd3cdd6a059f562910030
+            - candidate-ccf5f64ccff82dffd65f338e28bcabb2
+            - candidate-006be4486fbdec802a1e7ed3ef33165d
+            - candidate-1bfbd46b191bb40cd44253c9457e9b96
+            - candidate-2cbdfc8d4da9a857856809cdce944848
+            - candidate-69858b2cbdeeeb016efc46db1a476180
+            - candidate-9ba6a3e0d8e7ea5e0abf2291029abe96
+            - candidate-350d942c47924e58cc3b374117eb248f
+            - candidate-1a11eb6034f98ca9a66de2d2e509183b
+            - candidate-ca297a5d8a8c6b768327206c75e29003
+            - candidate-b93784093ee4babfe2a4e0fb67d88ccf
+            - candidate-4655c4be4529ec78d3ab6f3967746a4c
+            - candidate-d635fad8b07a686c2d772ffc456869cd
+            - candidate-80ba4bc6cffc664f5c2089ee6582d3a1
+            - candidate-f3d216c36bcb0fe670dfd6f1b33c7185
+            - candidate-ad5ac1b81e174b590aaea5a264eb7215
+            - candidate-ed291a66355123d248ae07737789618c
+            - candidate-3e9b9709bb30af1a660a99b007d5f295
+            - candidate-9b62d4f83670b752b5785a0993169162
+            - candidate-5e0bb4129dff49e3cc0a269b0f7c0852
+            - candidate-cfb41df592ceca4a3b1a735c1933f3cd
+            - candidate-d3fbd9c442640f9d3f9769582174253e
+            - candidate-7bda5be7a5a6dd72098a558aa92bab98
+            - candidate-8fc8240a60ac01d6282e712909edda36
+            - candidate-3926454c0fa62d2c8b02d41aff710582
+            - candidate-fbb7872adfc62b994afd43b115ef8cd6
+            - candidate-3569569a478af6a9b03493c67581c257
+            - candidate-4781921c03b2dfe7b6cfefec6e10b839
+            - candidate-26459fbb016dc244c29bfbfcca0854e0
+            - candidate-13ceb70ca92d9108c55157deb355359b
+            - candidate-3518e508107a5cf4e928375c649ef968
+            - candidate-55951ff5767158f3e3084f6448602b6b
+            - candidate-ac9b3210e61ced2422196feb8ee1c5c7
+            - candidate-e13b31688441696b94d88a8c3c4b9de3
+            - candidate-06837989a1502c1bc9312d7955fc95e7
+            - candidate-c4e75e4bca827962f6d02242bc14946f
+            - candidate-37d3c292492b5b657e9fecd4c0a65d52
+            - candidate-53eb4cc948a907352d66d19a74ada728
+            - candidate-11ffc65a6ed5f32b0e015fe28a88c925
+            - candidate-467fa85bd532b96e59ab1c1521f074ad
+            - candidate-7926f76684f77f44e1bd700bb112dc91
+            - candidate-f1d1162f3537d6dad28429c1cc1b6cdf
+            - candidate-51996077f12bb135cb05d708904165c7
+            - candidate-6391653877716d0f0b6eec2a044b0c0f
+            - candidate-8e55d0bcc1ebcd160bc2296b866bd7d4
+            - candidate-90f175826f8bad4e3ed6ab04d39f875d
+            - candidate-57972d0caae84c9f07724c62126c385a
+          filtered_search_hits:
+            source-selector-mismatch: 24
+          rejections:
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - sensitive-content
+            - repository-template
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - repository-purpose
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - license-ambiguous
+            - license-missing
+          decision:
+            packet_fingerprint: 8985a49c6ac27642eb2661c5ba9ac408a9bde14b3f03615356338e50f6a411da
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: deno-jsonc
       form: manifest
       roles:
