@@ -8880,12 +8880,242 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/clojure-deps-edn/candidate-0e2a72ec491e7a0482793cb4b7562316/deps.edn
+        - testdata/corpus/clojure-deps-edn/candidate-0f808b45ecf4ddd895f07425702d3641/deps.edn
+        - testdata/corpus/clojure-deps-edn/candidate-fb8c155c9139fe3b3b613c797b17a1c7/deps.edn
       target: 3
       query_plan:
         - filename:deps.edn
+      queries:
+        - filename:deps.edn
+      candidates:
+        - candidate-38ad0311ccde2a9bb1a6e620582706f6
+        - candidate-3dee6e9f6aa375f086c359985f74956c
+        - candidate-997d0e8669c3ee3bad3f373d050952d2
+        - candidate-a4fa36d220274824232db00db2bc9a65
+        - candidate-72b63fca3d190ba41e982d6692ff5470
+        - candidate-4c6e97d6b2b13c4f8815bd97c618e040
+        - candidate-23f5a3d248e1b6ee28466e5d2c370b1f
+        - candidate-fb8c155c9139fe3b3b613c797b17a1c7
+        - candidate-65f30af1619c40e9ba73d7d3a5fae5c5
+        - candidate-f4323527b8b6c8dd71e449362b953a5e
+        - candidate-35d6e4f0df1fb999e7436eec744d071d
+        - candidate-38830d460523dc6c0b3299f8a1661675
+        - candidate-0f808b45ecf4ddd895f07425702d3641
+        - candidate-1a405373a16f02fe583a2d42411f3230
+        - candidate-997ca1d77b132b9ee758cc62f68d9477
+        - candidate-612ddabcee0d6b6dc10d60cc056cbfe2
+        - candidate-32d357054c741c9608e386a8d9211c61
+        - candidate-9294559b437675e06b7e9955754b9a07
+        - candidate-03acbc874dd0074b9e90ae6c8a14677d
+        - candidate-0e2a72ec491e7a0482793cb4b7562316
+        - candidate-f363c4d08df5f76845b5e9dadc58d92e
+        - candidate-4ffdfaa87762d3985a73be203270aa74
+      filtered_search_hits:
+        source-selector-mismatch: 4
+      rejections:
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+      decision_states:
+        - packet_fingerprint: a8479a761fd2d22ea9b5785c12f414439e2e3708ae6732f2f2467ecd9251eaa4
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-0e2a72ec491e7a0482793cb4b7562316
+            - candidate-0f808b45ecf4ddd895f07425702d3641
+            - candidate-fb8c155c9139fe3b3b613c797b17a1c7
+          queries:
+            - filename:deps.edn
+          candidates:
+            - candidate-38ad0311ccde2a9bb1a6e620582706f6
+            - candidate-3dee6e9f6aa375f086c359985f74956c
+            - candidate-997d0e8669c3ee3bad3f373d050952d2
+            - candidate-a4fa36d220274824232db00db2bc9a65
+            - candidate-72b63fca3d190ba41e982d6692ff5470
+            - candidate-4c6e97d6b2b13c4f8815bd97c618e040
+            - candidate-23f5a3d248e1b6ee28466e5d2c370b1f
+            - candidate-fb8c155c9139fe3b3b613c797b17a1c7
+            - candidate-65f30af1619c40e9ba73d7d3a5fae5c5
+            - candidate-f4323527b8b6c8dd71e449362b953a5e
+            - candidate-35d6e4f0df1fb999e7436eec744d071d
+            - candidate-38830d460523dc6c0b3299f8a1661675
+            - candidate-0f808b45ecf4ddd895f07425702d3641
+            - candidate-1a405373a16f02fe583a2d42411f3230
+            - candidate-997ca1d77b132b9ee758cc62f68d9477
+            - candidate-612ddabcee0d6b6dc10d60cc056cbfe2
+            - candidate-32d357054c741c9608e386a8d9211c61
+            - candidate-9294559b437675e06b7e9955754b9a07
+            - candidate-03acbc874dd0074b9e90ae6c8a14677d
+            - candidate-0e2a72ec491e7a0482793cb4b7562316
+            - candidate-f363c4d08df5f76845b5e9dadc58d92e
+            - candidate-4ffdfaa87762d3985a73be203270aa74
+          filtered_search_hits:
+            source-selector-mismatch: 4
+          rejections:
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+          decision:
+            packet_fingerprint: a8479a761fd2d22ea9b5785c12f414439e2e3708ae6732f2f2467ecd9251eaa4
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: clojure-project-clj
       form: manifest
       roles:

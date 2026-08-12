@@ -1,0 +1,18 @@
+version: 2
+detector_id: clojure-deps-edn
+candidate_id: candidate-0f808b45ecf4ddd895f07425702d3641
+provider: github
+repository: dynamic-alpha/hyper
+repository_url: https://github.com/dynamic-alpha/hyper
+default_branch: main
+commit: bd2e2319455c3c63612dfa4a2b61371b5147c593
+original_path: deps.edn
+permalink: https://github.com/dynamic-alpha/hyper/blob/bd2e2319455c3c63612dfa4a2b61371b5147c593/deps.edn
+retrieved_at: "2026-08-12T13:13:27Z"
+sha256: 517d73655db4b5f4e920b7dc36dfccb3b62c911adcacfd52728d92ad529ee224
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/dynamic-alpha/hyper/blob/bd2e2319455c3c63612dfa4a2b61371b5147c593/LICENSE
+    sha256: 93ac8d8b6549e9d4f13851a9fb3b89661eeeeee5fe3d4b63672d3530d6b7c01d
+rationale: 'Representative real-world application: standard paths, Maven dependencies, and practical test/dev/build aliases.'

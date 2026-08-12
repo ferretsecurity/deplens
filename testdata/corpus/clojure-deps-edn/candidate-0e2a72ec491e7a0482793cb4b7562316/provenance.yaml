@@ -1,0 +1,18 @@
+version: 2
+detector_id: clojure-deps-edn
+candidate_id: candidate-0e2a72ec491e7a0482793cb4b7562316
+provider: github
+repository: jmglov/blambda
+repository_url: https://github.com/jmglov/blambda
+default_branch: main
+commit: 0d3537e4b9b3abad8522fdd9c95523b13cb9f21d
+original_path: deps.edn
+permalink: https://github.com/jmglov/blambda/blob/0d3537e4b9b3abad8522fdd9c95523b13cb9f21d/deps.edn
+retrieved_at: "2026-08-12T13:16:15Z"
+sha256: 5bebf82b5dd986dbc2d4e2787a5e16df02120af8eb3299bf3fe18819686399cb
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/jmglov/blambda/blob/0d3537e4b9b3abad8522fdd9c95523b13cb9f21d/LICENSE
+    sha256: 50357fb66280f2689ea71977d0784e9ef9f4fe31119853cd026fcaca2ea5a283
+rationale: Minimal edge case containing only source/resource paths and no dependency or alias sections.

@@ -1,0 +1,18 @@
+version: 2
+detector_id: clojure-deps-edn
+candidate_id: candidate-fb8c155c9139fe3b3b613c797b17a1c7
+provider: github
+repository: cnuernber/charred
+repository_url: https://github.com/cnuernber/charred
+default_branch: master
+commit: e06780a3124ddde2c7eea73428522e0a0120094d
+original_path: deps.edn
+permalink: https://github.com/cnuernber/charred/blob/e06780a3124ddde2c7eea73428522e0a0120094d/deps.edn
+retrieved_at: "2026-08-12T13:12:39Z"
+sha256: 9c949482d15520e7c1a08ace867d3f8a9b2795237eccc7af7edeca46a31adcec
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/cnuernber/charred/blob/e06780a3124ddde2c7eea73428522e0a0120094d/LICENSE
+    sha256: bf7e2c8d361a81ce256083e9901dd525dcaa35c569e3da95ce38dbee786c1eef
+rationale: Library-focused structural variation, including :deps/prep-lib compilation and task-oriented aliases.
