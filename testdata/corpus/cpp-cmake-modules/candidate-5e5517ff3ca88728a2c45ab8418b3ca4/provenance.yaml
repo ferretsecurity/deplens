@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-cmake-modules
+candidate_id: candidate-5e5517ff3ca88728a2c45ab8418b3ca4
+provider: github
+repository: maxi-k/btrblocks
+repository_url: https://github.com/maxi-k/btrblocks
+default_branch: master
+commit: c950c3c01c1fbf91007936b05781d431a29a60d3
+original_path: cmake/lz4.cmake
+permalink: https://github.com/maxi-k/btrblocks/blob/c950c3c01c1fbf91007936b05781d431a29a60d3/cmake/lz4.cmake
+retrieved_at: "2026-08-12T22:41:57Z"
+sha256: 8c3868627a365bb5d620ad8a85c06ce9f85dbc080409773c26d62904ff9ad4a7
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/maxi-k/btrblocks/blob/c950c3c01c1fbf91007936b05781d431a29a60d3/LICENSE
+    sha256: 25078da7566472b13ba598a5e5e100bfb3e327e97a54ee1b07cdf175db488647
+rationale: Adds external dependency acquisition via ExternalProject and exposes it as an imported library target.

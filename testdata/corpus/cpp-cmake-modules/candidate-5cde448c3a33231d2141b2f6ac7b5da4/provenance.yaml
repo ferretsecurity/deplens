@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-cmake-modules
+candidate_id: candidate-5cde448c3a33231d2141b2f6ac7b5da4
+provider: github
+repository: polybar/polybar
+repository_url: https://github.com/polybar/polybar
+default_branch: master
+commit: f99e0b1c7a5b094f5a04b14101899d0cb4ece69d
+original_path: cmake/cxx.cmake
+permalink: https://github.com/polybar/polybar/blob/f99e0b1c7a5b094f5a04b14101899d0cb4ece69d/cmake/cxx.cmake
+retrieved_at: "2026-08-12T22:32:11Z"
+sha256: 11a6a91b3ef06ec35309007147baac2357734e02f09e7f7c3f082f3c273d9ae0
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/polybar/polybar/blob/f99e0b1c7a5b094f5a04b14101899d0cb4ece69d/LICENSE
+    sha256: 39fce608f39672f265cffca1d14e381b2d605c339747360041f920fd466ceffa
+rationale: 'Represents common project-wide C++ build configuration: standards, warnings, compiler detection, and build-type flags.'

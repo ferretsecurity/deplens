@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-cmake-modules
+candidate_id: candidate-a3cbb7d2bfd08c13d6ef7f7375657cdc
+provider: github
+repository: trailofbits/cb-multios
+repository_url: https://github.com/trailofbits/cb-multios
+default_branch: master
+commit: 810d7b24b1f62f56ef49b148fe155b0d0629cad2
+original_path: cmake/32.cmake
+permalink: https://github.com/trailofbits/cb-multios/blob/810d7b24b1f62f56ef49b148fe155b0d0629cad2/cmake/32.cmake
+retrieved_at: "2026-08-12T22:35:42Z"
+sha256: 2ef4e27f9b0933b45927da9d54e0c006e45a325e1de1ed9f295f8edc2d98b25f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/trailofbits/cb-multios/blob/810d7b24b1f62f56ef49b148fe155b0d0629cad2/LICENSE
+    sha256: 7f8b3b18cee234aa7a3ee79a319582f5e09fd2f2ecfe4188c50dcefd5c21da71
+rationale: Adds a compact cross-compilation/toolchain edge case for 32-bit builds, including compiler and linker initialization.
