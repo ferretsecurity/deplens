@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-gradle-settings
+candidate_id: candidate-12a68ad28179f0cab38f4ec9f011cc9b
+provider: github
+repository: agrosner/DBFlow
+repository_url: https://github.com/agrosner/DBFlow
+default_branch: master
+commit: e1b6211dac6ddc0aa0c1c9a76a116478ccf92b86
+original_path: settings.gradle
+permalink: https://github.com/agrosner/DBFlow/blob/e1b6211dac6ddc0aa0c1c9a76a116478ccf92b86/settings.gradle
+retrieved_at: "2026-08-12T10:19:35Z"
+sha256: 1053b321aa576deaa0db2dab45c6326629638d39b2d1fbd5084bd855135b8908
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/agrosner/DBFlow/blob/e1b6211dac6ddc0aa0c1c9a76a116478ccf92b86/LICENSE
+    sha256: 01714738c25da02d560271695c26730a8010cc6b01ad2f5f97896ffc00fe7750
+rationale: Adds a concise multi-module project with a broad list of included subprojects.

@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-gradle-settings
+candidate_id: candidate-c0c460f7cca4b919dc035f7f8754b3b8
+provider: github
+repository: theerasan/kotlin-firebase-interface
+repository_url: https://github.com/theerasan/kotlin-firebase-interface
+default_branch: master
+commit: e937799a04288207347a0204d0d44bc37e62e767
+original_path: settings.gradle
+permalink: https://github.com/theerasan/kotlin-firebase-interface/blob/e937799a04288207347a0204d0d44bc37e62e767/settings.gradle
+retrieved_at: "2026-08-12T10:21:31Z"
+sha256: e54aac6e53ea94f1e84a442754ca69c7fd09177428bc8e2537177b21076ef2db
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/theerasan/kotlin-firebase-interface/blob/e937799a04288207347a0204d0d44bc37e62e767/LICENSE
+    sha256: d3a10fdc09d22be2bd69e17d5616b92b0fbc2ed1b2a687cd512aa7adf41a35d1
+rationale: Adds an important plugin-resolution edge case with custom mapping for a legacy Kotlin plugin ID.

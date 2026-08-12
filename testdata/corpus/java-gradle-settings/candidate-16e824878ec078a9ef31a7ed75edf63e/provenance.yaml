@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-gradle-settings
+candidate_id: candidate-16e824878ec078a9ef31a7ed75edf63e
+provider: github
+repository: Ruiz-HCI-Lab/sdsl-mobile
+repository_url: https://github.com/Ruiz-HCI-Lab/sdsl-mobile
+default_branch: main
+commit: 426bba97df38e1ff1f15428f332373bc65f449a7
+original_path: settings.gradle
+permalink: https://github.com/Ruiz-HCI-Lab/sdsl-mobile/blob/426bba97df38e1ff1f15428f332373bc65f449a7/settings.gradle
+retrieved_at: "2026-08-12T10:21:40Z"
+sha256: 63a3f6d2d6d0bf441d8ffbda32517b6974a9b7e0d7b3812d5c9571c8021aea0c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Ruiz-HCI-Lab/sdsl-mobile/blob/426bba97df38e1ff1f15428f332373bc65f449a7/LICENSE
+    sha256: 6a97dbc52755a4af9304df3250d76e3b87d5b4868c926d8d7d677b03c374086f
+rationale: 'Represents the common modern Android single-app settings layout: plugin repositories, dependency resolution, project name, and app inclusion.'

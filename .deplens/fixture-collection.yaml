@@ -3752,12 +3752,242 @@ detectors:
       roles:
         - workspace
         - configuration
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/java-gradle-settings/candidate-12a68ad28179f0cab38f4ec9f011cc9b/settings.gradle
+        - testdata/corpus/java-gradle-settings/candidate-16e824878ec078a9ef31a7ed75edf63e/settings.gradle
+        - testdata/corpus/java-gradle-settings/candidate-c0c460f7cca4b919dc035f7f8754b3b8/settings.gradle
       target: 3
       query_plan:
         - filename:settings.gradle
+      queries:
+        - filename:settings.gradle
+      candidates:
+        - candidate-12a68ad28179f0cab38f4ec9f011cc9b
+        - candidate-66493dbfc37a78bd33b94694f4d21921
+        - candidate-b119f13d745f33024f507cd39c6872b4
+        - candidate-62a4937bfd8c79dc9a5854fcb2cf0175
+        - candidate-50a0c026247a16d018aebeee4fbeda51
+        - candidate-f003c653d97a7680f9a958df19868df8
+        - candidate-ec33818d4aae373e4b886c6c093d0413
+        - candidate-c0c460f7cca4b919dc035f7f8754b3b8
+        - candidate-85108e284f5f8097ba0f235b721f84c1
+        - candidate-16e824878ec078a9ef31a7ed75edf63e
+      filtered_search_hits:
+        source-selector-mismatch: 166
+      rejections:
+        - license-missing
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - duplicate-content
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+      decision_states:
+        - packet_fingerprint: 95e5acb632aff603e5be40307a258b94cb988e5e4773a5d7e2d09ff61a96b18f
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-12a68ad28179f0cab38f4ec9f011cc9b
+            - candidate-16e824878ec078a9ef31a7ed75edf63e
+            - candidate-c0c460f7cca4b919dc035f7f8754b3b8
+          queries:
+            - filename:settings.gradle
+          candidates:
+            - candidate-12a68ad28179f0cab38f4ec9f011cc9b
+            - candidate-66493dbfc37a78bd33b94694f4d21921
+            - candidate-b119f13d745f33024f507cd39c6872b4
+            - candidate-62a4937bfd8c79dc9a5854fcb2cf0175
+            - candidate-50a0c026247a16d018aebeee4fbeda51
+            - candidate-f003c653d97a7680f9a958df19868df8
+            - candidate-ec33818d4aae373e4b886c6c093d0413
+            - candidate-c0c460f7cca4b919dc035f7f8754b3b8
+            - candidate-85108e284f5f8097ba0f235b721f84c1
+            - candidate-16e824878ec078a9ef31a7ed75edf63e
+          filtered_search_hits:
+            source-selector-mismatch: 166
+          rejections:
+            - license-missing
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - duplicate-content
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+          decision:
+            packet_fingerprint: 95e5acb632aff603e5be40307a258b94cb988e5e4773a5d7e2d09ff61a96b18f
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: java-gradle-settings-kts
       form: workspace-definition
       roles:
