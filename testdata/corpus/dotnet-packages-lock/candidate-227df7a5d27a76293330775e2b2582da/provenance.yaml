@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-packages-lock
+candidate_id: candidate-227df7a5d27a76293330775e2b2582da
+provider: github
+repository: fable-hub/Feliz.Bulma
+repository_url: https://github.com/fable-hub/Feliz.Bulma
+default_branch: main
+commit: 0721d04a4059dc2218b9ce7ebbbaab87ca00e619
+original_path: src/Docs/packages.lock.json
+permalink: https://github.com/fable-hub/Feliz.Bulma/blob/0721d04a4059dc2218b9ce7ebbbaab87ca00e619/src/Docs/packages.lock.json
+retrieved_at: "2026-08-12T14:29:16Z"
+sha256: 5b2266c136a0e6368070b69a8253b5cb1174eab71ea689d87617428c392285e2
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/fable-hub/Feliz.Bulma/blob/0721d04a4059dc2218b9ce7ebbbaab87ca00e619/LICENSE
+    sha256: 9de4ea1bcf82c803b86f6e93039639ccfab29a294d99a08b0b1d6d475c44189d
+rationale: Adds version-2 lockfile structure with .NET Standard, F# packages, project entries, and a CentralTransitive dependency.

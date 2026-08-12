@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-packages-lock
+candidate_id: candidate-218deaf700ea4a89baaab65dc14f1078
+provider: github
+repository: willianantunes/tic-tac-toe-csharp-playground
+repository_url: https://github.com/willianantunes/tic-tac-toe-csharp-playground
+default_branch: main
+commit: c927ffb85df98b1ae18bf8086877bd915ead56df
+original_path: src/packages.lock.json
+permalink: https://github.com/willianantunes/tic-tac-toe-csharp-playground/blob/c927ffb85df98b1ae18bf8086877bd915ead56df/src/packages.lock.json
+retrieved_at: "2026-08-12T14:31:30Z"
+sha256: 1d2303039177af31901713dd636621dad43c54f37eb761fdb4c363b4e7e2cd51
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/willianantunes/tic-tac-toe-csharp-playground/blob/c927ffb85df98b1ae18bf8086877bd915ead56df/LICENSE
+    sha256: bb2c52054199b7e9b8afd86134b6b15be80b0ff19d5394d3d02d419fb3aab220
+rationale: 'Primary representative: a typical .NET web application lockfile with EF Core, PostgreSQL, messaging, health checks, logging, and OpenAPI.'

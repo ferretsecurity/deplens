@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-packages-lock
+candidate_id: candidate-780a0833794bffb335cc17a81d123c2b
+provider: github
+repository: PaddiM8/elk
+repository_url: https://github.com/PaddiM8/elk
+default_branch: main
+commit: 969f7cd07b2ca5bc0fa2408f6b6ace222d582dea
+original_path: cli/packages.lock.json
+permalink: https://github.com/PaddiM8/elk/blob/969f7cd07b2ca5bc0fa2408f6b6ace222d582dea/cli/packages.lock.json
+retrieved_at: "2026-08-12T14:29:01Z"
+sha256: 037d7e617cf2143d2120bfd8312e8e4a1189b15ae9887efecf8fed0504d79a25
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/PaddiM8/elk/blob/969f7cd07b2ca5bc0fa2408f6b6ace222d582dea/LICENSE
+    sha256: 20becff5bf4ab230de8d74a91c7e1a8946f48a6979cfdc3bb020b70621382111
+rationale: Adds runtime-specific dependency resolution through a linux-arm64 target plus project dependencies in a modern CLI.
