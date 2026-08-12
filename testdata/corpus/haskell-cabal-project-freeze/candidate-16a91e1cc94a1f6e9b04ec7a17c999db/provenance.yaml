@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-cabal-project-freeze
+candidate_id: candidate-16a91e1cc94a1f6e9b04ec7a17c999db
+provider: github
+repository: PostgREST/postgrest
+repository_url: https://github.com/PostgREST/postgrest
+default_branch: main
+commit: a2a592a6174a98cde088dc49f6fa80bfb85cb263
+original_path: cabal.project.freeze
+permalink: https://github.com/PostgREST/postgrest/blob/a2a592a6174a98cde088dc49f6fa80bfb85cb263/cabal.project.freeze
+retrieved_at: "2026-08-12T14:03:17Z"
+sha256: a91520256777e585dff27afca1c08c458cd14df98d9f05d93160694effb0a0e2
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/PostgREST/postgrest/blob/a2a592a6174a98cde088dc49f6fa80bfb85cb263/LICENSE
+    sha256: 1729d66741c5844f47962f91838bae897aa23d7e08272f5f012fca576288fafb
+rationale: 'Important minimal edge case: only an index-state is frozen, with no package constraints.'

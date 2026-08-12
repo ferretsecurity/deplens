@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-cabal-project-freeze
+candidate_id: candidate-b81b19fd71c4028881757f9263a583b2
+provider: github
+repository: sealchain-project/sealchain
+repository_url: https://github.com/sealchain-project/sealchain
+default_branch: develop
+commit: e97b4bac865fb147979cb14723a12c716a62e51e
+original_path: cabal.project.freeze
+permalink: https://github.com/sealchain-project/sealchain/blob/e97b4bac865fb147979cb14723a12c716a62e51e/cabal.project.freeze
+retrieved_at: "2026-08-12T14:05:28Z"
+sha256: aecb3d9977a653aec75969d4f288a5016ff536b06ec288284b65219b0b79aa7e
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/sealchain-project/sealchain/blob/e97b4bac865fb147979cb14723a12c716a62e51e/LICENSE
+    sha256: b716d3ac7f5414d95f72eef30e13166d90a5d40906fc7b8e240ddfbccb070af2
+rationale: Adds legacy structural variation through generated-style constraints without the modern `any.` prefix and no index-state.

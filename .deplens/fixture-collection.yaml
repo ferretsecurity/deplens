@@ -10350,12 +10350,242 @@ detectors:
       roles:
         - resolution
         - integrity
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/haskell-cabal-project-freeze/candidate-16a91e1cc94a1f6e9b04ec7a17c999db/cabal.project.freeze
+        - testdata/corpus/haskell-cabal-project-freeze/candidate-1b316a649838a17a1662c7371ec9ddbc/cabal.project.freeze
+        - testdata/corpus/haskell-cabal-project-freeze/candidate-b81b19fd71c4028881757f9263a583b2/cabal.project.freeze
       target: 3
       query_plan:
         - filename:cabal.project.freeze
+      queries:
+        - filename:cabal.project.freeze
+      candidates:
+        - candidate-16a91e1cc94a1f6e9b04ec7a17c999db
+        - candidate-34ff56d9c0150b0906115c0de524679a
+        - candidate-1b316a649838a17a1662c7371ec9ddbc
+        - candidate-1abcdd38c8cb63e9dc5f76e844439876
+        - candidate-974553dc5845f9b087c3af64a1e2b6b2
+        - candidate-e5864c42a5f880766ad6e84fb338455f
+        - candidate-b81b19fd71c4028881757f9263a583b2
+        - candidate-dff894266516bb0ea626ee744ee121a5
+        - candidate-dfcbc51e69ea37a2be9dc24633e2449a
+        - candidate-e29a2d04e450a4ab9e1f0bd061319405
+        - candidate-67df4e5d423f76382ab4dc83eede4dca
+        - candidate-5eaf0ae3a06e838b9a742755bf4211ee
+        - candidate-5ac870280c62089b2fbaeeb635b8a73c
+        - candidate-aa651b27fca5bab09d78c8999ef7ef17
+        - candidate-a29204b882d2b6b7e90a34524b74ec6f
+        - candidate-e273c7565bfd8d4c66bea0dcc50861ec
+        - candidate-7b4a497e586d6451a90fe8d4a86e3b4a
+        - candidate-c983762ee7e30dc2372b0518e801d922
+        - candidate-88d832abb02d4582baa256c0e01593a9
+        - candidate-c4b176d84cd31465d86617eb13ff6957
+        - candidate-0848148b31966f37cc0274278c0ce569
+        - candidate-79f99c7e8448169583aefa44ccd7c6d7
+        - candidate-cc5e0cfa57236d68297d349138a05733
+      filtered_search_hits:
+        source-selector-mismatch: 27
+      rejections:
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - duplicate-content
+        - license-ambiguous
+        - duplicate-content
+        - duplicate-content
+        - duplicate-content
+        - license-missing
+        - duplicate-content
+        - license-ambiguous
+        - license-missing
+        - duplicate-content
+        - duplicate-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - duplicate-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+      decision_states:
+        - packet_fingerprint: 9d03a73f04a1bffafe49c1de761c9dea83f999ab2431d6a5fe503afbb8fe99a0
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-16a91e1cc94a1f6e9b04ec7a17c999db
+            - candidate-1b316a649838a17a1662c7371ec9ddbc
+            - candidate-b81b19fd71c4028881757f9263a583b2
+          queries:
+            - filename:cabal.project.freeze
+          candidates:
+            - candidate-16a91e1cc94a1f6e9b04ec7a17c999db
+            - candidate-34ff56d9c0150b0906115c0de524679a
+            - candidate-1b316a649838a17a1662c7371ec9ddbc
+            - candidate-1abcdd38c8cb63e9dc5f76e844439876
+            - candidate-974553dc5845f9b087c3af64a1e2b6b2
+            - candidate-e5864c42a5f880766ad6e84fb338455f
+            - candidate-b81b19fd71c4028881757f9263a583b2
+            - candidate-dff894266516bb0ea626ee744ee121a5
+            - candidate-dfcbc51e69ea37a2be9dc24633e2449a
+            - candidate-e29a2d04e450a4ab9e1f0bd061319405
+            - candidate-67df4e5d423f76382ab4dc83eede4dca
+            - candidate-5eaf0ae3a06e838b9a742755bf4211ee
+            - candidate-5ac870280c62089b2fbaeeb635b8a73c
+            - candidate-aa651b27fca5bab09d78c8999ef7ef17
+            - candidate-a29204b882d2b6b7e90a34524b74ec6f
+            - candidate-e273c7565bfd8d4c66bea0dcc50861ec
+            - candidate-7b4a497e586d6451a90fe8d4a86e3b4a
+            - candidate-c983762ee7e30dc2372b0518e801d922
+            - candidate-88d832abb02d4582baa256c0e01593a9
+            - candidate-c4b176d84cd31465d86617eb13ff6957
+            - candidate-0848148b31966f37cc0274278c0ce569
+            - candidate-79f99c7e8448169583aefa44ccd7c6d7
+            - candidate-cc5e0cfa57236d68297d349138a05733
+          filtered_search_hits:
+            source-selector-mismatch: 27
+          rejections:
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - duplicate-content
+            - license-ambiguous
+            - duplicate-content
+            - duplicate-content
+            - duplicate-content
+            - license-missing
+            - duplicate-content
+            - license-ambiguous
+            - license-missing
+            - duplicate-content
+            - duplicate-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - duplicate-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+          decision:
+            packet_fingerprint: 9d03a73f04a1bffafe49c1de761c9dea83f999ab2431d6a5fe503afbb8fe99a0
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: haskell-cabal
       form: manifest
       roles:

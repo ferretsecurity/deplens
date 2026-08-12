@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-cabal-project-freeze
+candidate_id: candidate-1b316a649838a17a1662c7371ec9ddbc
+provider: github
+repository: entropia/tip-toi-reveng
+repository_url: https://github.com/entropia/tip-toi-reveng
+default_branch: master
+commit: 3044719c5e704380a0fbb2bf79ea1876b59cbceb
+original_path: cabal.project.freeze
+permalink: https://github.com/entropia/tip-toi-reveng/blob/3044719c5e704380a0fbb2bf79ea1876b59cbceb/cabal.project.freeze
+retrieved_at: "2026-08-12T14:03:37Z"
+sha256: f76898e7a0c972d52faf4dcb2912a18e19fbf778d0786576dea7f73a3ad88655
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/entropia/tip-toi-reveng/blob/3044719c5e704380a0fbb2bf79ea1876b59cbceb/LICENSE
+    sha256: 37b0f1d110dbabe5a922b358fd7592933801aa6162f6f58b68e98ac5af3993bb
+rationale: 'Representative normal Cabal freeze file: standard constraints for a moderately sized application, with no unusual repository setup.'
