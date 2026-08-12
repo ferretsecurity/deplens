@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-ivy
+candidate_id: candidate-9e48269ab9d37157d7aa9abee2889467
+provider: github
+repository: SilverTiger/lwjgl3-tutorial
+repository_url: https://github.com/SilverTiger/lwjgl3-tutorial
+default_branch: master
+commit: 77022e860c2debcc022932d7dbc3787a2d71b805
+original_path: ivy.xml
+permalink: https://github.com/SilverTiger/lwjgl3-tutorial/blob/77022e860c2debcc022932d7dbc3787a2d71b805/ivy.xml
+retrieved_at: "2026-08-12T10:55:18Z"
+sha256: e51e162a56ae730c7762b202d1c71e24450728c1d86320063101a058da5c3575
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/SilverTiger/lwjgl3-tutorial/blob/77022e860c2debcc022932d7dbc3787a2d71b805/LICENSE.md
+    sha256: d0ced5533e37f5bfd64a560dd4261c37530a45f799a813d96239e812d87c4b8b
+rationale: Adds artifact-level declarations, Maven classifier usage, property versions, and source/javadoc configurations.

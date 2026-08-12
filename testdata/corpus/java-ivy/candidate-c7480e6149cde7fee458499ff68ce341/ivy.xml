@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2012-2024 Matt Bertolini
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ persons to whom the Software is furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-->
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="https://ant.apache.org/ivy/schemas/ivy.xsd">
+    <info organisation="com.mattbertolini" module="liquibase-slf4j" status="integration" revision="${project.version}">
+        <license name="${project.license.name}" url="${project.license.url}"/>
+        <ivyauthor name="Matt Bertolini"/>
+        <description homepage="${project.url}">${project.description}</description>
+    </info>
+    <configurations>
+        <conf name="compile"/>
+        <conf name="compile-only"/>
+        <conf name="test"/>
+        <conf name="spotbugs"/>
+        <conf name="ivy"/>
+        <conf name="antcontrib"/>
+        <conf name="jacoco"/>
+        <conf name="jxr"/>
+        <conf name="junit-platform"/>
+        <conf name="bnd"/>
+        <conf name="default" visibility="private"/>
+        <conf name="sources" visibility="private"/>
+        <conf name="javadoc" visibility="private"/>
+    </configurations>
+    <publications>
+        <artifact type="jar" ext="jar" conf="default"/>
+        <artifact type="javadoc" ext="jar" conf="javadoc" m:classifier="javadoc"/>
+        <artifact type="sources" ext="jar" conf="sources" m:classifier="sources"/>
+        <artifact type="pom" ext="pom"/>
+    </publications>
+    <dependencies defaultconfmapping="*->default" defaultconf="compile">
+        <dependency org="org.slf4j" name="slf4j-api" rev="2.0.16"/>
+        <dependency org="org.liquibase" name="liquibase-core" rev="4.30.0"/>
+        <dependency org="org.junit.jupiter" name="junit-jupiter-api" rev="5.10.3" conf="test"/>
+        <dependency org="org.mockito" name="mockito-core" rev="5.12.0" conf="test"/>
+        <dependency org="org.slf4j" name="slf4j-nop" rev="2.0.16" conf="test" />
+        <dependency org="org.slf4j" name="slf4j-simple" rev="2.0.16" conf="bnd,spotbugs"/>
+        <dependency org="org.junit.jupiter" name="junit-jupiter-engine" rev="5.10.3" conf="junit-platform"/>
+        <dependency org="org.junit.platform" name="junit-platform-launcher" rev="1.10.3" conf="junit-platform"/>
+        <dependency org="ant-contrib" name="ant-contrib" rev="1.0b3" conf="antcontrib">
+            <exclude module="ant"/>
+        </dependency>
+        <dependency org="org.jacoco" name="org.jacoco.ant" rev="0.8.12" conf="jacoco"/>
+        <dependency org="com.github.spotbugs" name="spotbugs" rev="4.8.6" conf="spotbugs"/>
+        <dependency org="com.github.spotbugs" name="spotbugs-ant" rev="4.8.6" conf="spotbugs"/>
+        <dependency org="com.mattbertolini" name="jxr-ant" rev="2.1.0" conf="jxr"/>
+        <dependency org="biz.aQute.bnd" name="biz.aQute.bnd.ant" rev="6.4.1" conf="bnd">
+            <exclude module="ant"/>
+        </dependency>
+        <dependency org="org.apache.ivy" name="ivy" rev="${lib.ivy.version}" conf="ivy"/>
+        <dependency org="org.bouncycastle" name="bcpg-jdk15on" rev="1.70" conf="ivy"/>
+    </dependencies>
+</ivy-module>

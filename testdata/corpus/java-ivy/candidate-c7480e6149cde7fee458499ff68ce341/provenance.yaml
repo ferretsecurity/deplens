@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-ivy
+candidate_id: candidate-c7480e6149cde7fee458499ff68ce341
+provider: github
+repository: mattbertolini/liquibase-slf4j
+repository_url: https://github.com/mattbertolini/liquibase-slf4j
+default_branch: main
+commit: 225bc7ff6dbecde51a889ca114f34884a772bc58
+original_path: ivy.xml
+permalink: https://github.com/mattbertolini/liquibase-slf4j/blob/225bc7ff6dbecde51a889ca114f34884a772bc58/ivy.xml
+retrieved_at: "2026-08-12T10:56:06Z"
+sha256: 6ee4cff3410094078fcb32b1e1179ecfc1c7674e8f5bd1c346156004f2063169
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/mattbertolini/liquibase-slf4j/blob/225bc7ff6dbecde51a889ca114f34884a772bc58/LICENSE
+    sha256: efba8c546fe9cb1945d93d0115af48d1e4cab5699c7cc28e31121cf7d822b8bb
+rationale: 'Most representative modern Ivy module: metadata, configurations, publications, scoped dependencies, and exclusions.'

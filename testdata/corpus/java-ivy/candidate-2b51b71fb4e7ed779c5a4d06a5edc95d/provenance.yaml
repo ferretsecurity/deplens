@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-ivy
+candidate_id: candidate-2b51b71fb4e7ed779c5a4d06a5edc95d
+provider: github
+repository: grahamedgecombe/lightstone
+repository_url: https://github.com/grahamedgecombe/lightstone
+default_branch: master
+commit: 69ba699589b260eb926256efbe6e3f6f81f59c94
+original_path: ivy.xml
+permalink: https://github.com/grahamedgecombe/lightstone/blob/69ba699589b260eb926256efbe6e3f6f81f59c94/ivy.xml
+retrieved_at: "2026-08-12T10:55:54Z"
+sha256: f8a08588689d0003705b8ee7aea3a0324711922d00f807a0b46f1730426f4c22
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/grahamedgecombe/lightstone/blob/69ba699589b260eb926256efbe6e3f6f81f59c94/LICENSE
+    sha256: ca922cb9e26fc1f53c345196f413f6deb5a946ee698dadcf2bbfbcc23840297f
+rationale: Compact baseline with standard module metadata and a simple flat dependency list.
