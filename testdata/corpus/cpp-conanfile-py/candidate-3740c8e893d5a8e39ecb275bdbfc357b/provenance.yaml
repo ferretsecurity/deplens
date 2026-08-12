@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-conanfile-py
+candidate_id: candidate-3740c8e893d5a8e39ecb275bdbfc357b
+provider: github
+repository: QuTech-Delft/libqasm
+repository_url: https://github.com/QuTech-Delft/libqasm
+default_branch: develop
+commit: ab00af89b91a44fc5650149d061a5783b60b4755
+original_path: conanfile.py
+permalink: https://github.com/QuTech-Delft/libqasm/blob/ab00af89b91a44fc5650149d061a5783b60b4755/conanfile.py
+retrieved_at: "2026-08-12T22:01:57Z"
+sha256: d9af8f8fc94a5d8dd329374c7b6e1cd3e2d3d09a37626d14e1ce7ea24a3137ae
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/QuTech-Delft/libqasm/blob/ab00af89b91a44fc5650149d061a5783b60b4755/LICENSE.md
+    sha256: 76e465260cb8e96f02c3f2108ce9ae779c4952f809917ea9901981264a0a8b82
+rationale: Production-style Conan 2 library with options, validation, conditional dependencies, layout, generators, and platform-specific packaging.

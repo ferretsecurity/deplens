@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-conanfile-py
+candidate_id: candidate-78322dd993c32d084aa6c1998737e3bd
+provider: github
+repository: bloomen/gcl
+repository_url: https://github.com/bloomen/gcl
+default_branch: master
+commit: 5fd250ef29b45a762ae4e52b8240d49d2db573ce
+original_path: conanfile.py
+permalink: https://github.com/bloomen/gcl/blob/5fd250ef29b45a762ae4e52b8240d49d2db573ce/conanfile.py
+retrieved_at: "2026-08-12T22:03:25Z"
+sha256: df572bdd5efd6e8e73867a1df949401257a55577330b52fce0e36cd7d8982df7
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/bloomen/gcl/blob/5fd250ef29b45a762ae4e52b8240d49d2db573ce/LICENSE.md
+    sha256: 7d4e39be0e4cc3ca1a9b248000c18287122f17e7ab9468ca2ad6357fceceb397
+rationale: Compact, conventional Conan 2 CMake library recipe; best baseline for the most common real-world package flow.

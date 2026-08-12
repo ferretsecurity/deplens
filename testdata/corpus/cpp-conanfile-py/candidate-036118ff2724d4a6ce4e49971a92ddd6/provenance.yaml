@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-conanfile-py
+candidate_id: candidate-036118ff2724d4a6ce4e49971a92ddd6
+provider: github
+repository: theodelrieu/conan-darwin-toolchain
+repository_url: https://github.com/theodelrieu/conan-darwin-toolchain
+default_branch: release/1.0.8
+commit: c593d2a8275007bac04f7901fcd61f058c80d6e0
+original_path: conanfile.py
+permalink: https://github.com/theodelrieu/conan-darwin-toolchain/blob/c593d2a8275007bac04f7901fcd61f058c80d6e0/conanfile.py
+retrieved_at: "2026-08-12T22:01:45Z"
+sha256: 9154e9a4f8deefe61190423862cc57666a2522d2677897af9c277db145975336
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/theodelrieu/conan-darwin-toolchain/blob/c593d2a8275007bac04f7901fcd61f058c80d6e0/LICENSE
+    sha256: 9d6e45151c34c2a1f64781801d5320bd5381170b3d1427554b6a188ed63c4d95
+rationale: 'Useful structural edge case: a legacy Conan toolchain package for Apple cross-compilation that configures compiler and CMake environment rather than building a normal library.'
