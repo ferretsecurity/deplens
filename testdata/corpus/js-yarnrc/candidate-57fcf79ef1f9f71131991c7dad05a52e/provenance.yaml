@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-yarnrc
+candidate_id: candidate-57fcf79ef1f9f71131991c7dad05a52e
+provider: github
+repository: toss/react-simplikit
+repository_url: https://github.com/toss/react-simplikit
+default_branch: main
+commit: ba7a3f257f71e0a9fe86d9837de2b18f07fce8f9
+original_path: .yarnrc.yml
+permalink: https://github.com/toss/react-simplikit/blob/ba7a3f257f71e0a9fe86d9837de2b18f07fce8f9/.yarnrc.yml
+retrieved_at: "2026-08-12T10:13:57Z"
+sha256: e9033c7cc254d49fb96aa8bb9835d70e67ff44f236d9b6e3a00bbfed95fc1ce5
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/toss/react-simplikit/blob/ba7a3f257f71e0a9fe86d9837de2b18f07fce8f9/LICENSE
+    sha256: 7638261dec0345471e8271c728c630cac51689db1d1642287e902244fb4c1b2c
+rationale: Adds the important Plug'n'Play linker alternative and architecture-specific settings.

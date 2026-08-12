@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-yarnrc
+candidate_id: candidate-250ceb212e7eb32be29f4ccddb90a1f3
+provider: github
+repository: standard-crypto/farcaster-js
+repository_url: https://github.com/standard-crypto/farcaster-js
+default_branch: develop
+commit: bf376526afeda5f7fb8c5cd5826ea3d5e2515829
+original_path: .yarnrc.yml
+permalink: https://github.com/standard-crypto/farcaster-js/blob/bf376526afeda5f7fb8c5cd5826ea3d5e2515829/.yarnrc.yml
+retrieved_at: "2026-08-12T10:15:07Z"
+sha256: 5e6604cb2cb0d5cc86080870bc47d9a670f35f014d665a6aa07034ee2d542ad4
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/standard-crypto/farcaster-js/blob/bf376526afeda5f7fb8c5cd5826ea3d5e2515829/LICENSE.md
+    sha256: 86d66c3eb7630639037e4fe5155ef73220b7d49c4583a5a73dc2bc5e7752bb5c
+rationale: 'Baseline common setup: Yarn release plus node-modules linker, with minimal configuration.'

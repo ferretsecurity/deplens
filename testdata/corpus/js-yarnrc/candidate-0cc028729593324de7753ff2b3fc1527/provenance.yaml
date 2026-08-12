@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-yarnrc
+candidate_id: candidate-0cc028729593324de7753ff2b3fc1527
+provider: github
+repository: automatarium/automatarium
+repository_url: https://github.com/automatarium/automatarium
+default_branch: dev
+commit: 443dc4bd5bda4aef20c19388c72f9b29787e7684
+original_path: .yarnrc.yml
+permalink: https://github.com/automatarium/automatarium/blob/443dc4bd5bda4aef20c19388c72f9b29787e7684/.yarnrc.yml
+retrieved_at: "2026-08-12T10:14:46Z"
+sha256: a13bffdd4565b3c13cbd2fb0da0f1fd4cb6f44e565159f7bfe28f5dfbc9ebb9f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/automatarium/automatarium/blob/443dc4bd5bda4aef20c19388c72f9b29787e7684/LICENSE
+    sha256: 3a826477cc9b58416a7db1e1819bc9f0087bfc9fdefa748db3e45f9e487c69a6
+rationale: Covers packageExtensions, a useful compatibility edge case for dependency metadata fixes.

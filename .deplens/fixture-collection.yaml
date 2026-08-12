@@ -3270,12 +3270,242 @@ detectors:
       form: tool-config
       roles:
         - configuration
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/js-yarnrc/candidate-0cc028729593324de7753ff2b3fc1527/.yarnrc.yml
+        - testdata/corpus/js-yarnrc/candidate-250ceb212e7eb32be29f4ccddb90a1f3/.yarnrc.yml
+        - testdata/corpus/js-yarnrc/candidate-57fcf79ef1f9f71131991c7dad05a52e/.yarnrc.yml
       target: 3
       query_plan:
         - filename:.yarnrc.yml
+      queries:
+        - filename:.yarnrc.yml
+      candidates:
+        - candidate-8694e11ac04a0b1d12320b8db0bbaa65
+        - candidate-fe4a9a0018d499521e85120b718e786c
+        - candidate-4ef8bbbb215500d951138ce150da63eb
+        - candidate-2a54a32dfc5e23985284e2a82a79f52a
+        - candidate-47ef88ff22fb59d49ef4e063c46bfdfd
+        - candidate-87d6bfe952a929bd524eaed4f6ad22f0
+        - candidate-e19a8e3bf94216c996af4c6227f2fc67
+        - candidate-92cc7be7b06a3a41b6d25960ff0df142
+        - candidate-b54ac4f8d01c3dedc44760d1052da3fd
+        - candidate-c20043d89eb6658e675bcef87b4f9e67
+        - candidate-e998c70fde26b876e3872e08299084db
+        - candidate-1c28fe2de1035c2545d45267f013655f
+        - candidate-35018b619307a633ef7fbcd6bd569c3f
+        - candidate-cc7ab9c1afd3cedc914f8dd4f4681619
+        - candidate-a68f2b08b405ed3ab3ff2cf5da0d905d
+        - candidate-9d9216adde1ba623770be68f67eaf31d
+        - candidate-4f9eeca0db4574092affa704b3924409
+        - candidate-d5928570c22718d1b97ae52becf4fdd3
+        - candidate-56d347803bf3b8ac6caed5ff333e69c8
+        - candidate-01d2991bd247babd6310d891c74886aa
+        - candidate-9c8a055534f4643bb1e4ff10be8859f1
+        - candidate-0eb41fb07e303d7aeafe4dd3d5e562fc
+        - candidate-bd79947e5e7e0940dabee5d9078fb388
+        - candidate-7d53f545e675a97ca386b7b60780c467
+        - candidate-57fcf79ef1f9f71131991c7dad05a52e
+        - candidate-f82692a983764dbd650e1c4a46557f59
+        - candidate-7eba610cc8d137f062c763f75cdce09c
+        - candidate-3748d97bf1b9fea80505b3a580a237a7
+        - candidate-267578eb135ee552e4d51629b1628296
+        - candidate-5663a3852741372d23c7e097e2c58878
+        - candidate-4a93088105a9fa8a6270ab961a3cac30
+        - candidate-ccea16332d5352466428733bb8ea45ba
+        - candidate-03ca437d1f98fbc01deb5e2cee340df3
+        - candidate-885fb99f4b99d51aeafeeed042f257f3
+        - candidate-b8ac70eb39f2151d445b7cb816b89054
+        - candidate-551eed03c608029e20b63d02193c18d7
+        - candidate-0ef8fc5d1c767f1cb6751696ec2e5535
+        - candidate-08e261b404a3f9276fb2e14253367619
+        - candidate-3df4c518151b6c2a24fe0de4a11a8f3c
+        - candidate-ddd40dd6744c77e609394ae76fcffb6d
+        - candidate-7e646366e73ab225c5d429eaaf880ae1
+        - candidate-bb85c03d0be4295a352613431168629b
+        - candidate-27d45f102573bae1d3239327f50a5356
+        - candidate-9f0c789bdadcfb31910742b8375d46d0
+        - candidate-ef8dc0a2400dfeb0c9441331644ae02a
+        - candidate-54a905d45df75b8e929ac5d185e78092
+        - candidate-0cc028729593324de7753ff2b3fc1527
+        - candidate-362dfa7a3e852661ce65a3e1a28fcf67
+        - candidate-7c4616ed6e792a923794c64cf7a6b6df
+        - candidate-70b6feb20c5fe6c5fc120b307ce4c9a2
+        - candidate-3b364aa347075f5497532875e6776cbc
+        - candidate-0390dcf4856cf020393cc4633a2520bf
+        - candidate-d67a34acdf4deb93e2e1fe75c0d75807
+        - candidate-60fec6eea23bacd0aa209c59d21d94e2
+        - candidate-250ceb212e7eb32be29f4ccddb90a1f3
+        - candidate-68cbf0df76ce91ad221648a8c616601e
+        - candidate-baf04a3b5c760c99e500606dae66b5a1
+        - candidate-8740ef360b34c9ce11e2d8d015457cdd
+        - candidate-58aa6898925fb62695210e84c5e33cce
+      filtered_search_hits:
+        source-selector-mismatch: 7
+      rejections:
+        - sensitive-content
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-disallowed
+        - license-ambiguous
+        - license-disallowed
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - repository-template
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - duplicate-content
+      decision_states:
+        - packet_fingerprint: d519bc89ae7b9fd705a18fa4886a90bcd5dbd2d71d93480fd4c8260c3e03ab05
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-0cc028729593324de7753ff2b3fc1527
+            - candidate-250ceb212e7eb32be29f4ccddb90a1f3
+            - candidate-57fcf79ef1f9f71131991c7dad05a52e
+          queries:
+            - filename:.yarnrc.yml
+          candidates:
+            - candidate-8694e11ac04a0b1d12320b8db0bbaa65
+            - candidate-fe4a9a0018d499521e85120b718e786c
+            - candidate-4ef8bbbb215500d951138ce150da63eb
+            - candidate-2a54a32dfc5e23985284e2a82a79f52a
+            - candidate-47ef88ff22fb59d49ef4e063c46bfdfd
+            - candidate-87d6bfe952a929bd524eaed4f6ad22f0
+            - candidate-e19a8e3bf94216c996af4c6227f2fc67
+            - candidate-92cc7be7b06a3a41b6d25960ff0df142
+            - candidate-b54ac4f8d01c3dedc44760d1052da3fd
+            - candidate-c20043d89eb6658e675bcef87b4f9e67
+            - candidate-e998c70fde26b876e3872e08299084db
+            - candidate-1c28fe2de1035c2545d45267f013655f
+            - candidate-35018b619307a633ef7fbcd6bd569c3f
+            - candidate-cc7ab9c1afd3cedc914f8dd4f4681619
+            - candidate-a68f2b08b405ed3ab3ff2cf5da0d905d
+            - candidate-9d9216adde1ba623770be68f67eaf31d
+            - candidate-4f9eeca0db4574092affa704b3924409
+            - candidate-d5928570c22718d1b97ae52becf4fdd3
+            - candidate-56d347803bf3b8ac6caed5ff333e69c8
+            - candidate-01d2991bd247babd6310d891c74886aa
+            - candidate-9c8a055534f4643bb1e4ff10be8859f1
+            - candidate-0eb41fb07e303d7aeafe4dd3d5e562fc
+            - candidate-bd79947e5e7e0940dabee5d9078fb388
+            - candidate-7d53f545e675a97ca386b7b60780c467
+            - candidate-57fcf79ef1f9f71131991c7dad05a52e
+            - candidate-f82692a983764dbd650e1c4a46557f59
+            - candidate-7eba610cc8d137f062c763f75cdce09c
+            - candidate-3748d97bf1b9fea80505b3a580a237a7
+            - candidate-267578eb135ee552e4d51629b1628296
+            - candidate-5663a3852741372d23c7e097e2c58878
+            - candidate-4a93088105a9fa8a6270ab961a3cac30
+            - candidate-ccea16332d5352466428733bb8ea45ba
+            - candidate-03ca437d1f98fbc01deb5e2cee340df3
+            - candidate-885fb99f4b99d51aeafeeed042f257f3
+            - candidate-b8ac70eb39f2151d445b7cb816b89054
+            - candidate-551eed03c608029e20b63d02193c18d7
+            - candidate-0ef8fc5d1c767f1cb6751696ec2e5535
+            - candidate-08e261b404a3f9276fb2e14253367619
+            - candidate-3df4c518151b6c2a24fe0de4a11a8f3c
+            - candidate-ddd40dd6744c77e609394ae76fcffb6d
+            - candidate-7e646366e73ab225c5d429eaaf880ae1
+            - candidate-bb85c03d0be4295a352613431168629b
+            - candidate-27d45f102573bae1d3239327f50a5356
+            - candidate-9f0c789bdadcfb31910742b8375d46d0
+            - candidate-ef8dc0a2400dfeb0c9441331644ae02a
+            - candidate-54a905d45df75b8e929ac5d185e78092
+            - candidate-0cc028729593324de7753ff2b3fc1527
+            - candidate-362dfa7a3e852661ce65a3e1a28fcf67
+            - candidate-7c4616ed6e792a923794c64cf7a6b6df
+            - candidate-70b6feb20c5fe6c5fc120b307ce4c9a2
+            - candidate-3b364aa347075f5497532875e6776cbc
+            - candidate-0390dcf4856cf020393cc4633a2520bf
+            - candidate-d67a34acdf4deb93e2e1fe75c0d75807
+            - candidate-60fec6eea23bacd0aa209c59d21d94e2
+            - candidate-250ceb212e7eb32be29f4ccddb90a1f3
+            - candidate-68cbf0df76ce91ad221648a8c616601e
+            - candidate-baf04a3b5c760c99e500606dae66b5a1
+            - candidate-8740ef360b34c9ce11e2d8d015457cdd
+            - candidate-58aa6898925fb62695210e84c5e33cce
+          filtered_search_hits:
+            source-selector-mismatch: 7
+          rejections:
+            - sensitive-content
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-disallowed
+            - license-ambiguous
+            - license-disallowed
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - repository-template
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - duplicate-content
+          decision:
+            packet_fingerprint: d519bc89ae7b9fd705a18fa4886a90bcd5dbd2d71d93480fd4c8260c3e03ab05
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: js-importmap
       form: manifest
       roles:
