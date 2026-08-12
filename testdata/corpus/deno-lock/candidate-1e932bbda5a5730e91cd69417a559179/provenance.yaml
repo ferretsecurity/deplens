@@ -1,0 +1,18 @@
+version: 2
+detector_id: deno-lock
+candidate_id: candidate-1e932bbda5a5730e91cd69417a559179
+provider: github
+repository: omar2205/squishy_cookies
+repository_url: https://github.com/omar2205/squishy_cookies
+default_branch: main
+commit: 8db831b890d657d25ae17ec1142a75245044fea6
+original_path: deno.lock
+permalink: https://github.com/omar2205/squishy_cookies/blob/8db831b890d657d25ae17ec1142a75245044fea6/deno.lock
+retrieved_at: "2026-08-12T08:41:08Z"
+sha256: 4e50271f3e43e3cc278306c1b5a27ddaf1a0a1d4232b824d2917dcd9b138070d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/omar2205/squishy_cookies/blob/8db831b890d657d25ae17ec1142a75245044fea6/LICENSE
+    sha256: 6face6c6d3eccbc508cfe86fc5b9352e459b1051fc32f3a276a8970d63291d02
+rationale: Compact legacy v2 remote-only lockfile, including both deno.land and esm.sh URL entries.

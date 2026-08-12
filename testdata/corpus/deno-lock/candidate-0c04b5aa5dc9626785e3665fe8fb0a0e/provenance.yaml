@@ -1,0 +1,18 @@
+version: 2
+detector_id: deno-lock
+candidate_id: candidate-0c04b5aa5dc9626785e3665fe8fb0a0e
+provider: github
+repository: dajiaji/crystals-kyber-js
+repository_url: https://github.com/dajiaji/crystals-kyber-js
+default_branch: main
+commit: e06f3d24b1809f7dcca45147539fa687251261df
+original_path: deno.lock
+permalink: https://github.com/dajiaji/crystals-kyber-js/blob/e06f3d24b1809f7dcca45147539fa687251261df/deno.lock
+retrieved_at: "2026-08-12T08:40:11Z"
+sha256: 961ef453f82c8ce5bb8a6bb4bf819c66ec5caf2eed7a8e67b2cbe0867bb15905
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/dajiaji/crystals-kyber-js/blob/e06f3d24b1809f7dcca45147539fa687251261df/LICENSE
+    sha256: ab49bdfb96b9c0117f908b82eb1f690be42028658f5a52fba5553b95fa90cd35
+rationale: 'Primary modern Deno v5 example: JSR and npm sections, specifier resolution, dependency graphs, and workspace dependencies.'

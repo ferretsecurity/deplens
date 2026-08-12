@@ -1,0 +1,18 @@
+version: 2
+detector_id: deno-lock
+candidate_id: candidate-251b66c04eccf0a5cdef3cf14b0da823
+provider: github
+repository: negrel/http-ece
+repository_url: https://github.com/negrel/http-ece
+default_branch: master
+commit: da0ec47bb346957accaab97620ef0f3110494ce0
+original_path: deno.lock
+permalink: https://github.com/negrel/http-ece/blob/da0ec47bb346957accaab97620ef0f3110494ce0/deno.lock
+retrieved_at: "2026-08-12T08:41:53Z"
+sha256: 20d7851a812c26442804a1ca22cd6f21117f266a9321753a31b584ad68730669
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/negrel/http-ece/blob/da0ec47bb346957accaab97620ef0f3110494ce0/LICENSE
+    sha256: 75617890ad59c06e424e0b466ccd5ca4358a0a8d7251ff2ecb557876355e2f96
+rationale: Short v3 structural variant with the nested packages/specifiers layout and an explicitly empty remote map.
