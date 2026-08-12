@@ -3030,12 +3030,242 @@ detectors:
       form: tool-config
       roles:
         - configuration
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/js-npmrc/candidate-4224ac7f3fb65b7e3d7e5961af2c193d/packages/api-gateway-npm/.npmrc
+        - testdata/corpus/js-npmrc/candidate-a9efcfb5f2a56806462fc3d71c7e5d7f/frontend/ant-design-pro-template/.npmrc
+        - testdata/corpus/js-npmrc/candidate-b1edf70b3b4efed3f5e6f94760a9d131/src/packages/config-prettier/.npmrc
       target: 3
       query_plan:
         - filename:.npmrc
+      queries:
+        - filename:.npmrc
+      candidates:
+        - candidate-fdefc040cb0d58308cbe06321d4b99e1
+        - candidate-0f279e30ffa701b74f9e0a0d049544a2
+        - candidate-07e5a0e7b5ddbb7105eab8b6d21be52a
+        - candidate-ecf55f9bc135c29ad05538b44db37dc1
+        - candidate-455a2f56179e4a241267c2fd707f84a8
+        - candidate-342ea1d744a5354ea39bee08dedae9a2
+        - candidate-58c1ff6249af8df6ea20b3817fc7aaa0
+        - candidate-abd05a18482f2d0cdf15a8bb5fb9e482
+        - candidate-ac4747c6a707da2ca4f8d45ba9e5017c
+        - candidate-2c9fa727e72a50a055f745c6e7db1fee
+        - candidate-69f8de4b8efd896184ac638be0749f31
+        - candidate-a15e003b24e13a96a09eacb992498c6b
+        - candidate-966357e94dc0ba37965a05c39489a71d
+        - candidate-e593e2e89a7a7e839dcec87e71528771
+        - candidate-49c23feecfb0eb2a2db9a00c03ce16f4
+        - candidate-4f095928cd3ed1672700f229f0ad8000
+        - candidate-c6fa050216883f8d0eb8a6f13d39d194
+        - candidate-4224ac7f3fb65b7e3d7e5961af2c193d
+        - candidate-b1edf70b3b4efed3f5e6f94760a9d131
+        - candidate-8eff2a1ee5b37d8c163e517905229413
+        - candidate-a9efcfb5f2a56806462fc3d71c7e5d7f
+        - candidate-704c5c3ad864d7834c11ed1ec8e85d47
+        - candidate-be56ef4a6450edc633bd33004c1b58cb
+      filtered_search_hits:
+        source-selector-mismatch: 175
+      rejections:
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - repository-purpose
+        - license-ambiguous
+        - repository-template
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - sensitive-content
+        - repository-template
+        - license-missing
+        - repository-template
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - repository-purpose
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - repository-template
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - duplicate-content
+        - repository-purpose
+      decision_states:
+        - packet_fingerprint: 632dadd8933bfa7f8b6c73da90058fc0d6d9db3a65296a39e20857389dcd9f75
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-4224ac7f3fb65b7e3d7e5961af2c193d
+            - candidate-a9efcfb5f2a56806462fc3d71c7e5d7f
+            - candidate-b1edf70b3b4efed3f5e6f94760a9d131
+          queries:
+            - filename:.npmrc
+          candidates:
+            - candidate-fdefc040cb0d58308cbe06321d4b99e1
+            - candidate-0f279e30ffa701b74f9e0a0d049544a2
+            - candidate-07e5a0e7b5ddbb7105eab8b6d21be52a
+            - candidate-ecf55f9bc135c29ad05538b44db37dc1
+            - candidate-455a2f56179e4a241267c2fd707f84a8
+            - candidate-342ea1d744a5354ea39bee08dedae9a2
+            - candidate-58c1ff6249af8df6ea20b3817fc7aaa0
+            - candidate-abd05a18482f2d0cdf15a8bb5fb9e482
+            - candidate-ac4747c6a707da2ca4f8d45ba9e5017c
+            - candidate-2c9fa727e72a50a055f745c6e7db1fee
+            - candidate-69f8de4b8efd896184ac638be0749f31
+            - candidate-a15e003b24e13a96a09eacb992498c6b
+            - candidate-966357e94dc0ba37965a05c39489a71d
+            - candidate-e593e2e89a7a7e839dcec87e71528771
+            - candidate-49c23feecfb0eb2a2db9a00c03ce16f4
+            - candidate-4f095928cd3ed1672700f229f0ad8000
+            - candidate-c6fa050216883f8d0eb8a6f13d39d194
+            - candidate-4224ac7f3fb65b7e3d7e5961af2c193d
+            - candidate-b1edf70b3b4efed3f5e6f94760a9d131
+            - candidate-8eff2a1ee5b37d8c163e517905229413
+            - candidate-a9efcfb5f2a56806462fc3d71c7e5d7f
+            - candidate-704c5c3ad864d7834c11ed1ec8e85d47
+            - candidate-be56ef4a6450edc633bd33004c1b58cb
+          filtered_search_hits:
+            source-selector-mismatch: 175
+          rejections:
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - repository-purpose
+            - license-ambiguous
+            - repository-template
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - sensitive-content
+            - repository-template
+            - license-missing
+            - repository-template
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - repository-purpose
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - repository-template
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - duplicate-content
+            - repository-purpose
+          decision:
+            packet_fingerprint: 632dadd8933bfa7f8b6c73da90058fc0d6d9db3a65296a39e20857389dcd9f75
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: js-yarnrc
       form: tool-config
       roles:

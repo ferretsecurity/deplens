@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-npmrc
+candidate_id: candidate-a9efcfb5f2a56806462fc3d71c7e5d7f
+provider: github
+repository: Colin4k1024/Aetheris-MemOS
+repository_url: https://github.com/Colin4k1024/Aetheris-MemOS
+default_branch: dev
+commit: 415eef0c9544434adb218ce25c6b4a26c7416c85
+original_path: frontend/ant-design-pro-template/.npmrc
+permalink: https://github.com/Colin4k1024/Aetheris-MemOS/blob/415eef0c9544434adb218ce25c6b4a26c7416c85/frontend/ant-design-pro-template/.npmrc
+retrieved_at: "2026-08-12T10:12:31Z"
+sha256: a093bb2fed59d699b7f9a62a5203cc196054c624e9c39c6d908c9e7db5dd2464
+governing_license:
+    spdx: MIT
+    path: frontend/ant-design-pro-template/LICENSE
+    permalink: https://github.com/Colin4k1024/Aetheris-MemOS/blob/415eef0c9544434adb218ce25c6b4a26c7416c85/frontend/ant-design-pro-template/LICENSE
+    sha256: cfbae8403f6bcee54d29b812ba00760838c86abad9a7cc154a7e892b779e916e
+rationale: Common real-world compatibility setting for projects with peer-dependency conflicts; concise baseline.

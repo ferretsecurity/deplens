@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-npmrc
+candidate_id: candidate-4224ac7f3fb65b7e3d7e5961af2c193d
+provider: github
+repository: kenyamaneko/overload-party-gateway
+repository_url: https://github.com/kenyamaneko/overload-party-gateway
+default_branch: main
+commit: fded81283111a54b3aa0737fc3c88fb85f8dc5a3
+original_path: packages/api-gateway-npm/.npmrc
+permalink: https://github.com/kenyamaneko/overload-party-gateway/blob/fded81283111a54b3aa0737fc3c88fb85f8dc5a3/packages/api-gateway-npm/.npmrc
+retrieved_at: "2026-08-12T10:11:54Z"
+sha256: 0aea01ab59188675a64038c6ad1b9483317b39b1e3672529c4f2c530ebc93f07
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/kenyamaneko/overload-party-gateway/blob/fded81283111a54b3aa0737fc3c88fb85f8dc5a3/LICENSE
+    sha256: c59114c837ecc5f829b3636d9a751c889e34af416abd24e1fb742d7f9edf8763
+rationale: Adds the important edge case of a scoped private registry configuration.

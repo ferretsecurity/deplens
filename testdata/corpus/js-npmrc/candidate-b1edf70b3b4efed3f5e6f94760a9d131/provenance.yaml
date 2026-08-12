@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-npmrc
+candidate_id: candidate-b1edf70b3b4efed3f5e6f94760a9d131
+provider: github
+repository: vbetsch/lib-config-ts
+repository_url: https://github.com/vbetsch/lib-config-ts
+default_branch: develop
+commit: fc880d1f7a217202ccbd4b417500d7f38b80c552
+original_path: src/packages/config-prettier/.npmrc
+permalink: https://github.com/vbetsch/lib-config-ts/blob/fc880d1f7a217202ccbd4b417500d7f38b80c552/src/packages/config-prettier/.npmrc
+retrieved_at: "2026-08-12T10:12:06Z"
+sha256: 791619c3775b3f7b68c13aea67972c2a6cf70881b454cec872d71ed5d3c3d9a8
+governing_license:
+    spdx: MIT
+    path: src/packages/config-prettier/LICENSE
+    permalink: https://github.com/vbetsch/lib-config-ts/blob/fc880d1f7a217202ccbd4b417500d7f38b80c552/src/packages/config-prettier/LICENSE
+    sha256: 7d8342334964591da82521616a6535d0722ff0432d0a89c40bb66f019c8b139d
+rationale: Typical public package configuration combining lockfile, engine, logging, and version-save preferences.
