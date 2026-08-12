@@ -4621,12 +4621,13 @@ detectors:
       roles:
         - configuration
       state: in-progress
-      iterations: 4
+      iterations: 5
       examples: []
       target: 3
       query_plan:
         - path:project/build.properties
       queries:
+        - path:project/build.properties
         - path:project/build.properties
         - path:project/build.properties
         - path:project/build.properties
@@ -4645,6 +4646,10 @@ detectors:
           queries:
             - path:project/build.properties
         - iteration: 4
+          result: unsuccessful
+          queries:
+            - path:project/build.properties
+        - iteration: 5
           result: unsuccessful
           queries:
             - path:project/build.properties
