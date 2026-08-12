@@ -4234,15 +4234,20 @@ detectors:
       roles:
         - configuration
       state: in-progress
-      iterations: 1
+      iterations: 2
       examples: []
       target: 3
       query_plan:
         - path:gradle/wrapper/gradle-wrapper.properties
       queries:
         - path:gradle/wrapper/gradle-wrapper.properties
+        - path:gradle/wrapper/gradle-wrapper.properties
       history:
         - iteration: 1
+          result: unsuccessful
+          queries:
+            - path:gradle/wrapper/gradle-wrapper.properties
+        - iteration: 2
           result: unsuccessful
           queries:
             - path:gradle/wrapper/gradle-wrapper.properties
