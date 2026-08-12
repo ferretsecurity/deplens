@@ -87,6 +87,12 @@ the inspection target and qualified minimum are satisfied. The
 production GitHub adapter obtains source type and exact bytes from one Contents
 response rather than downloading the same payload twice.
 
+Search-byte exhaustion is a normal bounded-discovery stop. It preserves
+already qualified candidates, prevents another provider from starting with a
+zero-byte search allowance, and continues to selection when the preserved set
+is sufficient. It is not classified as a remote-provider infrastructure
+failure.
+
 A search hit does not consume an inspection. An inspection is charged before
 the first detailed metadata or content request for a unique repository and path
 in the current iteration. Retrieval failures still consume it. Reconsidering

@@ -33,6 +33,12 @@ counting of the complete model request. Initialization stores these reviewed
 limits in the progress file; changing a software default does not silently
 rewrite an existing collection's limits.
 
+Exhausting the search share stops discovery normally. The collector logs the
+budget stop, keeps candidates that were already qualified, and does not start a
+fallback search with no remaining search bytes. If enough candidates remain,
+selection continues; otherwise the attempt is checkpointed as a valid research
+outcome rather than reported as a provider failure.
+
 States are `pending`, `in-progress`, `complete`, `needs-query-review`,
 `needs-content-review`, and `needs-collection-review`. Review-needed states are
 reported but do not make an otherwise valid run fail. A detector completes with

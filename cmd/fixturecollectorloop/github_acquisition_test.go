@@ -206,6 +206,58 @@ func TestGitHubAcquisitionStopsSearchWhenInspectionTargetAndQualifiedMinimumAreM
 	}
 }
 
+func TestGitHubAcquisitionKeepsQualifiedCandidatesWhenSearchByteBudgetIsExhausted(t *testing.T) {
+	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	base := &fakeGitHubService{
+		searchPages: map[string][][]GitHubCodeHit{"filename:go.sum": {
+			{
+				{Repository: "octo/one", Path: "go.sum"},
+				{Repository: "octo/two", Path: "go.sum"},
+				{Repository: "octo/three", Path: "go.sum"},
+				{Repository: "octo/four", Path: "go.sum"},
+				{Repository: "octo/five", Path: "go.sum"},
+			},
+			{{Repository: "octo/unreachable", Path: "go.sum"}},
+		}},
+		repositories: map[string]GitHubRepository{},
+		heads:        map[string]string{},
+		files:        map[string][]byte{},
+	}
+	for _, name := range []string{"one", "two", "three", "four", "five"} {
+		repository := "octo/" + name
+		base.repositories[repository] = GitHubRepository{FullName: repository, HTMLURL: "https://github.com/" + repository, DefaultBranch: "main"}
+		base.heads[repository+"/main"] = commit
+		base.files[repository+"@"+commit+":go.sum"] = []byte(name + " v1.0.0 h1:fixture\n")
+		base.files[repository+"@"+commit+":LICENSE"] = []byte("MIT License\n")
+	}
+	service := &searchBudgetExhaustingGitHubService{fakeGitHubService: base, failPage: 2}
+	web := &fakeWebHintService{}
+	var budgetEvent *ProviderProgress
+	input, err := newGitHubAcquisitionWithWebHints(service, web, CollectionLimits{
+		Queries: 1, ResultPages: 10, CandidateInspections: 100,
+		DecodedResponseBytes: 4096, SourceBytes: 1024,
+	}).Acquire(context.Background(), Iteration{
+		QueryPlan: []string{"filename:go.sum"}, QueryLimit: 1, CandidateLimit: 100,
+		ReportProgress: func(update ResearchProgress) {
+			if update.ProviderEvent != nil {
+				budgetEvent = update.ProviderEvent
+			}
+		},
+	})
+	if err != nil {
+		t.Fatalf("search budget exhaustion discarded usable candidates: %v", err)
+	}
+	if len(input.Candidates) != minimumQualifiedCandidates {
+		t.Fatalf("candidates = %d, want %d", len(input.Candidates), minimumQualifiedCandidates)
+	}
+	if web.calls != 0 {
+		t.Fatalf("web fallback called %d times after search budget exhaustion", web.calls)
+	}
+	if budgetEvent == nil || budgetEvent.Action != "stopped" || budgetEvent.Reason != "decoded-response-byte-budget" || budgetEvent.Resource != "code_search" {
+		t.Fatalf("search budget progress event = %+v", budgetEvent)
+	}
+}
+
 func TestGitHubAcquisitionContinuesPastInspectionTargetUntilFiveQualify(t *testing.T) {
 	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 	service := &fakeGitHubService{
@@ -864,6 +916,18 @@ type fakeGitHubService struct {
 	fileTypes                               map[string]string
 	searchCalls, repositoryCalls, fileCalls int
 	clones, executions                      int
+}
+
+type searchBudgetExhaustingGitHubService struct {
+	*fakeGitHubService
+	failPage int
+}
+
+func (f *searchBudgetExhaustingGitHubService) SearchCode(ctx context.Context, query string, page int, limit int64) ([]GitHubCodeHit, bool, int64, error) {
+	if page == f.failPage {
+		return nil, false, limit + 1, errGitHubDecodedResponseBudgetExhausted
+	}
+	return f.fakeGitHubService.SearchCode(ctx, query, page, limit)
 }
 
 type fakeWebHintService struct {

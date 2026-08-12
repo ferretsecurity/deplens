@@ -265,10 +265,13 @@ func (b *acquisitionBudget) remainingAcquisitionBytes() int64 {
 }
 func (b *acquisitionBudget) chargeSearchBytes(n int64) error {
 	if n < 0 || n > b.remainingSearchBytes() {
-		return errors.New("GitHub search decoded-response byte budget exhausted")
+		return fmt.Errorf("GitHub search decoded-response byte budget exhausted: %w", errGitHubDecodedResponseBudgetExhausted)
 	}
 	b.searchBytes += n
 	return nil
+}
+func (b *acquisitionBudget) exhaustSearchBytes() {
+	b.searchBytes = b.searchLimit
 }
 func (b *acquisitionBudget) chargeAcquisitionBytes(n int64) error {
 	if n < 0 {
@@ -398,7 +401,7 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	if _, err := collectSearchHits(ctx, &b, iteration, "github", iteration.QueryPlan, queryLimit, &outcome, hits, a.service.SearchCode, githubInfrastructureError, qualificationComplete, inspectHits); err != nil {
 		return ResearchInput{}, err
 	}
-	if a.web != nil && !acquisitionBudgetExhausted && len(candidates) < minimumQualifiedCandidates {
+	if a.web != nil && !acquisitionBudgetExhausted && b.remainingSearchBytes() > 0 && len(candidates) < minimumQualifiedCandidates {
 		if _, err := collectSearchHits(ctx, &b, iteration, "web", iteration.QueryPlan, queryLimit, &outcome, hits, a.web.SearchHints, webInfrastructureError, qualificationComplete, inspectHits); err != nil {
 			return ResearchInput{}, err
 		}
@@ -428,9 +431,19 @@ func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration
 			}
 			items, next, size, err := search(ctx, query, page, budget.remainingSearchBytes())
 			if err != nil {
+				if errors.Is(err, errGitHubDecodedResponseBudgetExhausted) {
+					budget.exhaustSearchBytes()
+					reportSearchBudgetExhaustion(iteration, provider)
+					return true, nil
+				}
 				return false, providerError(err)
 			}
 			if err := budget.chargeSearchBytes(size); err != nil {
+				if errors.Is(err, errGitHubDecodedResponseBudgetExhausted) {
+					budget.exhaustSearchBytes()
+					reportSearchBudgetExhaustion(iteration, provider)
+					return true, nil
+				}
 				return false, err
 			}
 			firstNewHit := len(hits.hits)
@@ -456,6 +469,22 @@ func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration
 		}
 	}
 	return stop(), nil
+}
+
+func reportSearchBudgetExhaustion(iteration Iteration, provider string) {
+	if iteration.ReportProgress == nil {
+		return
+	}
+	resource := provider + "_search"
+	if provider == "github" {
+		resource = "code_search"
+	}
+	iteration.ReportProgress(ResearchProgress{
+		Stage: progressSearch,
+		ProviderEvent: &ProviderProgress{
+			Action: "stopped", Reason: "decoded-response-byte-budget", Resource: resource,
+		},
+	})
 }
 
 func (a *githubAcquisition) inspect(ctx context.Context, b *acquisitionBudget, cache *acquisitionCache, hit GitHubCodeHit) (SourceCandidate, qualificationReason, error) {
