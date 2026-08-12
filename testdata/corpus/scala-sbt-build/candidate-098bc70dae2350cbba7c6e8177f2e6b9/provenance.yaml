@@ -1,0 +1,18 @@
+version: 2
+detector_id: scala-sbt-build
+candidate_id: candidate-098bc70dae2350cbba7c6e8177f2e6b9
+provider: github
+repository: dispatch/reboot
+repository_url: https://github.com/dispatch/reboot
+default_branch: main
+commit: 89074f61bc8f81a7358a0089ebba691ab7f44d84
+original_path: build.sbt
+permalink: https://github.com/dispatch/reboot/blob/89074f61bc8f81a7358a0089ebba691ab7f44d84/build.sbt
+retrieved_at: "2026-08-12T10:34:55Z"
+sha256: 566e0416835ea562223e3936b23498458358f7149b4e73ef6e36916803c667c7
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/dispatch/reboot/blob/89074f61bc8f81a7358a0089ebba691ab7f44d84/LICENSE.txt
+    sha256: da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768
+rationale: Adds a compact multi-module aggregate with shared settings and inter-project test dependencies.

@@ -4282,12 +4282,242 @@ detectors:
         - declaration
         - constraint
         - configuration
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/scala-sbt-build/candidate-098bc70dae2350cbba7c6e8177f2e6b9/build.sbt
+        - testdata/corpus/scala-sbt-build/candidate-5e0da7d0a0af7d60dfb7e1eef30dda6a/build.sbt
+        - testdata/corpus/scala-sbt-build/candidate-d75ba219d41268bb05b9ed64b4c0166e/build.sbt
       target: 3
       query_plan:
         - filename:build.sbt
+      queries:
+        - filename:build.sbt
+      candidates:
+        - candidate-fdd3723b98617ecc4d8f6a42796c1f18
+        - candidate-098bc70dae2350cbba7c6e8177f2e6b9
+        - candidate-dc6f0c6d298fa277e489a772cc1aaf8f
+        - candidate-09a4893b97060abdb02f11f741cc1a85
+        - candidate-51fb3ad0fa0860df841ac94e1b64425f
+        - candidate-4cf8e9b5b164898a1843972d9617596b
+        - candidate-1e50de3b131b35a113ed1698b0ec29b3
+        - candidate-0d6382edf7ec81ac2fd7491eb2021dee
+        - candidate-f9631b423a5be501f437c648b524f2e0
+        - candidate-8dfaf7c245705d2cd5763afe3cca72b5
+        - candidate-73157e5bceb95ff11e2e9024ad984140
+        - candidate-5e0da7d0a0af7d60dfb7e1eef30dda6a
+        - candidate-d75ba219d41268bb05b9ed64b4c0166e
+        - candidate-4b4c798997cb924e317a727578512cc5
+      filtered_search_hits:
+        source-selector-mismatch: 1
+      rejections:
+        - license-ambiguous
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - repository-purpose
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - sensitive-content
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - repository-purpose
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - license-ambiguous
+      decision_states:
+        - packet_fingerprint: 396720e6279aaed22631b9faab91d1eed92c148c3ea8f48ecc46025b4317f5c3
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-098bc70dae2350cbba7c6e8177f2e6b9
+            - candidate-5e0da7d0a0af7d60dfb7e1eef30dda6a
+            - candidate-d75ba219d41268bb05b9ed64b4c0166e
+          queries:
+            - filename:build.sbt
+          candidates:
+            - candidate-fdd3723b98617ecc4d8f6a42796c1f18
+            - candidate-098bc70dae2350cbba7c6e8177f2e6b9
+            - candidate-dc6f0c6d298fa277e489a772cc1aaf8f
+            - candidate-09a4893b97060abdb02f11f741cc1a85
+            - candidate-51fb3ad0fa0860df841ac94e1b64425f
+            - candidate-4cf8e9b5b164898a1843972d9617596b
+            - candidate-1e50de3b131b35a113ed1698b0ec29b3
+            - candidate-0d6382edf7ec81ac2fd7491eb2021dee
+            - candidate-f9631b423a5be501f437c648b524f2e0
+            - candidate-8dfaf7c245705d2cd5763afe3cca72b5
+            - candidate-73157e5bceb95ff11e2e9024ad984140
+            - candidate-5e0da7d0a0af7d60dfb7e1eef30dda6a
+            - candidate-d75ba219d41268bb05b9ed64b4c0166e
+            - candidate-4b4c798997cb924e317a727578512cc5
+          filtered_search_hits:
+            source-selector-mismatch: 1
+          rejections:
+            - license-ambiguous
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - repository-purpose
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - sensitive-content
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - repository-purpose
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - license-ambiguous
+          decision:
+            packet_fingerprint: 396720e6279aaed22631b9faab91d1eed92c148c3ea8f48ecc46025b4317f5c3
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: scala-sbt-plugins
       form: build-definition
       roles:

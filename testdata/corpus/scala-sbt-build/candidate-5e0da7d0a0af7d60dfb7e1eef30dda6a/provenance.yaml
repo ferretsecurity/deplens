@@ -1,0 +1,18 @@
+version: 2
+detector_id: scala-sbt-build
+candidate_id: candidate-5e0da7d0a0af7d60dfb7e1eef30dda6a
+provider: github
+repository: Starofall/S3HyperSync
+repository_url: https://github.com/Starofall/S3HyperSync
+default_branch: main
+commit: 778181998da5a411f882e65f6120fb718dc6dfbe
+original_path: build.sbt
+permalink: https://github.com/Starofall/S3HyperSync/blob/778181998da5a411f882e65f6120fb718dc6dfbe/build.sbt
+retrieved_at: "2026-08-12T10:36:34Z"
+sha256: ab7328a23989bccd751b52d86d0e7b24ea7ea6c90441be1fe17c6f8199dd759f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Starofall/S3HyperSync/blob/778181998da5a411f882e65f6120fb718dc6dfbe/LICENSE
+    sha256: 2ea4236c30ed41cd815709946921c0a9a5ac33b996d21165bca36a243508fc2c
+rationale: 'Best common-use representative: a single JVM application with ordinary dependencies, test scope, compiler options, and assembly packaging.'

@@ -1,0 +1,18 @@
+version: 2
+detector_id: scala-sbt-build
+candidate_id: candidate-d75ba219d41268bb05b9ed64b4c0166e
+provider: github
+repository: tototoshi/scala-js-slide
+repository_url: https://github.com/tototoshi/scala-js-slide
+default_branch: master
+commit: fa91b0e2de55842630c09aa5d855c2913cf041df
+original_path: build.sbt
+permalink: https://github.com/tototoshi/scala-js-slide/blob/fa91b0e2de55842630c09aa5d855c2913cf041df/build.sbt
+retrieved_at: "2026-08-12T10:36:47Z"
+sha256: 132bfb9229ee36ec8d7b7f3f1457f5e79bde331b8d9a0141b14b61da51b4bff9
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/tototoshi/scala-js-slide/blob/fa91b0e2de55842630c09aa5d855c2913cf041df/LICENSE.txt
+    sha256: ce9d7dc158b6668c186283c2231db8e7ef9a5b80696ddfee377c63f75ea1f711
+rationale: Short, focused Scala.js build that covers the browser-platform/plugin edge case.
