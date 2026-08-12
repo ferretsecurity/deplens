@@ -1,0 +1,18 @@
+version: 2
+detector_id: julia-project
+candidate_id: candidate-118988184f81f796f856212d7cbf11a0
+provider: github
+repository: Christian-Offen/Lagrangian_GP
+repository_url: https://github.com/Christian-Offen/Lagrangian_GP
+default_branch: main
+commit: e4c5c759a054f5db5fdc519919862af768bb8ec8
+original_path: Project.toml
+permalink: https://github.com/Christian-Offen/Lagrangian_GP/blob/e4c5c759a054f5db5fdc519919862af768bb8ec8/Project.toml
+retrieved_at: "2026-08-12T23:27:34Z"
+sha256: bd7de068036ce5d8858e907d3f55aa1bd5ad9bba8197c020ddb23e7299524d2f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Christian-Offen/Lagrangian_GP/blob/e4c5c759a054f5db5fdc519919862af768bb8ec8/LICENSE
+    sha256: 01485f7eed15c73de6175b49160addaf5a00bd45fe8d1073b36abda168685c82
+rationale: Typical root-level Julia project with a straightforward dependency list; best match for common real-world use.

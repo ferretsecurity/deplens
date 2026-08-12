@@ -1,0 +1,18 @@
+version: 2
+detector_id: julia-project
+candidate_id: candidate-0e88ca827756691dede1ce516466b6a2
+provider: github
+repository: haowenCS/julia
+repository_url: https://github.com/haowenCS/julia
+default_branch: main
+commit: 941438f1bc3f2cfc7c8907ad196b95106bc8f9ea
+original_path: julia/offline_julia_bundle/depot/packages/ZMQ/yNY0H/gen/Project.toml
+permalink: https://github.com/haowenCS/julia/blob/941438f1bc3f2cfc7c8907ad196b95106bc8f9ea/julia/offline_julia_bundle/depot/packages/ZMQ/yNY0H/gen/Project.toml
+retrieved_at: "2026-08-12T23:27:49Z"
+sha256: cf125730f8248652748cc70a0c753e325efc761c3bb246b915378962222e2377
+governing_license:
+    spdx: MIT
+    path: julia/offline_julia_bundle/depot/packages/ZMQ/yNY0H/LICENSE.md
+    permalink: https://github.com/haowenCS/julia/blob/941438f1bc3f2cfc7c8907ad196b95106bc8f9ea/julia/offline_julia_bundle/depot/packages/ZMQ/yNY0H/LICENSE.md
+    sha256: 7be248d1efbe32f08e61c1fd738d58c4506dc3a62a3681b859d3ba18d751cd50
+rationale: Compact generated/nested project with a native JLL dependency, adding tooling and binary-wrapper variation.

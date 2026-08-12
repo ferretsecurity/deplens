@@ -1,0 +1,18 @@
+version: 2
+detector_id: julia-project
+candidate_id: candidate-a7a5308030c1c1bc767bc72cf164dbe6
+provider: github
+repository: rmcaixeta/Unfolding.jl
+repository_url: https://github.com/rmcaixeta/Unfolding.jl
+default_branch: master
+commit: 73b5172624ed200139b6a03f78c99a87ff632874
+original_path: Project.toml
+permalink: https://github.com/rmcaixeta/Unfolding.jl/blob/73b5172624ed200139b6a03f78c99a87ff632874/Project.toml
+retrieved_at: "2026-08-12T23:27:18Z"
+sha256: b5e6fce56146678a45d643a4edc018f712f0d2a4e93ff416c3bdc4338491ae91
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/rmcaixeta/Unfolding.jl/blob/73b5172624ed200139b6a03f78c99a87ff632874/LICENSE
+    sha256: 2b3de42927cd51f77395bfa8e069060cb4cac9234c39f474f3364c12ac21ea29
+rationale: Full-featured package manifest covering metadata, compatibility bounds, extras, and test targets.
