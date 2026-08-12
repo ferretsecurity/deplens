@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-cabal
+candidate_id: candidate-4291292dce5e148603e10b27e54c950e
+provider: github
+repository: mithrandi/lambdacircus
+repository_url: https://github.com/mithrandi/lambdacircus
+default_branch: master
+commit: d531b2e75473cf55af6c20bfe7f36ff655307736
+original_path: LambdaCircus.cabal
+permalink: https://github.com/mithrandi/lambdacircus/blob/d531b2e75473cf55af6c20bfe7f36ff655307736/LambdaCircus.cabal
+retrieved_at: "2026-08-12T14:17:32Z"
+sha256: ec4c2cdd80c6657229d46a0363a037dd8e21de7d1c2e64f85ac37ab7183ce8f8
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/mithrandi/lambdacircus/blob/d531b2e75473cf55af6c20bfe7f36ff655307736/LICENSE
+    sha256: c3e28c62c35763499f9fc6dfc5ad7c79161945b2ef34e3aa63b91891865130c4
+rationale: Adds flag-controlled and OS-specific conditional dependencies in a larger web application package.

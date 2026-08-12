@@ -1,0 +1,129 @@
+name:              LambdaCircus
+version:           0.0.0
+license:           MIT
+license-file:      LICENSE
+author:            Tristan Seligmann
+maintainer:        Tristan Seligmann
+synopsis:          IRC quotes database
+description:       It's not that hard.
+category:          Web
+stability:         Experimental
+cabal-version:     >= 1.8
+build-type:        Simple
+homepage:          https://github.com/mithrandi/lambdacircus/
+
+Flag dev
+    Description:   Turn on development settings, like auto-reload templates.
+    Default:       False
+
+Flag library-only
+    Description:   Build for use with "yesod devel"
+    Default:       False
+
+library
+    exposed-modules: Application
+                     Foundation
+                     Import
+                     Import.NoFoundation
+                     Model
+                     Model.Quote
+                     Settings
+                     Settings.StaticFiles
+                     Settings.Development
+                     Handler.Common
+                     Handler.Root
+                     Handler.Quotes
+
+    if flag(dev) || flag(library-only)
+        cpp-options:   -DDEVELOPMENT
+        ghc-options:   -Wall -O0
+    else
+        ghc-options:   -Wall -O2
+
+    extensions: TemplateHaskell
+                QuasiQuotes
+                OverloadedStrings
+                NoImplicitPrelude
+                CPP
+                MultiParamTypeClasses
+                TypeFamilies
+                GADTs
+                GeneralizedNewtypeDeriving
+                DeriveDataTypeable
+                FlexibleContexts
+                FlexibleInstances
+                EmptyDataDecls
+                NoMonomorphismRestriction
+                ViewPatterns
+                RankNTypes
+                RecordWildCards
+
+    build-depends: base
+                 , aeson
+                 , bytestring
+                 , classy-prelude-yesod
+                 , conduit
+                 , data-default
+                 , directory
+                 , directory
+                 , fast-logger
+                 , file-embed
+                 , hjsmin
+                 , http-conduit
+                 , http-types
+                 , lens
+                 , lens-aeson
+                 , monad-control
+                 , monad-logger
+                 , old-locale
+                 , persistent
+                 , persistent-postgresql
+                 , persistent-template
+                 , shakespeare
+                 , template-haskell
+                 , text
+                 , time
+                 , unordered-containers
+                 , wai
+                 , wai-extra
+                 , wai-logger
+                 , warp
+                 , yaml
+                 , yesod
+                 , yesod-auth
+                 , yesod-core
+                 , yesod-form
+                 , yesod-static
+    -- see https://github.com/yesodweb/yesod/issues/814
+    if !os(windows)
+        build-depends: unix
+
+executable         lambdacircus
+    if flag(library-only)
+        Buildable: False
+
+    main-is:           main.hs
+    hs-source-dirs:    app
+    build-depends:     base
+                     , LambdaCircus
+                     , yesod
+
+    ghc-options:       -threaded -O2
+
+test-suite test
+    type:              exitcode-stdio-1.0
+    main-is:           main.hs
+    hs-source-dirs:    tests
+    ghc-options:       -Wall
+
+    build-depends: base
+                 , LambdaCircus
+                 , yesod-test
+                 , yesod-core
+                 , yesod
+                 , persistent
+                 , persistent-postgresql
+                 , resourcet
+                 , monad-logger
+                 , transformers
+                 , hspec

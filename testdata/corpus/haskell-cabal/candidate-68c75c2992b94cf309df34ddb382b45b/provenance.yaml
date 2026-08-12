@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-cabal
+candidate_id: candidate-68c75c2992b94cf309df34ddb382b45b
+provider: github
+repository: Parrows/Parrows
+repository_url: https://github.com/Parrows/Parrows
+default_branch: master
+commit: 163964988c07a37f19a805816ea71efab9970616
+original_path: ParMonad/Parallel-Arrows-ParMonad.cabal
+permalink: https://github.com/Parrows/Parrows/blob/163964988c07a37f19a805816ea71efab9970616/ParMonad/Parallel-Arrows-ParMonad.cabal
+retrieved_at: "2026-08-12T14:17:15Z"
+sha256: fae73e99b0059b0025133f8ea80cd09b13cb59f659aafad433bf6b4d36f201d1
+governing_license:
+    spdx: MIT
+    path: ParMonad/LICENSE.md
+    permalink: https://github.com/Parrows/Parrows/blob/163964988c07a37f19a805816ea71efab9970616/ParMonad/LICENSE.md
+    sha256: 7f0bc9585e27a6ab4934c1324625b98f27371b3ed14469f56f53e10d12a8c093
+rationale: Adds a concise modern, hpack-generated library/test package with version constraints and source metadata.
