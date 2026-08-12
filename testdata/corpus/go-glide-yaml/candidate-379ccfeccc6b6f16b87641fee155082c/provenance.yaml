@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-glide-yaml
+candidate_id: candidate-379ccfeccc6b6f16b87641fee155082c
+provider: github
+repository: deis/builder
+repository_url: https://github.com/deis/builder
+default_branch: master
+commit: 53842feb6825823c78d91fad61daf02d226346d6
+original_path: glide.yaml
+permalink: https://github.com/deis/builder/blob/53842feb6825823c78d91fad61daf02d226346d6/glide.yaml
+retrieved_at: "2026-08-12T20:51:02Z"
+sha256: 706dcbdc1f2870d733bfe3fb8f013dd4cdb238e32791a99e4e91d8840c8c912d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/deis/builder/blob/53842feb6825823c78d91fad61daf02d226346d6/LICENSE
+    sha256: 8b55b98d200c7ae6f26bbce0e0dc47f9e66e0b633bce59eaca6e239cf56beddb
+rationale: 'Adds important real-world Glide features: an ignore list plus explicit repository and VCS overrides pinned to commits.'

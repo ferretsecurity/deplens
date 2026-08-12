@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-glide-yaml
+candidate_id: candidate-47e109bc4a4fe39c56f8a498993208e1
+provider: github
+repository: Applatix/claudia
+repository_url: https://github.com/Applatix/claudia
+default_branch: master
+commit: 8052d2cb5081c4ee9eb5773628500f050787ca8d
+original_path: glide.yaml
+permalink: https://github.com/Applatix/claudia/blob/8052d2cb5081c4ee9eb5773628500f050787ca8d/glide.yaml
+retrieved_at: "2026-08-12T20:52:01Z"
+sha256: 819f63d9b5527227d331f8d0e2af3a8323efa623c567772fd5b5a030db3e17ee
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/Applatix/claudia/blob/8052d2cb5081c4ee9eb5773628500f050787ca8d/LICENSE.md
+    sha256: 508b6f480eb389b0f06e0e0c4c5b5fef17514dd0101fd6f766ee181f776f72c8
+rationale: 'Most representative: a compact application manifest with ordinary version constraints, grouped subpackages, and common web, cloud, database, and CLI dependencies.'

@@ -1,0 +1,18 @@
+version: 2
+detector_id: go-glide-yaml
+candidate_id: candidate-7a1d2a4ca7237ea656849de5f79f9a6d
+provider: github
+repository: errordeveloper/kubegen
+repository_url: https://github.com/errordeveloper/kubegen
+default_branch: master
+commit: b442dbfe01602eeb891b2e0b75e2cf66d21b665b
+original_path: glide.yaml
+permalink: https://github.com/errordeveloper/kubegen/blob/b442dbfe01602eeb891b2e0b75e2cf66d21b665b/glide.yaml
+retrieved_at: "2026-08-12T20:51:46Z"
+sha256: e1e8245ad62002e012a4a5dcb64fbd2e2bd37463711df72646e5e3c3464297ce
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/errordeveloper/kubegen/blob/b442dbfe01602eeb891b2e0b75e2cf66d21b665b/LICENSE
+    sha256: ca6abf3873b52973680a69f96a61f25cf918d48f5511da570786f295a9aabe02
+rationale: Covers parser edge structure through quoted values, comments, duplicate case-variant package entries, inline lists, and test-only dependencies.
