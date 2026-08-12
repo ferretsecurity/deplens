@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-autotools
+candidate_id: candidate-91fc5f379c226261d45c580642f63fde
+provider: github
+repository: libinotify-kqueue/libinotify-kqueue
+repository_url: https://github.com/libinotify-kqueue/libinotify-kqueue
+default_branch: master
+commit: cc614f659a6a8ca3529328fe278bfc303c35cd5c
+original_path: configure.ac
+permalink: https://github.com/libinotify-kqueue/libinotify-kqueue/blob/cc614f659a6a8ca3529328fe278bfc303c35cd5c/configure.ac
+retrieved_at: "2026-08-12T22:24:56Z"
+sha256: 3db9f3692f7d439df084d11a91bf759c3a49e34e614e94b9d33d7bdfd9498109
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/libinotify-kqueue/libinotify-kqueue/blob/cc614f659a6a8ca3529328fe278bfc303c35cd5c/LICENSE
+    sha256: 6fdfdce02ed5b7b7fb02b558000ae76513676b36d98607eee6d9f0708a016a0b
+rationale: 'Adds substantial portability coverage: OS branches, feature probes, conditionals, and compile/run-time capability checks.'

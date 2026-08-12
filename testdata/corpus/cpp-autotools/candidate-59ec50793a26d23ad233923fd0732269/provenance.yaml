@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-autotools
+candidate_id: candidate-59ec50793a26d23ad233923fd0732269
+provider: github
+repository: LuminousMonkey/xf86-video-illumosfb
+repository_url: https://github.com/LuminousMonkey/xf86-video-illumosfb
+default_branch: main
+commit: 8ad57812ca2e99be6281f5142101811482026c55
+original_path: configure.ac
+permalink: https://github.com/LuminousMonkey/xf86-video-illumosfb/blob/8ad57812ca2e99be6281f5142101811482026c55/configure.ac
+retrieved_at: "2026-08-12T22:29:12Z"
+sha256: 7d291e42b9de9a8f167a4684c5a5c01c94a4672118f67629a40041b24dd4103c
+governing_license:
+    spdx: ISC
+    path: LICENSE
+    permalink: https://github.com/LuminousMonkey/xf86-video-illumosfb/blob/8ad57812ca2e99be6281f5142101811482026c55/LICENSE
+    sha256: 6edf99663cbf514a69e8ec8aee40f73c061f9f7d2df3054968af9970d1cd6542
+rationale: Compact, conventional Autotools/Xorg module configuration; represents a common real-world configure.ac.
