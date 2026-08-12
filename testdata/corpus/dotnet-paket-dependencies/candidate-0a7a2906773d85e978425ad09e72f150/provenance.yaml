@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-paket-dependencies
+candidate_id: candidate-0a7a2906773d85e978425ad09e72f150
+provider: github
+repository: persimmon-projects/Persimmon
+repository_url: https://github.com/persimmon-projects/Persimmon
+default_branch: master
+commit: 6fa064625a8d689824be21bf594ce218bab48a76
+original_path: paket.dependencies
+permalink: https://github.com/persimmon-projects/Persimmon/blob/6fa064625a8d689824be21bf594ce218bab48a76/paket.dependencies
+retrieved_at: "2026-08-12T14:41:25Z"
+sha256: 150f2219470577bbb8055d88107fdf64b7287a0b4c974cb431ea45425dac716b
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/persimmon-projects/Persimmon/blob/6fa064625a8d689824be21bf594ce218bab48a76/LICENSE
+    sha256: 661cc12b249d4855161ed968230c3db93e7b285a745f87cc112bb5bc6b6c4c0e
+rationale: 'Adds rich grouped-dependency coverage: multiple frameworks, storage modes, exact and minimum versions, lowest-matching resolution, and GitHub file dependencies.'

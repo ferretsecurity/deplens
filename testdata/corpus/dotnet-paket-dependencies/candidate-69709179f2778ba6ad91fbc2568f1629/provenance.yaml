@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-paket-dependencies
+candidate_id: candidate-69709179f2778ba6ad91fbc2568f1629
+provider: github
+repository: Dzoukr/Dapper.FSharp
+repository_url: https://github.com/Dzoukr/Dapper.FSharp
+default_branch: master
+commit: a83c9d5c4e396892d003aa512adc071ad5f7f2c6
+original_path: paket.dependencies
+permalink: https://github.com/Dzoukr/Dapper.FSharp/blob/a83c9d5c4e396892d003aa512adc071ad5f7f2c6/paket.dependencies
+retrieved_at: "2026-08-12T14:36:56Z"
+sha256: ec4293e58408ddfe7b29aea4317011d113fa90e99f386f89f1d69b13a9827559
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Dzoukr/Dapper.FSharp/blob/a83c9d5c4e396892d003aa512adc071ad5f7f2c6/LICENSE
+    sha256: 9c806bd51e9ac74ad6629f18448fa0a72b7ddbff34068e5db5049ee1ea5340e0
+rationale: 'Best common real-world representative: a modern library with standard NuGet dependencies, explicit multi-target frameworks, test packages, and a conventional build group.'

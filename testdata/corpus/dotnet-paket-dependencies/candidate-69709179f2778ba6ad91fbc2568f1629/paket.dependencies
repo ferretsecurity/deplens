@@ -1,0 +1,28 @@
+version 5.241.2
+
+source https://api.nuget.org/v3/index.json
+storage: none
+framework: net6.0, net7.0, net8.0, net9.0, net10.0
+
+nuget FSharp.Core
+nuget Dapper
+nuget Microsoft.Data.SqlClient
+nuget Microsoft.Extensions.Configuration.Json
+nuget MySql.Data = 8.0.31
+nuget Npgsql
+nuget Microsoft.SourceLink.GitHub copy_local: true
+nuget Microsoft.NET.Test.Sdk
+nuget NUnit
+nuget NUnit3TestAdapter
+nuget coverlet.collector
+nuget Microsoft.Data.Sqlite
+
+group Build
+    source https://api.nuget.org/v3/index.json
+    framework: net10.0
+    storage: none
+
+    nuget FSharp.Core
+    nuget Fake.Core.Target
+    nuget Fake.DotNet.Cli
+    nuget Fake.IO.FileSystem
