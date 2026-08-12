@@ -1,0 +1,18 @@
+version: 2
+detector_id: swift-package
+candidate_id: candidate-78fc7ecb5b6535e97356e43293b9aad3
+provider: github
+repository: acaia/acaia_sdk_ios
+repository_url: https://github.com/acaia/acaia_sdk_ios
+default_branch: master
+commit: f55246ab6e207ba32e2dbe96cc644f8f9956f188
+original_path: Package.swift
+permalink: https://github.com/acaia/acaia_sdk_ios/blob/f55246ab6e207ba32e2dbe96cc644f8f9956f188/Package.swift
+retrieved_at: "2026-08-12T12:25:12Z"
+sha256: 1be45e52621fd24fd8ca1ea705f6670c0a544d6d5dc9dd29b239279f0fdce747
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/acaia/acaia_sdk_ios/blob/f55246ab6e207ba32e2dbe96cc644f8f9956f188/LICENSE
+    sha256: 0c418a828e229db74e4e67f41fcf0ce71762fafd37069421d9913ab1f1e8bda2
+rationale: Compact binary XCFramework package, covering a distinct binary-target integration case.

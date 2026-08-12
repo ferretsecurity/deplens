@@ -1,0 +1,18 @@
+version: 2
+detector_id: swift-package
+candidate_id: candidate-0ac89ad24dad07ee2d7d8de9f240b029
+provider: github
+repository: nushell/tree-sitter-nu
+repository_url: https://github.com/nushell/tree-sitter-nu
+default_branch: main
+commit: 9467420d184bd2c510378f4cda624eca35dd4590
+original_path: Package.swift
+permalink: https://github.com/nushell/tree-sitter-nu/blob/9467420d184bd2c510378f4cda624eca35dd4590/Package.swift
+retrieved_at: "2026-08-12T12:23:59Z"
+sha256: a6828b12195521d56de18b4300b6dec186b913db71b167785ad1549f9f55af23
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/nushell/tree-sitter-nu/blob/9467420d184bd2c510378f4cda624eca35dd4590/LICENSE
+    sha256: e189616e535e9f7bf410a72e6fc51ad1e0ae461c58d592e186c2669daa5d1e5d
+rationale: Adds C interop, conditional manifest logic, resources, headers, compiler settings, and tests.

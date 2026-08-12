@@ -1,0 +1,18 @@
+version: 2
+detector_id: swift-package
+candidate_id: candidate-6053c90b3bc9389c66a3080092500060
+provider: github
+repository: raulriera/Cacher
+repository_url: https://github.com/raulriera/Cacher
+default_branch: master
+commit: b8bb32d13c86d68ce9a62e2179b528ea8b893188
+original_path: Package.swift
+permalink: https://github.com/raulriera/Cacher/blob/b8bb32d13c86d68ce9a62e2179b528ea8b893188/Package.swift
+retrieved_at: "2026-08-12T12:25:03Z"
+sha256: afb3c226797ec3e9f32aadb78baac7b67d8c3f0b32308ab2f31a7d339a459a4d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/raulriera/Cacher/blob/b8bb32d13c86d68ce9a62e2179b528ea8b893188/LICENSE
+    sha256: 71251a83c167256d3b732b61458220711ef3ac55b2b9b67d7b09e3f116130f31
+rationale: 'Common real-world iOS library manifest: platform, library product, source target, and test target.'
