@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-vcpkg-config
+candidate_id: candidate-cbcf323d21263f370e42c981274e87e4
+provider: github
+repository: TileDB-Inc/TileDB
+repository_url: https://github.com/TileDB-Inc/TileDB
+default_branch: main
+commit: 1db360de3e62e89b81a8d8845811ac9f75b3b3d9
+original_path: vcpkg-configuration.json
+permalink: https://github.com/TileDB-Inc/TileDB/blob/1db360de3e62e89b81a8d8845811ac9f75b3b3d9/vcpkg-configuration.json
+retrieved_at: "2026-08-12T22:05:07Z"
+sha256: 79cd138250155ecee4d35f515201375ce7b4ccad8f6398e2781d0be8968390b9
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/TileDB-Inc/TileDB/blob/1db360de3e62e89b81a8d8845811ac9f75b3b3d9/LICENSE
+    sha256: 4c7ff1be915106b4a986c6a82e201032d97bb23f8eb89b2bfc2bfc364c79f936
+rationale: Compact edge case containing only local overlay ports and triplets, with no registry.

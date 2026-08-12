@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-vcpkg-config
+candidate_id: candidate-c48a1cf6bc0aed48dedd151fc01c6505
+provider: github
+repository: fredemmott/HTCC
+repository_url: https://github.com/fredemmott/HTCC
+default_branch: master
+commit: 2e218adb9d5502afbecbe15bf888565d8cad55e7
+original_path: vcpkg-configuration.json
+permalink: https://github.com/fredemmott/HTCC/blob/2e218adb9d5502afbecbe15bf888565d8cad55e7/vcpkg-configuration.json
+retrieved_at: "2026-08-12T22:08:32Z"
+sha256: dfbae9cfeff99c7e0212618511b0f57aea10818d09be7970715d994acea9e8b7
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/fredemmott/HTCC/blob/2e218adb9d5502afbecbe15bf888565d8cad55e7/LICENSE
+    sha256: be199c0ab549909d31cd7251295b37f22cd67aeddc2d3226dc09b2c65835dec0
+rationale: Adds a scoped custom Git registry alongside a builtin default registry.

@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-vcpkg-config
+candidate_id: candidate-2969fde9b5296df2ef77ecf94bc36d53
+provider: github
+repository: Robertleoj/lensboy
+repository_url: https://github.com/Robertleoj/lensboy
+default_branch: main
+commit: 3368fb28d9ffb55e07ee594fd1e151a7f32e269d
+original_path: vcpkg-configuration.json
+permalink: https://github.com/Robertleoj/lensboy/blob/3368fb28d9ffb55e07ee594fd1e151a7f32e269d/vcpkg-configuration.json
+retrieved_at: "2026-08-12T22:07:07Z"
+sha256: 92025c909792af060f298477ed9710da60012ba1ac18f56f93527850450c6d4f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Robertleoj/lensboy/blob/3368fb28d9ffb55e07ee594fd1e151a7f32e269d/LICENSE
+    sha256: f3d1df3dbf4f5aa1381b83acb749e3d70dc8aa069de6f48cfa6d701e4aad3578
+rationale: 'Common modern configuration: pinned official Git registry plus the Microsoft artifact registry.'
