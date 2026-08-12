@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-bun-lockb
+candidate_id: candidate-3dbcceef35ba4fa02479a711d8077167
+provider: github
+repository: gabrielvfonseca/woz
+repository_url: https://github.com/gabrielvfonseca/woz
+default_branch: main
+commit: 766bb601bfcae633c3c816ea48475ade0a69cb3d
+original_path: bun.lockb
+permalink: https://github.com/gabrielvfonseca/woz/blob/766bb601bfcae633c3c816ea48475ade0a69cb3d/bun.lockb
+retrieved_at: "2026-08-12T08:37:33Z"
+sha256: 6c93b83cfac40cb0bdeb5a3bcc1356ece64ca5b15ddc4f1f7295f661c7f15493
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/gabrielvfonseca/woz/blob/766bb601bfcae633c3c816ea48475ade0a69cb3d/LICENSE.md
+    sha256: 2cb17b682fa1b4768d1fd13db4fded2f2257b16044db5c3baf06ce1c3d152ed0
+rationale: 'Shortest useful edge case: an intentionally empty, comment-only lockfile placeholder, covering uninitialized lockfile handling.'

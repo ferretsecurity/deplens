@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-bun-lockb
+candidate_id: candidate-9da36924ea5e71389e4b207b1d51b000
+provider: github
+repository: milesburton/news-sentiment-reader
+repository_url: https://github.com/milesburton/news-sentiment-reader
+default_branch: main
+commit: e2dd5a27728c0e3afa3943b308b0e8f05fc8365e
+original_path: bun.lockb
+permalink: https://github.com/milesburton/news-sentiment-reader/blob/e2dd5a27728c0e3afa3943b308b0e8f05fc8365e/bun.lockb
+retrieved_at: "2026-08-12T08:37:24Z"
+sha256: b969d374cd80c268a9ef246efbe0776fb7ac334c92b480dbb1c7e3877578cd0c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/milesburton/news-sentiment-reader/blob/e2dd5a27728c0e3afa3943b308b0e8f05fc8365e/LICENSE
+    sha256: 5d3332c4a12cefaaf0a5516dea11bb5cb9a44c5faeda3f27dd5c3a82bff0f6db
+rationale: 'Primary representative: a normal application lockfile with direct and development dependencies, a substantial resolved dependency graph, peer/optional dependencies, and nested duplicate versions.'

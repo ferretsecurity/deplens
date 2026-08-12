@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-bun-lockb
+candidate_id: candidate-a0acb028b21ffff282ce4381359ac726
+provider: github
+repository: yamazaki-yuki-23/presentations
+repository_url: https://github.com/yamazaki-yuki-23/presentations
+default_branch: main
+commit: 996e9e0457c3d6cb00c3ad609818c0b5a16d756f
+original_path: bun.lockb
+permalink: https://github.com/yamazaki-yuki-23/presentations/blob/996e9e0457c3d6cb00c3ad609818c0b5a16d756f/bun.lockb
+retrieved_at: "2026-08-12T08:37:30Z"
+sha256: 09c0b711c9eb2f4557a532f3dedbfafdab3e373f018de3a7336d928f14f7baa5
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/yamazaki-yuki-23/presentations/blob/996e9e0457c3d6cb00c3ad609818c0b5a16d756f/LICENSE
+    sha256: ef076ab6c5f82116fbb7e127d0c51f66b57ff5aa198d789c4559202d7e2c01c9
+rationale: Adds a modern tool-focused project with a dev-only root workspace, peer dependency, and a distinct CLI/browser-oriented dependency tree.

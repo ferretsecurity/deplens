@@ -1513,12 +1513,246 @@ detectors:
       roles:
         - resolution
         - integrity
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/js-bun-lockb/candidate-3dbcceef35ba4fa02479a711d8077167/bun.lockb
+        - testdata/corpus/js-bun-lockb/candidate-9da36924ea5e71389e4b207b1d51b000/bun.lockb
+        - testdata/corpus/js-bun-lockb/candidate-a0acb028b21ffff282ce4381359ac726/bun.lockb
       target: 3
       query_plan:
         - filename:bun.lockb
+      queries:
+        - filename:bun.lockb
+      candidates:
+        - candidate-557830a4efe11153077f426e6302f540
+        - candidate-7f689294ada8617249af4f541d12de0a
+        - candidate-916bf0602dc5480317ac815ac57ae4e1
+        - candidate-37bbf7df945a4be92c3977f460af0e6f
+        - candidate-9da36924ea5e71389e4b207b1d51b000
+        - candidate-2fab62a263317722e3bd115785964d38
+        - candidate-a0acb028b21ffff282ce4381359ac726
+        - candidate-9586fbcaba73864487c8d40ba82381d7
+        - candidate-3dbcceef35ba4fa02479a711d8077167
+        - candidate-ad8cdcc7ad96d29a03d8142edf5b6a1d
+      filtered_search_hits:
+        source-selector-mismatch: 7
+      rejections:
+        - source-lfs-pointer
+        - duplicate-content
+        - license-missing
+        - license-missing
+        - license-missing
+        - source-lfs-pointer
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - source-lfs-pointer
+        - not-model-presentable-packet-size
+        - source-lfs-pointer
+        - license-ambiguous
+        - source-lfs-pointer
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - not-model-presentable-packet-size
+        - license-missing
+        - license-missing
+        - not-model-presentable-packet-size
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - source-lfs-pointer
+        - not-model-presentable-packet-size
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - repository-purpose
+        - license-missing
+        - source-lfs-pointer
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - repository-template
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - not-model-presentable-packet-size
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - not-model-presentable-packet-size
+        - license-missing
+        - not-model-presentable-packet-size
+        - license-missing
+        - license-missing
+      omitted:
+        - candidate-7f689294ada8617249af4f541d12de0a
+      decision_states:
+        - packet_fingerprint: 2f2cc44427b4d79884859be670c9310be56b365a617c77dd18fc8ee9397f7019
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-3dbcceef35ba4fa02479a711d8077167
+            - candidate-9da36924ea5e71389e4b207b1d51b000
+            - candidate-a0acb028b21ffff282ce4381359ac726
+          queries:
+            - filename:bun.lockb
+          candidates:
+            - candidate-557830a4efe11153077f426e6302f540
+            - candidate-7f689294ada8617249af4f541d12de0a
+            - candidate-916bf0602dc5480317ac815ac57ae4e1
+            - candidate-37bbf7df945a4be92c3977f460af0e6f
+            - candidate-9da36924ea5e71389e4b207b1d51b000
+            - candidate-2fab62a263317722e3bd115785964d38
+            - candidate-a0acb028b21ffff282ce4381359ac726
+            - candidate-9586fbcaba73864487c8d40ba82381d7
+            - candidate-3dbcceef35ba4fa02479a711d8077167
+            - candidate-ad8cdcc7ad96d29a03d8142edf5b6a1d
+          filtered_search_hits:
+            source-selector-mismatch: 7
+          rejections:
+            - source-lfs-pointer
+            - duplicate-content
+            - license-missing
+            - license-missing
+            - license-missing
+            - source-lfs-pointer
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - source-lfs-pointer
+            - not-model-presentable-packet-size
+            - source-lfs-pointer
+            - license-ambiguous
+            - source-lfs-pointer
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - not-model-presentable-packet-size
+            - license-missing
+            - license-missing
+            - not-model-presentable-packet-size
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - source-lfs-pointer
+            - not-model-presentable-packet-size
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - repository-purpose
+            - license-missing
+            - source-lfs-pointer
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - repository-template
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - not-model-presentable-packet-size
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - not-model-presentable-packet-size
+            - license-missing
+            - not-model-presentable-packet-size
+            - license-missing
+            - license-missing
+          omitted:
+            - candidate-7f689294ada8617249af4f541d12de0a
+          decision:
+            packet_fingerprint: 2f2cc44427b4d79884859be670c9310be56b365a617c77dd18fc8ee9397f7019
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: deno-lock
       form: lockfile
       roles:
