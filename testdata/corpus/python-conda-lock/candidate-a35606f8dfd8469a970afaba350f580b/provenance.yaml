@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-conda-lock
+candidate_id: candidate-a35606f8dfd8469a970afaba350f580b
+provider: github
+repository: nsidc/Antarctica_Today
+repository_url: https://github.com/nsidc/Antarctica_Today
+default_branch: main
+commit: 3dd1c0e04acad516ad5254f89f1275f22026505c
+original_path: conda-lock.yml
+permalink: https://github.com/nsidc/Antarctica_Today/blob/3dd1c0e04acad516ad5254f89f1275f22026505c/conda-lock.yml
+retrieved_at: "2026-08-12T07:44:40Z"
+sha256: 5f7074fec6cb4ec0528a4d38f3a5006e05402916c218c582e1db0aa9449f3942
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/nsidc/Antarctica_Today/blob/3dd1c0e04acad516ad5254f89f1275f22026505c/LICENSE.md
+    sha256: 936d59f50b3940e58b56c4bb0edd46413fff9c79c9d5cf5c867f70dd44679b80
+rationale: 'Best match for the most common real-world case: a short, single-platform, single-channel conda lockfile for a small Python scientific environment.'

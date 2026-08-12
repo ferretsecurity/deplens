@@ -156,12 +156,168 @@ detectors:
       roles:
         - resolution
         - integrity
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/python-conda-lock/candidate-a35606f8dfd8469a970afaba350f580b/conda-lock.yml
+        - testdata/corpus/python-conda-lock/candidate-cc4bcf6c966fac0666f80c63e3568d96/conda-lock.yml
+        - testdata/corpus/python-conda-lock/candidate-dda208a2de773d8a0b981b990bf672f8/conda-lock.yml
       target: 3
       query_plan:
         - filename:conda-lock.yml
+      queries:
+        - filename:conda-lock.yml
+      candidates:
+        - candidate-9d4836e59d5fc4b4daab31d73f6470b0
+        - candidate-c8e8ce0a2161d3bb65c11eda9b3a43f6
+        - candidate-9021761a0530654b602c65276d9470a6
+        - candidate-5c1de8e979a56d829fdf409e44da5014
+        - candidate-dda208a2de773d8a0b981b990bf672f8
+        - candidate-a35606f8dfd8469a970afaba350f580b
+        - candidate-113153d1b0d19d892591d23376711a50
+        - candidate-cc4bcf6c966fac0666f80c63e3568d96
+        - candidate-53a6c1688cada6b08cb10817922163ba
+        - candidate-33e2014c0718a9866c597aa60df8d08d
+      filtered_search_hits:
+        source-selector-mismatch: 10
+      rejections:
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-disallowed
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - repository-purpose
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - repository-template
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - not-model-presentable-packet-size
+        - license-ambiguous
+      omitted:
+        - candidate-113153d1b0d19d892591d23376711a50
+        - candidate-33e2014c0718a9866c597aa60df8d08d
+        - candidate-53a6c1688cada6b08cb10817922163ba
+        - candidate-5c1de8e979a56d829fdf409e44da5014
+        - candidate-9021761a0530654b602c65276d9470a6
+        - candidate-9d4836e59d5fc4b4daab31d73f6470b0
+        - candidate-c8e8ce0a2161d3bb65c11eda9b3a43f6
+      decision_states:
+        - packet_fingerprint: 3864dd0f600e51f9e6ad1b6e39f199e5dd508c034b8abfb40db0b7f19d6980a2
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 651855f529bbe92a2dbc708bb823b4cf046f1d92139acc0ec9dc21737e76f22f
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-a35606f8dfd8469a970afaba350f580b
+            - candidate-cc4bcf6c966fac0666f80c63e3568d96
+            - candidate-dda208a2de773d8a0b981b990bf672f8
+          queries:
+            - filename:conda-lock.yml
+          candidates:
+            - candidate-9d4836e59d5fc4b4daab31d73f6470b0
+            - candidate-c8e8ce0a2161d3bb65c11eda9b3a43f6
+            - candidate-9021761a0530654b602c65276d9470a6
+            - candidate-5c1de8e979a56d829fdf409e44da5014
+            - candidate-dda208a2de773d8a0b981b990bf672f8
+            - candidate-a35606f8dfd8469a970afaba350f580b
+            - candidate-113153d1b0d19d892591d23376711a50
+            - candidate-cc4bcf6c966fac0666f80c63e3568d96
+            - candidate-53a6c1688cada6b08cb10817922163ba
+            - candidate-33e2014c0718a9866c597aa60df8d08d
+          filtered_search_hits:
+            source-selector-mismatch: 10
+          rejections:
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-disallowed
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - repository-purpose
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - repository-template
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - not-model-presentable-packet-size
+            - license-ambiguous
+          omitted:
+            - candidate-113153d1b0d19d892591d23376711a50
+            - candidate-33e2014c0718a9866c597aa60df8d08d
+            - candidate-53a6c1688cada6b08cb10817922163ba
+            - candidate-5c1de8e979a56d829fdf409e44da5014
+            - candidate-9021761a0530654b602c65276d9470a6
+            - candidate-9d4836e59d5fc4b4daab31d73f6470b0
+            - candidate-c8e8ce0a2161d3bb65c11eda9b3a43f6
+          decision:
+            packet_fingerprint: 3864dd0f600e51f9e6ad1b6e39f199e5dd508c034b8abfb40db0b7f19d6980a2
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 651855f529bbe92a2dbc708bb823b4cf046f1d92139acc0ec9dc21737e76f22f
     - id: python-conda-env-alt
       form: manifest
       roles:

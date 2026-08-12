@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-conda-lock
+candidate_id: candidate-cc4bcf6c966fac0666f80c63e3568d96
+provider: github
+repository: Rose-STL-Lab/AutoSTPP
+repository_url: https://github.com/Rose-STL-Lab/AutoSTPP
+default_branch: main
+commit: ee48bd1459447dfe93ca643c889222796d083486
+original_path: conda-lock.yml
+permalink: https://github.com/Rose-STL-Lab/AutoSTPP/blob/ee48bd1459447dfe93ca643c889222796d083486/conda-lock.yml
+retrieved_at: "2026-08-12T07:45:05Z"
+sha256: 4808467a9dbf0e372e38013293bd2de444ef9720f514751eac4ca6e481dfa8e1
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Rose-STL-Lab/AutoSTPP/blob/ee48bd1459447dfe93ca643c889222796d083486/LICENSE
+    sha256: cf0bad653f6a08b89db203d1a4d10588858e1712bfa96506249e0aa0ee5319bd
+rationale: Adds strong structural variation with a very large multi-channel lockfile that includes CUDA/PyTorch GPU packages, media libs, and packaging tooling.

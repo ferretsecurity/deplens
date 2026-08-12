@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-conda-lock
+candidate_id: candidate-dda208a2de773d8a0b981b990bf672f8
+provider: github
+repository: ML4GW/amplfi
+repository_url: https://github.com/ML4GW/amplfi
+default_branch: main
+commit: 64ebea2b11662094ff1028f42809777c5575c7ec
+original_path: conda-lock.yml
+permalink: https://github.com/ML4GW/amplfi/blob/64ebea2b11662094ff1028f42809777c5575c7ec/conda-lock.yml
+retrieved_at: "2026-08-12T07:44:36Z"
+sha256: 49c1434ad251895c8225d25d3d92de5d6ce891b809264d2ae771fa71864d73f2
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ML4GW/amplfi/blob/64ebea2b11662094ff1028f42809777c5575c7ec/LICENSE
+    sha256: ca1f37d808f87376378e70d9bff37f37bf6e564d54ffb852374c39e7349ded18
+rationale: 'Adds a specialized scientific edge case: a medium-sized modern lockfile with many compiled domain-specific libraries plus auth/network dependencies not covered by the other two.'
