@@ -806,12 +806,242 @@ detectors:
       form: constraint-file
       roles:
         - constraint
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/python-constraints/candidate-0afb44d3b032bf0bec6a76d892843e7f/constraints.txt
+        - testdata/corpus/python-constraints/candidate-702df399bc11a2905ab0b1c81466c28d/constraints.txt
+        - testdata/corpus/python-constraints/candidate-e55140ac2b2be0b6955cdfd9f44cdb9f/constraints.txt
       target: 3
       query_plan:
         - filename:constraints.txt
+      queries:
+        - filename:constraints.txt
+      candidates:
+        - candidate-2e18558e68bcc466692de6ba8169d578
+        - candidate-3cb10e0904350b7e9c7d7d6ce44ca8d7
+        - candidate-45c4c8225727208558467378b211b2ff
+        - candidate-851950fe0c21228e8d6b949495608a46
+        - candidate-8aafc4d799947c5fd563849e6abc4ee8
+        - candidate-e55140ac2b2be0b6955cdfd9f44cdb9f
+        - candidate-720af8500653d14481cae571f9a80a41
+        - candidate-6acc91e71243b7322325e1af1832595f
+        - candidate-702df399bc11a2905ab0b1c81466c28d
+        - candidate-ccbcf1728e1ba884f96a9ead90b810ab
+        - candidate-06eff460bc2df03897e05f28bdaafdd5
+        - candidate-3f5d8fe1120f7776d3dbd4e6d568bda8
+        - candidate-6700525a756c3ac9553ae217033fa897
+        - candidate-30927b72eadac9392750cdb32281e078
+        - candidate-387be23a55548f86769651335e799f6f
+        - candidate-0afb44d3b032bf0bec6a76d892843e7f
+        - candidate-22bd5eb42f9b90d4b55dd2c1dc93c75d
+        - candidate-7c7f744a5124d857de7a4ba25aca7637
+        - candidate-e6c6df91350acb774f223e6aeafa64fc
+        - candidate-f970adbca30f09b2aca0f8a03eacfc36
+        - candidate-dfbfe94da4d28eefa357f7a5ca8942f0
+      filtered_search_hits:
+        source-selector-mismatch: 13
+      rejections:
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-disallowed
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - not-model-presentable-packet-size
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+      decision_states:
+        - packet_fingerprint: fca852c03e8294802963990de15a10c6c7bab53955a671b55faf1717587bd662
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 651855f529bbe92a2dbc708bb823b4cf046f1d92139acc0ec9dc21737e76f22f
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-0afb44d3b032bf0bec6a76d892843e7f
+            - candidate-702df399bc11a2905ab0b1c81466c28d
+            - candidate-e55140ac2b2be0b6955cdfd9f44cdb9f
+          queries:
+            - filename:constraints.txt
+          candidates:
+            - candidate-2e18558e68bcc466692de6ba8169d578
+            - candidate-3cb10e0904350b7e9c7d7d6ce44ca8d7
+            - candidate-45c4c8225727208558467378b211b2ff
+            - candidate-851950fe0c21228e8d6b949495608a46
+            - candidate-8aafc4d799947c5fd563849e6abc4ee8
+            - candidate-e55140ac2b2be0b6955cdfd9f44cdb9f
+            - candidate-720af8500653d14481cae571f9a80a41
+            - candidate-6acc91e71243b7322325e1af1832595f
+            - candidate-702df399bc11a2905ab0b1c81466c28d
+            - candidate-ccbcf1728e1ba884f96a9ead90b810ab
+            - candidate-06eff460bc2df03897e05f28bdaafdd5
+            - candidate-3f5d8fe1120f7776d3dbd4e6d568bda8
+            - candidate-6700525a756c3ac9553ae217033fa897
+            - candidate-30927b72eadac9392750cdb32281e078
+            - candidate-387be23a55548f86769651335e799f6f
+            - candidate-0afb44d3b032bf0bec6a76d892843e7f
+            - candidate-22bd5eb42f9b90d4b55dd2c1dc93c75d
+            - candidate-7c7f744a5124d857de7a4ba25aca7637
+            - candidate-e6c6df91350acb774f223e6aeafa64fc
+            - candidate-f970adbca30f09b2aca0f8a03eacfc36
+            - candidate-dfbfe94da4d28eefa357f7a5ca8942f0
+          filtered_search_hits:
+            source-selector-mismatch: 13
+          rejections:
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-disallowed
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - not-model-presentable-packet-size
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+          decision:
+            packet_fingerprint: fca852c03e8294802963990de15a10c6c7bab53955a671b55faf1717587bd662
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 651855f529bbe92a2dbc708bb823b4cf046f1d92139acc0ec9dc21737e76f22f
     - id: js-bower
       form: manifest
       roles:

@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-constraints
+candidate_id: candidate-e55140ac2b2be0b6955cdfd9f44cdb9f
+provider: github
+repository: Zyphra/ZONOS2
+repository_url: https://github.com/Zyphra/ZONOS2
+default_branch: main
+commit: 194c0a3ab67b90383a67646289f28d4ecb1c1f64
+original_path: constraints.txt
+permalink: https://github.com/Zyphra/ZONOS2/blob/194c0a3ab67b90383a67646289f28d4ecb1c1f64/constraints.txt
+retrieved_at: "2026-08-12T07:51:33Z"
+sha256: 8b3ce3a62b2f62b3691b95800dfcddce671386e68515ab4d8a90402a288bafa8
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Zyphra/ZONOS2/blob/194c0a3ab67b90383a67646289f28d4ecb1c1f64/LICENSE
+    sha256: 98216c34413fa17aeaaba8aeec41d157609b6b8f6c07cf6250239128cf616bb5
+rationale: 'Adds a useful edge case: constraints with custom package indexes and local-version CUDA wheels, covering non-default installation sources and hardware-specific pinning.'

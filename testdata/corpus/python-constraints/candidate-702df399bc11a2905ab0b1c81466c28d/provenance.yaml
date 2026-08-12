@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-constraints
+candidate_id: candidate-702df399bc11a2905ab0b1c81466c28d
+provider: github
+repository: xolox/python-deb-pkg-tools
+repository_url: https://github.com/xolox/python-deb-pkg-tools
+default_branch: master
+commit: a3d6ef1d82c6342b6a57876fc2360875e033f8f0
+original_path: constraints.txt
+permalink: https://github.com/xolox/python-deb-pkg-tools/blob/a3d6ef1d82c6342b6a57876fc2360875e033f8f0/constraints.txt
+retrieved_at: "2026-08-12T07:52:28Z"
+sha256: 06bc7ba9901164d670802f924c5148db84ac125cd6a13cf585955a40a883c97c
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/xolox/python-deb-pkg-tools/blob/a3d6ef1d82c6342b6a57876fc2360875e033f8f0/LICENSE.txt
+    sha256: 0bef4ffb1855b65570304f2018c6d44e4bab97bd5df8716ecd7800014d717267
+rationale: 'Adds an important structural variant: a compatibility constraint using environment markers and an upper bound instead of full pinning, which is a common legacy constraints pattern.'

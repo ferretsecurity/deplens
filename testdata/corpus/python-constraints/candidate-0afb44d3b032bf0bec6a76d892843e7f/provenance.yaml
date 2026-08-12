@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-constraints
+candidate_id: candidate-0afb44d3b032bf0bec6a76d892843e7f
+provider: github
+repository: v74all/Spiritus
+repository_url: https://github.com/v74all/Spiritus
+default_branch: main
+commit: cc678beacf85465d8d3e78f77e409b8ffa6f54ec
+original_path: constraints.txt
+permalink: https://github.com/v74all/Spiritus/blob/cc678beacf85465d8d3e78f77e409b8ffa6f54ec/constraints.txt
+retrieved_at: "2026-08-12T07:53:04Z"
+sha256: 26f7df96a9e753921b70e8a880a7c1d9f5d6a6818fa0f0b37c2d092245cae79f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/v74all/Spiritus/blob/cc678beacf85465d8d3e78f77e409b8ffa6f54ec/LICENSE
+    sha256: dfe0f3db6fe80696d479debe0e05e053445e00eca9edb8cef0bba6a8941ad21c
+rationale: 'Best match for common real-world usage: a small, hand-maintained application constraints file with exact pins for core web, database, and security packages.'
