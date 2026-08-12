@@ -1,0 +1,52 @@
+PODS:
+  - Alamofire (5.7.1)
+  - JXMovableCellTableView (0.0.3)
+  - Moya (15.0.0):
+    - Moya/Core (= 15.0.0)
+  - Moya/Core (15.0.0):
+    - Alamofire (~> 5.0)
+  - Moya/ReactiveSwift (15.0.0):
+    - Moya/Core
+    - ReactiveSwift (~> 6.6.1)
+  - Moya/RxSwift (15.0.0):
+    - Moya/Core
+    - RxSwift (~> 6.0)
+  - NeedleFoundation (0.17.2)
+  - ReactiveSwift (6.6.1)
+  - RxSwift (6.5.0)
+  - SnapKit (5.0.1)
+  - UICountingLabel (1.4.1)
+
+DEPENDENCIES:
+  - JXMovableCellTableView
+  - Moya (~> 15.0)
+  - Moya/ReactiveSwift (~> 15.0)
+  - Moya/RxSwift (~> 15.0)
+  - NeedleFoundation
+  - SnapKit (~> 5.0.0)
+  - UICountingLabel
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - JXMovableCellTableView
+    - Moya
+    - NeedleFoundation
+    - ReactiveSwift
+    - RxSwift
+    - SnapKit
+    - UICountingLabel
+
+SPEC CHECKSUMS:
+  Alamofire: 0123a34370cb170936ae79a8df46cc62b2edeb88
+  JXMovableCellTableView: 1493d1c8be055638a6e11464aa85026d09116f7e
+  Moya: 138f0573e53411fb3dc17016add0b748dfbd78ee
+  NeedleFoundation: 36cfaea9ae9eb527a796f5c1df19296c722666b8
+  ReactiveSwift: fab34244ad908808dc822bae352a058c8837c4ca
+  RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
+  SnapKit: 97b92857e3df3a0c71833cce143274bf6ef8e5eb
+  UICountingLabel: faf890b505d96312e324a86718f031fafffb0ccb
+
+PODFILE CHECKSUM: e87555c0add3af8adc46b9d0fd0b41dd23b465aa
+
+COCOAPODS: 1.11.2

@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-podfile-lock
+candidate_id: candidate-59dca4098c046b5fd53eb9ce2b54f438
+provider: github
+repository: eleev/drawer-view
+repository_url: https://github.com/eleev/drawer-view
+default_branch: master
+commit: 27e74972e3d1603a95bda8af0ae994910b9712e2
+original_path: Podfile.lock
+permalink: https://github.com/eleev/drawer-view/blob/27e74972e3d1603a95bda8af0ae994910b9712e2/Podfile.lock
+retrieved_at: "2026-08-12T23:05:48Z"
+sha256: 3da9e2358cb0b6381a86e3db40b5292dc8fec5255281067219d72c67e29e16e3
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/eleev/drawer-view/blob/27e74972e3d1603a95bda8af0ae994910b9712e2/LICENSE
+    sha256: e26c74110fb2a869e392da33d11af4a6234bfaa36dc70cf9ffd379d6b7949c9a
+rationale: Minimal valid lockfile with no pods, covering the empty-dependency structural case.

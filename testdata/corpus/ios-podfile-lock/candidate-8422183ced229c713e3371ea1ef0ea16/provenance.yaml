@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-podfile-lock
+candidate_id: candidate-8422183ced229c713e3371ea1ef0ea16
+provider: github
+repository: SystangoTechnologies/Swift-MVVM-Boilerplate
+repository_url: https://github.com/SystangoTechnologies/Swift-MVVM-Boilerplate
+default_branch: master
+commit: 126ae2658205f602caf5af51889bb31af47e339a
+original_path: Podfile.lock
+permalink: https://github.com/SystangoTechnologies/Swift-MVVM-Boilerplate/blob/126ae2658205f602caf5af51889bb31af47e339a/Podfile.lock
+retrieved_at: "2026-08-12T23:11:09Z"
+sha256: 81c2e51cfa882375d5e3fa448f3b24a3edaca4e70de2ec8b585cb84c501ff8c5
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/SystangoTechnologies/Swift-MVVM-Boilerplate/blob/126ae2658205f602caf5af51889bb31af47e339a/LICENSE
+    sha256: 51cb03ab7c77dede8d0b40149edc40a65c50ec19c67f2f2aafdb06ee8e293ae9
+rationale: Complex real-world edge case with deeply nested Firebase and social-login dependency trees.

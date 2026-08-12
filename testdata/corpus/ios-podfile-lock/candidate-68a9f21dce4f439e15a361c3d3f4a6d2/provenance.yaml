@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-podfile-lock
+candidate_id: candidate-68a9f21dce4f439e15a361c3d3f4a6d2
+provider: github
+repository: WangDaYeeeeee/GeometricWeather-iOS
+repository_url: https://github.com/WangDaYeeeeee/GeometricWeather-iOS
+default_branch: master
+commit: 805d29e8b275ff0f2325b11b9a6e07da7de76638
+original_path: Podfile.lock
+permalink: https://github.com/WangDaYeeeeee/GeometricWeather-iOS/blob/805d29e8b275ff0f2325b11b9a6e07da7de76638/Podfile.lock
+retrieved_at: "2026-08-12T23:06:12Z"
+sha256: 0018d89d1927202d65952fbac43d5b7c643e68767f6f7a47872a33e14d0a897e
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/WangDaYeeeeee/GeometricWeather-iOS/blob/805d29e8b275ff0f2325b11b9a6e07da7de76638/LICENSE
+    sha256: da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768
+rationale: 'Representative modern app lockfile: common networking, layout, dependency injection, and resolved transitive dependencies.'
