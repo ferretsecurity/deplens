@@ -12400,17 +12400,24 @@ detectors:
       roles:
         - integrity
       state: in-progress
-      iterations: 1
+      iterations: 2
       examples: []
       target: 3
       query_plan:
         - filename:go.sum
       queries:
         - filename:go.sum
+        - filename:go.sum
       filtered_search_hits:
-        source-selector-mismatch: 800
+        source-selector-mismatch: 1600
       history:
         - iteration: 1
+          result: unsuccessful
+          queries:
+            - filename:go.sum
+          filtered_search_hits:
+            source-selector-mismatch: 800
+        - iteration: 2
           result: unsuccessful
           queries:
             - filename:go.sum
