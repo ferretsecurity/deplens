@@ -1,0 +1,18 @@
+version: 2
+detector_id: scala-mill
+candidate_id: candidate-ed816c2c632bb5c435550e8d203db5eb
+provider: github
+repository: yakivy/dupin
+repository_url: https://github.com/yakivy/dupin
+default_branch: master
+commit: 7d6d49915396c9604b37015c493c4e6ef5dad0af
+original_path: build.sc
+permalink: https://github.com/yakivy/dupin/blob/7d6d49915396c9604b37015c493c4e6ef5dad0af/build.sc
+retrieved_at: "2026-08-12T10:40:31Z"
+sha256: e159916af01ad45b01a60543fb51343f2608857b57a590ba1e2fde906e3b49a9
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/yakivy/dupin/blob/7d6d49915396c9604b37015c493c4e6ef5dad0af/LICENSE
+    sha256: 2b5d96731237c380dab2696610e8ab5a727b7f6d35d102014518d4f59af01a27
+rationale: Adds cross-platform library structure across JVM, Scala.js, and Scala Native, including version-specific compiler configuration.

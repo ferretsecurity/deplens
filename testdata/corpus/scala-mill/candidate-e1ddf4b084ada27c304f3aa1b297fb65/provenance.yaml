@@ -1,0 +1,18 @@
+version: 2
+detector_id: scala-mill
+candidate_id: candidate-e1ddf4b084ada27c304f3aa1b297fb65
+provider: github
+repository: handsonscala/build
+repository_url: https://github.com/handsonscala/build
+default_branch: master
+commit: 2a11d04e154048ab3c49f33b02419dffe9d6efb3
+original_path: 3 - Web Services/14 - Simple Web and API Servers/4 - Websockets/build.sc
+permalink: https://github.com/handsonscala/build/blob/2a11d04e154048ab3c49f33b02419dffe9d6efb3/3 - Web Services/14 - Simple Web and API Servers/4 - Websockets/build.sc
+retrieved_at: "2026-08-12T10:41:43Z"
+sha256: edd761f0b0d42952b4ba4e1f637a0678206a328886c6c75ee9e80733b20320ef
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/handsonscala/build/blob/2a11d04e154048ab3c49f33b02419dffe9d6efb3/LICENSE
+    sha256: c883c48ac024718435a5552b8be255e743fd61e494b71f0fdc1468dd6428a71f
+rationale: 'Typical small Scala web-service application: one JVM module, normal dependencies, and a test module.'

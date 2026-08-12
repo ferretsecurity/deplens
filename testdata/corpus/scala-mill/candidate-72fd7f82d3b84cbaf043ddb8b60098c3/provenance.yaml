@@ -1,0 +1,18 @@
+version: 2
+detector_id: scala-mill
+candidate_id: candidate-72fd7f82d3b84cbaf043ddb8b60098c3
+provider: github
+repository: carlosedp/zio-temporal-hello
+repository_url: https://github.com/carlosedp/zio-temporal-hello
+default_branch: main
+commit: 0225e67824e31562c1f045d6d6eb7192e417797d
+original_path: build.sc
+permalink: https://github.com/carlosedp/zio-temporal-hello/blob/0225e67824e31562c1f045d6d6eb7192e417797d/build.sc
+retrieved_at: "2026-08-12T10:41:31Z"
+sha256: 8211000b1b0386c0b74d2b999cf10d9cf1dce7fa5a8e13038860b1d95123992c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/carlosedp/zio-temporal-hello/blob/0225e67824e31562c1f045d6d6eb7192e417797d/LICENSE
+    sha256: 6483ec421f2dddbbd798cc7647537a90c7f6a3b7749a8c519ba349d9d93aa19e
+rationale: Adds a modern multi-module production build with shared code, native-image and Docker packaging, plugins, and end-to-end wiring.
