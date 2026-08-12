@@ -1,0 +1,18 @@
+version: 2
+detector_id: ruby-appraisal
+candidate_id: candidate-54b5aecc9a7273fae706353a7af71d25
+provider: github
+repository: rack/rack-attack
+repository_url: https://github.com/rack/rack-attack
+default_branch: main
+commit: b771ea18afb9e6b625906a641d2d331e6d0c282b
+original_path: gemfiles/dalli3.gemfile
+permalink: https://github.com/rack/rack-attack/blob/b771ea18afb9e6b625906a641d2d331e6d0c282b/gemfiles/dalli3.gemfile
+retrieved_at: "2026-08-12T11:06:59Z"
+sha256: 85b4a761bd2f5a183f804663859cf4a28d539e604b73485004ae1a62c92c84cc
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/rack/rack-attack/blob/b771ea18afb9e6b625906a641d2d331e6d0c282b/LICENSE
+    sha256: 3f3dfceb81dcd0559ea001daf5d29a3d8f86962783e6816785f89f721648b1ad
+rationale: Adds a practical grouped optional-dependency block alongside a primary dependency and gemspec.

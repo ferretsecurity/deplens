@@ -1,0 +1,18 @@
+version: 2
+detector_id: ruby-appraisal
+candidate_id: candidate-3f2a5fff4e1072ddf25450e9c6cf9127
+provider: github
+repository: zdennis/activerecord-import
+repository_url: https://github.com/zdennis/activerecord-import
+default_branch: master
+commit: 35e452f37205ed33a1815c9a2f909bb560f6e78c
+original_path: gemfiles/7.1.gemfile
+permalink: https://github.com/zdennis/activerecord-import/blob/35e452f37205ed33a1815c9a2f909bb560f6e78c/gemfiles/7.1.gemfile
+retrieved_at: "2026-08-12T11:07:36Z"
+sha256: 988b3eaad187ffc5400f59ab5c5b37bd956af2f2d4c1219fa86fb893257d878b
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/zdennis/activerecord-import/blob/35e452f37205ed33a1815c9a2f909bb560f6e78c/LICENSE
+    sha256: 3b6685da5d9179e1f384b2f355f9a59f7602d2abc88cd51c1d676dfe5d4ad8d2
+rationale: 'Common minimal Gemfile pattern: a single version-pinned runtime dependency.'

@@ -1,0 +1,18 @@
+version: 2
+detector_id: ruby-appraisal
+candidate_id: candidate-39d5ba49cea3e8446d680bf963d6bc2c
+provider: github
+repository: palkan/logidze
+repository_url: https://github.com/palkan/logidze
+default_branch: master
+commit: 73c4bffd0e76b1e6d025a781d04f0fba43bf47fc
+original_path: gemfiles/rails8.gemfile
+permalink: https://github.com/palkan/logidze/blob/73c4bffd0e76b1e6d025a781d04f0fba43bf47fc/gemfiles/rails8.gemfile
+retrieved_at: "2026-08-12T11:09:02Z"
+sha256: 91b640bccf34c32b6a117be5aadc3b68647e526b53beb70a5001954081b9f118
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/palkan/logidze/blob/73c4bffd0e76b1e6d025a781d04f0fba43bf47fc/LICENSE.txt
+    sha256: 5f518a5aced8c647014043db70e37ef1e73c0d17f6a9b39025b3b3b0025cb3e6
+rationale: Adds variable reuse plus eval_gemfile composition, covering a structured multi-file Rails setup.
