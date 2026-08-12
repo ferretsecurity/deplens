@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-conda-environment
+candidate_id: candidate-56194f32f40cd3db58e3c26f0267ca4a
+provider: github
+repository: alvaro-budria/NeuSacc
+repository_url: https://github.com/alvaro-budria/NeuSacc
+default_branch: main
+commit: df51bf1ff9e7cfa8695b4d1afa2a4f6e905fb782
+original_path: environment.yaml
+permalink: https://github.com/alvaro-budria/NeuSacc/blob/df51bf1ff9e7cfa8695b4d1afa2a4f6e905fb782/environment.yaml
+retrieved_at: "2026-08-12T07:49:38Z"
+sha256: 91f321779208497d484d2f07f42dd91261d095ca7ffad0fe650c265d126399f3
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/alvaro-budria/NeuSacc/blob/df51bf1ff9e7cfa8695b4d1afa2a4f6e905fb782/LICENSE
+    sha256: 07c10aa207ddf994c646d4eb7984f69101d161cbe0b44cd424a22e1c74184f3a
+rationale: Adds another distinct structure with no `channels` and a `pip` subsection that installs from `requirements.txt`, which is common enough to be valuable but structurally different.

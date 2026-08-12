@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-conda-environment
+candidate_id: candidate-2a9c60234af7242bd79948f498d71a53
+provider: github
+repository: autonomousvision/unisurf
+repository_url: https://github.com/autonomousvision/unisurf
+default_branch: main
+commit: 224efc73d50acf422edacaebcaf59a8b8ba6d1ff
+original_path: environment.yaml
+permalink: https://github.com/autonomousvision/unisurf/blob/224efc73d50acf422edacaebcaf59a8b8ba6d1ff/environment.yaml
+retrieved_at: "2026-08-12T07:48:07Z"
+sha256: ca2cec896f998e9e5816fd39348441f8c011e6f85db0f1f960c712d6cebca88e
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/autonomousvision/unisurf/blob/224efc73d50acf422edacaebcaf59a8b8ba6d1ff/LICENSE
+    sha256: 702a64a46d7289d3e8f19ee2b887ec0203983549344c9e7b8e708e5320a4d880
+rationale: 'Best match for the most common real-world pattern: named conda env, multiple channels, mixed conda dependencies, and a nested `pip:` section.'

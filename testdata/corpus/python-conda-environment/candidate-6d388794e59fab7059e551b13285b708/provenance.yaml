@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-conda-environment
+candidate_id: candidate-6d388794e59fab7059e551b13285b708
+provider: github
+repository: dxsbiocc/Workflow
+repository_url: https://github.com/dxsbiocc/Workflow
+default_branch: main
+commit: eaec9bd43520a741fbc47af195d8c33ef7e05df0
+original_path: wrappers/metaphlan/environment.yaml
+permalink: https://github.com/dxsbiocc/Workflow/blob/eaec9bd43520a741fbc47af195d8c33ef7e05df0/wrappers/metaphlan/environment.yaml
+retrieved_at: "2026-08-12T07:50:27Z"
+sha256: 76a20da7fe6a0ab6bfe11e0ede4b51e9db873db7536c28b9147c25840573fc26
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/dxsbiocc/Workflow/blob/eaec9bd43520a741fbc47af195d8c33ef7e05df0/LICENSE
+    sha256: 62577a417977c102b083cddba57d4331f02e998358b4cca8414a6353770b7912
+rationale: 'Adds a short wrapper-style edge case: no `name`, `nodefaults` channel usage, and a single dependency with spaced version syntax.'

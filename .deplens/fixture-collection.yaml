@@ -565,13 +565,243 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/python-conda-environment/candidate-2a9c60234af7242bd79948f498d71a53/environment.yaml
+        - testdata/corpus/python-conda-environment/candidate-56194f32f40cd3db58e3c26f0267ca4a/environment.yaml
+        - testdata/corpus/python-conda-environment/candidate-6d388794e59fab7059e551b13285b708/wrappers/metaphlan/environment.yaml
       target: 3
       query_plan:
         - filename:environment.yaml
         - filename:environment.yml
+      queries:
+        - filename:environment.yaml
+      candidates:
+        - candidate-febea3d7b95e9176043b2b8af094b5c9
+        - candidate-c7a691ec7870c16c642676bd00db1d38
+        - candidate-90e4781c80c7ac6ffcf3033d425526f5
+        - candidate-bb0557e7bbf1fb6effd901b00a6d1766
+        - candidate-0be23d971094e530d760f863215147e0
+        - candidate-2a9c60234af7242bd79948f498d71a53
+        - candidate-6dfdacddf84619bd707b5755414cc775
+        - candidate-2ade5a14ba3cee3f6bf75d54d54dd3ea
+        - candidate-2049c7ce9b3868965727ac5c52263818
+        - candidate-b21ea3c432402554337e70db74e72cb6
+        - candidate-e1f5d8033b48147fbbd43d6f94a73535
+        - candidate-0730dbfcf56a5092b6dca38371731afe
+        - candidate-9a6854fb46a8d0bbc88cf769ff929081
+        - candidate-118726348f341397a281d18bc594b902
+        - candidate-710cf4495505420f7bb6c92c25b784d7
+        - candidate-df43101538307b2f505fdc364c84ac89
+        - candidate-a1380e9254ccda44720521fffc3b1e78
+        - candidate-96603974f0533bbcf7e3f4e456f9eee1
+        - candidate-9d82d63bd4ce1dcfa3ab1c9e7d004f54
+        - candidate-2e90ddb23f934a22be9082ec37b1ded8
+        - candidate-e9ee0321a0f33040d9cc5d1f9871d26c
+        - candidate-ff5b42ac384adca709dc1fd40569b7c2
+        - candidate-3c78d80387c5a985fb846aa7488e9a34
+        - candidate-74fbf5beaca7f5c00cfcac7d933e36f3
+        - candidate-5df6304024baf16b01a01b4471af1bf1
+        - candidate-fe49b659184eb2d2ce7492d8ea12c064
+        - candidate-497bd9c59b244ff51653ecdb3c34fd0f
+        - candidate-56194f32f40cd3db58e3c26f0267ca4a
+        - candidate-1ab1335a663d9cbf4ecbd20b4ad3a857
+        - candidate-7b6d9cc53db978b531bc67dfd9b31e14
+        - candidate-5296daf12bdb55a1d2d3e386e1eca520
+        - candidate-1da74ee304524ee335d384b131d621c2
+        - candidate-02d08fb4384a7b8bdcd463cdaa3a83ef
+        - candidate-af0cca6d0ad0e89792be7c935911f94b
+        - candidate-578b523bc996e3092d958ca95136d68c
+        - candidate-b8e6db7510f4d6d25f3bb1d9d0ccfb90
+        - candidate-312909413d13b105e93fb8b1d293543f
+        - candidate-9a01fab9852ef09501f446c4e1f6db2d
+        - candidate-2f096407581760958358819a05fb4ed1
+        - candidate-e92987c3d4780f53aec46ae460340aed
+        - candidate-6d388794e59fab7059e551b13285b708
+      filtered_search_hits:
+        source-selector-mismatch: 13
+      rejections:
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - duplicate-content
+        - duplicate-content
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+      decision_states:
+        - packet_fingerprint: d67da8a1cb43356d6f06ae00d1283d6c3c0fdcc64c691d5e20df6f1ddf0761bf
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 651855f529bbe92a2dbc708bb823b4cf046f1d92139acc0ec9dc21737e76f22f
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-2a9c60234af7242bd79948f498d71a53
+            - candidate-56194f32f40cd3db58e3c26f0267ca4a
+            - candidate-6d388794e59fab7059e551b13285b708
+          queries:
+            - filename:environment.yaml
+          candidates:
+            - candidate-febea3d7b95e9176043b2b8af094b5c9
+            - candidate-c7a691ec7870c16c642676bd00db1d38
+            - candidate-90e4781c80c7ac6ffcf3033d425526f5
+            - candidate-bb0557e7bbf1fb6effd901b00a6d1766
+            - candidate-0be23d971094e530d760f863215147e0
+            - candidate-2a9c60234af7242bd79948f498d71a53
+            - candidate-6dfdacddf84619bd707b5755414cc775
+            - candidate-2ade5a14ba3cee3f6bf75d54d54dd3ea
+            - candidate-2049c7ce9b3868965727ac5c52263818
+            - candidate-b21ea3c432402554337e70db74e72cb6
+            - candidate-e1f5d8033b48147fbbd43d6f94a73535
+            - candidate-0730dbfcf56a5092b6dca38371731afe
+            - candidate-9a6854fb46a8d0bbc88cf769ff929081
+            - candidate-118726348f341397a281d18bc594b902
+            - candidate-710cf4495505420f7bb6c92c25b784d7
+            - candidate-df43101538307b2f505fdc364c84ac89
+            - candidate-a1380e9254ccda44720521fffc3b1e78
+            - candidate-96603974f0533bbcf7e3f4e456f9eee1
+            - candidate-9d82d63bd4ce1dcfa3ab1c9e7d004f54
+            - candidate-2e90ddb23f934a22be9082ec37b1ded8
+            - candidate-e9ee0321a0f33040d9cc5d1f9871d26c
+            - candidate-ff5b42ac384adca709dc1fd40569b7c2
+            - candidate-3c78d80387c5a985fb846aa7488e9a34
+            - candidate-74fbf5beaca7f5c00cfcac7d933e36f3
+            - candidate-5df6304024baf16b01a01b4471af1bf1
+            - candidate-fe49b659184eb2d2ce7492d8ea12c064
+            - candidate-497bd9c59b244ff51653ecdb3c34fd0f
+            - candidate-56194f32f40cd3db58e3c26f0267ca4a
+            - candidate-1ab1335a663d9cbf4ecbd20b4ad3a857
+            - candidate-7b6d9cc53db978b531bc67dfd9b31e14
+            - candidate-5296daf12bdb55a1d2d3e386e1eca520
+            - candidate-1da74ee304524ee335d384b131d621c2
+            - candidate-02d08fb4384a7b8bdcd463cdaa3a83ef
+            - candidate-af0cca6d0ad0e89792be7c935911f94b
+            - candidate-578b523bc996e3092d958ca95136d68c
+            - candidate-b8e6db7510f4d6d25f3bb1d9d0ccfb90
+            - candidate-312909413d13b105e93fb8b1d293543f
+            - candidate-9a01fab9852ef09501f446c4e1f6db2d
+            - candidate-2f096407581760958358819a05fb4ed1
+            - candidate-e92987c3d4780f53aec46ae460340aed
+            - candidate-6d388794e59fab7059e551b13285b708
+          filtered_search_hits:
+            source-selector-mismatch: 13
+          rejections:
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - duplicate-content
+            - duplicate-content
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+          decision:
+            packet_fingerprint: d67da8a1cb43356d6f06ae00d1283d6c3c0fdcc64c691d5e20df6f1ddf0761bf
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 651855f529bbe92a2dbc708bb823b4cf046f1d92139acc0ec9dc21737e76f22f
     - id: python-constraints
       form: constraint-file
       roles:
