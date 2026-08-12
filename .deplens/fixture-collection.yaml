@@ -4524,12 +4524,19 @@ detectors:
         - declaration
         - constraint
         - configuration
-      state: pending
-      iterations: 0
+      state: in-progress
+      iterations: 1
       examples: []
       target: 3
       query_plan:
         - path:project/plugins.sbt
+      queries:
+        - path:project/plugins.sbt
+      history:
+        - iteration: 1
+          result: unsuccessful
+          queries:
+            - path:project/plugins.sbt
     - id: scala-sbt-dependencies
       form: build-definition
       roles:
