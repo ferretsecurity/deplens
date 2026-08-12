@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-stack-lock
+candidate_id: candidate-0fca9835677fa4475777be20dce45eca
+provider: github
+repository: basile-henry/infinisweep
+repository_url: https://github.com/basile-henry/infinisweep
+default_branch: main
+commit: 9feaa3cd4831ad0768a3d71c706247de2d98b29c
+original_path: stack.yaml.lock
+permalink: https://github.com/basile-henry/infinisweep/blob/9feaa3cd4831ad0768a3d71c706247de2d98b29c/stack.yaml.lock
+retrieved_at: "2026-08-12T13:52:28Z"
+sha256: 9f6f6af8b384d86e9669acd7ed1b7a8960a50542bb153e6b6a89b8e2fa69646b
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/basile-henry/infinisweep/blob/9feaa3cd4831ad0768a3d71c706247de2d98b29c/LICENSE
+    sha256: 8d583b8eaafbbdfbbf32db227a66791cff33022749d8419ca1f571c216b022a0
+rationale: Compact example of the usual Hackage package override with Pantry metadata.

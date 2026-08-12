@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-stack-lock
+candidate_id: candidate-0938c788f62c411c25b6ef11f1919b76
+provider: github
+repository: awakesecurity/proto3-suite
+repository_url: https://github.com/awakesecurity/proto3-suite
+default_branch: master
+commit: bb987ad2421ce429401193e1bf0416fe79625836
+original_path: stack.yaml.lock
+permalink: https://github.com/awakesecurity/proto3-suite/blob/bb987ad2421ce429401193e1bf0416fe79625836/stack.yaml.lock
+retrieved_at: "2026-08-12T13:48:49Z"
+sha256: a42a21904c91342419eba13c7fd1b609868f1d5c3429cafce407b791623f082d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/awakesecurity/proto3-suite/blob/bb987ad2421ce429401193e1bf0416fe79625836/LICENSE
+    sha256: 81778d8fba28dff66a6037de7f81f5db3ee9abc89f1c4b7067d9b4fa2250876c
+rationale: Adds the important edge case of an extra package resolved from a direct archive URL.

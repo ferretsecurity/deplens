@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-stack-lock
+candidate_id: candidate-0b03d68928409cd22054efd39fdc491a
+provider: github
+repository: freckle/hspec-expectations-json
+repository_url: https://github.com/freckle/hspec-expectations-json
+default_branch: main
+commit: ae7c3045336ab50261f484df8c46d05ffb2e20c1
+original_path: stack.yaml.lock
+permalink: https://github.com/freckle/hspec-expectations-json/blob/ae7c3045336ab50261f484df8c46d05ffb2e20c1/stack.yaml.lock
+retrieved_at: "2026-08-12T13:52:33Z"
+sha256: 95ede683a51ae6597218a04926154d97725ddd3ab44af2c965a5f2855f9f975f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/freckle/hspec-expectations-json/blob/ae7c3045336ab50261f484df8c46d05ffb2e20c1/LICENSE
+    sha256: e7c0e67f8c49c80fd002169755a73d6ebc55a07e0707142f6283241cb00011e9
+rationale: 'Common minimal Stack lockfile: no extra packages and a standard LTS snapshot.'
