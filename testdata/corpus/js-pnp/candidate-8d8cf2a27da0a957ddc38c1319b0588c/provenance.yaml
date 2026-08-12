@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-pnp
+candidate_id: candidate-8d8cf2a27da0a957ddc38c1319b0588c
+provider: github
+repository: PacktPublishing/Simplifying-State-Management-in-React-Native
+repository_url: https://github.com/PacktPublishing/Simplifying-State-Management-in-React-Native
+default_branch: main
+commit: 74b600b60279d625b4956dcd2f9ca54f975b16e6
+original_path: chapter-6/.pnp.loader.mjs
+permalink: https://github.com/PacktPublishing/Simplifying-State-Management-in-React-Native/blob/74b600b60279d625b4956dcd2f9ca54f975b16e6/chapter-6/.pnp.loader.mjs
+retrieved_at: "2026-08-12T09:00:58Z"
+sha256: 95378c1db1354bbe6247bfa5c61df7a79869d11f27827187dc6ac5e747b67e10
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/PacktPublishing/Simplifying-State-Management-in-React-Native/blob/74b600b60279d625b4956dcd2f9ca54f975b16e6/LICENSE
+    sha256: 8387fd17a4c8f3946dcfd9cfe644a2ae6064cf26deea1476f09ab2535c0fb759
+rationale: Compact older loader implementation, adding historical Node/Yarn compatibility variation.

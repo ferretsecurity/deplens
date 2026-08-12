@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-pnp
+candidate_id: candidate-8b84da84c2c449e3f97a56394cda9906
+provider: github
+repository: aws-samples/aws-saas-factory-eks-saas-workshop
+repository_url: https://github.com/aws-samples/aws-saas-factory-eks-saas-workshop
+default_branch: main
+commit: f13a3488a9f76e0788f86fd23bc94346eb73d320
+original_path: client/web/application/.pnp.loader.mjs
+permalink: https://github.com/aws-samples/aws-saas-factory-eks-saas-workshop/blob/f13a3488a9f76e0788f86fd23bc94346eb73d320/client/web/application/.pnp.loader.mjs
+retrieved_at: "2026-08-12T09:00:15Z"
+sha256: d2919a9c2567f71623dba23476d2466cfd0344791d3bdd2df213e756b74ef930
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/aws-samples/aws-saas-factory-eks-saas-workshop/blob/f13a3488a9f76e0788f86fd23bc94346eb73d320/LICENSE
+    sha256: ef47b4ae2a1a8d38ef87b38dc5927967e7b472ffa3f7d125e89dbc8353a1e7af
+rationale: Modern full Yarn PnP ESM loader; best representative of real-world generated usage.

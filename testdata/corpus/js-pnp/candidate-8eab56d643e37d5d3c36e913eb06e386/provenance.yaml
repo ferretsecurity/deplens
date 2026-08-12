@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-pnp
+candidate_id: candidate-8eab56d643e37d5d3c36e913eb06e386
+provider: github
+repository: electron-userland/electron-builder
+repository_url: https://github.com/electron-userland/electron-builder
+default_branch: master
+commit: 075efcf2725a733aa25bb115801dee62e85a5594
+original_path: test/fixtures/.pnp.cjs
+permalink: https://github.com/electron-userland/electron-builder/blob/075efcf2725a733aa25bb115801dee62e85a5594/test/fixtures/.pnp.cjs
+retrieved_at: "2026-08-12T08:58:55Z"
+sha256: 2e9cd432807413536c01089498744423a41edd1c72c9d8f0a060f09c90edb6ba
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/electron-userland/electron-builder/blob/075efcf2725a733aa25bb115801dee62e85a5594/LICENSE
+    sha256: bed8d0ab3e6031817f775a641ff37313b0f5591bc8ba0ed79b978dafbd4231ce
+rationale: Small functional CommonJS PnP API fixture, covering API-shaped runtime access rather than ESM loader hooks.

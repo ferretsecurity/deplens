@@ -2519,13 +2519,271 @@ detectors:
       roles:
         - inventory
         - resolution
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/js-pnp/candidate-8b84da84c2c449e3f97a56394cda9906/client/web/application/.pnp.loader.mjs
+        - testdata/corpus/js-pnp/candidate-8d8cf2a27da0a957ddc38c1319b0588c/chapter-6/.pnp.loader.mjs
+        - testdata/corpus/js-pnp/candidate-8eab56d643e37d5d3c36e913eb06e386/test/fixtures/.pnp.cjs
       target: 3
       query_plan:
         - filename:.pnp.cjs
         - filename:.pnp.loader.mjs
+      queries:
+        - filename:.pnp.cjs
+        - filename:.pnp.loader.mjs
+      candidates:
+        - candidate-149d8f007d3031c54f1200180dd59066
+        - candidate-8eab56d643e37d5d3c36e913eb06e386
+        - candidate-502970f4e28c8a3add1f28777732176c
+        - candidate-4526e764b66f4c7c31286e330dac3145
+        - candidate-737b0e4efb98a20e46a97b170627aa04
+        - candidate-970f374e9535d38a34b06e9ce086c6fb
+        - candidate-526c497d9a2c52ab02bf0a73fc78e547
+        - candidate-2ac409720d3c1b847264d55c553dc142
+        - candidate-ceefaccd4f2e2de0a4f28e8acbe0cc8e
+        - candidate-93a2271e1e05789044aea652bd3915cc
+        - candidate-140e9f055c82222d1c3d0acaacee3694
+        - candidate-0d36e5887dd2ad5fb22ca0963e0312d8
+        - candidate-ddd0299c94aba05edf87df17e63be4de
+        - candidate-7573ba1269d6f967a5c67f2d41f6ff3e
+        - candidate-6b56b316a50333901b8af3ca56e68e1b
+        - candidate-8b84da84c2c449e3f97a56394cda9906
+        - candidate-41b6d7d898c0709d6f0d9536c4a3c10b
+        - candidate-8d8cf2a27da0a957ddc38c1319b0588c
+        - candidate-d56e3630b7bdacdd414dd2bb62efd2f5
+        - candidate-6756de5363b4769b7ec042636a4adfec
+        - candidate-367a45b3ddc6daab8603907d48066ad3
+        - candidate-eca1839bd4c8a7570ea9f8fdc87050a4
+        - candidate-6291b932fe15da30d5359e5350cbcf04
+        - candidate-c7b0b9d0c2b08c852cc200925df0202a
+        - candidate-a5fff3abb42727a0e2db78cb86012a5f
+        - candidate-fb944a65c6358394e9f6c1a07a0f2c28
+      filtered_search_hits:
+        source-selector-mismatch: 1
+      rejections:
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - duplicate-content
+        - duplicate-content
+        - duplicate-content
+        - duplicate-content
+        - license-ambiguous
+        - repository-purpose
+        - duplicate-content
+        - repository-purpose
+        - license-ambiguous
+        - duplicate-content
+        - duplicate-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - duplicate-content
+        - duplicate-content
+        - duplicate-content
+        - license-ambiguous
+        - duplicate-content
+        - repository-purpose
+        - license-missing
+        - duplicate-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - duplicate-content
+        - duplicate-content
+        - duplicate-content
+        - duplicate-content
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - duplicate-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - duplicate-content
+        - duplicate-content
+        - duplicate-content
+        - license-ambiguous
+        - license-missing
+        - duplicate-content
+        - duplicate-content
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - duplicate-content
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - repository-purpose
+        - repository-purpose
+        - duplicate-content
+        - repository-purpose
+      omitted:
+        - candidate-0d36e5887dd2ad5fb22ca0963e0312d8
+        - candidate-2ac409720d3c1b847264d55c553dc142
+        - candidate-367a45b3ddc6daab8603907d48066ad3
+        - candidate-6291b932fe15da30d5359e5350cbcf04
+        - candidate-6b56b316a50333901b8af3ca56e68e1b
+        - candidate-7573ba1269d6f967a5c67f2d41f6ff3e
+        - candidate-a5fff3abb42727a0e2db78cb86012a5f
+        - candidate-c7b0b9d0c2b08c852cc200925df0202a
+        - candidate-ceefaccd4f2e2de0a4f28e8acbe0cc8e
+        - candidate-ddd0299c94aba05edf87df17e63be4de
+        - candidate-eca1839bd4c8a7570ea9f8fdc87050a4
+        - candidate-fb944a65c6358394e9f6c1a07a0f2c28
+      decision_states:
+        - packet_fingerprint: e812a8b9e40a7a76da8c145eb0f5247e0e822cc71339f34ed3544ff6b8fb871e
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-8b84da84c2c449e3f97a56394cda9906
+            - candidate-8d8cf2a27da0a957ddc38c1319b0588c
+            - candidate-8eab56d643e37d5d3c36e913eb06e386
+          queries:
+            - filename:.pnp.cjs
+            - filename:.pnp.loader.mjs
+          candidates:
+            - candidate-149d8f007d3031c54f1200180dd59066
+            - candidate-8eab56d643e37d5d3c36e913eb06e386
+            - candidate-502970f4e28c8a3add1f28777732176c
+            - candidate-4526e764b66f4c7c31286e330dac3145
+            - candidate-737b0e4efb98a20e46a97b170627aa04
+            - candidate-970f374e9535d38a34b06e9ce086c6fb
+            - candidate-526c497d9a2c52ab02bf0a73fc78e547
+            - candidate-2ac409720d3c1b847264d55c553dc142
+            - candidate-ceefaccd4f2e2de0a4f28e8acbe0cc8e
+            - candidate-93a2271e1e05789044aea652bd3915cc
+            - candidate-140e9f055c82222d1c3d0acaacee3694
+            - candidate-0d36e5887dd2ad5fb22ca0963e0312d8
+            - candidate-ddd0299c94aba05edf87df17e63be4de
+            - candidate-7573ba1269d6f967a5c67f2d41f6ff3e
+            - candidate-6b56b316a50333901b8af3ca56e68e1b
+            - candidate-8b84da84c2c449e3f97a56394cda9906
+            - candidate-41b6d7d898c0709d6f0d9536c4a3c10b
+            - candidate-8d8cf2a27da0a957ddc38c1319b0588c
+            - candidate-d56e3630b7bdacdd414dd2bb62efd2f5
+            - candidate-6756de5363b4769b7ec042636a4adfec
+            - candidate-367a45b3ddc6daab8603907d48066ad3
+            - candidate-eca1839bd4c8a7570ea9f8fdc87050a4
+            - candidate-6291b932fe15da30d5359e5350cbcf04
+            - candidate-c7b0b9d0c2b08c852cc200925df0202a
+            - candidate-a5fff3abb42727a0e2db78cb86012a5f
+            - candidate-fb944a65c6358394e9f6c1a07a0f2c28
+          filtered_search_hits:
+            source-selector-mismatch: 1
+          rejections:
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - duplicate-content
+            - duplicate-content
+            - duplicate-content
+            - duplicate-content
+            - license-ambiguous
+            - repository-purpose
+            - duplicate-content
+            - repository-purpose
+            - license-ambiguous
+            - duplicate-content
+            - duplicate-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - duplicate-content
+            - duplicate-content
+            - duplicate-content
+            - license-ambiguous
+            - duplicate-content
+            - repository-purpose
+            - license-missing
+            - duplicate-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - duplicate-content
+            - duplicate-content
+            - duplicate-content
+            - duplicate-content
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - duplicate-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - duplicate-content
+            - duplicate-content
+            - duplicate-content
+            - license-ambiguous
+            - license-missing
+            - duplicate-content
+            - duplicate-content
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - duplicate-content
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - repository-purpose
+            - repository-purpose
+            - duplicate-content
+            - repository-purpose
+          omitted:
+            - candidate-0d36e5887dd2ad5fb22ca0963e0312d8
+            - candidate-2ac409720d3c1b847264d55c553dc142
+            - candidate-367a45b3ddc6daab8603907d48066ad3
+            - candidate-6291b932fe15da30d5359e5350cbcf04
+            - candidate-6b56b316a50333901b8af3ca56e68e1b
+            - candidate-7573ba1269d6f967a5c67f2d41f6ff3e
+            - candidate-a5fff3abb42727a0e2db78cb86012a5f
+            - candidate-c7b0b9d0c2b08c852cc200925df0202a
+            - candidate-ceefaccd4f2e2de0a4f28e8acbe0cc8e
+            - candidate-ddd0299c94aba05edf87df17e63be4de
+            - candidate-eca1839bd4c8a7570ea9f8fdc87050a4
+            - candidate-fb944a65c6358394e9f6c1a07a0f2c28
+          decision:
+            packet_fingerprint: e812a8b9e40a7a76da8c145eb0f5247e0e822cc71339f34ed3544ff6b8fb871e
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: js-pnpm-workspace
       form: workspace-definition
       roles:
