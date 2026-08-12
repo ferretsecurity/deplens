@@ -6966,12 +6966,242 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/ios-podfile/candidate-0fb6845e61f842798a56e50fae576891/Podfile
+        - testdata/corpus/ios-podfile/candidate-4a2a50c18105f0f7539ab6143caaeadd/Podfile
+        - testdata/corpus/ios-podfile/candidate-8ed1bff5d87bf15d6c5c2aac8dfc9695/Podfile
       target: 3
       query_plan:
         - filename:Podfile
+      queries:
+        - filename:Podfile
+      candidates:
+        - candidate-e13d2e2b2ec2a0893380560b71d71859
+        - candidate-feea8bc137dadf91b594bcd4434b52d4
+        - candidate-e689dd8bc7dfa80b00720f0950e244ec
+        - candidate-2cb71cec85382ebfa4fbad1ead965567
+        - candidate-fa21f5fae5a03de3896f6f1ecb3a0c99
+        - candidate-d946cb607f4baacd689333d52f0c772c
+        - candidate-4a2a50c18105f0f7539ab6143caaeadd
+        - candidate-408f246f96d9f1ccecfa19f6c14c1f0c
+        - candidate-91562cb9f0de595707cfb264e792b670
+        - candidate-3ae91884ad09751ef01abfa9790543f6
+        - candidate-0021ead576810ed0700faf75ab11bfcb
+        - candidate-678b340fc811c1804e812ad41275a85e
+        - candidate-cf9d56042c8be03dfebe32693490a518
+        - candidate-f76810d000a3ad0f7f1eb58894e04a27
+        - candidate-0ba1834f04088d8ffb27336fc18ebeb5
+        - candidate-fda26cc2bd92b110f6ef725e78d2505e
+        - candidate-33314c4fb97ce3c3daaabeb43e334c37
+        - candidate-55e56109b18bcd070275de2e32efdffc
+        - candidate-a8a8e159f0e9927c1b00a773d0729250
+        - candidate-e61a35ccdc11e2e936a250d8e851744a
+        - candidate-a0fc6318c37c1a2cfb73d62f93dd8b12
+        - candidate-77a6bd2e2eef1d967f0a9d21f6283847
+        - candidate-101cfc918a2488e269c5a7aef9738529
+        - candidate-de6892b33b962f246526c1b90e7916c1
+        - candidate-8ed1bff5d87bf15d6c5c2aac8dfc9695
+        - candidate-c53c403a04d1205e218c09a9eb015091
+        - candidate-c3477c020456bf14d23082b12afb226e
+        - candidate-c374197b31a4b7c448d35edcce576f4b
+        - candidate-19e8b0f6842823a1acfb9f36bb56bb0b
+        - candidate-0fb6845e61f842798a56e50fae576891
+        - candidate-4c00f755d47c24efbec1a2021bf384f2
+        - candidate-d4b99d23043cc3cdd8264c63a2823483
+        - candidate-100901b4deaf35360bc86895f2770029
+        - candidate-c930cd19fda97a5f6b21f9600a24b4d4
+        - candidate-16af1b80acf4dbea68f715691f87d18b
+        - candidate-855bdbd71fae7a2c2d730baa3a85e21e
+        - candidate-0537e2e117dde7add6c66373ec75e53b
+        - candidate-64beb8cd92150f36f816a164ef6632e9
+        - candidate-9c6774846ce3532d078a0353152910bf
+        - candidate-21ef59b1440a6cab7601dd672764b5e2
+        - candidate-2b2d356748df1e3d5c34bc5e6f14d6b2
+        - candidate-c1175ed136f86c303a52b00aad7be971
+        - candidate-c3f6ac0753a7b61c28d1e01f9f4fd430
+        - candidate-5a6664b19690928ea469eb7a0e27ab02
+        - candidate-f4d1a27631faa480f99cc0a0036ea0b3
+        - candidate-5e4223065b2f9a66db04e56004015b7e
+        - candidate-87052a3d9087abb9010593b3f5e7a121
+        - candidate-8718d746beb6071f898b93259468e491
+      filtered_search_hits:
+        source-selector-mismatch: 3
+      rejections:
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - repository-purpose
+        - repository-purpose
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - repository-purpose
+        - license-missing
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - repository-purpose
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - license-missing
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - license-missing
+        - repository-purpose
+      decision_states:
+        - packet_fingerprint: 19729282fadb2bc25f4401b2500b6e2c5d95bb16afd70c9bb7051460e35b9a9f
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-0fb6845e61f842798a56e50fae576891
+            - candidate-4a2a50c18105f0f7539ab6143caaeadd
+            - candidate-8ed1bff5d87bf15d6c5c2aac8dfc9695
+          queries:
+            - filename:Podfile
+          candidates:
+            - candidate-e13d2e2b2ec2a0893380560b71d71859
+            - candidate-feea8bc137dadf91b594bcd4434b52d4
+            - candidate-e689dd8bc7dfa80b00720f0950e244ec
+            - candidate-2cb71cec85382ebfa4fbad1ead965567
+            - candidate-fa21f5fae5a03de3896f6f1ecb3a0c99
+            - candidate-d946cb607f4baacd689333d52f0c772c
+            - candidate-4a2a50c18105f0f7539ab6143caaeadd
+            - candidate-408f246f96d9f1ccecfa19f6c14c1f0c
+            - candidate-91562cb9f0de595707cfb264e792b670
+            - candidate-3ae91884ad09751ef01abfa9790543f6
+            - candidate-0021ead576810ed0700faf75ab11bfcb
+            - candidate-678b340fc811c1804e812ad41275a85e
+            - candidate-cf9d56042c8be03dfebe32693490a518
+            - candidate-f76810d000a3ad0f7f1eb58894e04a27
+            - candidate-0ba1834f04088d8ffb27336fc18ebeb5
+            - candidate-fda26cc2bd92b110f6ef725e78d2505e
+            - candidate-33314c4fb97ce3c3daaabeb43e334c37
+            - candidate-55e56109b18bcd070275de2e32efdffc
+            - candidate-a8a8e159f0e9927c1b00a773d0729250
+            - candidate-e61a35ccdc11e2e936a250d8e851744a
+            - candidate-a0fc6318c37c1a2cfb73d62f93dd8b12
+            - candidate-77a6bd2e2eef1d967f0a9d21f6283847
+            - candidate-101cfc918a2488e269c5a7aef9738529
+            - candidate-de6892b33b962f246526c1b90e7916c1
+            - candidate-8ed1bff5d87bf15d6c5c2aac8dfc9695
+            - candidate-c53c403a04d1205e218c09a9eb015091
+            - candidate-c3477c020456bf14d23082b12afb226e
+            - candidate-c374197b31a4b7c448d35edcce576f4b
+            - candidate-19e8b0f6842823a1acfb9f36bb56bb0b
+            - candidate-0fb6845e61f842798a56e50fae576891
+            - candidate-4c00f755d47c24efbec1a2021bf384f2
+            - candidate-d4b99d23043cc3cdd8264c63a2823483
+            - candidate-100901b4deaf35360bc86895f2770029
+            - candidate-c930cd19fda97a5f6b21f9600a24b4d4
+            - candidate-16af1b80acf4dbea68f715691f87d18b
+            - candidate-855bdbd71fae7a2c2d730baa3a85e21e
+            - candidate-0537e2e117dde7add6c66373ec75e53b
+            - candidate-64beb8cd92150f36f816a164ef6632e9
+            - candidate-9c6774846ce3532d078a0353152910bf
+            - candidate-21ef59b1440a6cab7601dd672764b5e2
+            - candidate-2b2d356748df1e3d5c34bc5e6f14d6b2
+            - candidate-c1175ed136f86c303a52b00aad7be971
+            - candidate-c3f6ac0753a7b61c28d1e01f9f4fd430
+            - candidate-5a6664b19690928ea469eb7a0e27ab02
+            - candidate-f4d1a27631faa480f99cc0a0036ea0b3
+            - candidate-5e4223065b2f9a66db04e56004015b7e
+            - candidate-87052a3d9087abb9010593b3f5e7a121
+            - candidate-8718d746beb6071f898b93259468e491
+          filtered_search_hits:
+            source-selector-mismatch: 3
+          rejections:
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - repository-purpose
+            - repository-purpose
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - repository-purpose
+            - license-missing
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - repository-purpose
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - license-missing
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - license-missing
+            - repository-purpose
+          decision:
+            packet_fingerprint: 19729282fadb2bc25f4401b2500b6e2c5d95bb16afd70c9bb7051460e35b9a9f
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: ios-cartfile
       form: manifest
       roles:

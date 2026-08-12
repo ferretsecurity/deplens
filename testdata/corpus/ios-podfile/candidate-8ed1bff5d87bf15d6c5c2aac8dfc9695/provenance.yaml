@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-podfile
+candidate_id: candidate-8ed1bff5d87bf15d6c5c2aac8dfc9695
+provider: github
+repository: Codecademy/CCListView
+repository_url: https://github.com/Codecademy/CCListView
+default_branch: master
+commit: 486482a4f601ed928247b76911d7ac8c0445aeb8
+original_path: Podfile
+permalink: https://github.com/Codecademy/CCListView/blob/486482a4f601ed928247b76911d7ac8c0445aeb8/Podfile
+retrieved_at: "2026-08-12T12:30:02Z"
+sha256: ed241b05ca571f3e73cb0f00f53d8a32b9fe5ebe0d4f8797a01a5af68966c12b
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/Codecademy/CCListView/blob/486482a4f601ed928247b76911d7ac8c0445aeb8/LICENSE.md
+    sha256: d3f0324a867ab3f883d861d977999a1ad2ac384be0f3d54d911ebb75714d4d2f
+rationale: Compact edge case with an explicit Xcode project plus environment-dependent local pod path.

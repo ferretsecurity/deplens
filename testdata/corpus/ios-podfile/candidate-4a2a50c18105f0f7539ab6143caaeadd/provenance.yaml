@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-podfile
+candidate_id: candidate-4a2a50c18105f0f7539ab6143caaeadd
+provider: github
+repository: qiniu/objc-sdk
+repository_url: https://github.com/qiniu/objc-sdk
+default_branch: master
+commit: eb3c6fde480770ae6803deed361736aea7b234c5
+original_path: Podfile
+permalink: https://github.com/qiniu/objc-sdk/blob/eb3c6fde480770ae6803deed361736aea7b234c5/Podfile
+retrieved_at: "2026-08-12T12:28:23Z"
+sha256: 340a364b1572c48e4a0d1e4130969876d29125cd1caa64cb49dfdea128a93b78
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/qiniu/objc-sdk/blob/eb3c6fde480770ae6803deed361736aea7b234c5/LICENSE
+    sha256: 6bd8817a1d111b201bacd310ca0605d2efefbdcef5ea26b7b2b527d7ab1b1964
+rationale: Adds reusable dependency helper methods and parallel iOS/macOS app and test targets.

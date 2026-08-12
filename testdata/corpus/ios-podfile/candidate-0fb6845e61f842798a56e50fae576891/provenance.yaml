@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-podfile
+candidate_id: candidate-0fb6845e61f842798a56e50fae576891
+provider: github
+repository: hathway/JSONRequest
+repository_url: https://github.com/hathway/JSONRequest
+default_branch: master
+commit: b612701407148833a9a0319593dabbb8e94458f9
+original_path: Podfile
+permalink: https://github.com/hathway/JSONRequest/blob/b612701407148833a9a0319593dabbb8e94458f9/Podfile
+retrieved_at: "2026-08-12T12:30:24Z"
+sha256: 89ba570ac0560a7821d92099dbd8bef21d1321ca4a5d7d0f5fe3c3c07d40d815
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/hathway/JSONRequest/blob/b612701407148833a9a0319593dabbb8e94458f9/LICENSE
+    sha256: b740980189cc9abd3c134f961dbcccb69eebe424554712950e961b0e16b7edfd
+rationale: 'Representative standard iOS Podfile: platform, app target, frameworks, and nested test target.'
