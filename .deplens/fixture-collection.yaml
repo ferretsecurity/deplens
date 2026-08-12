@@ -12399,12 +12399,23 @@ detectors:
       form: checksum-file
       roles:
         - integrity
-      state: pending
-      iterations: 0
+      state: in-progress
+      iterations: 1
       examples: []
       target: 3
       query_plan:
         - filename:go.sum
+      queries:
+        - filename:go.sum
+      filtered_search_hits:
+        source-selector-mismatch: 800
+      history:
+        - iteration: 1
+          result: unsuccessful
+          queries:
+            - filename:go.sum
+          filtered_search_hits:
+            source-selector-mismatch: 800
     - id: go-work
       form: workspace-definition
       roles:
