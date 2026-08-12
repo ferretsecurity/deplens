@@ -1,0 +1,18 @@
+version: 2
+detector_id: dart-pubspec
+candidate_id: candidate-4837beb707206c1cc8a64dd035daf769
+provider: github
+repository: Maga0xPark/authentIC
+repository_url: https://github.com/Maga0xPark/authentIC
+default_branch: main
+commit: 10fd50d30ab95a2bf6f909097b3804141fc0b48c
+original_path: mobile/local_plugins/nfc_manager/example/pubspec.yaml
+permalink: https://github.com/Maga0xPark/authentIC/blob/10fd50d30ab95a2bf6f909097b3804141fc0b48c/mobile/local_plugins/nfc_manager/example/pubspec.yaml
+retrieved_at: "2026-08-12T12:51:34Z"
+sha256: 7163f3d8672af07d5ef7269738420716bce94de2b2ad79e33f4292c032609232
+governing_license:
+    spdx: MIT
+    path: mobile/local_plugins/nfc_manager/LICENSE
+    permalink: https://github.com/Maga0xPark/authentIC/blob/10fd50d30ab95a2bf6f909097b3804141fc0b48c/mobile/local_plugins/nfc_manager/LICENSE
+    sha256: 6a643034ea2f9f16b89cc173c032e124473989f2502060e694b39ee16a79b837
+rationale: Short Flutter plugin example that adds the important local path-dependency and older bounded-SDK edge case.

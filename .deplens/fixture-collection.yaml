@@ -7918,12 +7918,242 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/dart-pubspec/candidate-0a9f86e27cde0fe45ff980cb37a1a06c/packages/services/e2e_crypto/pubspec.yaml
+        - testdata/corpus/dart-pubspec/candidate-4837beb707206c1cc8a64dd035daf769/mobile/local_plugins/nfc_manager/example/pubspec.yaml
+        - testdata/corpus/dart-pubspec/candidate-d93a0de25282f1a18676ba22ec7ef4fe/navigation_demo/pubspec.yaml
       target: 3
       query_plan:
         - filename:pubspec.yaml
+      queries:
+        - filename:pubspec.yaml
+      candidates:
+        - candidate-6fce2c926c8a08d088b04a1106c736e9
+        - candidate-5d1705bf7e9421af9b8b82ba86706188
+        - candidate-4c497ef7cb5264193b5a738b4ad5308a
+        - candidate-d8c4c4da281d6208b8a47880b3c95958
+        - candidate-bb283ba6c20f540e73ea5a786a691d86
+        - candidate-0ef9d2b11fdd6b7536db9168c523121a
+        - candidate-128fab76dcb310cbc09d3b2973d52c71
+        - candidate-8244ccfa313b7bbd47e4a49a33777224
+        - candidate-692aee4094271ef50fa1333d885fd1d9
+        - candidate-d93a0de25282f1a18676ba22ec7ef4fe
+        - candidate-4ac2635094fc2331e90cc2f838f06c17
+        - candidate-0a9f86e27cde0fe45ff980cb37a1a06c
+        - candidate-c53edfccff7af702eb0beb2f14cae0f5
+        - candidate-4837beb707206c1cc8a64dd035daf769
+      filtered_search_hits:
+        source-selector-mismatch: 94
+      rejections:
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - repository-template
+        - sensitive-content
+        - license-missing
+        - license-ambiguous
+        - license-disallowed
+        - license-missing
+        - repository-purpose
+        - repository-purpose
+        - sensitive-content
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-disallowed
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+      decision_states:
+        - packet_fingerprint: ba56c3110ce8821de5818e7966c6b3aa51810ea16cd5165556d833761241bab8
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-0a9f86e27cde0fe45ff980cb37a1a06c
+            - candidate-4837beb707206c1cc8a64dd035daf769
+            - candidate-d93a0de25282f1a18676ba22ec7ef4fe
+          queries:
+            - filename:pubspec.yaml
+          candidates:
+            - candidate-6fce2c926c8a08d088b04a1106c736e9
+            - candidate-5d1705bf7e9421af9b8b82ba86706188
+            - candidate-4c497ef7cb5264193b5a738b4ad5308a
+            - candidate-d8c4c4da281d6208b8a47880b3c95958
+            - candidate-bb283ba6c20f540e73ea5a786a691d86
+            - candidate-0ef9d2b11fdd6b7536db9168c523121a
+            - candidate-128fab76dcb310cbc09d3b2973d52c71
+            - candidate-8244ccfa313b7bbd47e4a49a33777224
+            - candidate-692aee4094271ef50fa1333d885fd1d9
+            - candidate-d93a0de25282f1a18676ba22ec7ef4fe
+            - candidate-4ac2635094fc2331e90cc2f838f06c17
+            - candidate-0a9f86e27cde0fe45ff980cb37a1a06c
+            - candidate-c53edfccff7af702eb0beb2f14cae0f5
+            - candidate-4837beb707206c1cc8a64dd035daf769
+          filtered_search_hits:
+            source-selector-mismatch: 94
+          rejections:
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - repository-template
+            - sensitive-content
+            - license-missing
+            - license-ambiguous
+            - license-disallowed
+            - license-missing
+            - repository-purpose
+            - repository-purpose
+            - sensitive-content
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-disallowed
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+          decision:
+            packet_fingerprint: ba56c3110ce8821de5818e7966c6b3aa51810ea16cd5165556d833761241bab8
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: dart-pubspec-lock
       form: lockfile
       roles:

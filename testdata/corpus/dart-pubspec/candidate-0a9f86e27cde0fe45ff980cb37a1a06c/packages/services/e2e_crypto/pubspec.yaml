@@ -1,0 +1,16 @@
+name: pf_e2e_crypto
+description: Pocket Flow client-side end-to-end encryption primitives (AES-GCM-256 envelope cipher + PBKDF2 key derivation).
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  cryptography: ^2.7.0
+  convert: ^3.1.1
+  meta: ^1.15.0
+
+dev_dependencies:
+  test: ^1.25.7
+  lints: ^4.0.0

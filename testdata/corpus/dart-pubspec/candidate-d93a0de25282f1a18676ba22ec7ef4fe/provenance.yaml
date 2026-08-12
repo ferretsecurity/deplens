@@ -1,0 +1,18 @@
+version: 2
+detector_id: dart-pubspec
+candidate_id: candidate-d93a0de25282f1a18676ba22ec7ef4fe
+provider: github
+repository: veyselharun/flutter-samples
+repository_url: https://github.com/veyselharun/flutter-samples
+default_branch: main
+commit: 005795226a23fc82bf38ad2a8732a5a533f9a44a
+original_path: navigation_demo/pubspec.yaml
+permalink: https://github.com/veyselharun/flutter-samples/blob/005795226a23fc82bf38ad2a8732a5a533f9a44a/navigation_demo/pubspec.yaml
+retrieved_at: "2026-08-12T12:48:57Z"
+sha256: 0031bad69f8320fe5e7aaa933cbc4d61df91953c261f6719aec9828c20d44a58
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/veyselharun/flutter-samples/blob/005795226a23fc82bf38ad2a8732a5a533f9a44a/LICENSE
+    sha256: fddc02033c4d6211d472a8cca1909649da9447dd7a249bc21342c969658e77db
+rationale: 'Representative modern Flutter application manifest: SDK, Flutter dependency, common UI package, tests, lints, and Material configuration.'

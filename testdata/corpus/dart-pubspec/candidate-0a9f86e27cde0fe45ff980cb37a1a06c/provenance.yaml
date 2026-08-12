@@ -1,0 +1,18 @@
+version: 2
+detector_id: dart-pubspec
+candidate_id: candidate-0a9f86e27cde0fe45ff980cb37a1a06c
+provider: github
+repository: TechNomadJourneyMan/fin-nex
+repository_url: https://github.com/TechNomadJourneyMan/fin-nex
+default_branch: main
+commit: e30bfce72d0f5f95a618488e15bca5b52d10e214
+original_path: packages/services/e2e_crypto/pubspec.yaml
+permalink: https://github.com/TechNomadJourneyMan/fin-nex/blob/e30bfce72d0f5f95a618488e15bca5b52d10e214/packages/services/e2e_crypto/pubspec.yaml
+retrieved_at: "2026-08-12T12:50:17Z"
+sha256: 256dd1f297ab61f93606bb5a60b80604a71592c6385cb4f09af0473d0c379210
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/TechNomadJourneyMan/fin-nex/blob/e30bfce72d0f5f95a618488e15bca5b52d10e214/LICENSE
+    sha256: 7a2025bc6f38273b07dc2c1c0c2a5853da07e344b1071fe737728b9f5e4f7b27
+rationale: Compact pure-Dart package variant, covering non-Flutter packages with ordinary runtime and dev dependencies.
