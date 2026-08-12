@@ -256,6 +256,56 @@ func TestGitHubAcquisitionKeepsQualifiedCandidatesWhenSearchByteBudgetIsExhauste
 	if budgetEvent == nil || budgetEvent.Action != "stopped" || budgetEvent.Reason != "decoded-response-byte-budget" || budgetEvent.Resource != "code_search" {
 		t.Fatalf("search budget progress event = %+v", budgetEvent)
 	}
+	if len(input.Outcome.SearchCursors) != 1 || input.Outcome.SearchCursors[0].NextPage != 2 || input.Outcome.SearchCursors[0].Exhausted {
+		t.Fatalf("search budget cursor = %+v", input.Outcome.SearchCursors)
+	}
+}
+
+func TestGitHubAcquisitionResumesAtNextUnvisitedSearchPage(t *testing.T) {
+	service := &fakeGitHubService{searchPages: map[string][][]GitHubCodeHit{"filename:go.sum": {
+		{{Repository: "octo/one", Path: "go.sum"}},
+		{{Repository: "octo/one", Path: "go.sum"}, {Repository: "octo/two", Path: "go.sum"}},
+	}}}
+	limits := CollectionLimits{Queries: 1, ResultPages: 1, CandidateInspections: 100, DecodedResponseBytes: 4096, SourceBytes: 1024}
+	first, err := newGitHubAcquisition(service, limits).Acquire(context.Background(), Iteration{
+		QueryPlan: []string{"filename:go.sum"}, QueryLimit: 1, CandidateLimit: 100,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := newGitHubAcquisition(service, limits).Acquire(context.Background(), Iteration{
+		QueryPlan: []string{"filename:go.sum"}, QueryLimit: 1, CandidateLimit: 100,
+		SearchCursors:    first.Outcome.SearchCursors,
+		SeenSearchHitIDs: stringSet(first.Outcome.SearchHitIDs),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !sameInts(service.searchPagesCalled, []int{1, 2}) {
+		t.Fatalf("searched pages = %v, want [1 2]", service.searchPagesCalled)
+	}
+	if len(second.Outcome.SearchCursors) != 1 || !second.Outcome.SearchCursors[0].Exhausted {
+		t.Fatalf("second search cursors = %+v", second.Outcome.SearchCursors)
+	}
+	if !second.SearchExhausted || len(second.Outcome.SearchHitIDs) != 1 {
+		t.Fatalf("second search exhausted = %t, new hit IDs = %d", second.SearchExhausted, len(second.Outcome.SearchHitIDs))
+	}
+}
+
+func TestGitHubAcquisitionSkipsExhaustedSearchQuery(t *testing.T) {
+	service := &fakeGitHubService{}
+	input, err := newGitHubAcquisition(service, CollectionLimits{
+		Queries: 1, ResultPages: 10, CandidateInspections: 100, DecodedResponseBytes: 4096, SourceBytes: 1024,
+	}).Acquire(context.Background(), Iteration{
+		QueryPlan: []string{"filename:go.sum"}, QueryLimit: 1, CandidateLimit: 100,
+		SearchCursors: []SearchCursor{{Provider: "github", Query: "filename:go.sum", NextPage: 11, Exhausted: true}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if service.searchCalls != 0 || !input.SearchExhausted {
+		t.Fatalf("search calls = %d, exhausted = %t", service.searchCalls, input.SearchExhausted)
+	}
 }
 
 func TestGitHubAcquisitionContinuesPastInspectionTargetUntilFiveQualify(t *testing.T) {
@@ -699,6 +749,12 @@ func TestGitHubHTTPServicePacesCodeSearchAndCancelsWait(t *testing.T) {
 	}
 }
 
+func TestGitHubCodeSearchStopsAtThousandResultWindow(t *testing.T) {
+	if !githubCodeSearchHasNext(9, 100) || githubCodeSearchHasNext(10, 100) || githubCodeSearchHasNext(9, 99) {
+		t.Fatal("GitHub code-search pagination did not honor its 1,000-result window")
+	}
+}
+
 func TestGitHubAcquisitionRejectsConflictingNearestLicense(t *testing.T) {
 	commit := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 	service := &fakeGitHubService{
@@ -915,6 +971,7 @@ type fakeGitHubService struct {
 	files                                   map[string][]byte
 	fileTypes                               map[string]string
 	searchCalls, repositoryCalls, fileCalls int
+	searchPagesCalled                       []int
 	clones, executions                      int
 }
 
@@ -946,6 +1003,7 @@ func (f *fakeWebHintService) SearchHints(_ context.Context, query string, _ int,
 
 func (f *fakeGitHubService) SearchCode(_ context.Context, query string, page int, _ int64) ([]GitHubCodeHit, bool, int64, error) {
 	f.searchCalls++
+	f.searchPagesCalled = append(f.searchPagesCalled, page)
 	if pages := f.searchPages[query]; len(pages) != 0 {
 		if page < 1 || page > len(pages) {
 			return nil, false, int64(len(query)), nil
@@ -953,6 +1011,26 @@ func (f *fakeGitHubService) SearchCode(_ context.Context, query string, page int
 		return pages[page-1], page < len(pages), int64(len(query)), nil
 	}
 	return f.searches[query], false, int64(len(query)), nil
+}
+
+func sameInts(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func stringSet(values []string) map[string]bool {
+	set := make(map[string]bool, len(values))
+	for _, value := range values {
+		set[value] = true
+	}
+	return set
 }
 func (f *fakeGitHubService) Repository(_ context.Context, repository string, _ int64) (GitHubRepository, int64, error) {
 	f.repositoryCalls++

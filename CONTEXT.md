@@ -56,6 +56,14 @@ _Avoid_: Variation tags, project kind
 The reviewed, ordered search expressions that Go may execute to discover source candidates for one detector. Go may generate an initial plan from detector signals, but the model neither proposes nor executes its queries.
 _Avoid_: Search prompt, model query
 
+**Search cursor**:
+The durable next unvisited result page, or exhausted status, for one provider and query. A valid iteration checkpoints cursor advancement so later iterations continue discovery instead of restarting at page one.
+_Avoid_: Query history, candidate offset
+
+**Search hit ID**:
+A content-free hash of a provider search hit's normalized repository and path. It prevents a hit repeated by shifting provider pagination from being filtered or inspected again; it is not an immutable source-candidate identity.
+_Avoid_: Stable candidate ID, source path
+
 **Needs query review**:
 A non-blocking detector state indicating that Go could not generate a sufficiently precise query plan for safe automatic discovery. The collection loop skips the detector without treating the state as a search failure.
 _Avoid_: Blocked, no candidates

@@ -93,6 +93,15 @@ zero-byte search allowance, and continues to selection when the preserved set
 is sufficient. It is not classified as a remote-provider infrastructure
 failure.
 
+Valid outcomes durably advance a per-provider/query search cursor and record
+content-free hashes for observed repository/path hits. The next iteration
+starts at the next unvisited page and suppresses hits repeated by changing
+provider pagination. Final-page exhaustion is durable. Once every configured
+provider/query pair is exhausted, there is no distinct automatic research
+state and the detector enters collection review without spending placeholder
+iterations. GitHub code search does not request pages beyond its 1,000-result
+window.
+
 A search hit does not consume an inspection. An inspection is charged before
 the first detailed metadata or content request for a unique repository and path
 in the current iteration. Retrieval failures still consume it. Reconsidering

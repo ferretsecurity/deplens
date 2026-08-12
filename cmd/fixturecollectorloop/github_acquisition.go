@@ -15,6 +15,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -36,6 +37,7 @@ const (
 	githubAPIVersion  = "2026-03-10"
 
 	githubCodeSearchInterval = 6 * time.Second
+	githubCodeSearchMaxPage  = 10
 	githubRateLimitAttempts  = 4
 	githubTransientAttempts  = 3
 	githubErrorMessageLimit  = 256
@@ -207,30 +209,41 @@ type hitCollector struct {
 	discoveringQuery map[string]string
 }
 
-func newHitCollector() *hitCollector {
+func newHitCollector(prior map[string]bool) *hitCollector {
+	seen := make(map[string]struct{}, len(prior))
+	for id := range prior {
+		seen[id] = struct{}{}
+	}
 	return &hitCollector{
-		seen:             make(map[string]struct{}),
+		seen:             seen,
 		discoveringQuery: make(map[string]string),
 	}
 }
 
-func (c *hitCollector) add(items []GitHubCodeHit, query string) {
+func (c *hitCollector) add(items []GitHubCodeHit, query string) []string {
+	var addedIDs []string
 	for _, hit := range items {
 		if hit.Repository == "" || hit.Path == "" {
 			continue
 		}
-		key := hitKey(hit)
-		if _, duplicate := c.seen[key]; duplicate {
+		id := searchHitID(hit)
+		if _, duplicate := c.seen[id]; duplicate {
 			continue
 		}
-		c.seen[key] = struct{}{}
+		c.seen[id] = struct{}{}
 		c.hits = append(c.hits, hit)
-		c.discoveringQuery[key] = query
+		c.discoveringQuery[hitKey(hit)] = query
+		addedIDs = append(addedIDs, id)
 	}
+	return addedIDs
 }
 
 func hitKey(hit GitHubCodeHit) string {
 	return strings.ToLower(hit.Repository) + "\x00" + path.Clean(hit.Path)
+}
+
+func searchHitID(hit GitHubCodeHit) string {
+	return hash("fixture-collector-search-hit-v1\x00" + hitKey(hit))
 }
 
 func newAcquisitionCache() acquisitionCache {
@@ -310,7 +323,7 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 	}
 	ctx = withGitHubProgress(ctx, "", iteration.ReportProgress)
 	cache := newAcquisitionCache()
-	hits := newHitCollector()
+	hits := newHitCollector(iteration.SeenSearchHitIDs)
 	outcome := Outcome{Result: "unsuccessful"}
 	candidates := make([]SourceCandidate, 0, inspectionTarget)
 	identities, contents := make(map[string]struct{}), make(map[string]struct{})
@@ -407,31 +420,47 @@ func (a *githubAcquisition) Acquire(ctx context.Context, iteration Iteration) (R
 		}
 	}
 	reportQualification(true)
-	return ResearchInput{Candidates: candidates, Outcome: outcome}, nil
+	sort.Strings(outcome.SearchHitIDs)
+	outcome.SearchCursors = mergeSearchCursors(nil, outcome.SearchCursors)
+	providers := []string{"github"}
+	if a.web != nil {
+		providers = append(providers, "web")
+	}
+	return ResearchInput{
+		Candidates: candidates, Outcome: outcome,
+		SearchExhausted: allSearchQueriesExhausted(iteration.QueryPlan, providers, iteration.SearchCursors, outcome.SearchCursors),
+	}, nil
 }
 
 const minimumQualifiedCandidates = 5
 
 func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration Iteration, provider string, queries []string, queryLimit int, outcome *Outcome, hits *hitCollector, search hitSearch, providerError func(error) error, stop func() bool, inspect func(int) (bool, error)) (bool, error) {
 	remainingQueries := queryLimit - len(outcome.Queries)
-	queryTotal := min(len(queries), max(0, remainingQueries))
+	queryTotal := min(countUnexhaustedQueries(provider, queries, iteration.SearchCursors, outcome.SearchCursors), max(0, remainingQueries))
 	queryIndex := 0
 	for _, query := range queries {
 		if stop() {
 			return true, nil
+		}
+		cursor := effectiveSearchCursor(provider, query, iteration.SearchCursors, outcome.SearchCursors)
+		if cursor.Exhausted {
+			continue
 		}
 		if len(outcome.Queries) >= queryLimit || budget.reserveQueries() != nil {
 			break
 		}
 		queryIndex++
 		outcome.Queries = append(outcome.Queries, query)
-		for page := 1; ; page++ {
+		startPage := max(1, cursor.NextPage)
+		for page := startPage; ; page++ {
 			if err := budget.reservePage(); err != nil {
-				break
+				setSearchCursor(&outcome.SearchCursors, SearchCursor{Provider: provider, Query: query, NextPage: page})
+				return true, nil
 			}
 			items, next, size, err := search(ctx, query, page, budget.remainingSearchBytes())
 			if err != nil {
 				if errors.Is(err, errGitHubDecodedResponseBudgetExhausted) {
+					setSearchCursor(&outcome.SearchCursors, SearchCursor{Provider: provider, Query: query, NextPage: page})
 					budget.exhaustSearchBytes()
 					reportSearchBudgetExhaustion(iteration, provider)
 					return true, nil
@@ -440,14 +469,16 @@ func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration
 			}
 			if err := budget.chargeSearchBytes(size); err != nil {
 				if errors.Is(err, errGitHubDecodedResponseBudgetExhausted) {
+					setSearchCursor(&outcome.SearchCursors, SearchCursor{Provider: provider, Query: query, NextPage: page})
 					budget.exhaustSearchBytes()
 					reportSearchBudgetExhaustion(iteration, provider)
 					return true, nil
 				}
 				return false, err
 			}
+			setSearchCursor(&outcome.SearchCursors, SearchCursor{Provider: provider, Query: query, NextPage: page + 1, Exhausted: !next})
 			firstNewHit := len(hits.hits)
-			hits.add(items, query)
+			outcome.SearchHitIDs = append(outcome.SearchHitIDs, hits.add(items, query)...)
 			if iteration.ReportProgress != nil {
 				iteration.ReportProgress(ResearchProgress{
 					Stage: progressSearch, Provider: provider, Query: query,
@@ -469,6 +500,52 @@ func collectSearchHits(ctx context.Context, budget *acquisitionBudget, iteration
 		}
 	}
 	return stop(), nil
+}
+
+func effectiveSearchCursor(provider, query string, prior, current []SearchCursor) SearchCursor {
+	cursor := SearchCursor{Provider: provider, Query: query, NextPage: 1}
+	for _, candidate := range prior {
+		if candidate.Provider == provider && candidate.Query == query {
+			cursor = candidate
+		}
+	}
+	for _, candidate := range current {
+		if candidate.Provider == provider && candidate.Query == query {
+			cursor = candidate
+		}
+	}
+	return cursor
+}
+
+func setSearchCursor(cursors *[]SearchCursor, cursor SearchCursor) {
+	for i := range *cursors {
+		if (*cursors)[i].Provider == cursor.Provider && (*cursors)[i].Query == cursor.Query {
+			(*cursors)[i] = cursor
+			return
+		}
+	}
+	*cursors = append(*cursors, cursor)
+}
+
+func countUnexhaustedQueries(provider string, queries []string, prior, current []SearchCursor) int {
+	count := 0
+	for _, query := range queries {
+		if !effectiveSearchCursor(provider, query, prior, current).Exhausted {
+			count++
+		}
+	}
+	return count
+}
+
+func allSearchQueriesExhausted(queries, providers []string, prior, current []SearchCursor) bool {
+	for _, provider := range providers {
+		for _, query := range queries {
+			if !effectiveSearchCursor(provider, query, prior, current).Exhausted {
+				return false
+			}
+		}
+	}
+	return len(queries) != 0
 }
 
 func reportSearchBudgetExhaustion(iteration Iteration, provider string) {
@@ -1227,7 +1304,11 @@ func (s *githubHTTPService) SearchCode(ctx context.Context, query string, page i
 	for i, item := range response.Items {
 		hits[i] = GitHubCodeHit{Repository: item.Repository.FullName, Path: item.Path}
 	}
-	return hits, len(response.Items) == 100, n, err
+	return hits, githubCodeSearchHasNext(page, len(response.Items)), n, err
+}
+
+func githubCodeSearchHasNext(page, items int) bool {
+	return items == 100 && page < githubCodeSearchMaxPage
 }
 func (s *githubHTTPService) Repository(ctx context.Context, repository string, limit int64) (GitHubRepository, int64, error) {
 	var r struct {

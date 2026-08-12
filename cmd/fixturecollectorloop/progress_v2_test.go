@@ -176,6 +176,24 @@ func TestWriteProgressReturnsDirectorySyncError(t *testing.T) {
 	}
 }
 
+func TestProgressRejectsInvalidDurableSearchState(t *testing.T) {
+	for _, test := range []struct {
+		name     string
+		detector DetectorProgress
+	}{
+		{name: "unknown provider", detector: DetectorProgress{ID: "example", State: stateInProgress, Iterations: 1, SearchCursors: []SearchCursor{{Provider: "other", Query: "filename:example", NextPage: 2}}}},
+		{name: "unknown query", detector: DetectorProgress{ID: "example", State: stateInProgress, Iterations: 1, SearchCursors: []SearchCursor{{Provider: "github", Query: "filename:other", NextPage: 2}}}},
+		{name: "invalid page", detector: DetectorProgress{ID: "example", State: stateInProgress, Iterations: 1, SearchCursors: []SearchCursor{{Provider: "github", Query: "filename:example"}}}},
+		{name: "invalid hit id", detector: DetectorProgress{ID: "example", State: stateInProgress, Iterations: 1, SearchHitIDs: []string{"not-a-hash"}}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			if _, err := validateProgress(validTestProgress(test.detector)); err == nil {
+				t.Fatalf("accepted invalid search state: %+v", test.detector)
+			}
+		})
+	}
+}
+
 func TestQueryReviewDoesNotBlockCollection(t *testing.T) {
 	detectors := []DetectorProgress{{ID: "review", State: stateNeedsQueryReview}, {ID: "ready", State: statePending, QueryPlan: []string{"filename:ready"}}}
 	if got := selectDetector(detectors, ""); got == nil || got.ID != "ready" {

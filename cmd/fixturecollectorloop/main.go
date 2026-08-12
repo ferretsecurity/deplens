@@ -93,7 +93,17 @@ type DetectorProgress struct {
 	Rejections         []string          `yaml:"rejections,omitempty"`
 	Omitted            []string          `yaml:"omitted,omitempty"`
 	DecisionStates     []DecisionState   `yaml:"decision_states,omitempty"`
+	SearchCursors      []SearchCursor    `yaml:"search_cursors,omitempty"`
+	SearchHitIDs       []string          `yaml:"search_hit_ids,omitempty"`
 	History            []IterationRecord `yaml:"history,omitempty"`
+}
+
+// SearchCursor is the durable next position for one provider query.
+type SearchCursor struct {
+	Provider  string `yaml:"provider"`
+	Query     string `yaml:"query"`
+	NextPage  int    `yaml:"next_page"`
+	Exhausted bool   `yaml:"exhausted,omitempty"`
 }
 
 // IterationRecord is append-only, content-free evidence of a valid attempt.
@@ -107,6 +117,8 @@ type IterationRecord struct {
 	Rejections         []string       `yaml:"rejections,omitempty"`
 	Omitted            []string       `yaml:"omitted,omitempty"`
 	Decision           *DecisionState `yaml:"decision,omitempty"`
+	SearchCursors      []SearchCursor `yaml:"search_cursors,omitempty"`
+	SearchHitIDs       []string       `yaml:"search_hit_ids,omitempty"`
 }
 
 // DecisionState is content-free evidence used to avoid repeating an identical
@@ -129,6 +141,8 @@ type Iteration struct {
 	PresentedCandidateIDs            map[string]bool
 	SelectorConfigurationFingerprint string
 	PriorDecisionStates              []DecisionState
+	SearchCursors                    []SearchCursor
+	SeenSearchHitIDs                 map[string]bool
 	ReportProgress                   func(ResearchProgress)
 }
 
@@ -174,6 +188,8 @@ type Outcome struct {
 	FilteredSearchHits map[string]int
 	Rejections         []string
 	Omitted            []string
+	SearchCursors      []SearchCursor
+	SearchHitIDs       []string
 }
 
 var now = time.Now
@@ -926,6 +942,8 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		AcceptedReferences:    references,
 		PresentedCandidateIDs: presented,
 		PriorDecisionStates:   append([]DecisionState(nil), detector.DecisionStates...),
+		SearchCursors:         append([]SearchCursor(nil), detector.SearchCursors...),
+		SeenSearchHitIDs:      stringBoolSet(detector.SearchHitIDs),
 		ReportProgress:        reportProgress,
 	})
 	if err != nil {
@@ -1032,6 +1050,8 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 	detector.FilteredSearchHits = mergeCounts(detector.FilteredSearchHits, outcome.FilteredSearchHits)
 	detector.Rejections = append(detector.Rejections, outcome.Rejections...)
 	detector.Omitted = append(detector.Omitted, outcome.Omitted...)
+	detector.SearchCursors = mergeSearchCursors(detector.SearchCursors, outcome.SearchCursors)
+	detector.SearchHitIDs = mergeUniqueStrings(detector.SearchHitIDs, outcome.SearchHitIDs)
 	if result.Decision != nil {
 		detector.DecisionStates = append(detector.DecisionStates, *result.Decision)
 	}
@@ -1043,7 +1063,7 @@ func runIteration(ctx context.Context, root, progressPath string, p Progress, de
 		detector.State = stateNeedsCollectionReview
 	}
 	if detector.State != stateComplete && len(detector.Examples) < defaultTarget {
-		if result.NoDistinctDecisionState {
+		if result.NoDistinctDecisionState || result.NoDistinctResearchState {
 			detector.State = stateNeedsCollectionReview
 		} else if noPresentableCandidates(outcome) {
 			detector.State = stateNeedsContentReview
@@ -1186,6 +1206,8 @@ func iterationRecord(iteration int, outcome Outcome, accepted []AcceptedCandidat
 		Rejections:         append([]string(nil), outcome.Rejections...),
 		Omitted:            append([]string(nil), outcome.Omitted...),
 		Decision:           decision,
+		SearchCursors:      append([]SearchCursor(nil), outcome.SearchCursors...),
+		SearchHitIDs:       append([]string(nil), outcome.SearchHitIDs...),
 	}
 	for _, candidate := range accepted {
 		record.AcceptedIDs = append(record.AcceptedIDs, candidate.Candidate.ID)
@@ -1209,6 +1231,40 @@ func mergeCounts(dst, src map[string]int) map[string]int {
 
 func cloneCounts(src map[string]int) map[string]int {
 	return mergeCounts(nil, src)
+}
+
+func mergeSearchCursors(dst, src []SearchCursor) []SearchCursor {
+	merged := append([]SearchCursor(nil), dst...)
+	for _, cursor := range src {
+		setSearchCursor(&merged, cursor)
+	}
+	sort.Slice(merged, func(i, j int) bool {
+		if merged[i].Provider != merged[j].Provider {
+			return merged[i].Provider < merged[j].Provider
+		}
+		return merged[i].Query < merged[j].Query
+	})
+	return merged
+}
+
+func mergeUniqueStrings(dst, src []string) []string {
+	seen := stringBoolSet(dst)
+	for _, value := range src {
+		if !seen[value] {
+			dst = append(dst, value)
+			seen[value] = true
+		}
+	}
+	sort.Strings(dst)
+	return dst
+}
+
+func stringBoolSet(values []string) map[string]bool {
+	set := make(map[string]bool, len(values))
+	for _, value := range values {
+		set[value] = true
+	}
+	return set
 }
 
 func newRecovery(progressPath string, detector *DetectorProgress, checkpoint string, commit, allowDirty bool) Recovery {
@@ -1621,6 +1677,9 @@ func validateProgress(p Progress) (Progress, error) {
 		} else if len(detector.QueryPlan) == 0 || !isSortedUnique(detector.QueryPlan) || detector.QueryReviewReason != "" {
 			return Progress{}, errors.New("invalid detector query plan")
 		}
+		if !validDetectorSearchState(detector) {
+			return Progress{}, errors.New("invalid detector search state")
+		}
 		target := detector.Target
 		if target == 0 {
 			target = defaultTarget
@@ -1645,6 +1704,47 @@ func validateProgress(p Progress) (Progress, error) {
 		}
 	}
 	return p, nil
+}
+
+func validDetectorSearchState(detector DetectorProgress) bool {
+	if detector.Iterations == 0 && (len(detector.SearchCursors) != 0 || len(detector.SearchHitIDs) != 0) {
+		return false
+	}
+	if len(detector.SearchHitIDs) != 0 && !isSortedUnique(detector.SearchHitIDs) {
+		return false
+	}
+	for _, id := range detector.SearchHitIDs {
+		if len(id) != sha256.Size*2 || strings.Trim(id, "0123456789abcdef") != "" {
+			return false
+		}
+	}
+	if !validSearchCursors(detector.SearchCursors, detector.QueryPlan) {
+		return false
+	}
+	for _, record := range detector.History {
+		if (len(record.SearchHitIDs) != 0 && !isSortedUnique(record.SearchHitIDs)) || !validSearchCursors(record.SearchCursors, detector.QueryPlan) {
+			return false
+		}
+		for _, id := range record.SearchHitIDs {
+			if len(id) != sha256.Size*2 || strings.Trim(id, "0123456789abcdef") != "" {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func validSearchCursors(cursors []SearchCursor, queries []string) bool {
+	querySet := stringBoolSet(queries)
+	previous := ""
+	for _, cursor := range cursors {
+		key := cursor.Provider + "\x00" + cursor.Query
+		if (cursor.Provider != "github" && cursor.Provider != "web") || !querySet[cursor.Query] || cursor.NextPage < 1 || key <= previous {
+			return false
+		}
+		previous = key
+	}
+	return true
 }
 
 func snapshot(root string) (map[string]string, error) {

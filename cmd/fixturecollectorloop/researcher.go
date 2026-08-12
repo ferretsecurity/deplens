@@ -23,6 +23,7 @@ type ResearchResult struct {
 	Accepted                []AcceptedCandidate
 	Decision                *DecisionState
 	NoDistinctDecisionState bool
+	NoDistinctResearchState bool
 }
 
 // Acquisition obtains the bounded research input for an iteration. Its
@@ -59,6 +60,7 @@ type ResearchInput struct {
 	SelectionPacket []byte
 	Candidates      []SourceCandidate
 	Outcome         Outcome
+	SearchExhausted bool
 }
 
 type unconfiguredAcquisition struct{}
@@ -90,7 +92,7 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 	candidates := input.Candidates
 	if len(candidates) == 0 {
 		input.Outcome.Result = "unsuccessful"
-		return ResearchResult{Outcome: input.Outcome}, nil
+		return ResearchResult{Outcome: input.Outcome, NoDistinctResearchState: input.SearchExhausted}, nil
 	}
 	packet, err := buildSelectionPacket(SelectionPacketOptions{
 		Candidates: candidates, AcceptedReferences: iteration.AcceptedReferences,
@@ -105,13 +107,13 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 	input.Outcome.Omitted = append(input.Outcome.Omitted, packet.OmittedIDs...)
 	if len(candidates) < selectionCount {
 		input.Outcome.Result = "unsuccessful"
-		return ResearchResult{Outcome: input.Outcome}, nil
+		return ResearchResult{Outcome: input.Outcome, NoDistinctResearchState: input.SearchExhausted}, nil
 	}
 	configuration := selectorConfigurationFingerprint(iteration, r.selector)
 	decision := DecisionState{PacketFingerprint: packet.PacketFingerprint, AcceptedCorpusFingerprint: packet.AcceptedFingerprint, SelectorConfiguration: configuration}
 	if containsDecisionState(iteration.PriorDecisionStates, decision) {
 		input.Outcome.Result = "unsuccessful"
-		return ResearchResult{Outcome: input.Outcome, NoDistinctDecisionState: true}, nil
+		return ResearchResult{Outcome: input.Outcome, NoDistinctDecisionState: true, NoDistinctResearchState: input.SearchExhausted}, nil
 	}
 	if iteration.ReportProgress != nil {
 		iteration.ReportProgress(ResearchProgress{Stage: progressSelection, Candidates: len(candidates)})
@@ -127,7 +129,8 @@ func (r composedResearcher) Research(ctx context.Context, iteration Iteration) (
 		return ResearchResult{}, err
 	}
 	result.Decision = &decision
-	if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.FilteredSearchHits) != 0 || len(input.Outcome.Rejections) != 0 || len(input.Outcome.Omitted) != 0 {
+	result.NoDistinctResearchState = input.SearchExhausted
+	if len(input.Outcome.Queries) != 0 || len(input.Outcome.Candidates) != 0 || len(input.Outcome.FilteredSearchHits) != 0 || len(input.Outcome.Rejections) != 0 || len(input.Outcome.Omitted) != 0 || len(input.Outcome.SearchCursors) != 0 || len(input.Outcome.SearchHitIDs) != 0 {
 		result.Outcome = input.Outcome
 	}
 	accepted, rejected, err := materializeSelectedCandidates(iteration.CorpusDir, iteration.DetectorID, candidates, result.Selection)

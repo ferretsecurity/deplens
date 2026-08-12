@@ -932,6 +932,70 @@ func TestRunPrefersInProgressAndCanTargetOneDetector(t *testing.T) {
 	}
 }
 
+func TestRunPassesAndCheckpointsDurableSearchState(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	oldHit, newHit := strings.Repeat("a", 64), strings.Repeat("b", 64)
+	p := validTestProgress(DetectorProgress{
+		ID: "go-sum", State: stateInProgress, Iterations: 1,
+		QueryPlan:     []string{"filename:go.sum"},
+		SearchCursors: []SearchCursor{{Provider: "github", Query: "filename:go.sum", NextPage: 9}},
+		SearchHitIDs:  []string{oldHit},
+	})
+	if err := writeProgress(progress, p); err != nil {
+		t.Fatal(err)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+	agent := fakeResearcher{
+		outcome: Outcome{
+			Result:        "unsuccessful",
+			SearchCursors: []SearchCursor{{Provider: "github", Query: "filename:go.sum", NextPage: 10}},
+			SearchHitIDs:  []string{newHit},
+		},
+		write: func(iteration Iteration) error {
+			if len(iteration.SearchCursors) != 1 || iteration.SearchCursors[0].NextPage != 9 || !iteration.SeenSearchHitIDs[oldHit] {
+				t.Fatalf("iteration search state = cursors=%+v hits=%v", iteration.SearchCursors, iteration.SeenSearchHitIDs)
+			}
+			return nil
+		},
+	}
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, agent); got != 0 {
+		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
+	}
+	stored, err := readProgress(progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	detector := stored.Detectors[0]
+	if len(detector.SearchCursors) != 1 || detector.SearchCursors[0].NextPage != 10 || !sameStrings(detector.SearchHitIDs, []string{oldHit, newHit}) {
+		t.Fatalf("checkpointed search state = cursors=%+v hits=%v", detector.SearchCursors, detector.SearchHitIDs)
+	}
+}
+
+func TestRunMovesDetectorToReviewWhenResearchStateIsExhausted(t *testing.T) {
+	root := t.TempDir()
+	progress := filepath.Join(root, "collection.yaml")
+	if err := writeProgress(progress, validTestProgress(DetectorProgress{ID: "go-sum", State: statePending})); err != nil {
+		t.Fatal(err)
+	}
+	initializeGitRepository(t, root)
+	commitGitChanges(t, root)
+	agent := &trackingResearcher{result: ResearchResult{Outcome: Outcome{Result: "unsuccessful"}, NoDistinctResearchState: true}}
+	var stdout, stderr bytes.Buffer
+	if got := run([]string{"run", "--single", "--progress", progress}, root, &stdout, &stderr, agent); got != 0 {
+		t.Fatalf("run exit status = %d, stderr = %s", got, stderr.String())
+	}
+	stored, err := readProgress(progress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stored.Detectors[0].State != stateNeedsCollectionReview || stored.Detectors[0].Iterations != 1 {
+		t.Fatalf("detector progress = %+v", stored.Detectors[0])
+	}
+}
+
 func TestRunFullStopsAtIterationBudgetAndDoesNotAdvanceInfrastructureFailures(t *testing.T) {
 	root := t.TempDir()
 	progress := filepath.Join(root, "collection.yaml")

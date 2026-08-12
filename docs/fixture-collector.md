@@ -39,6 +39,14 @@ fallback search with no remaining search bytes. If enough candidates remain,
 selection continues; otherwise the attempt is checkpointed as a valid research
 outcome rather than reported as a provider failure.
 
+Each valid checkpoint stores the next unvisited page for every provider/query
+and hashes of search hits already observed. A later iteration resumes from that
+page and ignores hits repeated because provider result ordering shifted. A
+query that reached its final page is never issued again. When all configured
+provider/query pairs are exhausted, the detector moves to
+`needs-collection-review` instead of consuming the remaining iterations on
+identical searches. GitHub code search is capped at its 1,000-result window.
+
 States are `pending`, `in-progress`, `complete`, `needs-query-review`,
 `needs-content-review`, and `needs-collection-review`. Review-needed states are
 reported but do not make an otherwise valid run fail. A detector completes with

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -175,6 +176,8 @@ func TestTargetedCommandCheckpointsNoCandidatesWithoutSelector(t *testing.T) {
 		Queries:            []string{"filename:go.work"},
 		FilteredSearchHits: map[string]int{"source-selector-mismatch": 31},
 		Rejections:         []string{"license-ambiguous"},
+		SearchCursors:      []SearchCursor{{Provider: "github", Query: "filename:example-detector", NextPage: 9}},
+		SearchHitIDs:       []string{strings.Repeat("a", 64)},
 	}
 	acquisition := fakeAcquisition{input: ResearchInput{Outcome: wantOutcome}}
 	selector := fakeSelector{}
@@ -193,6 +196,9 @@ func TestTargetedCommandCheckpointsNoCandidatesWithoutSelector(t *testing.T) {
 	}
 	if !sameStrings(detector.History[0].Queries, wantOutcome.Queries) || !sameStrings(detector.History[0].Rejections, wantOutcome.Rejections) || detector.FilteredSearchHits["source-selector-mismatch"] != 31 || detector.History[0].FilteredSearchHits["source-selector-mismatch"] != 31 {
 		t.Fatalf("history = %+v", detector.History[0])
+	}
+	if len(detector.SearchCursors) != 1 || detector.SearchCursors[0].NextPage != 9 || !sameStrings(detector.SearchHitIDs, wantOutcome.SearchHitIDs) || len(detector.History[0].SearchCursors) != 1 || !sameStrings(detector.History[0].SearchHitIDs, wantOutcome.SearchHitIDs) {
+		t.Fatalf("durable search state = cursors=%+v hits=%v history=%+v", detector.SearchCursors, detector.SearchHitIDs, detector.History[0])
 	}
 }
 
@@ -308,12 +314,14 @@ func TestSelectionValidationRequiresExactlyThreePacketMembers(t *testing.T) {
 }
 
 type fakeAcquisition struct {
-	called bool
-	input  ResearchInput
+	called    bool
+	input     ResearchInput
+	iteration Iteration
 }
 
-func (f *fakeAcquisition) Acquire(_ context.Context, _ Iteration) (ResearchInput, error) {
+func (f *fakeAcquisition) Acquire(_ context.Context, iteration Iteration) (ResearchInput, error) {
 	f.called = true
+	f.iteration = iteration
 	return f.input, nil
 }
 
