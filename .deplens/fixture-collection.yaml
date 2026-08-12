@@ -4525,12 +4525,13 @@ detectors:
         - constraint
         - configuration
       state: in-progress
-      iterations: 3
+      iterations: 4
       examples: []
       target: 3
       query_plan:
         - path:project/plugins.sbt
       queries:
+        - path:project/plugins.sbt
         - path:project/plugins.sbt
         - path:project/plugins.sbt
         - path:project/plugins.sbt
@@ -4544,6 +4545,10 @@ detectors:
           queries:
             - path:project/plugins.sbt
         - iteration: 3
+          result: unsuccessful
+          queries:
+            - path:project/plugins.sbt
+        - iteration: 4
           result: unsuccessful
           queries:
             - path:project/plugins.sbt
