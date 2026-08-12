@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-meson
+candidate_id: candidate-19d4a90e7a7eed97a949a4dd4c758797
+provider: github
+repository: yellow-footed-honeyguide/facad
+repository_url: https://github.com/yellow-footed-honeyguide/facad
+default_branch: main
+commit: 79058987e328f512da5dc0db3d6a197d224b1da0
+original_path: meson.build
+permalink: https://github.com/yellow-footed-honeyguide/facad/blob/79058987e328f512da5dc0db3d6a197d224b1da0/meson.build
+retrieved_at: "2026-08-12T22:16:45Z"
+sha256: b59148b17f32ce11cc3b7f99ed8e1e6b98895cc054decdd743ab98284e379b5d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/yellow-footed-honeyguide/facad/blob/79058987e328f512da5dc0db3d6a197d224b1da0/LICENSE
+    sha256: d662d5f8b68ea29bb53de6f4cafd644b4c9ab528e42caf026fa68e7fa1649dbf
+rationale: 'Common native C command-line application: sources, generated config header, dependency, executable, and man-page installation.'

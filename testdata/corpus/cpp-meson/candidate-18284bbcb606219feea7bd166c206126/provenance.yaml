@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-meson
+candidate_id: candidate-18284bbcb606219feea7bd166c206126
+provider: github
+repository: mdolab/pyoptsparse
+repository_url: https://github.com/mdolab/pyoptsparse
+default_branch: main
+commit: 20cfa02e00c82a56bc7231fd9676e494263f535a
+original_path: meson.build
+permalink: https://github.com/mdolab/pyoptsparse/blob/20cfa02e00c82a56bc7231fd9676e494263f535a/meson.build
+retrieved_at: "2026-08-12T22:14:30Z"
+sha256: 29523937a59cb56acfb8a71027c04064018cc62bf4762d908363c21a8115dd41
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/mdolab/pyoptsparse/blob/20cfa02e00c82a56bc7231fd9676e494263f535a/LICENSE
+    sha256: e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118
+rationale: 'Multi-language scientific extension edge case: C/C++/Fortran, Python integration, compiler capability checks, and platform-specific linking.'

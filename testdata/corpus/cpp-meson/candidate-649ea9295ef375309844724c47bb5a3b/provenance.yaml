@@ -1,0 +1,18 @@
+version: 2
+detector_id: cpp-meson
+candidate_id: candidate-649ea9295ef375309844724c47bb5a3b
+provider: github
+repository: data-apis/array-api-compat
+repository_url: https://github.com/data-apis/array-api-compat
+default_branch: main
+commit: d5baf9e3894cb112980729d36fb5f305bfb4bfa5
+original_path: meson.build
+permalink: https://github.com/data-apis/array-api-compat/blob/d5baf9e3894cb112980729d36fb5f305bfb4bfa5/meson.build
+retrieved_at: "2026-08-12T22:16:01Z"
+sha256: 1b0f0f199b09e5c9ec2f8a5a8019fb5a8acc199fd94a9e5d2ef7c17b9a3af82c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/data-apis/array-api-compat/blob/d5baf9e3894cb112980729d36fb5f305bfb4bfa5/LICENSE
+    sha256: 4ffd978e3fa18d058d98c66771cfea7ed634aaf7023cf9612b8b55eee9a8f0fe
+rationale: Pure-Python packaging case with structured source lists, iterative installation, and test subdirectories.

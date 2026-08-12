@@ -1,0 +1,79 @@
+project(
+  'pyoptsparse',
+  'c', 'cpp',
+  version: run_command(
+        'python', '-c',
+        '''
+import re
+from pathlib import Path
+init_file = Path("pyoptsparse/__init__.py")
+match = re.search(r'__version__ = ["\\\']([\d\\.]+)["\\\']', init_file.read_text())
+print(match.group(1))
+        '''
+    ).stdout().strip(),
+  meson_version: '>= 0.64',
+  default_options: [
+    'buildtype=debugoptimized',
+    'b_ndebug=if-release',
+    'c_std=c17',
+    'cpp_std=c++17',
+  ],
+)
+
+# <!-- from https://github.com/scipy/scipy/blob/4d9f5e65af06d4cc3f770407f1a66a185675eea9/meson.build
+
+cc = meson.get_compiler('c')
+cpp = meson.get_compiler('cpp')
+
+py3 = import('python').find_installation(pure: false)
+py3_dep = py3.dependency()
+
+# We need -lm for all C code (assuming it uses math functions, which is safe to
+# assume for SciPy). For C++ it isn't needed, because libstdc++/libc++ is
+# guaranteed to depend on it. For Fortran code, Meson already adds `-lm`.
+m_dep = cc.find_library('m', required : false)
+if m_dep.found()
+  add_project_link_arguments('-lm', language : 'c')
+endif
+
+# Adding at project level causes many spurious -lgfortran flags.
+add_languages('fortran', native: false)
+ff = meson.get_compiler('fortran')
+if ff.get_id() == 'gcc'
+  # -std=legacy is not supported by all Fortran compilers, but very useful with
+  # gfortran since it avoids a ton of warnings that we don't care about.
+  # Needs fixing in Meson, see https://github.com/mesonbuild/meson/issues/11633.
+  add_project_arguments('-std=legacy', language: 'fortran')
+endif
+
+if ff.has_argument('-Wno-conversion')
+  add_project_arguments('-Wno-conversion', language: 'fortran')
+endif
+
+if host_machine.system() == 'darwin'
+  if cc.has_link_argument('-Wl,-dead_strip')
+    # Allow linker to strip unused symbols
+    add_project_link_arguments('-Wl,-dead_strip', language : ['c', 'cpp', 'fortran'])
+  endif
+endif
+
+# install python sources
+install_subdir('pyoptsparse',
+  exclude_directories: [
+    'pyCONMIN/source',
+    'pyCONMIN/README',
+    'pyNLPQLP/source',
+    'pyNLPQLP/README',
+    'pyNSGA2/source',
+    'pyNSGA2/README',
+    'pyPSQP/source',
+    'pyPSQP/README',
+    'pySLSQP/source',
+    'pySLSQP/README',
+    'pySNOPT/source',
+    'pySNOPT/README'
+  ],
+  install_dir: py3.get_install_dir())
+
+# install non-python sources
+subdir('pyoptsparse')
