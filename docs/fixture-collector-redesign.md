@@ -116,14 +116,16 @@ GitHub token environment or, when absent, from the installed `gh` login without
 logging or persisting the token. Credentials remain in Go memory and are never
 passed to Codex. Requests are serial, code search is paced to one request per
 six seconds, and `core` and `code_search` response limits are tracked
-independently. Explicit rate limits wait for `Retry-After` or reset and retry a
-bounded number of times; secondary limits use bounded exponential backoff.
-Temporary transport and 5xx failures also receive bounded retries. Other 403
-responses fail immediately. All waits are context-cancellable, every decoded
-retry response consumes the existing byte budget, and sanitized rate headers,
-request IDs, and bounded provider messages are reported to the operator.
-Authentication failure and service unavailability remain infrastructure
-failures.
+independently. Core requests are paced from the latest reported limit,
+remaining count, and reset time, with ten percent reserved for other clients.
+The collector waits for reset when that reserve is reached. Explicit rate
+limits wait for `Retry-After` or reset and retry a bounded number of times;
+secondary limits use bounded exponential backoff. Temporary transport and 5xx
+failures also receive bounded retries. Other 403 responses fail immediately.
+All waits are context-cancellable, every decoded retry response consumes the
+existing byte budget, and sanitized rate headers, request IDs, and bounded
+provider messages are reported to the operator. Authentication failure and
+service unavailability remain infrastructure failures.
 
 ## Qualification
 

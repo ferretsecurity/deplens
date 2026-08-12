@@ -40,6 +40,8 @@ const (
 	githubTransientAttempts  = 3
 	githubErrorMessageLimit  = 256
 	githubResetMargin        = time.Second
+	githubCoreReserveDivisor = 10
+	githubPacingLogThreshold = 5 * time.Second
 )
 
 type githubProgressContextKey struct{}
@@ -821,16 +823,19 @@ type githubHTTPService struct {
 	now     func() time.Time
 	sleep   func(context.Context, time.Duration) error
 
-	gateMu       sync.Mutex
-	nextRequest  map[string]time.Time
-	blockedUntil map[string]time.Time
+	gateMu        sync.Mutex
+	lastRequest   map[string]time.Time
+	nextRequest   map[string]time.Time
+	blockedUntil  map[string]time.Time
+	blockedReason map[string]string
 }
 
 func newGitHubHTTPService(token string) *githubHTTPService {
 	return &githubHTTPService{
 		client: http.DefaultClient, token: token, baseURL: "https://api.github.com",
 		now: time.Now, sleep: contextSleep,
-		nextRequest: make(map[string]time.Time), blockedUntil: make(map[string]time.Time),
+		lastRequest: make(map[string]time.Time), nextRequest: make(map[string]time.Time), blockedUntil: make(map[string]time.Time),
+		blockedReason: make(map[string]string),
 	}
 }
 
@@ -873,35 +878,71 @@ func (s *githubHTTPService) waitForGate(ctx context.Context, resource string) er
 	var reset time.Time
 	if blocked := s.blockedUntil[resource]; blocked.After(ready) {
 		ready = blocked
-		reason = "primary-rate-limit"
+		reason = s.blockedReason[resource]
+		if reason == "" {
+			reason = "primary-rate-limit"
+		}
 		reset = blocked
 	}
 	if next := s.nextRequest[resource]; next.After(ready) {
 		ready = next
 		reason = "request-pacing"
+		if resource == "core" {
+			reason = "adaptive-pacing"
+		}
 		reset = time.Time{}
 	}
 	if resource == "code_search" {
 		s.nextRequest[resource] = ready.Add(githubCodeSearchInterval)
 	}
+	s.lastRequest[resource] = ready
 	s.gateMu.Unlock()
 	if !ready.After(now) {
 		return nil
 	}
 	delay := ready.Sub(now)
-	reportGitHubProgress(ctx, resource, ProviderProgress{Action: "wait", Reason: reason, Delay: delay, Reset: reset})
+	if reason != "adaptive-pacing" || delay >= githubPacingLogThreshold {
+		reportGitHubProgress(ctx, resource, ProviderProgress{Action: "wait", Reason: reason, Delay: delay, Reset: reset})
+	}
 	return s.sleep(ctx, delay)
 }
 
 func (s *githubHTTPService) rememberRateLimit(snapshot githubRateLimitSnapshot) {
-	if !snapshot.countersKnown || snapshot.remaining != 0 || snapshot.reset.IsZero() {
+	if !snapshot.countersKnown || snapshot.reset.IsZero() {
+		return
+	}
+	now := s.now()
+	if !snapshot.reset.After(now) {
 		return
 	}
 	s.gateMu.Lock()
 	defer s.gateMu.Unlock()
-	blocked := snapshot.reset.Add(githubResetMargin)
-	if blocked.After(s.blockedUntil[snapshot.resource]) {
-		s.blockedUntil[snapshot.resource] = blocked
+	reserve := 0
+	if snapshot.resource == "core" && snapshot.limit > 0 {
+		reserve = max(1, (snapshot.limit+githubCoreReserveDivisor-1)/githubCoreReserveDivisor)
+	}
+	if snapshot.remaining <= reserve {
+		blocked := snapshot.reset.Add(githubResetMargin)
+		if blocked.After(s.blockedUntil[snapshot.resource]) {
+			s.blockedUntil[snapshot.resource] = blocked
+			s.blockedReason[snapshot.resource] = "primary-rate-limit"
+			if snapshot.remaining > 0 {
+				s.blockedReason[snapshot.resource] = "rate-limit-reserve"
+			}
+		}
+		return
+	}
+	if snapshot.resource != "core" {
+		return
+	}
+	usableRemaining := snapshot.remaining - reserve
+	interval := snapshot.reset.Sub(now) / time.Duration(usableRemaining)
+	if interval > 0 {
+		started := s.lastRequest[snapshot.resource]
+		if started.IsZero() {
+			started = now
+		}
+		s.nextRequest[snapshot.resource] = started.Add(interval)
 	}
 }
 

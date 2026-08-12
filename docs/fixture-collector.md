@@ -86,12 +86,16 @@ GitHub requests are serial and identify the collector with a pinned REST API
 version. Code-search pages are paced to at most one request every six seconds,
 matching GitHub's separate authenticated limit of ten code-search requests per
 minute. The collector tracks `core` and `code_search` response headers
-separately. When GitHub reports exhaustion it waits for `Retry-After` or the
-primary reset time; identified secondary limits use bounded 60/120/240-second
-backoff. Rate-limit responses have four total attempts, while temporary
-transport and 5xx failures have three. Waits are interruptible, all decoded
-retry responses still consume the reviewed byte budget, and unrelated 403
-responses fail immediately instead of being retried.
+separately. After each `core` response, it spreads the usable requests over the
+time remaining before reset and keeps ten percent of the reported hourly limit
+in reserve for other GitHub clients. Reaching that reserve waits until reset.
+Routine adaptive waits shorter than five seconds are not logged; longer pacing
+and reserve waits are reported. When GitHub reports exhaustion it waits for
+`Retry-After` or the primary reset time; identified secondary limits use bounded
+60/120/240-second backoff. Rate-limit responses have four total attempts, while
+temporary transport and 5xx failures have three. Waits are interruptible, all
+decoded retry responses still consume the reviewed byte budget, and unrelated
+403 responses fail immediately instead of being retried.
 
 The packet is supplied only on stdin. Configurable tool families are disabled;
 the residual-tool sandbox has an empty network policy and only a disposable

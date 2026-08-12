@@ -462,6 +462,88 @@ func TestGitHubHTTPServiceWaitsUntilPrimaryReset(t *testing.T) {
 	}
 }
 
+func TestGitHubHTTPServiceAdaptivelyPacesCoreRequests(t *testing.T) {
+	fixed := time.Unix(100, 0)
+	requests := 0
+	var waits []time.Duration
+	var events []ProviderProgress
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-RateLimit-Resource", "core")
+		w.Header().Set("X-RateLimit-Limit", "100")
+		w.Header().Set("X-RateLimit-Remaining", "90")
+		w.Header().Set("X-RateLimit-Reset", "180")
+		fmt.Fprint(w, `{"full_name":"octo/project","default_branch":"main"}`)
+	}))
+	defer server.Close()
+
+	service := newGitHubHTTPService("")
+	service.baseURL = server.URL
+	service.now = func() time.Time { return fixed }
+	service.sleep = func(_ context.Context, delay time.Duration) error {
+		waits = append(waits, delay)
+		fixed = fixed.Add(delay)
+		return nil
+	}
+	ctx := withGitHubProgress(context.Background(), progressQualification, func(update ResearchProgress) {
+		if update.ProviderEvent != nil {
+			events = append(events, *update.ProviderEvent)
+		}
+	})
+	if _, _, err := service.Repository(ctx, "octo/project", 4096); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := service.Repository(ctx, "octo/project", 4096); err != nil {
+		t.Fatal(err)
+	}
+	if requests != 2 || len(waits) != 1 || waits[0] != time.Second || len(events) != 0 {
+		t.Fatalf("requests=%d waits=%v events=%+v", requests, waits, events)
+	}
+}
+
+func TestGitHubHTTPServicePreservesCoreRateLimitReserve(t *testing.T) {
+	fixed := time.Unix(100, 0)
+	requests := 0
+	var wait time.Duration
+	var events []ProviderProgress
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+		w.Header().Set("Content-Type", "application/json")
+		if requests == 1 {
+			w.Header().Set("X-RateLimit-Resource", "core")
+			w.Header().Set("X-RateLimit-Limit", "100")
+			w.Header().Set("X-RateLimit-Remaining", "10")
+			w.Header().Set("X-RateLimit-Reset", "105")
+		}
+		fmt.Fprint(w, `{"full_name":"octo/project","default_branch":"main"}`)
+	}))
+	defer server.Close()
+
+	service := newGitHubHTTPService("")
+	service.baseURL = server.URL
+	service.now = func() time.Time { return fixed }
+	service.sleep = func(_ context.Context, delay time.Duration) error {
+		wait = delay
+		fixed = fixed.Add(delay)
+		return nil
+	}
+	ctx := withGitHubProgress(context.Background(), progressQualification, func(update ResearchProgress) {
+		if update.ProviderEvent != nil {
+			events = append(events, *update.ProviderEvent)
+		}
+	})
+	if _, _, err := service.Repository(ctx, "octo/project", 4096); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := service.Repository(ctx, "octo/project", 4096); err != nil {
+		t.Fatal(err)
+	}
+	if requests != 2 || wait != 6*time.Second || len(events) != 1 || events[0].Reason != "rate-limit-reserve" {
+		t.Fatalf("requests=%d wait=%s events=%+v", requests, wait, events)
+	}
+}
+
 func TestGitHubHTTPServiceDoesNotRetryArbitraryForbidden(t *testing.T) {
 	requests := 0
 	var events []ProviderProgress

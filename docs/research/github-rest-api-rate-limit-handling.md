@@ -123,11 +123,11 @@ Use one process-wide, context-aware gate per `X-RateLimit-Resource`:
 - For `code_search`, start requests no faster than one every six seconds. This
   directly respects the documented 10-per-minute limit and avoids consuming a
   ten-request burst at the start of every detector.
-- For `core`, use the latest response headers. If a successful response leaves
-  zero remaining, close the gate until the reset time before issuing the next
-  core request. Optionally spread requests over the remaining window using
-  `timeUntilReset / remaining`; this produces steadier throughput, but it is an
-  optimization rather than a GitHub requirement.
+- For `core`, use the latest response headers. Reserve ten percent of the
+  reported limit for other clients, then spread usable requests over the
+  remaining window using `timeUntilReset / (remaining - reserve)`. If the
+  remaining count reaches the reserve, close the gate until reset. This is a
+  collector policy rather than a GitHub requirement.
 - Keep requests serial. Do not add concurrency in an attempt to compensate for
   the waits.
 
@@ -136,9 +136,9 @@ that the endpoint does not consume the primary limit but can consume secondary
 capacity, and recommends response headers when possible
 ([GitHub: checking rate-limit status](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api#checking-the-status-of-your-rate-limit)).
 
-The smallest first implementation should use the six-second code-search gate
-and the zero-remaining core gate. Header-driven spreading can be added only if
-real runs still hit limits; this keeps the first change simple.
+The initial zero-remaining gate prevented provider errors but produced a real
+38-minute pause after a burst exhausted the core bucket. The adaptive policy
+above replaces that burst-and-wait pattern with steadier throughput.
 
 ### 3. Retry only errors that are expected to become successful
 
