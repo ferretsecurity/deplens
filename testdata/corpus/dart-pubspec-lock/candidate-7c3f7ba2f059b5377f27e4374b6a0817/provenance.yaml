@@ -1,0 +1,18 @@
+version: 2
+detector_id: dart-pubspec-lock
+candidate_id: candidate-7c3f7ba2f059b5377f27e4374b6a0817
+provider: github
+repository: masreplay/api_spec_to_dart
+repository_url: https://github.com/masreplay/api_spec_to_dart
+default_branch: main
+commit: 2798c60bb789e73b01ab3c86b661dd18d5ecb412
+original_path: pubspec.lock
+permalink: https://github.com/masreplay/api_spec_to_dart/blob/2798c60bb789e73b01ab3c86b661dd18d5ecb412/pubspec.lock
+retrieved_at: "2026-08-12T12:53:06Z"
+sha256: d64fddd41e423c178f9666e46623b711f6ab788e87e7fba5158432272821fc74
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/masreplay/api_spec_to_dart/blob/2798c60bb789e73b01ab3c86b661dd18d5ecb412/LICENSE
+    sha256: 45ac22bda5e4ecab4a9d7c0b7e699ee0d5cf2c1dfea28bca804366834acdfbab
+rationale: Compact current pure-Dart package lockfile, adding a non-Flutter application structure.

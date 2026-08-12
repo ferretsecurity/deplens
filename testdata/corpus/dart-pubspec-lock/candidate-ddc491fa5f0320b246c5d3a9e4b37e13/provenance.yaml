@@ -1,0 +1,18 @@
+version: 2
+detector_id: dart-pubspec-lock
+candidate_id: candidate-ddc491fa5f0320b246c5d3a9e4b37e13
+provider: github
+repository: fieztazica/vair_app
+repository_url: https://github.com/fieztazica/vair_app
+default_branch: main
+commit: 44e50f741b659d634a30a2a9b3b590ec132aea24
+original_path: pubspec.lock
+permalink: https://github.com/fieztazica/vair_app/blob/44e50f741b659d634a30a2a9b3b590ec132aea24/pubspec.lock
+retrieved_at: "2026-08-12T12:55:39Z"
+sha256: 54a67ca06aa284c114490aededb1e700cc59ade9e54364df688bf37b072aa721
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/fieztazica/vair_app/blob/44e50f741b659d634a30a2a9b3b590ec132aea24/LICENSE
+    sha256: 74e587e533f4f609a2f9e3c0fedd355c7f7683907a699d3bc8956e3755cd97ee
+rationale: Representative modern Flutter mobile app lockfile with common plugins, storage, networking, and platform packages.

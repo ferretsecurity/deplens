@@ -8159,12 +8159,248 @@ detectors:
       roles:
         - resolution
         - integrity
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/dart-pubspec-lock/candidate-3f7f0856bd668c6271bd4c32de06b3bf/pubspec.lock
+        - testdata/corpus/dart-pubspec-lock/candidate-7c3f7ba2f059b5377f27e4374b6a0817/pubspec.lock
+        - testdata/corpus/dart-pubspec-lock/candidate-ddc491fa5f0320b246c5d3a9e4b37e13/pubspec.lock
       target: 3
       query_plan:
         - filename:pubspec.lock
+      queries:
+        - filename:pubspec.lock
+      candidates:
+        - candidate-e42986f3f1dd863bba612076a8274095
+        - candidate-3a45192e5d7d7b4af9c7055436f76887
+        - candidate-9b1bd3f6ed1868810ed78aab82a034a1
+        - candidate-ba5a955f13e8d6068ce321808e85e4b0
+        - candidate-c194047ec82c00d08f722445b91a1374
+        - candidate-247e59ab81e263abccc582cd8e07125c
+        - candidate-7c3f7ba2f059b5377f27e4374b6a0817
+        - candidate-7203247cd83ae32e496cec427bc5597e
+        - candidate-c6811a719bb41b17a4a6456f0b19ddd9
+        - candidate-9a254c8c17812513de3ec8df6a7c8027
+        - candidate-0025a1a3214d02b6bedcffa30be2ab8a
+        - candidate-ae41b1f2cb1420061b39a0ef5a186d85
+        - candidate-6d55b779878623a09bfbeedf477ee431
+        - candidate-fd978d9222868f3f2788eaf1d2e5e472
+        - candidate-3f7f0856bd668c6271bd4c32de06b3bf
+        - candidate-226f8886d1e7333fa1bdaa38bae3d539
+        - candidate-896daf307c9c7905c2bd5c5740d999a5
+        - candidate-dca4b8a71bca7de43bef6982ea8fe98f
+        - candidate-e1185d914c5674ef6fef9c0d7b220f48
+        - candidate-e8ca510f0cdcb85bb99bc8971d5a4dc0
+        - candidate-7977df14225f92534c31218332f0a54c
+        - candidate-be4068c35bbef30cb5cb57b9bbbc89be
+        - candidate-cce24763033cb261889547405fa5a7be
+        - candidate-d8d06a4a0f8691cd6128d2cb4289b331
+        - candidate-a903cfedf390132346bccd144d5c3914
+        - candidate-ddc491fa5f0320b246c5d3a9e4b37e13
+        - candidate-fc5ab05b05a73d929327fe98d7d01df6
+        - candidate-4e3affecd4667b8c3c31bbb70d6ac447
+      filtered_search_hits:
+        source-selector-mismatch: 1
+      rejections:
+        - repository-purpose
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - repository-template
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - repository-template
+        - license-missing
+        - license-missing
+        - license-missing
+        - repository-template
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-missing
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+      omitted:
+        - candidate-3a45192e5d7d7b4af9c7055436f76887
+        - candidate-ba5a955f13e8d6068ce321808e85e4b0
+      decision_states:
+        - packet_fingerprint: d163208e5469ef5e01e59cfb4819f2bb023da3905fa9c4e66e3003dbe8d82fcd
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-3f7f0856bd668c6271bd4c32de06b3bf
+            - candidate-7c3f7ba2f059b5377f27e4374b6a0817
+            - candidate-ddc491fa5f0320b246c5d3a9e4b37e13
+          queries:
+            - filename:pubspec.lock
+          candidates:
+            - candidate-e42986f3f1dd863bba612076a8274095
+            - candidate-3a45192e5d7d7b4af9c7055436f76887
+            - candidate-9b1bd3f6ed1868810ed78aab82a034a1
+            - candidate-ba5a955f13e8d6068ce321808e85e4b0
+            - candidate-c194047ec82c00d08f722445b91a1374
+            - candidate-247e59ab81e263abccc582cd8e07125c
+            - candidate-7c3f7ba2f059b5377f27e4374b6a0817
+            - candidate-7203247cd83ae32e496cec427bc5597e
+            - candidate-c6811a719bb41b17a4a6456f0b19ddd9
+            - candidate-9a254c8c17812513de3ec8df6a7c8027
+            - candidate-0025a1a3214d02b6bedcffa30be2ab8a
+            - candidate-ae41b1f2cb1420061b39a0ef5a186d85
+            - candidate-6d55b779878623a09bfbeedf477ee431
+            - candidate-fd978d9222868f3f2788eaf1d2e5e472
+            - candidate-3f7f0856bd668c6271bd4c32de06b3bf
+            - candidate-226f8886d1e7333fa1bdaa38bae3d539
+            - candidate-896daf307c9c7905c2bd5c5740d999a5
+            - candidate-dca4b8a71bca7de43bef6982ea8fe98f
+            - candidate-e1185d914c5674ef6fef9c0d7b220f48
+            - candidate-e8ca510f0cdcb85bb99bc8971d5a4dc0
+            - candidate-7977df14225f92534c31218332f0a54c
+            - candidate-be4068c35bbef30cb5cb57b9bbbc89be
+            - candidate-cce24763033cb261889547405fa5a7be
+            - candidate-d8d06a4a0f8691cd6128d2cb4289b331
+            - candidate-a903cfedf390132346bccd144d5c3914
+            - candidate-ddc491fa5f0320b246c5d3a9e4b37e13
+            - candidate-fc5ab05b05a73d929327fe98d7d01df6
+            - candidate-4e3affecd4667b8c3c31bbb70d6ac447
+          filtered_search_hits:
+            source-selector-mismatch: 1
+          rejections:
+            - repository-purpose
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - repository-template
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - repository-template
+            - license-missing
+            - license-missing
+            - license-missing
+            - repository-template
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-missing
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+          omitted:
+            - candidate-3a45192e5d7d7b4af9c7055436f76887
+            - candidate-ba5a955f13e8d6068ce321808e85e4b0
+          decision:
+            packet_fingerprint: d163208e5469ef5e01e59cfb4819f2bb023da3905fa9c4e66e3003dbe8d82fcd
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: erlang-rebar-config
       form: manifest
       roles:

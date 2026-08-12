@@ -1,0 +1,18 @@
+version: 2
+detector_id: dart-pubspec-lock
+candidate_id: candidate-3f7f0856bd668c6271bd4c32de06b3bf
+provider: github
+repository: pjako/dullet_physics
+repository_url: https://github.com/pjako/dullet_physics
+default_branch: master
+commit: e5ba891da8fbf9378b865418f32c61e172e0f139
+original_path: pubspec.lock
+permalink: https://github.com/pjako/dullet_physics/blob/e5ba891da8fbf9378b865418f32c61e172e0f139/pubspec.lock
+retrieved_at: "2026-08-12T12:54:03Z"
+sha256: be338b248f36529cc731cae3271abc0993d96aaf7449dac13dc0cc6c83143498
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/pjako/dullet_physics/blob/e5ba891da8fbf9378b865418f32c61e172e0f139/LICENSE.txt
+    sha256: 1e29ca92366d6db3571c7051049364f19a5303d7266ab21a95d95ceceed4c530
+rationale: Short legacy-format lockfile with Git-sourced dependencies, covering an important older edge case.
