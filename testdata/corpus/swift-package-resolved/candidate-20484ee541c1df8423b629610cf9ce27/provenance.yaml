@@ -1,0 +1,18 @@
+version: 2
+detector_id: swift-package-resolved
+candidate_id: candidate-20484ee541c1df8423b629610cf9ce27
+provider: github
+repository: EmranMR/tree-sitter-blade
+repository_url: https://github.com/EmranMR/tree-sitter-blade
+default_branch: main
+commit: 5dbdcb0ccbe91e64b038b41545d3acc26c74907a
+original_path: Package.resolved
+permalink: https://github.com/EmranMR/tree-sitter-blade/blob/5dbdcb0ccbe91e64b038b41545d3acc26c74907a/Package.resolved
+retrieved_at: "2026-08-12T22:55:28Z"
+sha256: 0bde18417f881b033d47b8a5476d00bfcd97c3052a19261f24bade59f44528f9
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/EmranMR/tree-sitter-blade/blob/5dbdcb0ccbe91e64b038b41545d3acc26c74907a/LICENSE
+    sha256: 96e0c1803ffb831c7287b1fb7f88567d05e58d37da553e6bb9a9c4a765434ecb
+rationale: Covers the legacy v1 object/pins structure with multiple package entries.

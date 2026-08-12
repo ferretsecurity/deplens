@@ -1,0 +1,18 @@
+version: 2
+detector_id: swift-package-resolved
+candidate_id: candidate-029881ff45420758cdfe17bc9cb7cea6
+provider: github
+repository: tkgstrator/LineStickersKit
+repository_url: https://github.com/tkgstrator/LineStickersKit
+default_branch: master
+commit: ca0b10715d487bcfd8a45c94218221b1bdc92be4
+original_path: Package.resolved
+permalink: https://github.com/tkgstrator/LineStickersKit/blob/ca0b10715d487bcfd8a45c94218221b1bdc92be4/Package.resolved
+retrieved_at: "2026-08-12T23:00:16Z"
+sha256: 2caeacfab09d278d7c90fecb4b72d15bd6e79e577593b723bd3a5c019eafc5c3
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/tkgstrator/LineStickersKit/blob/ca0b10715d487bcfd8a45c94218221b1bdc92be4/LICENSE
+    sha256: c305314a9f2d89a3d44e86c9edb7ad6c2349d0a800a654166d3f265675bfbbd3
+rationale: Typical modern v2 lockfile for an iOS app, with several normal version-pinned remote dependencies.

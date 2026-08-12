@@ -1,0 +1,18 @@
+version: 2
+detector_id: swift-package-resolved
+candidate_id: candidate-7468f6fd16c4febfef92f1c3cae16706
+provider: github
+repository: srgtuszy/llama-cpp-swift
+repository_url: https://github.com/srgtuszy/llama-cpp-swift
+default_branch: main
+commit: 5fff6aaeae60df84b03f7d0aa246745290fdc65f
+original_path: Package.resolved
+permalink: https://github.com/srgtuszy/llama-cpp-swift/blob/5fff6aaeae60df84b03f7d0aa246745290fdc65f/Package.resolved
+retrieved_at: "2026-08-12T22:57:08Z"
+sha256: 4544799021c7ebd2f6ddbf47f9cf1a6e21a3a56b8559a83784fc17a0462131cc
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/srgtuszy/llama-cpp-swift/blob/5fff6aaeae60df84b03f7d0aa246745290fdc65f/LICENSE
+    sha256: 7541679d1faecd369309d1059fed907266b1c06bb3c707ed8e1535d78faa9c1f
+rationale: 'Adds a compact v2 edge case: one dependency is branch/revision pinned without a version.'
