@@ -1,0 +1,7 @@
+resolver: lts-10.3
+packages:
+  - '.'
+extra-deps:
+  - servant-0.12.1
+  - hspec-golden-aeson-0.5.1.0
+  - quickcheck-arbitrary-adt-0.3.1.0

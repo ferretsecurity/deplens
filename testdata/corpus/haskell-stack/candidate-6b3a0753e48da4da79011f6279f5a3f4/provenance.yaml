@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-stack
+candidate_id: candidate-6b3a0753e48da4da79011f6279f5a3f4
+provider: github
+repository: plow-technologies/servant-aeson-specs
+repository_url: https://github.com/plow-technologies/servant-aeson-specs
+default_branch: master
+commit: b4b24054173384b70fdcfc12a15d06ae9ce4c198
+original_path: stack.yaml
+permalink: https://github.com/plow-technologies/servant-aeson-specs/blob/b4b24054173384b70fdcfc12a15d06ae9ce4c198/stack.yaml
+retrieved_at: "2026-08-12T13:39:00Z"
+sha256: 2a1a4b7e18edcd38c45de5da09b49ab8300e3678359df6372d50c9c9ec9c0c9c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/plow-technologies/servant-aeson-specs/blob/b4b24054173384b70fdcfc12a15d06ae9ce4c198/LICENSE
+    sha256: f2dc2e27dfe82b5104d25b2b55887c6424cf2b240c8859e13bd87034bf1e68d3
+rationale: 'Representative normal Stack project: resolver, local package, and versioned extra dependencies.'

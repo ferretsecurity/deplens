@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-stack
+candidate_id: candidate-f0c77618a0c535c3fe247152213fbc54
+provider: github
+repository: genos/online_problems
+repository_url: https://github.com/genos/online_problems
+default_branch: main
+commit: 955ef7ddcc6062aebb465a6c691cb7dfc190a650
+original_path: exercism/haskell/sum-of-multiples/stack.yaml
+permalink: https://github.com/genos/online_problems/blob/955ef7ddcc6062aebb465a6c691cb7dfc190a650/exercism/haskell/sum-of-multiples/stack.yaml
+retrieved_at: "2026-08-12T13:42:32Z"
+sha256: d33660194e56c9399180199286cfdd1510f5e7ea809cd7c5af4bea98980149a6
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/genos/online_problems/blob/955ef7ddcc6062aebb465a6c691cb7dfc190a650/LICENSE
+    sha256: bd3bc61cdd6771098cadd141018f1c34bc0d02c634b2f0a73336adfc3839feeb
+rationale: Minimal resolver-only configuration; a compact edge case with no explicit packages or dependencies.

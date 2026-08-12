@@ -1,0 +1,11 @@
+resolver: lts-16.27
+packages:
+- .
+
+extra-deps:
+- git: https://github.com/zsedem/haskell-cpython.git
+  commit: 42f27b3d9e2c2b5f022ef7e8fd125110c3dadd79
+
+flags:
+  cpython:
+    usepython38: true

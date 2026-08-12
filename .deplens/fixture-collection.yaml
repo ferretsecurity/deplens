@@ -9631,12 +9631,242 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/haskell-stack/candidate-6b3a0753e48da4da79011f6279f5a3f4/stack.yaml
+        - testdata/corpus/haskell-stack/candidate-ca53f0f6a26e6c1025958331deb56e4b/pyffi/stack.yaml
+        - testdata/corpus/haskell-stack/candidate-f0c77618a0c535c3fe247152213fbc54/exercism/haskell/sum-of-multiples/stack.yaml
       target: 3
       query_plan:
         - filename:stack.yaml
+      queries:
+        - filename:stack.yaml
+      candidates:
+        - candidate-6f0a92c24defad40a322a47d95c84d78
+        - candidate-22950f332d46391c238ead58539ccef4
+        - candidate-0fb1f0eef48b0e5140b78e432ce82069
+        - candidate-84f06dc55e6fff2d1cb5cc07e56f2f49
+        - candidate-608c6f0a1d283f0f09975005c3011297
+        - candidate-6b3a0753e48da4da79011f6279f5a3f4
+        - candidate-e76f4e3fad41cb716d4aa314f5c16ea8
+        - candidate-79fe3806912148d169d95328d718898f
+        - candidate-d1252e39825a32f07e473d1424bb0e7f
+        - candidate-f5a2804f8b8191659c8a6b4afe672447
+        - candidate-ca53f0f6a26e6c1025958331deb56e4b
+        - candidate-f0c77618a0c535c3fe247152213fbc54
+        - candidate-72f1e570d005c16d0a4071ab746d295f
+        - candidate-79fdaea3d361a4022df46cf6052970ee
+        - candidate-cc961843e5f032454d107ad99e5a2ce4
+        - candidate-fb6d65e4e0e775732705c8a5b2f10296
+        - candidate-87fc2b6c2ef22a273c016a769dcb8efa
+        - candidate-2f9bd0ea243df4a0478f5a9a3c03e09b
+        - candidate-1e1ec893fe2de024c44d98d48a8fda28
+      filtered_search_hits:
+        source-selector-mismatch: 274
+      rejections:
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - repository-template
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - repository-template
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - repository-template
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - license-ambiguous
+      decision_states:
+        - packet_fingerprint: b8710adaac720f488b6b4d1fd6ef2998860e111cab613f0b0a9724ad7fc8c2a1
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-6b3a0753e48da4da79011f6279f5a3f4
+            - candidate-ca53f0f6a26e6c1025958331deb56e4b
+            - candidate-f0c77618a0c535c3fe247152213fbc54
+          queries:
+            - filename:stack.yaml
+          candidates:
+            - candidate-6f0a92c24defad40a322a47d95c84d78
+            - candidate-22950f332d46391c238ead58539ccef4
+            - candidate-0fb1f0eef48b0e5140b78e432ce82069
+            - candidate-84f06dc55e6fff2d1cb5cc07e56f2f49
+            - candidate-608c6f0a1d283f0f09975005c3011297
+            - candidate-6b3a0753e48da4da79011f6279f5a3f4
+            - candidate-e76f4e3fad41cb716d4aa314f5c16ea8
+            - candidate-79fe3806912148d169d95328d718898f
+            - candidate-d1252e39825a32f07e473d1424bb0e7f
+            - candidate-f5a2804f8b8191659c8a6b4afe672447
+            - candidate-ca53f0f6a26e6c1025958331deb56e4b
+            - candidate-f0c77618a0c535c3fe247152213fbc54
+            - candidate-72f1e570d005c16d0a4071ab746d295f
+            - candidate-79fdaea3d361a4022df46cf6052970ee
+            - candidate-cc961843e5f032454d107ad99e5a2ce4
+            - candidate-fb6d65e4e0e775732705c8a5b2f10296
+            - candidate-87fc2b6c2ef22a273c016a769dcb8efa
+            - candidate-2f9bd0ea243df4a0478f5a9a3c03e09b
+            - candidate-1e1ec893fe2de024c44d98d48a8fda28
+          filtered_search_hits:
+            source-selector-mismatch: 274
+          rejections:
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - repository-template
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - repository-template
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - repository-template
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - license-ambiguous
+          decision:
+            packet_fingerprint: b8710adaac720f488b6b4d1fd6ef2998860e111cab613f0b0a9724ad7fc8c2a1
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
     - id: haskell-stack-lock
       form: lockfile
       roles:

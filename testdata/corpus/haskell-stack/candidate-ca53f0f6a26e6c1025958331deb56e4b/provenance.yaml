@@ -1,0 +1,18 @@
+version: 2
+detector_id: haskell-stack
+candidate_id: candidate-ca53f0f6a26e6c1025958331deb56e4b
+provider: github
+repository: Javran/misc
+repository_url: https://github.com/Javran/misc
+default_branch: master
+commit: 77155e54f15c3cde85cf863f8481c47ff5233b21
+original_path: pyffi/stack.yaml
+permalink: https://github.com/Javran/misc/blob/77155e54f15c3cde85cf863f8481c47ff5233b21/pyffi/stack.yaml
+retrieved_at: "2026-08-12T13:41:40Z"
+sha256: 85232795e024392eb9c0b0ee079f4bacf3956310bda58ac06ff895713216299f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Javran/misc/blob/77155e54f15c3cde85cf863f8481c47ff5233b21/LICENSE
+    sha256: 470fa5a3ff911e659ea042f0d30064fb6879c03296f7d43dbbc40da5b213d2a4
+rationale: Adds a realistic external Git dependency plus a nested package flag override.
