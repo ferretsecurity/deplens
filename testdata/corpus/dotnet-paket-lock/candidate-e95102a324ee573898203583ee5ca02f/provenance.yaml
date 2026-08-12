@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-paket-lock
+candidate_id: candidate-e95102a324ee573898203583ee5ca02f
+provider: github
+repository: RussBaz/WebFrame
+repository_url: https://github.com/RussBaz/WebFrame
+default_branch: master
+commit: cadc87d254bfbd1332002a8c57c13bde4624096c
+original_path: paket.lock
+permalink: https://github.com/RussBaz/WebFrame/blob/cadc87d254bfbd1332002a8c57c13bde4624096c/paket.lock
+retrieved_at: "2026-08-12T14:47:20Z"
+sha256: c1ab218560a128eefc2515053ee5756aa16cdfcd797d25320c16fc3d7da305eb
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/RussBaz/WebFrame/blob/cadc87d254bfbd1332002a8c57c13bde4624096c/LICENSE
+    sha256: 5515fe2a3df970e786aad1f6dc36cee5db8284ecee92f18e35bec67e49912a2f
+rationale: 'Representative common case: a compact modern .NET 6 NuGet lockfile with application and test dependencies.'

@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-paket-lock
+candidate_id: candidate-56bd1e65e5f6f9791890d709ab4ee948
+provider: github
+repository: Tarmil/FSharp.SystemTextJson
+repository_url: https://github.com/Tarmil/FSharp.SystemTextJson
+default_branch: master
+commit: 4283f782fdd9f9b1afbb172cf5bf1ccd112417c2
+original_path: paket.lock
+permalink: https://github.com/Tarmil/FSharp.SystemTextJson/blob/4283f782fdd9f9b1afbb172cf5bf1ccd112417c2/paket.lock
+retrieved_at: "2026-08-12T14:45:17Z"
+sha256: 237b1f148b7d4b270d6eeda3943920bb9d4e269d7aa5e0f7b90ac65d8b7f5de5
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Tarmil/FSharp.SystemTextJson/blob/4283f782fdd9f9b1afbb172cf5bf1ccd112417c2/LICENSE
+    sha256: 0461c8d8431eab249f36b7ea12f62d4faba2e39bb8e0f8af787b08e2e56d6677
+rationale: Adds a current multi-group lockfile with modern target frameworks and a large, varied dependency graph.

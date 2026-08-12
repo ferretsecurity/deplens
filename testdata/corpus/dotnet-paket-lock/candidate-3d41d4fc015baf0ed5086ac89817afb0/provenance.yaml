@@ -1,0 +1,18 @@
+version: 2
+detector_id: dotnet-paket-lock
+candidate_id: candidate-3d41d4fc015baf0ed5086ac89817afb0
+provider: github
+repository: MatrixSolutions/FSharp.Data.JsonValidation
+repository_url: https://github.com/MatrixSolutions/FSharp.Data.JsonValidation
+default_branch: master
+commit: 01c737b1eaca1ae69c5b67290fb32a1016326e08
+original_path: paket.lock
+permalink: https://github.com/MatrixSolutions/FSharp.Data.JsonValidation/blob/01c737b1eaca1ae69c5b67290fb32a1016326e08/paket.lock
+retrieved_at: "2026-08-12T14:48:18Z"
+sha256: 8d35031421f8e6b1d8e3fed34503e404ad416bd5c2a14df0fdaf9e3de8994fcd
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/MatrixSolutions/FSharp.Data.JsonValidation/blob/01c737b1eaca1ae69c5b67290fb32a1016326e08/LICENSE.txt
+    sha256: 4d3c56b742797250455a1b10bd19fdbdb7d90658edd4bee22901c7e869fee1a5
+rationale: Adds legacy Paket syntax, named groups, framework restrictions, and a GitHub dependency.
