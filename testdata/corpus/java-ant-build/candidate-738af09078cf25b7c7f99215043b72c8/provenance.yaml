@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-ant-build
+candidate_id: candidate-738af09078cf25b7c7f99215043b72c8
+provider: github
+repository: syncemu/syncemu
+repository_url: https://github.com/syncemu/syncemu
+default_branch: public
+commit: 2f00028b6cfb960d3163c7a912314f32379bddc6
+original_path: src/avatar-qemu/roms/openbios/libc/build.xml
+permalink: https://github.com/syncemu/syncemu/blob/2f00028b6cfb960d3163c7a912314f32379bddc6/src/avatar-qemu/roms/openbios/libc/build.xml
+retrieved_at: "2026-08-12T10:49:19Z"
+sha256: 70ba7f673a98986883ccd3ec435435a8570872903a6f168e9ee704792b5ed388
+governing_license:
+    spdx: MIT
+    path: src/avatar-qemu/LICENSE
+    permalink: https://github.com/syncemu/syncemu/blob/2f00028b6cfb960d3163c7a912314f32379bddc6/src/avatar-qemu/LICENSE
+    sha256: 139c64b7a9ae62858ff969aae622ecfcf4f1519655bd92d2e70a1a2fb615690e
+rationale: Very short non-Ant XML build dialect, adding structural coverage for declarative static-library/object definitions.

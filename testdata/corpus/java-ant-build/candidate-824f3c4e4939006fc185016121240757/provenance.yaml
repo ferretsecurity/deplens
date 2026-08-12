@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-ant-build
+candidate_id: candidate-824f3c4e4939006fc185016121240757
+provider: github
+repository: allanf181/teste
+repository_url: https://github.com/allanf181/teste
+default_branch: master
+commit: 30ac946821437d0d6197d2cfca6bbd4b35275486
+original_path: lib/doctrine/vendor/doctrine/common/build.xml
+permalink: https://github.com/allanf181/teste/blob/30ac946821437d0d6197d2cfca6bbd4b35275486/lib/doctrine/vendor/doctrine/common/build.xml
+retrieved_at: "2026-08-12T10:54:25Z"
+sha256: 9504aaa1e572bb8247ca6a86d3a7fe465cc94666703eea7696963bf307000720
+governing_license:
+    spdx: MIT
+    path: lib/doctrine/vendor/doctrine/common/LICENSE
+    permalink: https://github.com/allanf181/teste/blob/30ac946821437d0d6197d2cfca6bbd4b35275486/lib/doctrine/vendor/doctrine/common/LICENSE
+    sha256: 5904d6fef83ef5f6ec03db0e924ea56eddca524ba5d2ffcf1fcaa6e13ca621d9
+rationale: 'Most representative full Ant project build: properties, target dependencies, conditions, external commands, and reusable macro definitions.'

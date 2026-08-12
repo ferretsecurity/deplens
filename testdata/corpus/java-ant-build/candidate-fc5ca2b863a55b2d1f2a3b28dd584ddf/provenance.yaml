@@ -1,0 +1,18 @@
+version: 2
+detector_id: java-ant-build
+candidate_id: candidate-fc5ca2b863a55b2d1f2a3b28dd584ddf
+provider: github
+repository: liuhuigmail/GrowingBugRepository
+repository_url: https://github.com/liuhuigmail/GrowingBugRepository
+default_branch: main
+commit: f198b74b03c1a12b4acd842a7d6568fe5efdbf9a
+original_path: framework/projects/Jackrabbit_oak_core/build_files/c642f14f0808045f1f59a87725ddd7a2515a99bb/build.xml
+permalink: https://github.com/liuhuigmail/GrowingBugRepository/blob/f198b74b03c1a12b4acd842a7d6568fe5efdbf9a/framework/projects/Jackrabbit_oak_core/build_files/c642f14f0808045f1f59a87725ddd7a2515a99bb/build.xml
+retrieved_at: "2026-08-12T10:42:39Z"
+sha256: c9b829e4fa10eafcc309f6e37d304808f8471d0ea9e72bba00321ab221a4ca81
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/liuhuigmail/GrowingBugRepository/blob/f198b74b03c1a12b4acd842a7d6568fe5efdbf9a/LICENSE
+    sha256: 8ed42bb21dcfa925f8f21606be479d3a00a7c0de548639b7e7264c8ef568427a
+rationale: Compact conventional Ant wrapper that imports a generated Maven build and exposes delegated compile targets.
