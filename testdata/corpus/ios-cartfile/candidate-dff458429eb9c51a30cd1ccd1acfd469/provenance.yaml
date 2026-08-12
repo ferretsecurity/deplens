@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-cartfile
+candidate_id: candidate-dff458429eb9c51a30cd1ccd1acfd469
+provider: github
+repository: Alamofire/AlamofireImage
+repository_url: https://github.com/Alamofire/AlamofireImage
+default_branch: master
+commit: 490f71307cd48f81d8cc2efd50aeed93e412ff98
+original_path: Cartfile
+permalink: https://github.com/Alamofire/AlamofireImage/blob/490f71307cd48f81d8cc2efd50aeed93e412ff98/Cartfile
+retrieved_at: "2026-08-12T12:33:05Z"
+sha256: be97526f656e479258978f50a50178b457874f44a24d06215a6fccba87f2361e
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Alamofire/AlamofireImage/blob/490f71307cd48f81d8cc2efd50aeed93e412ff98/LICENSE
+    sha256: 10fe2d3721aceff0bc9f7b8e6b0e2da6936a2ebac77fa58e9c5e9b78ebc4f2e1
+rationale: 'Typical real-world Cartfile: one GitHub dependency using a compatible-version constraint.'

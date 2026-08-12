@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-cartfile
+candidate_id: candidate-cd037d1c8f7849f28672529d20445097
+provider: github
+repository: braintree/braintree_ios
+repository_url: https://github.com/braintree/braintree_ios
+default_branch: main
+commit: 181ff3e741a5739a0787e826af27830b83889942
+original_path: Cartfile
+permalink: https://github.com/braintree/braintree_ios/blob/181ff3e741a5739a0787e826af27830b83889942/Cartfile
+retrieved_at: "2026-08-12T12:33:31Z"
+sha256: cc6cc06f54dec113c00b9e2f1754093055d0529afb490265fb9a89a6507415fe
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/braintree/braintree_ios/blob/181ff3e741a5739a0787e826af27830b83889942/LICENSE
+    sha256: cd5cd78a06730443aa63ff395693bbdcbc68afca3ab189e33238969bd918d080
+rationale: Covers the important binary-dependency edge case with exact version pins.

@@ -1,0 +1,18 @@
+version: 2
+detector_id: ios-cartfile
+candidate_id: candidate-f0c727c9360c4bf327eed5a7d7a7ef50
+provider: github
+repository: ustwo/videoplayback-ios
+repository_url: https://github.com/ustwo/videoplayback-ios
+default_branch: master
+commit: 5e295c2eee550d43fce94ef4403dbdb48c3b57a0
+original_path: Cartfile
+permalink: https://github.com/ustwo/videoplayback-ios/blob/5e295c2eee550d43fce94ef4403dbdb48c3b57a0/Cartfile
+retrieved_at: "2026-08-12T12:35:29Z"
+sha256: eefa89e64a5a577a44778cb438a44e85f498fd555f841e0be222fb439e3205b4
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ustwo/videoplayback-ios/blob/5e295c2eee550d43fce94ef4403dbdb48c3b57a0/LICENSE
+    sha256: 8aff123cdebff263fa21a5ad64562897a7cd70e09a23f17ce14bd3728dd02aa0
+rationale: Adds a common multi-dependency project case, including unpinned GitHub entries.
