@@ -4233,12 +4233,19 @@ detectors:
       form: tool-config
       roles:
         - configuration
-      state: pending
-      iterations: 0
+      state: in-progress
+      iterations: 1
       examples: []
       target: 3
       query_plan:
         - path:gradle/wrapper/gradle-wrapper.properties
+      queries:
+        - path:gradle/wrapper/gradle-wrapper.properties
+      history:
+        - iteration: 1
+          result: unsuccessful
+          queries:
+            - path:gradle/wrapper/gradle-wrapper.properties
     - id: scala-sbt-build
       form: build-definition
       roles:
