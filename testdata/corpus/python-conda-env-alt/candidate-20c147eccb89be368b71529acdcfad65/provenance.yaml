@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-conda-env-alt
+candidate_id: candidate-20c147eccb89be368b71529acdcfad65
+provider: github
+repository: Sandbergo/branch2learn
+repository_url: https://github.com/Sandbergo/branch2learn
+default_branch: main
+commit: b65e7a433c936c88dbdc723d1531b9b631f3b050
+original_path: dev/conda.yaml
+permalink: https://github.com/Sandbergo/branch2learn/blob/b65e7a433c936c88dbdc723d1531b9b631f3b050/dev/conda.yaml
+retrieved_at: "2026-08-12T07:46:45Z"
+sha256: 0ad2a4781ae717ea9841ffc7433f7946d6b66642bf4b64fdcd79eed695ffd050
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Sandbergo/branch2learn/blob/b65e7a433c936c88dbdc723d1531b9b631f3b050/LICENSE
+    sha256: 771a5156f872c0e01d7fb27f4e713728165fe1841c959d88d97b6e8867746c5f
+rationale: Adds useful structural variation with a C++/Python hybrid developer environment, including build tools, bindings, docs, and test tooling that the other two do not cover.

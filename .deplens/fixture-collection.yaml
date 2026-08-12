@@ -323,13 +323,243 @@ detectors:
       roles:
         - declaration
         - constraint
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/python-conda-env-alt/candidate-0c31c3d6a3fa6ba6047330d30d8e2264/conda.yaml
+        - testdata/corpus/python-conda-env-alt/candidate-1f456d47303fa3a7fa69f2f9ee14c1d0/conda.yaml
+        - testdata/corpus/python-conda-env-alt/candidate-20c147eccb89be368b71529acdcfad65/dev/conda.yaml
       target: 3
       query_plan:
         - filename:conda.yaml
         - filename:conda.yml
+      queries:
+        - filename:conda.yaml
+      candidates:
+        - candidate-c66134f1204d4dc455049469345b7145
+        - candidate-fe52876f7343c00f26d5bfa162427577
+        - candidate-251f70e9585311f83e0d45abcaa42ce1
+        - candidate-b65ffd2989e08cd3ef103eaa4057d77d
+        - candidate-5687b0517fafcf6beeed257ca58bb6a6
+        - candidate-0510f581dbacf2eaea0a5576782ef217
+        - candidate-27138b27c92e83237574c632d65e4ce6
+        - candidate-2730d9eea1ff8b7c12cc0c0b207aff13
+        - candidate-f532687b8988baf48a256efc2dd63f6c
+        - candidate-8cd26b738c021a7bdb95232672d07b2d
+        - candidate-cf047d46cd2c522cd0db9826f3b496eb
+        - candidate-1f456d47303fa3a7fa69f2f9ee14c1d0
+        - candidate-95fad6287fb51ae14f8ef32f5272a758
+        - candidate-212471d556bbee1ea724fe2d3dd8863f
+        - candidate-0c31c3d6a3fa6ba6047330d30d8e2264
+        - candidate-0b1dd488702b4d333193af6141e4f0bb
+        - candidate-20c147eccb89be368b71529acdcfad65
+        - candidate-4cdfa6d53dffa8622348660b88c33926
+        - candidate-7aab3ee90681dcab8da6afa3386a7a66
+        - candidate-9a8aa42feacaeb4b4f94474dc3975dfd
+        - candidate-961fce59e915a5c78f90646cf271f4bc
+        - candidate-c32adc10ff39dc9b9cdceb838607bcac
+        - candidate-7e237ad738a4ff69a536962a2ff19b9e
+        - candidate-0b0a82dd58a8e3917fcf623c96776924
+        - candidate-d4ade3f18850529301537fd48f49fb5e
+      filtered_search_hits:
+        source-selector-mismatch: 3
+      rejections:
+        - license-ambiguous
+        - repository-purpose
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - license-ambiguous
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+        - repository-purpose
+        - license-ambiguous
+        - license-missing
+        - license-missing
+        - repository-purpose
+        - repository-purpose
+        - license-missing
+        - license-ambiguous
+        - repository-purpose
+        - repository-purpose
+        - license-missing
+        - repository-purpose
+        - license-ambiguous
+        - repository-purpose
+        - sensitive-content
+        - license-missing
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - license-ambiguous
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - license-missing
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - license-ambiguous
+        - repository-purpose
+        - repository-purpose
+        - license-missing
+        - license-missing
+        - repository-purpose
+        - repository-purpose
+        - repository-purpose
+        - license-missing
+        - repository-purpose
+        - license-ambiguous
+        - license-ambiguous
+      decision_states:
+        - packet_fingerprint: 8638395f0978e4dd299aa4b8262875bc3ab681cb196c3abab0c352383a2bd7d4
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 651855f529bbe92a2dbc708bb823b4cf046f1d92139acc0ec9dc21737e76f22f
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-0c31c3d6a3fa6ba6047330d30d8e2264
+            - candidate-1f456d47303fa3a7fa69f2f9ee14c1d0
+            - candidate-20c147eccb89be368b71529acdcfad65
+          queries:
+            - filename:conda.yaml
+          candidates:
+            - candidate-c66134f1204d4dc455049469345b7145
+            - candidate-fe52876f7343c00f26d5bfa162427577
+            - candidate-251f70e9585311f83e0d45abcaa42ce1
+            - candidate-b65ffd2989e08cd3ef103eaa4057d77d
+            - candidate-5687b0517fafcf6beeed257ca58bb6a6
+            - candidate-0510f581dbacf2eaea0a5576782ef217
+            - candidate-27138b27c92e83237574c632d65e4ce6
+            - candidate-2730d9eea1ff8b7c12cc0c0b207aff13
+            - candidate-f532687b8988baf48a256efc2dd63f6c
+            - candidate-8cd26b738c021a7bdb95232672d07b2d
+            - candidate-cf047d46cd2c522cd0db9826f3b496eb
+            - candidate-1f456d47303fa3a7fa69f2f9ee14c1d0
+            - candidate-95fad6287fb51ae14f8ef32f5272a758
+            - candidate-212471d556bbee1ea724fe2d3dd8863f
+            - candidate-0c31c3d6a3fa6ba6047330d30d8e2264
+            - candidate-0b1dd488702b4d333193af6141e4f0bb
+            - candidate-20c147eccb89be368b71529acdcfad65
+            - candidate-4cdfa6d53dffa8622348660b88c33926
+            - candidate-7aab3ee90681dcab8da6afa3386a7a66
+            - candidate-9a8aa42feacaeb4b4f94474dc3975dfd
+            - candidate-961fce59e915a5c78f90646cf271f4bc
+            - candidate-c32adc10ff39dc9b9cdceb838607bcac
+            - candidate-7e237ad738a4ff69a536962a2ff19b9e
+            - candidate-0b0a82dd58a8e3917fcf623c96776924
+            - candidate-d4ade3f18850529301537fd48f49fb5e
+          filtered_search_hits:
+            source-selector-mismatch: 3
+          rejections:
+            - license-ambiguous
+            - repository-purpose
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - license-ambiguous
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+            - repository-purpose
+            - license-ambiguous
+            - license-missing
+            - license-missing
+            - repository-purpose
+            - repository-purpose
+            - license-missing
+            - license-ambiguous
+            - repository-purpose
+            - repository-purpose
+            - license-missing
+            - repository-purpose
+            - license-ambiguous
+            - repository-purpose
+            - sensitive-content
+            - license-missing
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - license-ambiguous
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - license-missing
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - license-ambiguous
+            - repository-purpose
+            - repository-purpose
+            - license-missing
+            - license-missing
+            - repository-purpose
+            - repository-purpose
+            - repository-purpose
+            - license-missing
+            - repository-purpose
+            - license-ambiguous
+            - license-ambiguous
+          decision:
+            packet_fingerprint: 8638395f0978e4dd299aa4b8262875bc3ab681cb196c3abab0c352383a2bd7d4
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 651855f529bbe92a2dbc708bb823b4cf046f1d92139acc0ec9dc21737e76f22f
     - id: python-conda-environment
       form: manifest
       roles:

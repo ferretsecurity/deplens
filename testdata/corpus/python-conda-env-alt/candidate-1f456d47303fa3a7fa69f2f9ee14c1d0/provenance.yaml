@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-conda-env-alt
+candidate_id: candidate-1f456d47303fa3a7fa69f2f9ee14c1d0
+provider: github
+repository: godardt/torchlite
+repository_url: https://github.com/godardt/torchlite
+default_branch: master
+commit: 8bf6579db4c32b7c8768b6a193e46ff689d3c9f6
+original_path: conda.yaml
+permalink: https://github.com/godardt/torchlite/blob/8bf6579db4c32b7c8768b6a193e46ff689d3c9f6/conda.yaml
+retrieved_at: "2026-08-12T07:46:18Z"
+sha256: 6619c34b15a44551fba1e94c65b601658e182d8b5302f887d89f37bc78545756
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/godardt/torchlite/blob/8bf6579db4c32b7c8768b6a193e46ff689d3c9f6/LICENSE
+    sha256: 83206e8d08ba09df67734229ba59024972b310561b31a2c5c1b6e6b4347ce27a
+rationale: Adds a clean GPU/ML environment pattern with multiple channels, mixed conda and pip deps, and common PyTorch ecosystem packages without being overly bloated.

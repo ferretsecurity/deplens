@@ -1,0 +1,18 @@
+version: 2
+detector_id: python-conda-env-alt
+candidate_id: candidate-0c31c3d6a3fa6ba6047330d30d8e2264
+provider: github
+repository: bendersej/pdf-keywords-extractor
+repository_url: https://github.com/bendersej/pdf-keywords-extractor
+default_branch: main
+commit: c8c4b58f85cb09725ea098d3a974df678d8ef9e1
+original_path: conda.yaml
+permalink: https://github.com/bendersej/pdf-keywords-extractor/blob/c8c4b58f85cb09725ea098d3a974df678d8ef9e1/conda.yaml
+retrieved_at: "2026-08-12T07:46:36Z"
+sha256: fa7fbfd10d9b4b54abc5578a621c91b417b015d3ccbffba12fafa81ebdf5f52f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/bendersej/pdf-keywords-extractor/blob/c8c4b58f85cb09725ea098d3a974df678d8ef9e1/LICENSE
+    sha256: 3dbbfcc246ff17f56a1c2c3e5c45031d6f24ce5594424e4244e513a4cf5536e9
+rationale: 'Best match for common real-world usage: a small `conda.yaml` with one main channel, pinned Python and pip, and a short `pip:` section.'
