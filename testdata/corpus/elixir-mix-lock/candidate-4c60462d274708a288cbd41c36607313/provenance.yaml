@@ -1,0 +1,18 @@
+version: 2
+detector_id: elixir-mix-lock
+candidate_id: candidate-4c60462d274708a288cbd41c36607313
+provider: github
+repository: revelrylabs/metairie
+repository_url: https://github.com/revelrylabs/metairie
+default_branch: master
+commit: 0e1e67a31aac242f0384b8b3717d5e1ac123b6d1
+original_path: mix.lock
+permalink: https://github.com/revelrylabs/metairie/blob/0e1e67a31aac242f0384b8b3717d5e1ac123b6d1/mix.lock
+retrieved_at: "2026-08-12T23:25:24Z"
+sha256: 975545ddf338766acf1014784241fae1ee425d5a338c2b2be30df075184ff365
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/revelrylabs/metairie/blob/0e1e67a31aac242f0384b8b3717d5e1ac123b6d1/LICENSE
+    sha256: ef551cec81488c24516aeba0fdf7919cd7c1049c33a509854d03ea1fcd7ce17c
+rationale: Compact library-style lockfile with a small, conventional Hex-only dependency set.

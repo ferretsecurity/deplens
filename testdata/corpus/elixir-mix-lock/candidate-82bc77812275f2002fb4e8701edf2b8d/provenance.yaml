@@ -1,0 +1,18 @@
+version: 2
+detector_id: elixir-mix-lock
+candidate_id: candidate-82bc77812275f2002fb4e8701edf2b8d
+provider: github
+repository: barsoom/ex-remit
+repository_url: https://github.com/barsoom/ex-remit
+default_branch: master
+commit: b6d9c250dc413cd57ee83f782d05c87f3ec9161e
+original_path: mix.lock
+permalink: https://github.com/barsoom/ex-remit/blob/b6d9c250dc413cd57ee83f782d05c87f3ec9161e/mix.lock
+retrieved_at: "2026-08-12T23:22:00Z"
+sha256: aeea028721efcee608ef3c404ddca97a3940561ba27da0574a076c4bf1096050
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/barsoom/ex-remit/blob/b6d9c250dc413cd57ee83f782d05c87f3ec9161e/LICENSE.txt
+    sha256: 215ab652da00ddcc5a987e22d2059d081c441e4621c51d79f7e1c7fc99da6e01
+rationale: 'Mainstream, full Phoenix application: Ecto/Postgres, LiveView, frontend tooling, observability, and production dependencies.'

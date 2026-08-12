@@ -1,0 +1,18 @@
+version: 2
+detector_id: elixir-mix-lock
+candidate_id: candidate-618dad3d1de80a849b87fd0030890187
+provider: github
+repository: spawngrid/exmig
+repository_url: https://github.com/spawngrid/exmig
+default_branch: master
+commit: c98af5e09f65e77190f076e362157f008d4dea23
+original_path: mix.lock
+permalink: https://github.com/spawngrid/exmig/blob/c98af5e09f65e77190f076e362157f008d4dea23/mix.lock
+retrieved_at: "2026-08-12T23:26:19Z"
+sha256: ca12753c3ce1f183570428099ea6ed7f0d2cccf81a923d08312ff69f8e8ef77e
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/spawngrid/exmig/blob/c98af5e09f65e77190f076e362157f008d4dea23/LICENSE
+    sha256: 7d6c52361588947b43f1e1ebaa4df90cbbce2782c9b991d80b7e06b7186876dc
+rationale: Very small legacy-format edge case containing only a Git dependency.
