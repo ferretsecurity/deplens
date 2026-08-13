@@ -1,0 +1,18 @@
+version: 2
+detector_id: puppet-puppetfile
+candidate_id: candidate-4cecb800160e6466d5b34fe4ba10c1fa
+provider: github
+repository: jquery/infrastructure-puppet
+repository_url: https://github.com/jquery/infrastructure-puppet
+default_branch: staging
+commit: db517c213d40b98c1418b8115f0ee2cd60af68fb
+original_path: Puppetfile
+permalink: https://github.com/jquery/infrastructure-puppet/blob/db517c213d40b98c1418b8115f0ee2cd60af68fb/Puppetfile
+retrieved_at: "2026-08-13T11:28:12Z"
+sha256: e69e12ce84e13fcfa593dbbbd6743e218ef7caa937e6ccbb2394fe6968a65842
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/jquery/infrastructure-puppet/blob/db517c213d40b98c1418b8115f0ee2cd60af68fb/LICENSE
+    sha256: 10615f323ffb76380046a977838cfd70fdd07f47478351227d72caaa225ea85e
+rationale: 'Common real-world production pattern: a small, explicit Puppet Forge dependency list with pinned versions and a custom module directory.'

@@ -1,0 +1,18 @@
+version: 2
+detector_id: puppet-puppetfile
+candidate_id: candidate-43abf7ac14a3127d7cb0026fd33584aa
+provider: github
+repository: kindredgroup/puppet-go
+repository_url: https://github.com/kindredgroup/puppet-go
+default_branch: master
+commit: c6e3d2e00c977ca08b6a21a247f683799ff64aff
+original_path: Puppetfile
+permalink: https://github.com/kindredgroup/puppet-go/blob/c6e3d2e00c977ca08b6a21a247f683799ff64aff/Puppetfile
+retrieved_at: "2026-08-13T11:29:58Z"
+sha256: bdbd603b55e0f4bba7e2c5f8c397ee31b4e49bfda65351240c537c8853d96f56
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/kindredgroup/puppet-go/blob/c6e3d2e00c977ca08b6a21a247f683799ff64aff/LICENSE
+    sha256: 38c36bc01a5665b99c7fd592008624d5122ae4f196a2e6d6bd4aff8e45e97fe5
+rationale: Compact metadata-only edge case, useful for recognizing Puppetfiles that delegate dependencies to module metadata.

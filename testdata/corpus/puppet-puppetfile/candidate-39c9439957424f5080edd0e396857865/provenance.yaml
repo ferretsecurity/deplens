@@ -1,0 +1,18 @@
+version: 2
+detector_id: puppet-puppetfile
+candidate_id: candidate-39c9439957424f5080edd0e396857865
+provider: github
+repository: clwdev/precip
+repository_url: https://github.com/clwdev/precip
+default_branch: master
+commit: e93ebbda66dcf8f0871a91ee844fd7200f3612d9
+original_path: puppet/Puppetfile
+permalink: https://github.com/clwdev/precip/blob/e93ebbda66dcf8f0871a91ee844fd7200f3612d9/puppet/Puppetfile
+retrieved_at: "2026-08-13T11:30:05Z"
+sha256: 424bac5a129ca10c006fd59a97421e9efc203fdcac57d2030a5b89f03f8826d9
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/clwdev/precip/blob/e93ebbda66dcf8f0871a91ee844fd7200f3612d9/LICENSE
+    sha256: 877487ccb28979129b40097eaea230a2c3ca123f0dc8a0c579591e678a87f9ca
+rationale: 'Adds mixed dependency sources: Forge modules, a Git dependency with a ref, and a local path module.'
