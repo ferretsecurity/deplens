@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-build-pl
+candidate_id: candidate-679401e432492ec1f39bf0c05d92fe3a
+provider: github
+repository: bioconda/bioconda-recipes
+repository_url: https://github.com/bioconda/bioconda-recipes
+default_branch: master
+commit: 1435404341ecb577bba663825dd5c1f8a334be3e
+original_path: recipes/panoct/Build.PL
+permalink: https://github.com/bioconda/bioconda-recipes/blob/1435404341ecb577bba663825dd5c1f8a334be3e/recipes/panoct/Build.PL
+retrieved_at: "2026-08-13T00:46:31Z"
+sha256: f429bf1d5a2058496e8ed1281245b5552cbab04ba4fa60858568c7bbe582cc13
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/bioconda/bioconda-recipes/blob/1435404341ecb577bba663825dd5c1f8a334be3e/LICENSE
+    sha256: 65c2d23567ff5560cad4d580095b8fe679431821bb862b78c3bcdd927d7e79c4
+rationale: 'Adds a useful dynamic edge case: discovers executable scripts and rewrites their shebangs before supplying them as script files.'

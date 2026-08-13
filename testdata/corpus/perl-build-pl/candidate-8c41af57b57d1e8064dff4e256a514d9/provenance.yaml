@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-build-pl
+candidate_id: candidate-8c41af57b57d1e8064dff4e256a514d9
+provider: github
+repository: gitpan/Hashids
+repository_url: https://github.com/gitpan/Hashids
+default_branch: master
+commit: 7c7569b1494f7fe464b5758f255575971887ed33
+original_path: Build.PL
+permalink: https://github.com/gitpan/Hashids/blob/7c7569b1494f7fe464b5758f255575971887ed33/Build.PL
+retrieved_at: "2026-08-13T00:38:48Z"
+sha256: 637d1acf0e771f00ad0a2fb9c90bd31d30ca3a95fdf0ca429a99d9b27ee103e2
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/gitpan/Hashids/blob/7c7569b1494f7fe464b5758f255575971887ed33/LICENSE
+    sha256: cae8e9e1b3fafabac6967af8a155187bf637a86626f4f782b30c746faa82b468
+rationale: Adds generated Minilla-style structure, custom builder actions, conditional test/share handling, and post-build metadata copying.

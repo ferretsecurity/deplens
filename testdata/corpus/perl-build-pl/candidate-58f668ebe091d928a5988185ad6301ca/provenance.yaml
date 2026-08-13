@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-build-pl
+candidate_id: candidate-58f668ebe091d928a5988185ad6301ca
+provider: github
+repository: Kulag/KADR
+repository_url: https://github.com/Kulag/KADR
+default_branch: master
+commit: 363ecea66f3a64e28b8cfd5d523e106668230826
+original_path: Build.PL
+permalink: https://github.com/Kulag/KADR/blob/363ecea66f3a64e28b8cfd5d523e106668230826/Build.PL
+retrieved_at: "2026-08-13T00:30:03Z"
+sha256: 3d585ad6eae3fe20d5cc7c63aeffa93a63238b04e75a569a9f0dc60468ecb256
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Kulag/KADR/blob/363ecea66f3a64e28b8cfd5d523e106668230826/LICENSE
+    sha256: 89afe06a9dc8cd2be709cd63aead928957c84c512ede69e66fcb0787c4398c21
+rationale: 'Represents the common full Module::Build package configuration: dependency groups, metadata, scripts, shared files, platform condition, and old-Module::Build fallback.'
