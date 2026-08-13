@@ -1,0 +1,18 @@
+version: 2
+detector_id: helm-chart-lock
+candidate_id: candidate-c37bb763a24c342a2924167c6fce9b14
+provider: github
+repository: mojaloop/merchant-registry-svc
+repository_url: https://github.com/mojaloop/merchant-registry-svc
+default_branch: main
+commit: 625f719e6c0052bb5dae61d170be075d2260368b
+original_path: helms/Chart.lock
+permalink: https://github.com/mojaloop/merchant-registry-svc/blob/625f719e6c0052bb5dae61d170be075d2260368b/helms/Chart.lock
+retrieved_at: "2026-08-13T11:05:54Z"
+sha256: 32335de257ffda224b1ad33bd0be35bc672e27dec3bfd94be8a49f34ee492bb5
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/mojaloop/merchant-registry-svc/blob/625f719e6c0052bb5dae61d170be075d2260368b/LICENSE.md
+    sha256: d2738dcfb883525c0a3e8a133bbe0b3d8114910e2f6f9278dc9bde86fd790e7a
+rationale: Covers the important local file:// dependency edge case, including several locally composed subcharts.

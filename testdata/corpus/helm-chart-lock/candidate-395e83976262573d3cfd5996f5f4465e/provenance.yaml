@@ -1,0 +1,18 @@
+version: 2
+detector_id: helm-chart-lock
+candidate_id: candidate-395e83976262573d3cfd5996f5f4465e
+provider: github
+repository: takenet/deckard
+repository_url: https://github.com/takenet/deckard
+default_branch: main
+commit: 4b13b0acb680599810378efd47b2c2d5dfdd7419
+original_path: helm/Chart.lock
+permalink: https://github.com/takenet/deckard/blob/4b13b0acb680599810378efd47b2c2d5dfdd7419/helm/Chart.lock
+retrieved_at: "2026-08-13T10:59:30Z"
+sha256: 6309c0b61c3ecbce9ac4c0975d618db8ce6ad108aa7c09f545666d6b067c3c51
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/takenet/deckard/blob/4b13b0acb680599810378efd47b2c2d5dfdd7419/LICENSE
+    sha256: ecbf48b53de849e3a72dab15c32625da2f2a3a40dce728c44c3042fe3c7e9ac6
+rationale: Adds the modern OCI registry form with a compact two-service dependency set.

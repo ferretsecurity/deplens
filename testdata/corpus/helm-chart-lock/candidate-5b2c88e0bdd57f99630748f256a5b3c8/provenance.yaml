@@ -1,0 +1,18 @@
+version: 2
+detector_id: helm-chart-lock
+candidate_id: candidate-5b2c88e0bdd57f99630748f256a5b3c8
+provider: github
+repository: crs4/life_monitor
+repository_url: https://github.com/crs4/life_monitor
+default_branch: master
+commit: 7649406c11c5c04eebc5ca61926f5dbe30469c82
+original_path: k8s/Chart.lock
+permalink: https://github.com/crs4/life_monitor/blob/7649406c11c5c04eebc5ca61926f5dbe30469c82/k8s/Chart.lock
+retrieved_at: "2026-08-13T11:01:40Z"
+sha256: 30be7ca007fa3932dc2a6b552223108c7b3a4b99e273e03398b23b2ed898166c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/crs4/life_monitor/blob/7649406c11c5c04eebc5ca61926f5dbe30469c82/LICENSE
+    sha256: 806678ad297381102b2facbc2226b098826c0b41e16047c9de16c1d5e6b87a9d
+rationale: 'Most representative common application chart: standard HTTPS repository dependencies for nginx, PostgreSQL, and Redis.'
