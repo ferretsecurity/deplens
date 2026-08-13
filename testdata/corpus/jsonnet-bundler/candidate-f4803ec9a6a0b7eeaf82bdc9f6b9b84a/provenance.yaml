@@ -1,0 +1,18 @@
+version: 2
+detector_id: jsonnet-bundler
+candidate_id: candidate-f4803ec9a6a0b7eeaf82bdc9f6b9b84a
+provider: github
+repository: grafana/jsonnet-libs
+repository_url: https://github.com/grafana/jsonnet-libs
+default_branch: master
+commit: 414774b1104f1fb123b5657dc81443283f696f9c
+original_path: windows-mixin/jsonnetfile.json
+permalink: https://github.com/grafana/jsonnet-libs/blob/414774b1104f1fb123b5657dc81443283f696f9c/windows-mixin/jsonnetfile.json
+retrieved_at: "2026-08-13T08:45:24Z"
+sha256: bdbb4276be869367809ce908d8146637a980c19642dfbf356c27c692262da9e0
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/grafana/jsonnet-libs/blob/414774b1104f1fb123b5657dc81443283f696f9c/LICENSE
+    sha256: 78f6cfd2c8c21e0a487c3211308f9dd4d6da366226fbe7292db27720c271eb2a
+rationale: Adds the local-directory dependency edge case alongside a normal Git dependency.

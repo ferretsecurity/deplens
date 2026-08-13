@@ -1,0 +1,18 @@
+version: 2
+detector_id: jsonnet-bundler
+candidate_id: candidate-02700c0befb4999dbce0fd34373feba4
+provider: github
+repository: grafana/jsonnet-libs
+repository_url: https://github.com/grafana/jsonnet-libs
+default_branch: master
+commit: 414774b1104f1fb123b5657dc81443283f696f9c
+original_path: pinecone-mixin/jsonnetfile.json
+permalink: https://github.com/grafana/jsonnet-libs/blob/414774b1104f1fb123b5657dc81443283f696f9c/pinecone-mixin/jsonnetfile.json
+retrieved_at: "2026-08-13T08:46:23Z"
+sha256: 01c2bc7a034fc10e4e8c0e3087ff68c14f26fc3a09833dcfb7e037c47ea13181
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/grafana/jsonnet-libs/blob/414774b1104f1fb123b5657dc81443283f696f9c/LICENSE
+    sha256: 78f6cfd2c8c21e0a487c3211308f9dd4d6da366226fbe7292db27720c271eb2a
+rationale: 'Representative modern manifest: standard versioned schema, two Git dependencies, and legacy imports enabled.'

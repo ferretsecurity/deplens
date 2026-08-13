@@ -1,0 +1,18 @@
+version: 2
+detector_id: jsonnet-bundler
+candidate_id: candidate-dd9169a49dd689661ea3ee8a95d9974d
+provider: github
+repository: grafana/jsonnet-libs
+repository_url: https://github.com/grafana/jsonnet-libs
+default_branch: master
+commit: 414774b1104f1fb123b5657dc81443283f696f9c
+original_path: consul/jsonnetfile.json
+permalink: https://github.com/grafana/jsonnet-libs/blob/414774b1104f1fb123b5657dc81443283f696f9c/consul/jsonnetfile.json
+retrieved_at: "2026-08-13T08:41:48Z"
+sha256: d1868f9731039cdbcc4ba161648984a1416f4baa03ea4c0ea5d01927d51aa04f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/grafana/jsonnet-libs/blob/414774b1104f1fb123b5657dc81443283f696f9c/LICENSE
+    sha256: 78f6cfd2c8c21e0a487c3211308f9dd4d6da366226fbe7292db27720c271eb2a
+rationale: Covers an older/minimal manifest shape with a named dependency and no top-level version or legacyImports field.
