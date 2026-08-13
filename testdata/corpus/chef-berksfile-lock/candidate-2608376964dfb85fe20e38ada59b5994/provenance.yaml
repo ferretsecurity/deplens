@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-berksfile-lock
+candidate_id: candidate-2608376964dfb85fe20e38ada59b5994
+provider: github
+repository: TalkingQuickly/rails-server-template
+repository_url: https://github.com/TalkingQuickly/rails-server-template
+default_branch: master
+commit: d669ce3fbfdca856699275a369100f496646a18d
+original_path: Berksfile.lock
+permalink: https://github.com/TalkingQuickly/rails-server-template/blob/d669ce3fbfdca856699275a369100f496646a18d/Berksfile.lock
+retrieved_at: "2026-08-13T11:41:33Z"
+sha256: f5cce5f7f8b44503a6d76453258d24d7d582eaac3eef8792407339cf6bfcadc1
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/TalkingQuickly/rails-server-template/blob/d669ce3fbfdca856699275a369100f496646a18d/LICENSE
+    sha256: 029f2af9696cbb093bc718f1a2955487b4b91783f1c6c1e90224166a5f9d4566
+rationale: 'Most representative real-world production stack: a conventional Berksfile.lock with version constraints, Git sources, and a broad web/application dependency graph.'

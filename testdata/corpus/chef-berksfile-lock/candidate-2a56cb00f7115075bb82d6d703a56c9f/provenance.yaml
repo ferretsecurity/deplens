@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-berksfile-lock
+candidate_id: candidate-2a56cb00f7115075bb82d6d703a56c9f
+provider: github
+repository: paulczar/dockenstack
+repository_url: https://github.com/paulczar/dockenstack
+default_branch: master
+commit: d7a9aa6c3c496564165bfca8912a12f9fcea3e3d
+original_path: Berksfile.lock
+permalink: https://github.com/paulczar/dockenstack/blob/d7a9aa6c3c496564165bfca8912a12f9fcea3e3d/Berksfile.lock
+retrieved_at: "2026-08-13T11:44:07Z"
+sha256: 702c299b3b5673fc72743f4c333bdf267c61d744dccce54601d0b6c05e4e88c8
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/paulczar/dockenstack/blob/d7a9aa6c3c496564165bfca8912a12f9fcea3e3d/LICENSE
+    sha256: 534f0df26177053a209d29631f1f81527c1dbf77a952c08769f5c03fa3949f20
+rationale: Covers the older JSON lockfile structure, including locked versions and Git metadata, which is structurally distinct from standard Berks output.

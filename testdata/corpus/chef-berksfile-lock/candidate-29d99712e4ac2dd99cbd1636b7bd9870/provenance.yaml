@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-berksfile-lock
+candidate_id: candidate-29d99712e4ac2dd99cbd1636b7bd9870
+provider: github
+repository: jacknagz/osquery-cookbook
+repository_url: https://github.com/jacknagz/osquery-cookbook
+default_branch: master
+commit: 329e849a1b51956d21bf4b816bdeef103321838b
+original_path: Berksfile.lock
+permalink: https://github.com/jacknagz/osquery-cookbook/blob/329e849a1b51956d21bf4b816bdeef103321838b/Berksfile.lock
+retrieved_at: "2026-08-13T11:45:43Z"
+sha256: dea0a51ec213a64a42ee57ac4181441e646381fef77f29eac023a47c9bf2da74
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/jacknagz/osquery-cookbook/blob/329e849a1b51956d21bf4b816bdeef103321838b/LICENSE
+    sha256: 1cbb7431f129c159f890006e0cb72fb2362333a5c8d27c6012a6fbd6cb6c6a55
+rationale: Compact standard-format edge case with a local cookbook and a test-fixture dependency, adding path-source coverage without redundant size.
