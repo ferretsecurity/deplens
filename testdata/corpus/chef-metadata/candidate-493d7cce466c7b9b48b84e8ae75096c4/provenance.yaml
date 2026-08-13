@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-metadata
+candidate_id: candidate-493d7cce466c7b9b48b84e8ae75096c4
+provider: github
+repository: cloudnull/chef-cookbooks-source
+repository_url: https://github.com/cloudnull/chef-cookbooks-source
+default_branch: master
+commit: 44f4ac7e07d748f468d5a3a9bb1e18b5297a9f80
+original_path: cookbooks/ceilometer/metadata.rb
+permalink: https://github.com/cloudnull/chef-cookbooks-source/blob/44f4ac7e07d748f468d5a3a9bb1e18b5297a9f80/cookbooks/ceilometer/metadata.rb
+retrieved_at: "2026-08-13T11:54:21Z"
+sha256: d0e65219a0342334f03cab4d2fb1882d86db4aa3892f823696e1157712cbd038
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/cloudnull/chef-cookbooks-source/blob/44f4ac7e07d748f468d5a3a9bb1e18b5297a9f80/LICENSE
+    sha256: ff62885878f317ae20fcbd49d98a3063e6ea72116cbc491af35d61082ffda4a1
+rationale: Adds the important dynamic-version edge case while retaining realistic platform and dependency declarations.

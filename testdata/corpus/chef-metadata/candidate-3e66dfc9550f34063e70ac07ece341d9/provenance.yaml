@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-metadata
+candidate_id: candidate-3e66dfc9550f34063e70ac07ece341d9
+provider: github
+repository: cloudnull/chef-cookbooks-source
+repository_url: https://github.com/cloudnull/chef-cookbooks-source
+default_branch: master
+commit: 44f4ac7e07d748f468d5a3a9bb1e18b5297a9f80
+original_path: cookbooks/heat/metadata.rb
+permalink: https://github.com/cloudnull/chef-cookbooks-source/blob/44f4ac7e07d748f468d5a3a9bb1e18b5297a9f80/cookbooks/heat/metadata.rb
+retrieved_at: "2026-08-13T11:54:10Z"
+sha256: 62acf9639497708d2e0f1bfc7313c93f7445b859beb0dfb119072c10a848594f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/cloudnull/chef-cookbooks-source/blob/44f4ac7e07d748f468d5a3a9bb1e18b5297a9f80/LICENSE
+    sha256: ff62885878f317ae20fcbd49d98a3063e6ea72116cbc491af35d61082ffda4a1
+rationale: 'Best common-case cookbook metadata: standard identity fields, fixed version, platform support, and both unversioned and constrained dependencies.'

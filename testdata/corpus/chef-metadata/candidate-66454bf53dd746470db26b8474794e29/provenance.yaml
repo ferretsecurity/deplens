@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-metadata
+candidate_id: candidate-66454bf53dd746470db26b8474794e29
+provider: github
+repository: iw/mirage-jekyll
+repository_url: https://github.com/iw/mirage-jekyll
+default_branch: master
+commit: fdd2416c2f7f80924d29c3e0587d2d3f18a2223c
+original_path: metadata.rb
+permalink: https://github.com/iw/mirage-jekyll/blob/fdd2416c2f7f80924d29c3e0587d2d3f18a2223c/metadata.rb
+retrieved_at: "2026-08-13T11:52:45Z"
+sha256: a62d0964b340a0802979ff54458fe2328264b64bae11559a2c153cad89f48855
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/iw/mirage-jekyll/blob/fdd2416c2f7f80924d29c3e0587d2d3f18a2223c/LICENSE
+    sha256: 97359da914637cb204f32279ab4c30c7dd696f310d0c41272b750d945cd4622e
+rationale: Compact minimal manifest that isolates a pessimistic dependency version constraint and omits optional descriptive fields.
