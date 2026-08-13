@@ -1,0 +1,18 @@
+version: 2
+detector_id: github-actions-action
+candidate_id: candidate-cc6ae59aef9b8f986baeba96c73141ec
+provider: github
+repository: jef/conventional-commits-pr-action
+repository_url: https://github.com/jef/conventional-commits-pr-action
+default_branch: main
+commit: 851dbc267492d196379ffa0c7454e4986b85d3ea
+original_path: action.yaml
+permalink: https://github.com/jef/conventional-commits-pr-action/blob/851dbc267492d196379ffa0c7454e4986b85d3ea/action.yaml
+retrieved_at: "2026-08-13T09:08:00Z"
+sha256: e26ad1936c0c3aa0d119b37ea2d591c85b651560b8472ed152888ba5ca76cdf5
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/jef/conventional-commits-pr-action/blob/851dbc267492d196379ffa0c7454e4986b85d3ea/LICENSE
+    sha256: fda17480cf5750e3deeaa9ad000c69e642c0213adec7988cbb1459528d38e5b2
+rationale: Typical pull-request validation action using a Node runtime, adding event-oriented CI coverage.

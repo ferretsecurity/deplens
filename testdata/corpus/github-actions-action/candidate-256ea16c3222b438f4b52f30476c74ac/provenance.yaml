@@ -1,0 +1,18 @@
+version: 2
+detector_id: github-actions-action
+candidate_id: candidate-256ea16c3222b438f4b52f30476c74ac
+provider: github
+repository: mobilecoinofficial/gh-actions
+repository_url: https://github.com/mobilecoinofficial/gh-actions
+default_branch: main
+commit: 5eb8dbc97f414cf03a9d502a554bf236734db302
+original_path: upload-artifact/action.yaml
+permalink: https://github.com/mobilecoinofficial/gh-actions/blob/5eb8dbc97f414cf03a9d502a554bf236734db302/upload-artifact/action.yaml
+retrieved_at: "2026-08-13T09:08:31Z"
+sha256: c499b6d56612f83b186d865efd0520cb497753a8eeeb3a66130b111bcf686d09
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/mobilecoinofficial/gh-actions/blob/5eb8dbc97f414cf03a9d502a554bf236734db302/LICENSE
+    sha256: a014b07b470c997022ca83bbb8583b7521db0b2eaac754f6ff30c77ac312c7b8
+rationale: Common CI artifact-upload workflow; compact composite wrapper with required inputs and practical optional controls.

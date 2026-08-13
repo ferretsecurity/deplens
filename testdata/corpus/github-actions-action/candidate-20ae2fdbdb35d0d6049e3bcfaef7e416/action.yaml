@@ -1,0 +1,24 @@
+name: 'OCR PDF Action'
+description: 'Turn scanned PDFs into searchable documents'
+author: 'github.com/MarketingPipeline'
+
+inputs:
+  input_file:
+    description: 'Input PDF filepath'
+    default: ''
+    required: true
+  output_file:
+    description: 'Output PDF filepath'
+    default: ''
+    required: true
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.input_file }}
+    - ${{ inputs.output_file }}
+
+branding:
+  icon: 'activity'
+  color: 'white'

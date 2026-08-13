@@ -1,0 +1,18 @@
+version: 2
+detector_id: github-actions-action
+candidate_id: candidate-20ae2fdbdb35d0d6049e3bcfaef7e416
+provider: github
+repository: MarketingPipeline/OCR-PDF-Action
+repository_url: https://github.com/MarketingPipeline/OCR-PDF-Action
+default_branch: main
+commit: 35c5f0bbcd846030902eb86aba084e350f8a7528
+original_path: action.yaml
+permalink: https://github.com/MarketingPipeline/OCR-PDF-Action/blob/35c5f0bbcd846030902eb86aba084e350f8a7528/action.yaml
+retrieved_at: "2026-08-13T09:06:06Z"
+sha256: 7535bed2f9e33a84ebd515d9a8041da41d04c3b5705019ebb5df4774d0446f65
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/MarketingPipeline/OCR-PDF-Action/blob/35c5f0bbcd846030902eb86aba084e350f8a7528/LICENSE
+    sha256: a36e1fad2010fde3ffa20ea7526c6d1411e80a1c73cebdb683822c09736e43a8
+rationale: Minimal Docker action with positional arguments, covering a distinct execution model.
