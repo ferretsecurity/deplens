@@ -1,0 +1,18 @@
+version: 2
+detector_id: unreal-uproject
+candidate_id: candidate-389557865d020f1f7f9acada877846ed
+provider: github
+repository: BrandonVox/CPP
+repository_url: https://github.com/BrandonVox/CPP
+default_branch: master
+commit: 6095520dfb45016ab9fd8c66c998de1222afcfe2
+original_path: CPP.uproject
+permalink: https://github.com/BrandonVox/CPP/blob/6095520dfb45016ab9fd8c66c998de1222afcfe2/CPP.uproject
+retrieved_at: "2026-08-13T12:35:26Z"
+sha256: dc7f1494bd3a24f8a4f8b7758b6e6851138d3b476a26560e09550444a6bd1539
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/BrandonVox/CPP/blob/6095520dfb45016ab9fd8c66c998de1222afcfe2/LICENSE
+    sha256: af17e07c1d84e8f17984cece04d4a115a3d61493b1165a4c8dcb96222e29337d
+rationale: 'Common UE5 C++ project: runtime module, typical dependencies, and an editor-only plugin.'

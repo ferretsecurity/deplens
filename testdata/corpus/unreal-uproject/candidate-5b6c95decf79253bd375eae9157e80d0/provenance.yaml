@@ -1,0 +1,18 @@
+version: 2
+detector_id: unreal-uproject
+candidate_id: candidate-5b6c95decf79253bd375eae9157e80d0
+provider: github
+repository: picoxr/PICO_UE5_OpenXRSample
+repository_url: https://github.com/picoxr/PICO_UE5_OpenXRSample
+default_branch: main
+commit: fa0c40718aa69dcbab15fc30daec8fb3ec041272
+original_path: Map4.uproject
+permalink: https://github.com/picoxr/PICO_UE5_OpenXRSample/blob/fa0c40718aa69dcbab15fc30daec8fb3ec041272/Map4.uproject
+retrieved_at: "2026-08-13T12:35:02Z"
+sha256: 9681b3f60d8c8ec4a68a1c348a024d8f668d483c539cfa958b4d286354c7f19c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/picoxr/PICO_UE5_OpenXRSample/blob/fa0c40718aa69dcbab15fc30daec8fb3ec041272/LICENSE
+    sha256: d4132d09a210f0a9431874e7fc7e3762bb7d7077eaf5b94deacb56a5ce496af0
+rationale: Specialized UE5 XR case with enabled platform-scoped plugins and a broad target-platform list.

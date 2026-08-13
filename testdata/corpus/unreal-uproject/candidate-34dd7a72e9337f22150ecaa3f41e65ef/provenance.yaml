@@ -1,0 +1,18 @@
+version: 2
+detector_id: unreal-uproject
+candidate_id: candidate-34dd7a72e9337f22150ecaa3f41e65ef
+provider: github
+repository: VenomStyx/SimpleBlueprintGame-UE4
+repository_url: https://github.com/VenomStyx/SimpleBlueprintGame-UE4
+default_branch: core
+commit: 30f87a4b03e4148f7820ce76b3874bf453e6ffaa
+original_path: TDT.uproject
+permalink: https://github.com/VenomStyx/SimpleBlueprintGame-UE4/blob/30f87a4b03e4148f7820ce76b3874bf453e6ffaa/TDT.uproject
+retrieved_at: "2026-08-13T12:33:36Z"
+sha256: e24bd8bf3dfa285c007f499f4e430471b730eb8a6a8293c3834e3c4cd2639ba7
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/VenomStyx/SimpleBlueprintGame-UE4/blob/30f87a4b03e4148f7820ce76b3874bf453e6ffaa/LICENSE
+    sha256: 196e3b7c9f3cdf9299327093c00d7921f4f794716edb158967e5cdc02c28baca
+rationale: Shortest clean blueprint-only project, covering the valid minimal descriptor case.
