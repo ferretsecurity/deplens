@@ -1,0 +1,18 @@
+version: 2
+detector_id: buf-lock
+candidate_id: candidate-a66266b8238b059cac5fe8d9487a1b45
+provider: github
+repository: CoreyCole/datastarui
+repository_url: https://github.com/CoreyCole/datastarui
+default_branch: main
+commit: 7220767bff6c3b91f97156be2b98b05bcc3806c6
+original_path: buf.lock
+permalink: https://github.com/CoreyCole/datastarui/blob/7220767bff6c3b91f97156be2b98b05bcc3806c6/buf.lock
+retrieved_at: "2026-08-13T11:24:54Z"
+sha256: 9ebd8c84cb61a76fc72df017894b7e675bb44c62c5bfacb375438f2bb94a90e4
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/CoreyCole/datastarui/blob/7220767bff6c3b91f97156be2b98b05bcc3806c6/LICENSE
+    sha256: be33960049d61fea15c6554f6471b70bd8e439fb8356c480eab1a78a1c2d3870
+rationale: Modern v2 format using a focused Protovalidate dependency, adding format and dependency variation.

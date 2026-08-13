@@ -1,0 +1,18 @@
+version: 2
+detector_id: buf-lock
+candidate_id: candidate-2cb58f508d8c5594f583bc70052971c7
+provider: github
+repository: wormhole-foundation/wormhole
+repository_url: https://github.com/wormhole-foundation/wormhole
+default_branch: main
+commit: 3a55db8771f35026579b98713467c2e6e69608ed
+original_path: buf.lock
+permalink: https://github.com/wormhole-foundation/wormhole/blob/3a55db8771f35026579b98713467c2e6e69608ed/buf.lock
+retrieved_at: "2026-08-13T11:17:02Z"
+sha256: 3c5460588706a9cd3429b3b8df30dc23a668f252c115fae522d1e274a0ce4bb7
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/wormhole-foundation/wormhole/blob/3a55db8771f35026579b98713467c2e6e69608ed/LICENSE
+    sha256: e7fbb242901f0dba28f9395b4406093dacd3f8af4289fe1b99b7c28d56d6bff9
+rationale: Typical legacy v1 lockfile with the common Google APIs and gRPC-Gateway dependency pair.

@@ -1,0 +1,18 @@
+version: 2
+detector_id: buf-lock
+candidate_id: candidate-ae351323d565cb34d423232a4aaca41c
+provider: github
+repository: TUM-Dev/gocast
+repository_url: https://github.com/TUM-Dev/gocast
+default_branch: dev
+commit: 177bf39fc208d5b9741d819031d53a06b1af6371
+original_path: apiv2/buf.lock
+permalink: https://github.com/TUM-Dev/gocast/blob/177bf39fc208d5b9741d819031d53a06b1af6371/apiv2/buf.lock
+retrieved_at: "2026-08-13T11:23:24Z"
+sha256: 3847a1487162ea0014a292460405ee719432a620b658c03092c9a10e059eb225
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/TUM-Dev/gocast/blob/177bf39fc208d5b9741d819031d53a06b1af6371/LICENSE
+    sha256: 87526846bc2375356da4f15b7acf1455c7018540b3cac915bdfea0d65ff8605b
+rationale: Minimal valid v1 lockfile with no dependencies; covers the empty-lock edge case.
