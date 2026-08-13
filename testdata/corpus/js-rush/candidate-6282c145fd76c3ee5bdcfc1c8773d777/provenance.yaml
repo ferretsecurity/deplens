@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-rush
+candidate_id: candidate-6282c145fd76c3ee5bdcfc1c8773d777
+provider: github
+repository: mosgarage/dev.localhost
+repository_url: https://github.com/mosgarage/dev.localhost
+default_branch: master
+commit: 5500fbfd197cf33fb6511c86780d6f76ca5ff1eb
+original_path: monorepo/workspace-tools/scripts/jest/__fixtures__/monorepo-rush-yarn/rush.json
+permalink: https://github.com/mosgarage/dev.localhost/blob/5500fbfd197cf33fb6511c86780d6f76ca5ff1eb/monorepo/workspace-tools/scripts/jest/__fixtures__/monorepo-rush-yarn/rush.json
+retrieved_at: "2026-08-13T10:08:40Z"
+sha256: 116dff139febae7688583a8112c145ffe135ce1bc0054e6c3c1d77011cb1d59a
+governing_license:
+    spdx: MIT
+    path: monorepo/workspace-tools/LICENSE
+    permalink: https://github.com/mosgarage/dev.localhost/blob/5500fbfd197cf33fb6511c86780d6f76ca5ff1eb/monorepo/workspace-tools/LICENSE
+    sha256: c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383
+rationale: Small Yarn-based fixture that adds the alternate package-manager branch with minimal configuration and two straightforward projects.

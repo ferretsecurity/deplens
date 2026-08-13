@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-rush
+candidate_id: candidate-10f7e74c5c242dcee1a32c846ff41f3f
+provider: github
+repository: Azure/azure-openapi-validator
+repository_url: https://github.com/Azure/azure-openapi-validator
+default_branch: main
+commit: 6243cb01c16c7535cd3b8df6f45fbeb3c095ed7f
+original_path: rush.json
+permalink: https://github.com/Azure/azure-openapi-validator/blob/6243cb01c16c7535cd3b8df6f45fbeb3c095ed7f/rush.json
+retrieved_at: "2026-08-13T10:02:05Z"
+sha256: 343dd8ca171832c8306bc28c6ba9ae2b9c9b17498273965bd498ae3980e30017
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Azure/azure-openapi-validator/blob/6243cb01c16c7535cd3b8df6f45fbeb3c095ed7f/LICENSE
+    sha256: 27ebda9d51f0a56b7e281ccd8230a27236dcb51c05f64b07869ecf6e965d68b0
+rationale: 'Representative modern Rush + pnpm monorepo: standard repository metadata, Node constraints, consistency checks, pnpm options, and a small mix of publishable and internal projects.'

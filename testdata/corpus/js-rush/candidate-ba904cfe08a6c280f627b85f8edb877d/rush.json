@@ -1,0 +1,144 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.162.0",
+  "pnpmVersion": "8.11.0",
+  "nodeSupportedVersionRange": ">=22.0.0 <25.0.0",
+  "ensureConsistentVersions": true,
+  "gitPolicy": {
+    "versionBumpCommitMessage": "Applying package updates. [skip-ci]",
+    "changeLogUpdateCommitMessage": "Applying package updates. [skip-ci]"
+  },
+  "repository": {
+    "url": "https://github.com/Azure/communication-ui-library",
+    "defaultBranch": "main"
+  },
+  "telemetryEnabled": false,
+  "variants": [
+    {
+      "variantName": "stable",
+      "description": "Build this repo using stable version of js sdk"
+    }
+  ],
+  "projects": [
+    {
+      "packageName": "@internal/acs-ui-common",
+      "projectFolder": "packages/acs-ui-common",
+      "reviewCategory": "internal"
+    },
+    {
+      "packageName": "@azure/communication-react",
+      "projectFolder": "packages/communication-react",
+      "reviewCategory": "production"
+    },
+    {
+      "packageName": "@internal/react-components",
+      "projectFolder": "packages/react-components",
+      "reviewCategory": "internal"
+    },
+    {
+      "packageName": "@internal/react-composites",
+      "projectFolder": "packages/react-composites",
+      "reviewCategory": "internal"
+    },
+    {
+      "packageName": "@internal/acs-ui-javascript-loaders",
+      "projectFolder": "packages/acs-ui-javascript-loaders",
+      "reviewCategory": "internal"
+    },
+    {
+      "packageName": "@internal/chat-stateful-client",
+      "projectFolder": "packages/chat-stateful-client",
+      "reviewCategory": "internal"
+    },
+    {
+      "packageName": "@internal/chat-component-bindings",
+      "projectFolder": "packages/chat-component-bindings",
+      "reviewCategory": "internal"
+    },
+    {
+      "packageName": "@internal/calling-stateful-client",
+      "projectFolder": "packages/calling-stateful-client",
+      "reviewCategory": "internal"
+    },
+    {
+      "packageName": "@internal/calling-component-bindings",
+      "projectFolder": "packages/calling-component-bindings",
+      "reviewCategory": "internal"
+    },
+    {
+      "packageName": "@internal/calling",
+      "projectFolder": "samples/Calling",
+      "reviewCategory": "sample"
+    },
+    {
+      "packageName": "@internal/chat",
+      "projectFolder": "samples/Chat",
+      "reviewCategory": "sample"
+    },
+    {
+      "packageName": "@internal/callwithchat",
+      "projectFolder": "samples/CallWithChat",
+      "reviewCategory": "sample"
+    },
+    {
+      "packageName": "@internal/calling-stateful-samples",
+      "projectFolder": "samples/CallingStateful",
+      "reviewCategory": "sample"
+    },
+    {
+      "packageName": "@internal/component-examples",
+      "projectFolder": "samples/ComponentExamples",
+      "reviewCategory": "sample"
+    },
+    {
+      "packageName": "@internal/server",
+      "projectFolder": "samples/Server",
+      "reviewCategory": "sample"
+    },
+    {
+      "packageName": "@internal/sample-automation-tests",
+      "projectFolder": "samples/tests",
+      "reviewCategory": "sample"
+    },
+    {
+      "packageName": "@internal/sample-static-html-composites",
+      "projectFolder": "samples/StaticHtmlComposites",
+      "reviewCategory": "sample"
+    },
+    {
+      "packageName": "@internal/storybook8",
+      "projectFolder": "packages/storybook8",
+      "reviewCategory": "tools"
+    },
+    {
+      "packageName": "@internal/config",
+      "projectFolder": "common/config",
+      "reviewCategory": "tools"
+    },
+    {
+      "packageName": "@internal/scripts",
+      "projectFolder": "common/scripts",
+      "reviewCategory": "tools"
+    },
+    {
+      "packageName": "@internal/check-treeshaking",
+      "projectFolder": "tools/check-treeshaking",
+      "reviewCategory": "tools"
+    },
+    {
+      "packageName": "@internal/check-typescript-regression",
+      "projectFolder": "tools/check-typescript-regression",
+      "reviewCategory": "tools"
+    },
+    {
+      "packageName": "@internal/fake-backends",
+      "projectFolder": "packages/fake-backends",
+      "reviewCategory": "tools"
+    },
+    {
+      "packageName": "@internal/eslint-plugin-custom-rules",
+      "projectFolder": "tools/custom-eslint-rules",
+      "reviewCategory": "tools"
+    }
+  ]
+}

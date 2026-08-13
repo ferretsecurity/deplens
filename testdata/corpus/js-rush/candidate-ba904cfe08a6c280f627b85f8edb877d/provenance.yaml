@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-rush
+candidate_id: candidate-ba904cfe08a6c280f627b85f8edb877d
+provider: github
+repository: Azure/communication-ui-library
+repository_url: https://github.com/Azure/communication-ui-library
+default_branch: main
+commit: dc88af5b3c7fea0e95000838fc0aa0a199dd7342
+original_path: rush.json
+permalink: https://github.com/Azure/communication-ui-library/blob/dc88af5b3c7fea0e95000838fc0aa0a199dd7342/rush.json
+retrieved_at: "2026-08-13T10:01:41Z"
+sha256: 44947f9cc9fdc0227369523674dbfa2b5cba51ddff212e2193502ee508540805
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/Azure/communication-ui-library/blob/dc88af5b3c7fea0e95000838fc0aa0a199dd7342/LICENSE.md
+    sha256: 646f8936b8ddcd14e13e578ff6857e368780b0d1a4f6066bee89211923a373e2
+rationale: 'Adds a modern large-scale structural case: variants, release policy, and a mix of internal, production, sample, and tool projects.'
