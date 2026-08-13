@@ -1,0 +1,18 @@
+version: 2
+detector_id: emacs-cask
+candidate_id: candidate-70a2e40724681909a03b42e9a647e981
+provider: github
+repository: gizmomogwai/org-kanban
+repository_url: https://github.com/gizmomogwai/org-kanban
+default_branch: master
+commit: bc7864f2140d3ed510ec0ecd60c6d3d8b8589ea4
+original_path: Cask
+permalink: https://github.com/gizmomogwai/org-kanban/blob/bc7864f2140d3ed510ec0ecd60c6d3d8b8589ea4/Cask
+retrieved_at: "2026-08-13T12:30:17Z"
+sha256: 10cc9660e43a605bd9fe30f69bf2010712264f7c90be0447acb54daa317ef7cf
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/gizmomogwai/org-kanban/blob/bc7864f2140d3ed510ec0ecd60c6d3d8b8589ea4/LICENSE
+    sha256: fef6440e111d169ee10d61cf668ab00b96ba9a85b6c3c8e153d5d301835acceb
+rationale: 'Best common-use representative: standard sources, package metadata, package-file, one runtime dependency, and development dependencies.'

@@ -1,0 +1,18 @@
+version: 2
+detector_id: emacs-cask
+candidate_id: candidate-8c51361ac1fbbde7a659a08d7c55d47f
+provider: github
+repository: abingham/emacs-ycmd
+repository_url: https://github.com/abingham/emacs-ycmd
+default_branch: master
+commit: c17ff9e0250a9b39d23af37015a2b300e2f36fed
+original_path: Cask
+permalink: https://github.com/abingham/emacs-ycmd/blob/c17ff9e0250a9b39d23af37015a2b300e2f36fed/Cask
+retrieved_at: "2026-08-13T12:27:25Z"
+sha256: 981c5f93987bc280117985ce6d63916fd365be7e9024fbfecd46d339937de047
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/abingham/emacs-ycmd/blob/c17ff9e0250a9b39d23af37015a2b300e2f36fed/LICENSE
+    sha256: afcf5bcab443719bde749f9ee0586cbedf69026987945a50ac0b9ce334e4cf1e
+rationale: Adds a richer package layout with an explicit files list and several runtime dependencies.

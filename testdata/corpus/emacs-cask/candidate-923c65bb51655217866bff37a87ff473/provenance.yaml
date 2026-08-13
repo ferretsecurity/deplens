@@ -1,0 +1,18 @@
+version: 2
+detector_id: emacs-cask
+candidate_id: candidate-923c65bb51655217866bff37a87ff473
+provider: github
+repository: porterjamesj/virtualenvwrapper.el
+repository_url: https://github.com/porterjamesj/virtualenvwrapper.el
+default_branch: master
+commit: c7e84505db4142fd1beebf38ffe37c3f42444ca3
+original_path: Cask
+permalink: https://github.com/porterjamesj/virtualenvwrapper.el/blob/c7e84505db4142fd1beebf38ffe37c3f42444ca3/Cask
+retrieved_at: "2026-08-13T12:30:03Z"
+sha256: 5b192c74b503a1ceb44bb1c7e6bdfe6b7142c9617a696ed98d0cc6a9480ebc28
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/porterjamesj/virtualenvwrapper.el/blob/c7e84505db4142fd1beebf38ffe37c3f42444ca3/LICENSE
+    sha256: c9aca1e7a82b2796d9df87257712671adf3c5f828f0e5acb6536d7c40079d0dc
+rationale: Adds inline package definition plus version-pinned dependencies, covering an older but useful dependency form.
