@@ -1,0 +1,18 @@
+version: 2
+detector_id: homebrew-brewfile-lock
+candidate_id: candidate-8dc02340c4920b5352327c4e8d21b20e
+provider: github
+repository: ericTsiliacos/portal
+repository_url: https://github.com/ericTsiliacos/portal
+default_branch: main
+commit: 9603757401dfb0867e327201cad316c03025121b
+original_path: Brewfile.lock.json
+permalink: https://github.com/ericTsiliacos/portal/blob/9603757401dfb0867e327201cad316c03025121b/Brewfile.lock.json
+retrieved_at: "2026-08-13T11:13:47Z"
+sha256: 4ce2576c19ace0fd156cfe62374cab34c189b8840096baac8ffe3548af7b924e
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ericTsiliacos/portal/blob/9603757401dfb0867e327201cad316c03025121b/LICENSE
+    sha256: f83f2158e48cc9d35755014afa3ea7284d9b2df31dee1fb1564b035aed078cd4
+rationale: Compact edge case covering tapped formulas and explicit bottle:false entries for shell-test dependencies.

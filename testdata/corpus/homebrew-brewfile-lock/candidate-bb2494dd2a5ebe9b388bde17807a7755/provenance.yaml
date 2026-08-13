@@ -1,0 +1,18 @@
+version: 2
+detector_id: homebrew-brewfile-lock
+candidate_id: candidate-bb2494dd2a5ebe9b388bde17807a7755
+provider: github
+repository: tigrisdata-community/multi-modal-starter-kit
+repository_url: https://github.com/tigrisdata-community/multi-modal-starter-kit
+default_branch: main
+commit: be90e6e84ff8bd077df18e0f91adc455ffd96b9b
+original_path: Brewfile.lock.json
+permalink: https://github.com/tigrisdata-community/multi-modal-starter-kit/blob/be90e6e84ff8bd077df18e0f91adc455ffd96b9b/Brewfile.lock.json
+retrieved_at: "2026-08-13T11:08:13Z"
+sha256: 576aa15220a08371fd924a4adaa37ebfaa299a8ddfe2b3bec9354ab9dc1e82a5
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/tigrisdata-community/multi-modal-starter-kit/blob/be90e6e84ff8bd077df18e0f91adc455ffd96b9b/LICENSE
+    sha256: 385d9d7d3b251531cc6ff160c2473767966ce73f127bacddcbc788a042265326
+rationale: Adds a real Linux Homebrew environment and a practical Node/media-tool dependency set.

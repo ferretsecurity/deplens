@@ -1,0 +1,18 @@
+version: 2
+detector_id: homebrew-brewfile-lock
+candidate_id: candidate-2a155e41af1dd210c3b27c6f0eae1d40
+provider: github
+repository: bitmovin/bitmovin-player-ios-analytics-conviva
+repository_url: https://github.com/bitmovin/bitmovin-player-ios-analytics-conviva
+default_branch: develop
+commit: fb10001e88ff306552fd951b7ee9eada11a81915
+original_path: Brewfile.lock.json
+permalink: https://github.com/bitmovin/bitmovin-player-ios-analytics-conviva/blob/fb10001e88ff306552fd951b7ee9eada11a81915/Brewfile.lock.json
+retrieved_at: "2026-08-13T11:14:01Z"
+sha256: bde6182abe63ddef2c43fa46703725af009f4c656c17f3f717ca40d1f81a2f35
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/bitmovin/bitmovin-player-ios-analytics-conviva/blob/fb10001e88ff306552fd951b7ee9eada11a81915/LICENSE
+    sha256: a351529b2cf844570c06d9792fbb6d184b0e4f6b3a08c0f23c356076d0848fec
+rationale: 'Representative modern macOS development lockfile: multiple standard formulae, GHCR bottles, Apple Silicon and Linux entries.'
