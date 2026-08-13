@@ -1,0 +1,18 @@
+version: 2
+detector_id: raku-meta
+candidate_id: candidate-e8944a72e1b8432c145b070cc91d333c
+provider: github
+repository: raku-community-modules/Linenoise
+repository_url: https://github.com/raku-community-modules/Linenoise
+default_branch: main
+commit: 13d2607ce46c6f601118ca05d602ee17431787e8
+original_path: META6.json
+permalink: https://github.com/raku-community-modules/Linenoise/blob/13d2607ce46c6f601118ca05d602ee17431787e8/META6.json
+retrieved_at: "2026-08-13T06:14:51Z"
+sha256: 99dce2d13ab73829610d2416f42c4264a2070b2b47cacdf9d3dec55167e6e877
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/raku-community-modules/Linenoise/blob/13d2607ce46c6f601118ca05d602ee17431787e8/LICENSE
+    sha256: dbeea207a91d0c226f771902220fe33aef1e418e4385d751465ea5f9d95a26c7
+rationale: Short native-binding edge case with a build dependency, bundled resource, and singular author field.

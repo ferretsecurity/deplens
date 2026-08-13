@@ -1,0 +1,18 @@
+version: 2
+detector_id: raku-meta
+candidate_id: candidate-e04e05ba9568c5994c8cd4b0153593a2
+provider: github
+repository: raku-community-modules/HTTP-UserAgent
+repository_url: https://github.com/raku-community-modules/HTTP-UserAgent
+default_branch: main
+commit: 1d6a31a0656a422524c266831f3d27bd62a3e3d7
+original_path: META6.json
+permalink: https://github.com/raku-community-modules/HTTP-UserAgent/blob/1d6a31a0656a422524c266831f3d27bd62a3e3d7/META6.json
+retrieved_at: "2026-08-13T06:12:01Z"
+sha256: 98f9c8e0cdc0068363dded9020ddac542c359b64e6a3bc9d94e9cd541ec35853
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/raku-community-modules/HTTP-UserAgent/blob/1d6a31a0656a422524c266831f3d27bd62a3e3d7/LICENSE
+    sha256: 98f47c2c6794ffa87270c938e46926d92e2ae5187865c2bb403cecd4fc704c70
+rationale: Common real-world web-client package with many dependencies, version-qualified dependency syntax, tests, tags, and a larger provides map.

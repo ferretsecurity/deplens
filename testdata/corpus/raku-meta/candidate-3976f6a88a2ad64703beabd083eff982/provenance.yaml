@@ -1,0 +1,18 @@
+version: 2
+detector_id: raku-meta
+candidate_id: candidate-3976f6a88a2ad64703beabd083eff982
+provider: github
+repository: retupmoca/p6-markdown
+repository_url: https://github.com/retupmoca/p6-markdown
+default_branch: master
+commit: 016ffc0731133ff885271e66aa8fbec5f07cc322
+original_path: META6.json
+permalink: https://github.com/retupmoca/p6-markdown/blob/016ffc0731133ff885271e66aa8fbec5f07cc322/META6.json
+retrieved_at: "2026-08-13T06:14:15Z"
+sha256: 38995fa3c9002153e5f93287b8564224db88ac68d25c3bce01b0b1674fe6fdc9
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/retupmoca/p6-markdown/blob/016ffc0731133ff885271e66aa8fbec5f07cc322/LICENSE
+    sha256: 766850d8edad6215b42f8e31d6ddeab2cb4783664e58fd21043cfabdbc543367
+rationale: 'Compact, typical library manifest: normal runtime dependency and a small multi-module provides map.'
