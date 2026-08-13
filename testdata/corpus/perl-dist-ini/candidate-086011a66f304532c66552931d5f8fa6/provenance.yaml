@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-dist-ini
+candidate_id: candidate-086011a66f304532c66552931d5f8fa6
+provider: github
+repository: spacewander/lua-resty-rsa
+repository_url: https://github.com/spacewander/lua-resty-rsa
+default_branch: master
+commit: 49ed1f112cbdcac7e0521b2798ef78c469f3555c
+original_path: dist.ini
+permalink: https://github.com/spacewander/lua-resty-rsa/blob/49ed1f112cbdcac7e0521b2798ef78c469f3555c/dist.ini
+retrieved_at: "2026-08-13T06:06:47Z"
+sha256: 20a275a79e44d9b911333756faef984bb486bff672bb265cb1247b67d343f056
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/spacewander/lua-resty-rsa/blob/49ed1f112cbdcac7e0521b2798ef78c469f3555c/LICENSE
+    sha256: eeac8fb3aa9433a6dae0a83b1024710e9c28459196410db05fc1fb107fb18cc2
+rationale: Common flat package-metadata form with typical key/value fields.

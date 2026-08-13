@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-dist-ini
+candidate_id: candidate-3fb5d0eaebf5d05af52c62e6ddd52bf2
+provider: github
+repository: fastmail/hopscotch
+repository_url: https://github.com/fastmail/hopscotch
+default_branch: master
+commit: 4ee27921b8b797148556e1897bd97f537e7be314
+original_path: dist.ini
+permalink: https://github.com/fastmail/hopscotch/blob/4ee27921b8b797148556e1897bd97f537e7be314/dist.ini
+retrieved_at: "2026-08-13T06:07:35Z"
+sha256: d9442f2b9c74da8094e93f45ce54d9986a73062e480541af9d5e28e559c1da3e
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/fastmail/hopscotch/blob/4ee27921b8b797148556e1897bd97f537e7be314/LICENSE.md
+    sha256: cff6ee04efc70c909a92dc177ca17291be531487bbeb5d0201c7b5195f2023cf
+rationale: Adds aligned fields plus filter, removal, exclusion, and copy directives.

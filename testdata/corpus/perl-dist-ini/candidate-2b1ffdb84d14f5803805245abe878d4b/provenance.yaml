@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-dist-ini
+candidate_id: candidate-2b1ffdb84d14f5803805245abe878d4b
+provider: github
+repository: raku-community-modules/File-Find
+repository_url: https://github.com/raku-community-modules/File-Find
+default_branch: main
+commit: e46f4e9961248d49a54f9e81331273cd36ca80f0
+original_path: dist.ini
+permalink: https://github.com/raku-community-modules/File-Find/blob/e46f4e9961248d49a54f9e81331273cd36ca80f0/dist.ini
+retrieved_at: "2026-08-13T06:09:19Z"
+sha256: b1fd0a8bf64f7bb7d1c60bc3b7e784eb373287dea4a46f9bda623177a1da7dd1
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/raku-community-modules/File-Find/blob/e46f4e9961248d49a54f9e81331273cd36ca80f0/LICENSE
+    sha256: 0fa17ff661175cfd016e362c6178418cfa2f0e57acad00aefd33eed2ef41525d
+rationale: Adds section-based configuration, comments, repeated keys, and blank lines.
