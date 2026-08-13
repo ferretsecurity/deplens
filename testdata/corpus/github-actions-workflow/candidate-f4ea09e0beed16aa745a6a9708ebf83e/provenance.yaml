@@ -1,0 +1,18 @@
+version: 2
+detector_id: github-actions-workflow
+candidate_id: candidate-f4ea09e0beed16aa745a6a9708ebf83e
+provider: github
+repository: TYPESAFE-RUSTY/PORTFOLIO-v2
+repository_url: https://github.com/TYPESAFE-RUSTY/PORTFOLIO-v2
+default_branch: main
+commit: 3138fcd274ac5ece22203fb83bf8f2a49ddaa0b8
+original_path: .github/workflows/nextjs.yml
+permalink: https://github.com/TYPESAFE-RUSTY/PORTFOLIO-v2/blob/3138fcd274ac5ece22203fb83bf8f2a49ddaa0b8/.github/workflows/nextjs.yml
+retrieved_at: "2026-08-13T09:16:23Z"
+sha256: e2fb46c2db8becb85fa64933aabd5113981fb1a16ff9296ccf32637989a07380
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/TYPESAFE-RUSTY/PORTFOLIO-v2/blob/3138fcd274ac5ece22203fb83bf8f2a49ddaa0b8/LICENSE
+    sha256: b0263b66df8f31dc81f881dbf3a8886412cbfe76120ebda572625abaf12a2b2e
+rationale: 'Deployment edge case: separates build and GitHub Pages deployment with permissions, artifact handoff, and concurrency.'

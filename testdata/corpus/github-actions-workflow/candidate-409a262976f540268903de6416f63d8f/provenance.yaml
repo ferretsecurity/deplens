@@ -1,0 +1,18 @@
+version: 2
+detector_id: github-actions-workflow
+candidate_id: candidate-409a262976f540268903de6416f63d8f
+provider: github
+repository: ariestools/tool-domains-nodejs
+repository_url: https://github.com/ariestools/tool-domains-nodejs
+default_branch: master
+commit: a590a531c71c8167a48a4da50a2525bd1f0b4a43
+original_path: .github/workflows/build.yml
+permalink: https://github.com/ariestools/tool-domains-nodejs/blob/a590a531c71c8167a48a4da50a2525bd1f0b4a43/.github/workflows/build.yml
+retrieved_at: "2026-08-13T09:13:26Z"
+sha256: 32d7e526bff3ac213cb60a954d0031859edccf527f2941e14852d41155c86cbe
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ariestools/tool-domains-nodejs/blob/a590a531c71c8167a48a4da50a2525bd1f0b4a43/LICENSE
+    sha256: e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118
+rationale: 'Common baseline: a short push-triggered Node build workflow with checkout, runtime setup, install, and build.'

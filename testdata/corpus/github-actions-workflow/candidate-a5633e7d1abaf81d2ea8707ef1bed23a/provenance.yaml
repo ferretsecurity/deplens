@@ -1,0 +1,18 @@
+version: 2
+detector_id: github-actions-workflow
+candidate_id: candidate-a5633e7d1abaf81d2ea8707ef1bed23a
+provider: github
+repository: rsadsb/adsb_deku
+repository_url: https://github.com/rsadsb/adsb_deku
+default_branch: master
+commit: e2bdf1e08d1ef1a8dbdea25f415cbd50170de60e
+original_path: .github/workflows/cache/action.yml
+permalink: https://github.com/rsadsb/adsb_deku/blob/e2bdf1e08d1ef1a8dbdea25f415cbd50170de60e/.github/workflows/cache/action.yml
+retrieved_at: "2026-08-13T09:09:36Z"
+sha256: ee0834d829fa0df397ee7e794101c92424741215c09ad10c4e065cc6624462f5
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/rsadsb/adsb_deku/blob/e2bdf1e08d1ef1a8dbdea25f415cbd50170de60e/LICENSE
+    sha256: f7da773cec0de4be0124b7d81ca74856abb299c85f4fafc1315fba0be787d703
+rationale: 'Structural variation: a compact composite action focused on dependency caching and reusable workflow components.'
