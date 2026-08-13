@@ -1,0 +1,18 @@
+version: 2
+detector_id: ocaml-dune-project
+candidate_id: candidate-2f51a6118c11ae64772b89a229204d7a
+provider: github
+repository: funkywork/nightmare
+repository_url: https://github.com/funkywork/nightmare
+default_branch: main
+commit: bfed7f3bf1f42253621b7f3439f44410d1e2ed2f
+original_path: dune-project
+permalink: https://github.com/funkywork/nightmare/blob/bfed7f3bf1f42253621b7f3439f44410d1e2ed2f/dune-project
+retrieved_at: "2026-08-13T06:49:20Z"
+sha256: cd0715678d051cdbfb13d4752ea2e1dc0669a4bd859c894b4b27351214986b7f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/funkywork/nightmare/blob/bfed7f3bf1f42253621b7f3439f44410d1e2ed2f/LICENSE
+    sha256: a2bac21cd42cbe31f860dbfc63b22b569f5f1d7c89f7be3712ec49890e17b29b
+rationale: Adds the multi-package case, including internal version-pinned dependencies and several dependency syntaxes.

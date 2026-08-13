@@ -1,0 +1,18 @@
+version: 2
+detector_id: ocaml-dune-project
+candidate_id: candidate-050ae39e6f62373c5a7b6fb0990a8ad2
+provider: github
+repository: jscoq/jscoq
+repository_url: https://github.com/jscoq/jscoq
+default_branch: v8.20
+commit: 47687039288b0c05a8c932d66737070418b9cfa9
+original_path: dune-project
+permalink: https://github.com/jscoq/jscoq/blob/47687039288b0c05a8c932d66737070418b9cfa9/dune-project
+retrieved_at: "2026-08-13T06:47:28Z"
+sha256: 4f20b1b9e52697bcb5dbf4964da1578c27fe650385141a2f342ba1afab82afd0
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/jscoq/jscoq/blob/47687039288b0c05a8c932d66737070418b9cfa9/LICENSE
+    sha256: f60386ce7fad92a603535248a5d1d9dfe392c9d2709b6d80854d5b3875465109
+rationale: Compact extension-focused edge case covering Coq and directory-targets `using` stanzas.

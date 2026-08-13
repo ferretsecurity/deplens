@@ -1,0 +1,18 @@
+version: 2
+detector_id: ocaml-dune-project
+candidate_id: candidate-12f663ae01effca9b4a90b9501860782
+provider: github
+repository: kiranandcode/petrol
+repository_url: https://github.com/kiranandcode/petrol
+default_branch: master
+commit: 14865351c0cea8315a2371fadeece7e93efac286
+original_path: dune-project
+permalink: https://github.com/kiranandcode/petrol/blob/14865351c0cea8315a2371fadeece7e93efac286/dune-project
+retrieved_at: "2026-08-13T06:49:35Z"
+sha256: 866ac949414c31c360b95d11fac4447afc1d2c03dab451a036121e1638054c28
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/kiranandcode/petrol/blob/14865351c0cea8315a2371fadeece7e93efac286/LICENSE
+    sha256: 3f8bd4cf2d2b7dcaa6060d5c0f344853fb3e98b2e0b4b9e1ac66709a0663e7f0
+rationale: 'Common modern OCaml project: name, opam generation, tests, metadata, and one package with realistic dependency constraints.'
