@@ -1,0 +1,18 @@
+version: 2
+detector_id: nix-flake
+candidate_id: candidate-292c174dcc1260a0c719a3c19a183f34
+provider: github
+repository: nix-community/buildbot-nix
+repository_url: https://github.com/nix-community/buildbot-nix
+default_branch: main
+commit: 6d7abb5ed4ce1d19879756f07af0763eee5a25e0
+original_path: flake.nix
+permalink: https://github.com/nix-community/buildbot-nix/blob/6d7abb5ed4ce1d19879756f07af0763eee5a25e0/flake.nix
+retrieved_at: "2026-08-13T10:41:57Z"
+sha256: 8895a8e9dd0aea1531a4d1773d0d9d2d4cbf0e5377ceb46557781aacd0d0f944
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/nix-community/buildbot-nix/blob/6d7abb5ed4ce1d19879756f07af0763eee5a25e0/LICENSE.md
+    sha256: 3eade52e8f9834c13931684a577328fd614ffffa1dc24c3c2d10fda09a93cdcc
+rationale: 'Adds modular, larger-project structure: NixOS modules, configurations, packages, checks, formatter, and CI integration.'

@@ -1,0 +1,18 @@
+version: 2
+detector_id: nix-flake
+candidate_id: candidate-1742df981769affce5a417585d4bf5e8
+provider: github
+repository: CircleCI-Public/chunk-cli
+repository_url: https://github.com/CircleCI-Public/chunk-cli
+default_branch: main
+commit: 9126e9a67506ad2a4ffa58729d15a4ba5a202e01
+original_path: flake.nix
+permalink: https://github.com/CircleCI-Public/chunk-cli/blob/9126e9a67506ad2a4ffa58729d15a4ba5a202e01/flake.nix
+retrieved_at: "2026-08-13T10:42:38Z"
+sha256: bdf6d034088f8f719ea141eb6f6a8e38d4a5d0ce5ed9d950325260d86fd141f9
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/CircleCI-Public/chunk-cli/blob/9126e9a67506ad2a4ffa58729d15a4ba5a202e01/LICENSE
+    sha256: 043ea9f1bba4631d0458d3434c3e515c243a7e8ce1911453df01b2197435e90c
+rationale: 'Compact, conventional application flake: multi-system package, app, and development shell. It best represents common real-world use.'
