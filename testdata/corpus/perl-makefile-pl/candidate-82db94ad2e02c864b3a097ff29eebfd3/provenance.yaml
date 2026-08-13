@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-makefile-pl
+candidate_id: candidate-82db94ad2e02c864b3a097ff29eebfd3
+provider: github
+repository: linsalrob/bioinformatics
+repository_url: https://github.com/linsalrob/bioinformatics
+default_branch: master
+commit: da250531fdc3b0e5d6be0ac44d7874fa201f92b0
+original_path: Modules/SGE-0.02/Status/Makefile.PL
+permalink: https://github.com/linsalrob/bioinformatics/blob/da250531fdc3b0e5d6be0ac44d7874fa201f92b0/Modules/SGE-0.02/Status/Makefile.PL
+retrieved_at: "2026-08-13T00:25:34Z"
+sha256: 2ccb4633dc8dc59433ab115ca29ec4f4e095d6d4d974ed9a982c00720cd268f8
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/linsalrob/bioinformatics/blob/da250531fdc3b0e5d6be0ac44d7874fa201f92b0/LICENSE
+    sha256: 8563faf5a15c4aece59d0dbcce84fa8de1f6d8a42d41511eb447f9342d79ab09
+rationale: Canonical small ExtUtils::MakeMaker package definition; best represents common real-world usage.

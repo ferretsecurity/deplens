@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-makefile-pl
+candidate_id: candidate-bfd390f6a3aded273e804e01ebdeaac3
+provider: github
+repository: usualoma/mt-plugin-EnhancedCategory
+repository_url: https://github.com/usualoma/mt-plugin-EnhancedCategory
+default_branch: main
+commit: 19e85b42cec4c87964b743c68a745e1864324195
+original_path: Makefile.PL
+permalink: https://github.com/usualoma/mt-plugin-EnhancedCategory/blob/19e85b42cec4c87964b743c68a745e1864324195/Makefile.PL
+retrieved_at: "2026-08-13T00:20:31Z"
+sha256: 7466910c55f0367724aff406e9eb4083f26e4e4c5f0a8deee086fb2ceedf58e3
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/usualoma/mt-plugin-EnhancedCategory/blob/19e85b42cec4c87964b743c68a745e1864324195/LICENSE
+    sha256: 4aaba9d4b511cdd648ea7ac16ffed0636f6c92f69f35c20e017c550f4fd1c588
+rationale: Adds configuration-derived metadata, command-line version override, and a custom distribution target.

@@ -1,0 +1,18 @@
+version: 2
+detector_id: perl-makefile-pl
+candidate_id: candidate-76b05c52623eb828e91f6d938105442f
+provider: github
+repository: gugod/markapl
+repository_url: https://github.com/gugod/markapl
+default_branch: master
+commit: efc24cf54ba883dcdc3efe094667971f187ea1c4
+original_path: Makefile.PL
+permalink: https://github.com/gugod/markapl/blob/efc24cf54ba883dcdc3efe094667971f187ea1c4/Makefile.PL
+retrieved_at: "2026-08-13T00:00:07Z"
+sha256: 6038dd65b8cf9ff5d451a9341453cab6788f0f9c78dcd10c848e3bdf0cab2dbf
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/gugod/markapl/blob/efc24cf54ba883dcdc3efe094667971f187ea1c4/LICENSE
+    sha256: d40e92e365061b1699f7bed2ec63332d0cdd75a42e39f5fc7d3f63aa74725d3f
+rationale: Compact Module::Install example with runtime and build/test dependencies.
