@@ -1,0 +1,18 @@
+version: 2
+detector_id: ansible-requirements
+candidate_id: candidate-fd507939c2c5ee26484ff5442d3f1762
+provider: github
+repository: Open-Power-System-Data/national_generation_capacity
+repository_url: https://github.com/Open-Power-System-Data/national_generation_capacity
+default_branch: master
+commit: 9a404fd9cda6bef7e6a826e4ebc73dbb0e5591b2
+original_path: requirements.yaml
+permalink: https://github.com/Open-Power-System-Data/national_generation_capacity/blob/9a404fd9cda6bef7e6a826e4ebc73dbb0e5591b2/requirements.yaml
+retrieved_at: "2026-08-13T08:16:42Z"
+sha256: fad5bec28c0f717f9188956bbc76d9ebe2562c3f66c6e6d27b3ecc7774aa9cb4
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/Open-Power-System-Data/national_generation_capacity/blob/9a404fd9cda6bef7e6a826e4ebc73dbb0e5591b2/LICENSE.md
+    sha256: d20f53ed849f34d705a92bfa441c6b1301e1abad9f2a4693d3fc83bd9fa549b4
+rationale: Typical concise Conda environment for a data project; represents the most common dependency-file use.

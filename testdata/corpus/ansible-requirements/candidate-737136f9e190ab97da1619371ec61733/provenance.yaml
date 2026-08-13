@@ -1,0 +1,18 @@
+version: 2
+detector_id: ansible-requirements
+candidate_id: candidate-737136f9e190ab97da1619371ec61733
+provider: github
+repository: encircle360-oss/outline-helm-chart
+repository_url: https://github.com/encircle360-oss/outline-helm-chart
+default_branch: main
+commit: 2904d48629ec6749323f4afbf645fbbf13fac5db
+original_path: requirements.yaml
+permalink: https://github.com/encircle360-oss/outline-helm-chart/blob/2904d48629ec6749323f4afbf645fbbf13fac5db/requirements.yaml
+retrieved_at: "2026-08-13T08:16:23Z"
+sha256: 1307dfaddc2757492b3f1a4d67b81d83e303004e25d42db5409abadfb6c39e5c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/encircle360-oss/outline-helm-chart/blob/2904d48629ec6749323f4afbf645fbbf13fac5db/LICENSE
+    sha256: 32fafb2f22e8c03f90b60714a1148c2ea56165bea77883e718f99deca0652c53
+rationale: Helm chart dependencies with multiple entries, aliases, repositories, and conditions.

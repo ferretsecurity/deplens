@@ -1,0 +1,18 @@
+version: 2
+detector_id: ansible-requirements
+candidate_id: candidate-f40af4ee4e311911a2be40a9251011f6
+provider: github
+repository: ethpandaops/ansible-collection-general
+repository_url: https://github.com/ethpandaops/ansible-collection-general
+default_branch: master
+commit: a34e6656f3788472d1356a03b4ffb44156c2528e
+original_path: requirements.yaml
+permalink: https://github.com/ethpandaops/ansible-collection-general/blob/a34e6656f3788472d1356a03b4ffb44156c2528e/requirements.yaml
+retrieved_at: "2026-08-13T08:17:15Z"
+sha256: 5e3b32f30f1b07c98a7693ee4c67a34103b976e47f25d2feef3830a549a348c7
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ethpandaops/ansible-collection-general/blob/a34e6656f3788472d1356a03b4ffb44156c2528e/LICENSE
+    sha256: 6b5d2d3b582d11795afbc885ebf9cd67e9049397dd69fd45245317b01cd1d5e1
+rationale: Ansible Galaxy requirements using separate collections and roles structures.
