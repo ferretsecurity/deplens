@@ -56508,12 +56508,29 @@ detectors:
         - declaration
         - constraint
         - configuration
-      state: pending
-      iterations: 0
+      state: needs-collection-review
+      iterations: 1
       examples: []
       target: 3
       query_plan:
         - path:third_party extension:bzl
+      queries:
+        - path:third_party extension:bzl
+      search_cursors:
+        - provider: github
+          query: path:third_party extension:bzl
+          next_page: 2
+          exhausted: true
+      history:
+        - iteration: 1
+          result: unsuccessful
+          queries:
+            - path:third_party extension:bzl
+          search_cursors:
+            - provider: github
+              query: path:third_party extension:bzl
+              next_page: 2
+              exhausted: true
     - id: js-nx
       form: tool-config
       roles:
