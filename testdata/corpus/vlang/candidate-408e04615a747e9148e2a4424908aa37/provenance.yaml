@@ -1,0 +1,18 @@
+version: 2
+detector_id: vlang
+candidate_id: candidate-408e04615a747e9148e2a4424908aa37
+provider: github
+repository: vlang/msgpack
+repository_url: https://github.com/vlang/msgpack
+default_branch: master
+commit: dd4f46dc04a61b112e7a247602db036081aabc59
+original_path: v.mod
+permalink: https://github.com/vlang/msgpack/blob/dd4f46dc04a61b112e7a247602db036081aabc59/v.mod
+retrieved_at: "2026-08-13T07:52:06Z"
+sha256: 23912a645340de6185e4510fa48975f43b1476230c9507fe52246c9ef38cbbaa
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/vlang/msgpack/blob/dd4f46dc04a61b112e7a247602db036081aabc59/LICENSE
+    sha256: 564ac6d2357c77f1162f26943f406cae0d28f9b6cfac4052d0d7b2335595b1cf
+rationale: Typical concise V library manifest with the standard name, description, version, license, and empty dependencies fields.

@@ -1,0 +1,18 @@
+version: 2
+detector_id: vlang
+candidate_id: candidate-975f97ed63c62b2fef1028d1e8b8c317
+provider: github
+repository: fermarsan/aixt
+repository_url: https://github.com/fermarsan/aixt
+default_branch: main
+commit: 59d645fdb45d91554a7b19e422a80e9ea505f223
+original_path: examples/microchip/pic16f87x/uart_tx/v.mod
+permalink: https://github.com/fermarsan/aixt/blob/59d645fdb45d91554a7b19e422a80e9ea505f223/examples/microchip/pic16f87x/uart_tx/v.mod
+retrieved_at: "2026-08-13T07:57:09Z"
+sha256: f6a797a3a3f69e732506a57810795ceb2c47ee07d19979429280b6b4456645fc
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/fermarsan/aixt/blob/59d645fdb45d91554a7b19e422a80e9ea505f223/LICENSE
+    sha256: 2b92b6915bf6dbfdf9cf918e09e5ecd4f384b55e1a9cfb2012a2722ba3216028
+rationale: Covers an embedded-target project manifest with empty metadata plus target, port, compiler, and flasher configuration fields.

@@ -1,0 +1,18 @@
+version: 2
+detector_id: vlang
+candidate_id: candidate-528a23a673c584af8e8a3ba16246139f
+provider: github
+repository: vlang/vtl
+repository_url: https://github.com/vlang/vtl
+default_branch: main
+commit: f39c0caa14db3aa1657e8a47cb0be40a20201210
+original_path: v.mod
+permalink: https://github.com/vlang/vtl/blob/f39c0caa14db3aa1657e8a47cb0be40a20201210/v.mod
+retrieved_at: "2026-08-13T07:50:36Z"
+sha256: d601068eb961719f2f5b014ba755f7758f895e61a01d5a70d713decab991515d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/vlang/vtl/blob/f39c0caa14db3aa1657e8a47cb0be40a20201210/LICENSE
+    sha256: 8d60987873704ba3d42f05a19e87c1e19cc2e6168b3821843f0fef7e5774ac6d
+rationale: Adds a realistic non-empty dependency declaration, including a version-qualified dependency.
