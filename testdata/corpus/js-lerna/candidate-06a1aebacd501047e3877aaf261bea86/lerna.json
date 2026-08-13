@@ -1,0 +1,10 @@
+{
+  "command": {
+    "bootstrap": {
+      "hoist": true
+    }
+  },
+  "npmClient": "pnpm",
+  "packages": ["packages/*"],
+  "version": "independent"
+}

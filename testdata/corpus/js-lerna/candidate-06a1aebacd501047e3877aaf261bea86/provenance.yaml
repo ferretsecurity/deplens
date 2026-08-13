@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-lerna
+candidate_id: candidate-06a1aebacd501047e3877aaf261bea86
+provider: github
+repository: lobehub/lobe-cli-toolbox
+repository_url: https://github.com/lobehub/lobe-cli-toolbox
+default_branch: master
+commit: f7f2a142d02df725e186dd76509a92d69e492e2d
+original_path: lerna.json
+permalink: https://github.com/lobehub/lobe-cli-toolbox/blob/f7f2a142d02df725e186dd76509a92d69e492e2d/lerna.json
+retrieved_at: "2026-08-13T09:58:35Z"
+sha256: b9231b36581bffd05532c63f9b05f498d86b9e79ab0e746537d794738cb85bb4
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/lobehub/lobe-cli-toolbox/blob/f7f2a142d02df725e186dd76509a92d69e492e2d/LICENSE
+    sha256: 37e7f4629d62cf91da873ba9f4bb9e7a07ae45b4d3320507d715ff1e8f8580d3
+rationale: Adds the independent-versioning and pnpm case, plus bootstrap hoisting.

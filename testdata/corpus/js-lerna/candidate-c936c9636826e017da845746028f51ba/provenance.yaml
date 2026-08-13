@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-lerna
+candidate_id: candidate-c936c9636826e017da845746028f51ba
+provider: github
+repository: alibaba/lowcode-engine
+repository_url: https://github.com/alibaba/lowcode-engine
+default_branch: main
+commit: f6305c2284950d79b9729781f081f24f113de345
+original_path: lerna.json
+permalink: https://github.com/alibaba/lowcode-engine/blob/f6305c2284950d79b9729781f081f24f113de345/lerna.json
+retrieved_at: "2026-08-13T09:53:23Z"
+sha256: ad0ff787eb2d2e4de8a0356eb7e14a4c599e119e105b7d66b331e5302a1d0fad
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/alibaba/lowcode-engine/blob/f6305c2284950d79b9729781f081f24f113de345/LICENSE
+    sha256: f1b20b08015f8c465745cc9631e27bb7f7abbe17df60954bbd71187420727f39
+rationale: Covers a fuller production configuration with bootstrap, release-branch rules, and customized publishing behavior.

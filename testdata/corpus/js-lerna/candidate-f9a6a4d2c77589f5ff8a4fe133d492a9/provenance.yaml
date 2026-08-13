@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-lerna
+candidate_id: candidate-f9a6a4d2c77589f5ff8a4fe133d492a9
+provider: github
+repository: t0gre/react-datepicker
+repository_url: https://github.com/t0gre/react-datepicker
+default_branch: master
+commit: ad472f6bc50a55daa662aee3e31df7486a3ac0ec
+original_path: lerna.json
+permalink: https://github.com/t0gre/react-datepicker/blob/ad472f6bc50a55daa662aee3e31df7486a3ac0ec/lerna.json
+retrieved_at: "2026-08-13T09:58:59Z"
+sha256: 2e3c45972121c434570af6299f3e6f54516ae1eff0c0254ddb97a8a9fb1a1aa3
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/t0gre/react-datepicker/blob/ad472f6bc50a55daa662aee3e31df7486a3ac0ec/LICENSE
+    sha256: 182366219ace7c32ec4ecfdb4a28b98f0b0888006e17a0032823fd99b80c5ee1
+rationale: 'Common baseline: a short Yarn workspace monorepo with packages/* and a fixed version.'
