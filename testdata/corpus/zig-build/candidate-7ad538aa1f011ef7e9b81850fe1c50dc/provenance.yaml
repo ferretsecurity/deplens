@@ -1,0 +1,18 @@
+version: 2
+detector_id: zig-build
+candidate_id: candidate-7ad538aa1f011ef7e9b81850fe1c50dc
+provider: github
+repository: Snektron/vulkan-zig
+repository_url: https://github.com/Snektron/vulkan-zig
+default_branch: master
+commit: 6994c93a6e882bac855aed606cf97a91e3f71d1f
+original_path: build.zig
+permalink: https://github.com/Snektron/vulkan-zig/blob/6994c93a6e882bac855aed606cf97a91e3f71d1f/build.zig
+retrieved_at: "2026-08-13T06:32:24Z"
+sha256: e12a8b7000fd1233c8c65b45d6d5209ba229d77d3d629825c6fc5bcf09d80920
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Snektron/vulkan-zig/blob/6994c93a6e882bac855aed606cf97a91e3f71d1f/LICENSE
+    sha256: 753592a192877de290886cedc88b24ff6e39e7953eda21de2e985180e278e51f
+rationale: 'Adds a build-time code-generation edge case: optional input registries produce a generated module, installed output, and dependent compile checks.'

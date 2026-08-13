@@ -1,0 +1,18 @@
+version: 2
+detector_id: zig-build
+candidate_id: candidate-75d33d6ba171bd283041888c3f6014c6
+provider: github
+repository: bradcypert/adl
+repository_url: https://github.com/bradcypert/adl
+default_branch: main
+commit: de2432c4b0aacb4f89593319b0b348a63e0b4e5e
+original_path: build.zig
+permalink: https://github.com/bradcypert/adl/blob/de2432c4b0aacb4f89593319b0b348a63e0b4e5e/build.zig
+retrieved_at: "2026-08-13T06:35:22Z"
+sha256: 37e29dd6de1ce2a1424c538c337831db2c7652d93612b13ea425dfe4b0858f48
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/bradcypert/adl/blob/de2432c4b0aacb4f89593319b0b348a63e0b4e5e/LICENSE
+    sha256: 03de2c7927d3d7b9eb47baa46c4039e563ccb6b81705f7854e1893bda6d8029f
+rationale: 'Representative modern Zig application: target/optimize options, a package dependency, install, run-with-arguments, and unit tests.'

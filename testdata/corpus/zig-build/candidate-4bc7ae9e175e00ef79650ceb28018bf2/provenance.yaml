@@ -1,0 +1,18 @@
+version: 2
+detector_id: zig-build
+candidate_id: candidate-4bc7ae9e175e00ef79650ceb28018bf2
+provider: github
+repository: ipcrypt-std/ipcrypt2
+repository_url: https://github.com/ipcrypt-std/ipcrypt2
+default_branch: main
+commit: 99935141b0b5a589bb350810a1c51d78c540840c
+original_path: build.zig
+permalink: https://github.com/ipcrypt-std/ipcrypt2/blob/99935141b0b5a589bb350810a1c51d78c540840c/build.zig
+retrieved_at: "2026-08-13T06:34:41Z"
+sha256: 748d99a8aa21dfc8e987e82f12543675e0b09651099778381d051821377d1f38
+governing_license:
+    spdx: ISC
+    path: LICENSE
+    permalink: https://github.com/ipcrypt-std/ipcrypt2/blob/99935141b0b5a589bb350810a1c51d78c540840c/LICENSE
+    sha256: 5253276080f78b4605a28c8998c6dc8c8301bf07748dd1cd6f4a7bb4d139e562
+rationale: 'Adds C interoperability coverage: compiles C sources, installs headers, uses TranslateC, and handles a Windows-specific system library.'
