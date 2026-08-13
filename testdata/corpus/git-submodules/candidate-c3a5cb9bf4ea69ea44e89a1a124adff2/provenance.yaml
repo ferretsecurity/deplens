@@ -1,0 +1,18 @@
+version: 2
+detector_id: git-submodules
+candidate_id: candidate-c3a5cb9bf4ea69ea44e89a1a124adff2
+provider: github
+repository: DiabHelp/DiabHelp-App-IOS
+repository_url: https://github.com/DiabHelp/DiabHelp-App-IOS
+default_branch: master
+commit: 6f5b4c8e3939546fd94e4ec4ea462b243b25419f
+original_path: .gitmodules
+permalink: https://github.com/DiabHelp/DiabHelp-App-IOS/blob/6f5b4c8e3939546fd94e4ec4ea462b243b25419f/.gitmodules
+retrieved_at: "2026-08-13T10:30:15Z"
+sha256: 877614fe0a1a27a98c50f00fb965dc9d06c3d451bf74c04af4c02de7b3bffc76
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/DiabHelp/DiabHelp-App-IOS/blob/6f5b4c8e3939546fd94e4ec4ea462b243b25419f/LICENSE
+    sha256: ac0ce60dad531982a047aaa010a990733dd16a2874f272f1cc11d6fd8457bef7
+rationale: 'Common real-world case: one standard HTTPS GitHub submodule dependency.'

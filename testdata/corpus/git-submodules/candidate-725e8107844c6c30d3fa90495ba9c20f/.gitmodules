@@ -1,0 +1,4 @@
+[submodule "specsense/sigcom_toolkit"]
+	path = specsense/sigcom_toolkit
+	url = https://github.com/ali-rasteh/sigcom-toolkit.git
+	branch = main

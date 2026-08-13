@@ -1,0 +1,18 @@
+version: 2
+detector_id: git-submodules
+candidate_id: candidate-725e8107844c6c30d3fa90495ba9c20f
+provider: github
+repository: ali-rasteh/specsense
+repository_url: https://github.com/ali-rasteh/specsense
+default_branch: main
+commit: cb43aa477ae45dc88ded5be00ec0a1cc55f54691
+original_path: .gitmodules
+permalink: https://github.com/ali-rasteh/specsense/blob/cb43aa477ae45dc88ded5be00ec0a1cc55f54691/.gitmodules
+retrieved_at: "2026-08-13T10:27:25Z"
+sha256: 6f9ec8a838b7ecc6e91eb6323d73e561f01c4adfa9da438cf975e50f6d5272bc
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ali-rasteh/specsense/blob/cb43aa477ae45dc88ded5be00ec0a1cc55f54691/LICENSE
+    sha256: 566a997903aacd50b8615703cee1c5ae0b75f780131079cbd6ca58d030ebf9d9
+rationale: Covers the optional branch field alongside a nested submodule path.

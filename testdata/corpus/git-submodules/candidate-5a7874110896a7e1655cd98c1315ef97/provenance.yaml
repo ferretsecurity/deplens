@@ -1,0 +1,18 @@
+version: 2
+detector_id: git-submodules
+candidate_id: candidate-5a7874110896a7e1655cd98c1315ef97
+provider: github
+repository: GM-Complete-Edition/BSPViewer
+repository_url: https://github.com/GM-Complete-Edition/BSPViewer
+default_branch: main
+commit: d271203c0596a5def8e11374f7a52a00b04b1b7d
+original_path: .gitmodules
+permalink: https://github.com/GM-Complete-Edition/BSPViewer/blob/d271203c0596a5def8e11374f7a52a00b04b1b7d/.gitmodules
+retrieved_at: "2026-08-13T10:29:05Z"
+sha256: 06311ac9208556b502e30100b8ab1fd1a2d1bb7a2b49370d6b3f8e6ea4c2dff6
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/GM-Complete-Edition/BSPViewer/blob/d271203c0596a5def8e11374f7a52a00b04b1b7d/LICENSE
+    sha256: 81e5531d2977774172d7088a3db1777163851d977e092d1ceb233df5d22ecb5d
+rationale: Adds a realistic multi-submodule manifest with several third-party dependencies.
