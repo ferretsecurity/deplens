@@ -1,0 +1,18 @@
+version: 2
+detector_id: ocaml-opam
+candidate_id: candidate-78df215ae86e4d4562d6216cb3050cc1
+provider: github
+repository: chshersh/ccl
+repository_url: https://github.com/chshersh/ccl
+default_branch: main
+commit: 9c9ad66545130f35b75cb61fbc4943c1cefe3785
+original_path: ccl.opam
+permalink: https://github.com/chshersh/ccl/blob/9c9ad66545130f35b75cb61fbc4943c1cefe3785/ccl.opam
+retrieved_at: "2026-08-13T06:45:11Z"
+sha256: c85fb51e1fb2394ece82fca6f7641d0b77fb34bd8880d36bc8ab14420bbfd232
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/chshersh/ccl/blob/9c9ad66545130f35b75cb61fbc4943c1cefe3785/LICENSE
+    sha256: 0224d8a82e268fec53619a1065a699a67617d1ea86fe6b8d7082416012258aa7
+rationale: Adds generated-package structure plus conditional test/documentation dependencies and build actions.

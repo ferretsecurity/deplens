@@ -1,0 +1,18 @@
+version: 2
+detector_id: ocaml-opam
+candidate_id: candidate-2e3f6d6b5d447ed80418a415f99fa45e
+provider: github
+repository: janestreet/base
+repository_url: https://github.com/janestreet/base
+default_branch: master
+commit: 28d466710aa1858a70fd3c1fcbeae07a07ac8106
+original_path: base.opam
+permalink: https://github.com/janestreet/base/blob/28d466710aa1858a70fd3c1fcbeae07a07ac8106/base.opam
+retrieved_at: "2026-08-13T06:44:05Z"
+sha256: ccf53670b4f5048498125b396085d62fac988a4e15becf869bb15cc91c17f319
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/janestreet/base/blob/28d466710aa1858a70fd3c1fcbeae07a07ac8106/LICENSE.md
+    sha256: 2f687783284971e4c1b59bb2dc5ba13903dc23cd6ecba586ace8058fd7fe10ef
+rationale: 'Best representative modern, real-world OPAM package: rich metadata, version constraints, substantial dependencies, and multi-line description.'

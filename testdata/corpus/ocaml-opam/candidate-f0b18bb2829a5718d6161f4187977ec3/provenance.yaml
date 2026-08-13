@@ -1,0 +1,18 @@
+version: 2
+detector_id: ocaml-opam
+candidate_id: candidate-f0b18bb2829a5718d6161f4187977ec3
+provider: github
+repository: reasonml/reason-native
+repository_url: https://github.com/reasonml/reason-native
+default_branch: master
+commit: 20b1997b6451d9715dfdbeec86a9d274c7430ed8
+original_path: utf8.opam
+permalink: https://github.com/reasonml/reason-native/blob/20b1997b6451d9715dfdbeec86a9d274c7430ed8/utf8.opam
+retrieved_at: "2026-08-13T06:44:32Z"
+sha256: 869a5dfd38c08e0e7ae376fb811139d8d892206ae37d4f624f9e59119c447502
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/reasonml/reason-native/blob/20b1997b6451d9715dfdbeec86a9d274c7430ed8/LICENSE
+    sha256: 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85
+rationale: Short, sparse manifest that covers the minimal-metadata and minimal-dependency edge case.
