@@ -1,0 +1,18 @@
+version: 2
+detector_id: unreal-uplugin
+candidate_id: candidate-04e9a99475fe74f468678aa24c2a89cf
+provider: github
+repository: getnamo/TCP-Unreal
+repository_url: https://github.com/getnamo/TCP-Unreal
+default_branch: main
+commit: f7869caf0957bcef136342df8bdc82143bd28553
+original_path: TCPWrapper.uplugin
+permalink: https://github.com/getnamo/TCP-Unreal/blob/f7869caf0957bcef136342df8bdc82143bd28553/TCPWrapper.uplugin
+retrieved_at: "2026-08-13T12:45:12Z"
+sha256: b52fb4c4e07db10e263a77e037eb3fcc6d1e8a5a20c9b841d6796744d67b67f1
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/getnamo/TCP-Unreal/blob/f7869caf0957bcef136342df8bdc82143bd28553/LICENSE
+    sha256: b383a26d577ea2b38c4820dabb88643773840b92074843412d81375ef94c9aac
+rationale: 'Baseline common case: a compact FileVersion 3 plugin with one Runtime module loading at Default.'

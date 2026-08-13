@@ -1,0 +1,18 @@
+version: 2
+detector_id: unreal-uplugin
+candidate_id: candidate-debb949c5c88b150b35fea8d3bc96ce3
+provider: github
+repository: NotYetGames/DlgSystem
+repository_url: https://github.com/NotYetGames/DlgSystem
+default_branch: master
+commit: d705231216bd64558d437b87a57928689b1e7fef
+original_path: DlgSystem.uplugin
+permalink: https://github.com/NotYetGames/DlgSystem/blob/d705231216bd64558d437b87a57928689b1e7fef/DlgSystem.uplugin
+retrieved_at: "2026-08-13T12:41:22Z"
+sha256: 925a5587e26cf5e5076eafffcef1c50b521c3b325d960bc99f2dee871f23a964
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/NotYetGames/DlgSystem/blob/d705231216bd64558d437b87a57928689b1e7fef/LICENSE.txt
+    sha256: 18cc4da905397792a25a671fb7f824b960e4e0003c2d8e22f6628c1f8c01898f
+rationale: 'Typical fuller production shape: Runtime plus editor-only module, explicit platform lists, and broadly compatible engine version.'

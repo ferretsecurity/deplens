@@ -1,0 +1,18 @@
+version: 2
+detector_id: unreal-uplugin
+candidate_id: candidate-2a54b4a92c609a5c1bffcfde2151df6a
+provider: github
+repository: volumesoffun/cubiquity-for-unreal-engine
+repository_url: https://github.com/volumesoffun/cubiquity-for-unreal-engine
+default_branch: master
+commit: 23b56c300c9507770c37c27c5c9efe4f3b7b08c0
+original_path: Cubiquity.uplugin
+permalink: https://github.com/volumesoffun/cubiquity-for-unreal-engine/blob/23b56c300c9507770c37c27c5c9efe4f3b7b08c0/Cubiquity.uplugin
+retrieved_at: "2026-08-13T12:42:50Z"
+sha256: a07109a502ca0ecf4e3c082a83c53b93a8106c2125848af72e1a232279281cbf
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/volumesoffun/cubiquity-for-unreal-engine/blob/23b56c300c9507770c37c27c5c9efe4f3b7b08c0/LICENSE.txt
+    sha256: 1c04e0d3a5cb7ac66cf164a2ee26e1b1e7c136330c8727e065ef7f16b38eecea
+rationale: 'Compact legacy-schema edge case: uses PluginFileVersion, CategoryPath, string boolean, and a platform blacklist.'
