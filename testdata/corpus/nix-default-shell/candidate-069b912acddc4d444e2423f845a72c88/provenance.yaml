@@ -1,0 +1,18 @@
+version: 2
+detector_id: nix-default-shell
+candidate_id: candidate-069b912acddc4d444e2423f845a72c88
+provider: github
+repository: sile-typesetter/sile
+repository_url: https://github.com/sile-typesetter/sile
+default_branch: master
+commit: f69069fa8eb61ae7db9e22085bdcbcfacf23737b
+original_path: default.nix
+permalink: https://github.com/sile-typesetter/sile/blob/f69069fa8eb61ae7db9e22085bdcbcfacf23737b/default.nix
+retrieved_at: "2026-08-13T10:32:59Z"
+sha256: 2464a8b1fb4ed9c1360b6e55390f47fcfbd941713fa21bc9c6f5df325037c274
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/sile-typesetter/sile/blob/f69069fa8eb61ae7db9e22085bdcbcfacf23737b/LICENSE.md
+    sha256: 78d9c5c0ceee4d562164c91a8700d5a215147b09684d3ddb23f06676b8f66419
+rationale: A compact flake-compat bridge, covering legacy default.nix entry points that read a lockfile and delegate to a flake.

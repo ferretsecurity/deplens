@@ -1,0 +1,18 @@
+version: 2
+detector_id: nix-default-shell
+candidate_id: candidate-53918128bb5b733f5536e0c4ff89f1b4
+provider: github
+repository: oxalica/rust-overlay
+repository_url: https://github.com/oxalica/rust-overlay
+default_branch: master
+commit: cb8f92ed710cb8402805a509d4083418b5435edb
+original_path: default.nix
+permalink: https://github.com/oxalica/rust-overlay/blob/cb8f92ed710cb8402805a509d4083418b5435edb/default.nix
+retrieved_at: "2026-08-13T10:33:59Z"
+sha256: 3f5d5abf5af2db5dea3b4f17510f6f6dd47448925909795ef58480adc48da0d6
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/oxalica/rust-overlay/blob/cb8f92ed710cb8402805a509d4083418b5435edb/LICENSE
+    sha256: 91276db973f25602d1aa43491f59cbc84cb88e6f151e1d0cc82a755563ce0195
+rationale: 'Adds the important overlay form (`final: prev:`), including attribute merging and compatibility exports.'

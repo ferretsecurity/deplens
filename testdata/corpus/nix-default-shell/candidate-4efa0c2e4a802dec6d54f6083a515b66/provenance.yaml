@@ -1,0 +1,18 @@
+version: 2
+detector_id: nix-default-shell
+candidate_id: candidate-4efa0c2e4a802dec6d54f6083a515b66
+provider: github
+repository: spider-rs/spider
+repository_url: https://github.com/spider-rs/spider
+default_branch: main
+commit: 229e5cd43628f5ee0b43117ffddfcd20a000ced6
+original_path: default.nix
+permalink: https://github.com/spider-rs/spider/blob/229e5cd43628f5ee0b43117ffddfcd20a000ced6/default.nix
+retrieved_at: "2026-08-13T10:33:13Z"
+sha256: f69133caadd35f5f00ebb441c5f624a4ff0dffb9f3c7fbe67c937b44452511d0
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/spider-rs/spider/blob/229e5cd43628f5ee0b43117ffddfcd20a000ced6/LICENSE
+    sha256: 1a3b65ed8c3b242aa834ab38e9d5cf85169c88f49cbe83a64d1f2f59238dd820
+rationale: 'Representative everyday package expression: optional nixpkgs import, a standard Rust derivation, lockfile, metadata, and an exported attribute.'
