@@ -1,0 +1,16 @@
+name = "optimist"
+version = "1.0.0"
+
+description = "A simple package for modelling optimistic ui updates."
+repository = { type = "github", user = "hayleigh-dot-dev", repo = "optimist" }
+licences = ["MIT"]
+
+links = [
+    { title = "Sponsor", href = "https://github.com/sponsors/hayleigh-dot-dev" },
+]
+
+[dependencies]
+gleam_stdlib = ">= 0.34.0 and < 2.0.0"
+
+[dev-dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"

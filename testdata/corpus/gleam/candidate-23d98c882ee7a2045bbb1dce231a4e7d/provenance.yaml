@@ -1,0 +1,18 @@
+version: 2
+detector_id: gleam
+candidate_id: candidate-23d98c882ee7a2045bbb1dce231a4e7d
+provider: github
+repository: bwireman/cactus
+repository_url: https://github.com/bwireman/cactus
+default_branch: main
+commit: c88ff97612582842446e819d20316a20d2e03bed
+original_path: gleam.toml
+permalink: https://github.com/bwireman/cactus/blob/c88ff97612582842446e819d20316a20d2e03bed/gleam.toml
+retrieved_at: "2026-08-13T07:20:13Z"
+sha256: 838e3793f19c659360531674b88658e48b066ba56eb531286216af7a11ea5a8c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/bwireman/cactus/blob/c88ff97612582842446e819d20316a20d2e03bed/LICENSE
+    sha256: abe0c2e9fad680170ddfade86acd5dc56ce7a32510d49271f972b95292040686
+rationale: Adds a complex application-style manifest with custom tool sections, hooks, and a larger dependency graph.

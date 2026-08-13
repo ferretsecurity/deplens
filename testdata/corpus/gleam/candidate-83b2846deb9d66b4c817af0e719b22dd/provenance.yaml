@@ -1,0 +1,18 @@
+version: 2
+detector_id: gleam
+candidate_id: candidate-83b2846deb9d66b4c817af0e719b22dd
+provider: github
+repository: MystPi/conversation
+repository_url: https://github.com/MystPi/conversation
+default_branch: master
+commit: fd9fb71a334fc989e27b3750a0c4f17c907f4a2f
+original_path: gleam.toml
+permalink: https://github.com/MystPi/conversation/blob/fd9fb71a334fc989e27b3750a0c4f17c907f4a2f/gleam.toml
+retrieved_at: "2026-08-13T07:20:27Z"
+sha256: 310fa63fa7ea6b6c86664097daf1d26f5e1d03d8e7ed629a8ebfd87d45fad55d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/MystPi/conversation/blob/fd9fb71a334fc989e27b3750a0c4f17c907f4a2f/LICENSE
+    sha256: 79ab553d66fb6da2d4ba3b24d2ecc8367377e0ca6e68cc1513428e049d6a1b70
+rationale: Adds the JavaScript/Deno target and runtime-specific configuration.

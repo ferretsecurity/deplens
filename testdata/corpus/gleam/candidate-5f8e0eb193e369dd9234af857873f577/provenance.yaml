@@ -1,0 +1,18 @@
+version: 2
+detector_id: gleam
+candidate_id: candidate-5f8e0eb193e369dd9234af857873f577
+provider: github
+repository: hayleigh-dot-dev/optimist
+repository_url: https://github.com/hayleigh-dot-dev/optimist
+default_branch: main
+commit: 0af373b735fdb821b28730ad187a040a239c6f7d
+original_path: gleam.toml
+permalink: https://github.com/hayleigh-dot-dev/optimist/blob/0af373b735fdb821b28730ad187a040a239c6f7d/gleam.toml
+retrieved_at: "2026-08-13T07:19:31Z"
+sha256: f08184c99b65fc40aa3d43e976eea041c279b6b18c40877110719b0f7992e4c0
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/hayleigh-dot-dev/optimist/blob/0af373b735fdb821b28730ad187a040a239c6f7d/LICENSE
+    sha256: a52260eed83dfd37f8a0ccb425e0db63fcf1f84eea3c1ef761a721f69c2cbfd5
+rationale: 'Most common case: a small published Gleam library with standard metadata, one runtime dependency, and tests.'

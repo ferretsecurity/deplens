@@ -1,0 +1,68 @@
+name = "cactus"
+version = "1.4.0"
+licences = ["MIT"]
+repository = { type = "github", user = "bwireman", repo = "cactus" }
+description = "A tool for managing git lifecycle hooks with ✨ gleam! Pre commit, Pre push and more!"
+links = []
+internal_modules = ["cactus/*"]
+target = "javascript"
+
+[javascript]
+typescript_declarations = false
+runtime = "nodejs"
+
+[javascript.deno]
+allow_all = true
+
+[go-over]
+cache = true
+global = true
+allowed_licenses = ["MIT", "Apache-2.0", "BSD 2-Clause", "WTFPL"]
+
+[go-over.ignore]
+packages = []
+
+[cactus]
+always_init = true
+
+[cactus.pre-commit]
+files_scope = "staged"
+actions = [
+    { command = "./scripts/format.sh", kind = "binary", files = [
+        ".gleam",
+    ] },
+    { command = "./scripts/test.sh", kind = "binary" },
+]
+
+[cactus.pre-push]
+actions = [
+    { command = "go_over", kind = "module" },
+    { command = "deps", args = ["outdated"], kind = "sub_command" },
+]
+
+[cactus.test]
+actions = [
+    { command = "touch", kind = "binary", args = [
+        ".another.test-run",
+    ] },
+    { command = "touch", kind = "binary", args = [
+        ".test-run",
+    ], files = [
+        ".another.test-run",
+    ] },
+]
+
+[dependencies]
+gleam_stdlib = ">= 1.0.0 and < 2.0.0"
+tom = ">= 2.0.0 and < 3.0.0"
+shellout = ">= 1.6.0 and < 2.0.0"
+simplifile = ">= 2.0.1 and < 3.0.0"
+filepath = ">= 1.0.0 and < 2.0.0"
+gleither = ">= 2.0.0 and < 3.0.0"
+gxyz = ">= 0.3.0 and < 1.0.0"
+platform = ">= 1.0.0 and < 2.0.0"
+envoy = ">= 1.2.0 and < 2.0.0"
+
+[dev-dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"
+go_over = ">= 4.0.0-rc1 and < 5.0.0"
