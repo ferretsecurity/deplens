@@ -1,0 +1,18 @@
+version: 2
+detector_id: zig-build-zon
+candidate_id: candidate-6927419c29e972c2886a3eb91fd68d1a
+provider: github
+repository: Cloudef/pipewrangler
+repository_url: https://github.com/Cloudef/pipewrangler
+default_branch: master
+commit: c6e88260eb03e1d3d2bdb7c477016687266fc10a
+original_path: build.zig.zon
+permalink: https://github.com/Cloudef/pipewrangler/blob/c6e88260eb03e1d3d2bdb7c477016687266fc10a/build.zig.zon
+retrieved_at: "2026-08-13T06:30:21Z"
+sha256: 6693ab6ddc56a53de192069c6109d25f24d6c7b7b1d5cde69b765e2ec9153398
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Cloudef/pipewrangler/blob/c6e88260eb03e1d3d2bdb7c477016687266fc10a/LICENSE
+    sha256: 498606cd369ced4e1bd9cd3d5a6852d53ccfb538a35e2da0da8612b727535e58
+rationale: Covers the distinct local path dependency case, including lazy loading, without unnecessary boilerplate.

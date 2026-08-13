@@ -1,0 +1,18 @@
+version: 2
+detector_id: zig-build-zon
+candidate_id: candidate-30dd9104671cfd44cc2fc1d442a5f679
+provider: github
+repository: joelspadin/tree-sitter-devicetree
+repository_url: https://github.com/joelspadin/tree-sitter-devicetree
+default_branch: main
+commit: e78bf56f206cb47bee28a217423acb651e076848
+original_path: build.zig.zon
+permalink: https://github.com/joelspadin/tree-sitter-devicetree/blob/e78bf56f206cb47bee28a217423acb651e076848/build.zig.zon
+retrieved_at: "2026-08-13T06:28:12Z"
+sha256: 956311c11c9f0a565981bb69a2e35edad5111b9a591094205c0cebf1b7b67a97
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/joelspadin/tree-sitter-devicetree/blob/e78bf56f206cb47bee28a217423acb651e076848/LICENSE
+    sha256: b539c1b4ccd868c8d4fc89651c8133a1678823f5057e2e1a81455a3df4f4c0b8
+rationale: Adds a realistic external Git dependency using a hash and lazy fetching.

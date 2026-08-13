@@ -1,0 +1,18 @@
+version: 2
+detector_id: zig-build-zon
+candidate_id: candidate-3feaf78b455e7c7f8f4d2aa7ee0736dc
+provider: github
+repository: zigcc/zig-msgpack
+repository_url: https://github.com/zigcc/zig-msgpack
+default_branch: main
+commit: e5d5f8604cf7aa50593df8e450686a269a7299c6
+original_path: build.zig.zon
+permalink: https://github.com/zigcc/zig-msgpack/blob/e5d5f8604cf7aa50593df8e450686a269a7299c6/build.zig.zon
+retrieved_at: "2026-08-13T06:28:15Z"
+sha256: 266a10cdb3754e1a6b67624f8a4eddd34039d006a84b42b717c69876c4a9b1e8
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/zigcc/zig-msgpack/blob/e5d5f8604cf7aa50593df8e450686a269a7299c6/LICENSE
+    sha256: aa30682c2861b025f75a445d1f36fae92c1bb068c12fcc76e2e0b1157deef3b5
+rationale: Compact, conventional package manifest with standard metadata, explicit empty dependencies, and explicit source paths; represents the common standalone-library case.
