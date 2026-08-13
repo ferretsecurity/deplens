@@ -1,0 +1,22 @@
+{
+  "revision_id": "devops-course-chef-lock",
+  "name": "docker-host",
+  "run_list": [
+    "recipe[base::default]",
+    "recipe[docker_host::default]"
+  ],
+  "cookbook_locks": {
+    "base": {
+      "version": "0.1.0",
+      "source_options": {
+        "path": "../cookbooks/base"
+      }
+    },
+    "docker_host": {
+      "version": "0.1.0",
+      "source_options": {
+        "path": "../cookbooks/docker_host"
+      }
+    }
+  }
+}

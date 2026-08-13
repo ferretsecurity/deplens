@@ -67517,12 +67517,244 @@ detectors:
       roles:
         - resolution
         - integrity
-      state: pending
-      iterations: 0
-      examples: []
+      state: complete
+      iterations: 1
+      examples:
+        - testdata/corpus/chef-policyfile-lock/candidate-3f42434c108cc22bb5b100e20a3b978b/hashicorp-vault/Policyfile.lock.json
+        - testdata/corpus/chef-policyfile-lock/candidate-413ff2226917a170534a90cc18fded6a/spec/data/Policyfile.lock.json
+        - testdata/corpus/chef-policyfile-lock/candidate-f2bb2f402ecffc2f95ae34df554820a4/36-chef-infra-automation/policyfiles/Policyfile.lock.json
       target: 3
       query_plan:
         - filename:Policyfile.lock.json
+      queries:
+        - filename:Policyfile.lock.json
+      candidates:
+        - candidate-413ff2226917a170534a90cc18fded6a
+        - candidate-536076f7ea9eed0a92d2a9d16e0fbec3
+        - candidate-0cf09d18046eccc8e5b1e33bd6954c80
+        - candidate-3f42434c108cc22bb5b100e20a3b978b
+        - candidate-f2bb2f402ecffc2f95ae34df554820a4
+      filtered_search_hits:
+        source-selector-mismatch: 3
+      rejections:
+        - license-ambiguous
+        - license-ambiguous
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-disallowed
+        - license-ambiguous
+        - sensitive-content
+        - license-missing
+        - repository-purpose
+        - sensitive-content
+        - repository-purpose
+        - sensitive-content
+        - license-disallowed
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - license-missing
+        - license-missing
+        - sensitive-content
+        - sensitive-content
+        - sensitive-content
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+        - license-ambiguous
+      decision_states:
+        - packet_fingerprint: 5f0ee438792c5d3a415fe55abc6fdf8d31b1a38f50dabbbafd3b21d96f8df055
+          accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+          selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+      search_cursors:
+        - provider: github
+          query: filename:Policyfile.lock.json
+          next_page: 2
+          exhausted: true
+      search_hit_ids:
+        - 0bcc5816b55d999f44db1a46295ba26e0d0feedc2debed3b787a0fa5a7e85a5e
+        - 11267a3f87309fea2984f5c495c7940fc3a775dae9814c9c77dca110d95e06d4
+        - 133202b9545fb6daeb1a8a434d5a22b3ca6718e4e22381b491dc899e92e55824
+        - 178c7e89a58a7890e1171710b8539e851ec4e7d256752ebddb388bc2099c6796
+        - 1dcda3c01e36cd3457c4f950dded4e02e39e6497c5e69a1b4c9ec56f982d12ea
+        - 25c57e847de1ddf5c990486f87086d4476fb20993a2b05ed9e8b05d524aad9a8
+        - 2dba6119939137972aca26e51d528e9f7965be81fb95344f33ea6aff4c0b8fe4
+        - 2ee6d52b3c595855b59205aa064d90520769a5a82e6a7c6e2abce80c8d51fe1b
+        - 2ffe804d4c2899327afb3e0ad19f1a697cdbe4d9359038cd65fe8e381babc0d0
+        - 312cf191665271d359be91e2dc0e65fae559dc2dc205c2f1931a3a5b93f2a63d
+        - 37005f00e5ad9232bb7172cb34c05d6023c49e296b946e7ee8ff024a8cb19b83
+        - 37da0ae8e91d77191ffa328bb2a5d36dcb5d4003ac9abc135d055a3372ebb6e0
+        - 386c32c45094f86489b1ada3537f518533e5c8b2eb8a2bd73dfcf7ec71f8ea20
+        - 3a183fe4108b8a97b88b6ff753dedb68596f6cdc027d4a30c1388eb82bf8046c
+        - 3d97edd5466f69a6f01247a1cc04ad422582a86897ba6fcc12399bc1a0679849
+        - 3e46eadec465ee9a13ed01695db14ed9e8e3fb1b1bd29ed16feafb841575683e
+        - 41e2a2add1317f25d66efeabe6e6b7ea2ecbf1828c00a24cd937a7240305535c
+        - 484d9675c8f5ccee784e83f6e21c4eac7ebfb2d181342d7ee4a237ba7bdb1b24
+        - 515ba66bd1dc0bc7edffb022e73aa5785c2051cf7a45439c45c8015dd2254fad
+        - 5436f212388d62e322feb278640aecf7bdfb40d181e7e58bfe1bafd5546e11d7
+        - 58b7466ca6e12e7468326e7a194c528455bef8606f4128ff42eef885952c2988
+        - 621849d3a0ea716ee1083f3443e75842639f148f3de7f1804e77f9a3ff5e9dd8
+        - 62aba325a6627c5b29411e6cfba057b512e2b3e6e75131814cf916c528109912
+        - 66da5479889919528cd73e7b24779810c9f774427894eb71a7ac66c23a46087a
+        - 738e6cd8ea49d4fcf9fd2e8379bbf55269011a4a3752c2952d46d2da72b210d9
+        - 74e0efafce8db8494cc6bd2fb2325e2afed93e435d2c3d49fd23f910e9ece97e
+        - 776c3bc4ee4311c4028bacbcc8c809a06f9a000bbc8c3b00edbec3fb058381f1
+        - 78a46f6348932b25a1305b81d7cb15e932a2ef44e130ec2b1068bd4e18b4bb98
+        - 794c70bfdaf3bdbc89338f58add73c5cc32b9b7b082c04abb147b7ac3b712576
+        - 7976937a4a0d993643e13918d89a5b5989618e3bd2f6c29ec8356f34037ad37b
+        - 7f8ad43878ed31c54a4453bc52edc1f49f6c530705720bb1ebe2994e10b88c94
+        - 8078b1f91d38f95f56cf13f9aa662f14abaef3d5bdca248c8a30d7f0feeae06a
+        - 80a6807772fb97f5cd98926fe326b0d681413616de77b2fa719662010d140984
+        - 81e51f56d3c407efddfe773395a24d641f82b6b723ede03ff08871b37a9481cd
+        - 919ea7ccee2f03990ea9095b97f0a8a5244ab7260b1c192b064a367e8c085317
+        - 9a5eeb4c7ce262442947a0ca607d92a7b7d21de029c43056108f6f9049dbf028
+        - a69cb00e4d77fe80b50f667f9c3aef0957357e535d8b28724e15985265effc68
+        - a9c3ed4d2f00d70db083a6ccf4fba529e31c2c806dbcc5d25051968945886615
+        - c1e4bff3acd6d5455b486c3bd589400d63c5f9d78a538a8dfe1484b22485e813
+        - d5c879dfa4026c2280502b20717e00619090a526da83ae9477b877fb127f3e16
+        - dc1142eb602d37a75117c591501af5c42b0b91f05df0fd59d2b9945773c96247
+        - dc8973ed32e2ead45b10e039e75f01d88347e69d7446c950f5dca5c0c60d2c0e
+        - de4629f075e8b2203056ae50bfb19d41886a7ab7e61e32bd3f8fa955065b4001
+        - dfd426f9ca03396957ebf09c8cbbbe22de7f382d72eb997fb420c95cbd666591
+        - e235a29d121dba76655dfd95c4f5c75ac61f20b3d539d9a833b027e1ee8b319c
+        - e5fb34863cc1ccf1dbda399ad13c66771688c99db32904e70e3cf3be89ed10a4
+        - e789f3de7a98e993f88ad9cf706b3f3202b4c62d426374603689b3884b4e1f01
+        - eb396fb1e6263c9961f0894b598429f19937304a3cc03eab6dbf84d641c38c6f
+        - f7bc36a0717686de1a7fa72be48e7a18e999ac2efe97b237e6ed9fe0db3e398d
+      history:
+        - iteration: 1
+          result: accepted
+          accepted_ids:
+            - candidate-3f42434c108cc22bb5b100e20a3b978b
+            - candidate-413ff2226917a170534a90cc18fded6a
+            - candidate-f2bb2f402ecffc2f95ae34df554820a4
+          queries:
+            - filename:Policyfile.lock.json
+          candidates:
+            - candidate-413ff2226917a170534a90cc18fded6a
+            - candidate-536076f7ea9eed0a92d2a9d16e0fbec3
+            - candidate-0cf09d18046eccc8e5b1e33bd6954c80
+            - candidate-3f42434c108cc22bb5b100e20a3b978b
+            - candidate-f2bb2f402ecffc2f95ae34df554820a4
+          filtered_search_hits:
+            source-selector-mismatch: 3
+          rejections:
+            - license-ambiguous
+            - license-ambiguous
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-disallowed
+            - license-ambiguous
+            - sensitive-content
+            - license-missing
+            - repository-purpose
+            - sensitive-content
+            - repository-purpose
+            - sensitive-content
+            - license-disallowed
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - license-missing
+            - license-missing
+            - sensitive-content
+            - sensitive-content
+            - sensitive-content
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+            - license-ambiguous
+          decision:
+            packet_fingerprint: 5f0ee438792c5d3a415fe55abc6fdf8d31b1a38f50dabbbafd3b21d96f8df055
+            accepted_corpus_fingerprint: 06530612570cde0ebbb1e29fc1ea2830d5b3a606c3d48492b1bec97c5a09255e
+            selector_configuration_fingerprint: 535c6e8f6c4e11b714fbeac0daf380e37f78409b48f78fc997ff4baec9757b94
+          search_cursors:
+            - provider: github
+              query: filename:Policyfile.lock.json
+              next_page: 2
+              exhausted: true
+          search_hit_ids:
+            - 0bcc5816b55d999f44db1a46295ba26e0d0feedc2debed3b787a0fa5a7e85a5e
+            - 11267a3f87309fea2984f5c495c7940fc3a775dae9814c9c77dca110d95e06d4
+            - 133202b9545fb6daeb1a8a434d5a22b3ca6718e4e22381b491dc899e92e55824
+            - 178c7e89a58a7890e1171710b8539e851ec4e7d256752ebddb388bc2099c6796
+            - 1dcda3c01e36cd3457c4f950dded4e02e39e6497c5e69a1b4c9ec56f982d12ea
+            - 25c57e847de1ddf5c990486f87086d4476fb20993a2b05ed9e8b05d524aad9a8
+            - 2dba6119939137972aca26e51d528e9f7965be81fb95344f33ea6aff4c0b8fe4
+            - 2ee6d52b3c595855b59205aa064d90520769a5a82e6a7c6e2abce80c8d51fe1b
+            - 2ffe804d4c2899327afb3e0ad19f1a697cdbe4d9359038cd65fe8e381babc0d0
+            - 312cf191665271d359be91e2dc0e65fae559dc2dc205c2f1931a3a5b93f2a63d
+            - 37005f00e5ad9232bb7172cb34c05d6023c49e296b946e7ee8ff024a8cb19b83
+            - 37da0ae8e91d77191ffa328bb2a5d36dcb5d4003ac9abc135d055a3372ebb6e0
+            - 386c32c45094f86489b1ada3537f518533e5c8b2eb8a2bd73dfcf7ec71f8ea20
+            - 3a183fe4108b8a97b88b6ff753dedb68596f6cdc027d4a30c1388eb82bf8046c
+            - 3d97edd5466f69a6f01247a1cc04ad422582a86897ba6fcc12399bc1a0679849
+            - 3e46eadec465ee9a13ed01695db14ed9e8e3fb1b1bd29ed16feafb841575683e
+            - 41e2a2add1317f25d66efeabe6e6b7ea2ecbf1828c00a24cd937a7240305535c
+            - 484d9675c8f5ccee784e83f6e21c4eac7ebfb2d181342d7ee4a237ba7bdb1b24
+            - 515ba66bd1dc0bc7edffb022e73aa5785c2051cf7a45439c45c8015dd2254fad
+            - 5436f212388d62e322feb278640aecf7bdfb40d181e7e58bfe1bafd5546e11d7
+            - 58b7466ca6e12e7468326e7a194c528455bef8606f4128ff42eef885952c2988
+            - 621849d3a0ea716ee1083f3443e75842639f148f3de7f1804e77f9a3ff5e9dd8
+            - 62aba325a6627c5b29411e6cfba057b512e2b3e6e75131814cf916c528109912
+            - 66da5479889919528cd73e7b24779810c9f774427894eb71a7ac66c23a46087a
+            - 738e6cd8ea49d4fcf9fd2e8379bbf55269011a4a3752c2952d46d2da72b210d9
+            - 74e0efafce8db8494cc6bd2fb2325e2afed93e435d2c3d49fd23f910e9ece97e
+            - 776c3bc4ee4311c4028bacbcc8c809a06f9a000bbc8c3b00edbec3fb058381f1
+            - 78a46f6348932b25a1305b81d7cb15e932a2ef44e130ec2b1068bd4e18b4bb98
+            - 794c70bfdaf3bdbc89338f58add73c5cc32b9b7b082c04abb147b7ac3b712576
+            - 7976937a4a0d993643e13918d89a5b5989618e3bd2f6c29ec8356f34037ad37b
+            - 7f8ad43878ed31c54a4453bc52edc1f49f6c530705720bb1ebe2994e10b88c94
+            - 8078b1f91d38f95f56cf13f9aa662f14abaef3d5bdca248c8a30d7f0feeae06a
+            - 80a6807772fb97f5cd98926fe326b0d681413616de77b2fa719662010d140984
+            - 81e51f56d3c407efddfe773395a24d641f82b6b723ede03ff08871b37a9481cd
+            - 919ea7ccee2f03990ea9095b97f0a8a5244ab7260b1c192b064a367e8c085317
+            - 9a5eeb4c7ce262442947a0ca607d92a7b7d21de029c43056108f6f9049dbf028
+            - a69cb00e4d77fe80b50f667f9c3aef0957357e535d8b28724e15985265effc68
+            - a9c3ed4d2f00d70db083a6ccf4fba529e31c2c806dbcc5d25051968945886615
+            - c1e4bff3acd6d5455b486c3bd589400d63c5f9d78a538a8dfe1484b22485e813
+            - d5c879dfa4026c2280502b20717e00619090a526da83ae9477b877fb127f3e16
+            - dc1142eb602d37a75117c591501af5c42b0b91f05df0fd59d2b9945773c96247
+            - dc8973ed32e2ead45b10e039e75f01d88347e69d7446c950f5dca5c0c60d2c0e
+            - de4629f075e8b2203056ae50bfb19d41886a7ab7e61e32bd3f8fa955065b4001
+            - dfd426f9ca03396957ebf09c8cbbbe22de7f382d72eb997fb420c95cbd666591
+            - e235a29d121dba76655dfd95c4f5c75ac61f20b3d539d9a833b027e1ee8b319c
+            - e5fb34863cc1ccf1dbda399ad13c66771688c99db32904e70e3cf3be89ed10a4
+            - e789f3de7a98e993f88ad9cf706b3f3202b4c62d426374603689b3884b4e1f01
+            - eb396fb1e6263c9961f0894b598429f19937304a3cc03eab6dbf84d641c38c6f
+            - f7bc36a0717686de1a7fa72be48e7a18e999ac2efe97b237e6ed9fe0db3e398d
     - id: jsonnet-lock
       form: lockfile
       roles:

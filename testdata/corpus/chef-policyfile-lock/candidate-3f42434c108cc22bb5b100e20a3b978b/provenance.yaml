@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-policyfile-lock
+candidate_id: candidate-3f42434c108cc22bb5b100e20a3b978b
+provider: github
+repository: Jumbleberry/Cookbooksv2
+repository_url: https://github.com/Jumbleberry/Cookbooksv2
+default_branch: master
+commit: 354400264d8d44a6a09ed08999dbf622bd172eda
+original_path: hashicorp-vault/Policyfile.lock.json
+permalink: https://github.com/Jumbleberry/Cookbooksv2/blob/354400264d8d44a6a09ed08999dbf622bd172eda/hashicorp-vault/Policyfile.lock.json
+retrieved_at: "2026-08-13T12:08:23Z"
+sha256: 93ae8d2d54325c02437f705e697d3eed534bc90f4a6832890fa6efe63e240b2b
+governing_license:
+    spdx: MIT
+    path: hashicorp-vault/LICENSE
+    permalink: https://github.com/Jumbleberry/Cookbooksv2/blob/354400264d8d44a6a09ed08999dbf622bd172eda/hashicorp-vault/LICENSE
+    sha256: 6babdea603e9feecef207ebbef9f1f9a874442e2b80bbde250e53280194b3fb8
+rationale: 'Best representation of a common production Policyfile lock: a primary cookbook, many resolved dependencies, and a non-trivial dependency graph.'

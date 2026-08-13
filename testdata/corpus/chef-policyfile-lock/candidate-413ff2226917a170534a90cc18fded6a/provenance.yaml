@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-policyfile-lock
+candidate_id: candidate-413ff2226917a170534a90cc18fded6a
+provider: github
+repository: criteo/knife-changelog
+repository_url: https://github.com/criteo/knife-changelog
+default_branch: master
+commit: 1bc750188ebee7ffeb00dd50cd5ed5337b21196f
+original_path: spec/data/Policyfile.lock.json
+permalink: https://github.com/criteo/knife-changelog/blob/1bc750188ebee7ffeb00dd50cd5ed5337b21196f/spec/data/Policyfile.lock.json
+retrieved_at: "2026-08-13T12:06:59Z"
+sha256: c24a075a6fe2ddff127ff422dc75078905420bb345ea310b33be931b3c919157
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/criteo/knife-changelog/blob/1bc750188ebee7ffeb00dd50cd5ed5337b21196f/LICENSE.txt
+    sha256: afab20fea9199b9a3ce425a05247154a25bd7b4ced72fa52b48d61a3a1272af6
+rationale: Compact conventional lock with two Supermarket cookbooks and complete dependency metadata; covers the simple common case without duplicating the large graph.

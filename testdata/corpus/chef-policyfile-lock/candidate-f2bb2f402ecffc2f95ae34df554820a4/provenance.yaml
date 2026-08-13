@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-policyfile-lock
+candidate_id: candidate-f2bb2f402ecffc2f95ae34df554820a4
+provider: github
+repository: paulpham157/devops-hands-on-practices
+repository_url: https://github.com/paulpham157/devops-hands-on-practices
+default_branch: main
+commit: 333e18c24a74fc2bbe48ef160f1648078dcd7722
+original_path: 36-chef-infra-automation/policyfiles/Policyfile.lock.json
+permalink: https://github.com/paulpham157/devops-hands-on-practices/blob/333e18c24a74fc2bbe48ef160f1648078dcd7722/36-chef-infra-automation/policyfiles/Policyfile.lock.json
+retrieved_at: "2026-08-13T12:08:55Z"
+sha256: d66f475c06b69680f22be27164a628682a9ddee0f9e24062c7263f87edea8d0e
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/paulpham157/devops-hands-on-practices/blob/333e18c24a74fc2bbe48ef160f1648078dcd7722/LICENSE
+    sha256: 1bf0704837c8ea465c7861bfe74ec8337ebed564f620c21c936f45b3a9ff1570
+rationale: Very short local-path lock with only core fields, adding useful coverage for minimal or partially resolved Policyfiles.
