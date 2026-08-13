@@ -1,0 +1,18 @@
+version: 2
+detector_id: jsonnet-lock
+candidate_id: candidate-0588a0c4b1b23d0a1e2a2d8680a10768
+provider: github
+repository: lotusload/lotus
+repository_url: https://github.com/lotusload/lotus
+default_branch: master
+commit: 3183638904bfaca1876239a887f5eb7e9dd1117e
+original_path: jsonnetfile.lock.json
+permalink: https://github.com/lotusload/lotus/blob/3183638904bfaca1876239a887f5eb7e9dd1117e/jsonnetfile.lock.json
+retrieved_at: "2026-08-13T12:18:37Z"
+sha256: 6229b24cfba4e0352df8ada8f9d2f9b95965197a88b28d9de8954f1be861b810
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/lotusload/lotus/blob/3183638904bfaca1876239a887f5eb7e9dd1117e/LICENSE
+    sha256: bc10673169ad6566a83264f3fea242ff6fa30f5433cda6628c7039cc6cd7b60e
+rationale: 'Compact edge case: minimal legacy-style lockfile with no schema version, checksum, or legacyImports field.'

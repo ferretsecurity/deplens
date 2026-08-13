@@ -1,0 +1,18 @@
+version: 2
+detector_id: jsonnet-lock
+candidate_id: candidate-0fc6d04602a6116a1f2dbbb91d5eaa9d
+provider: github
+repository: transferwise/cloudflare-prometheus-exporter
+repository_url: https://github.com/transferwise/cloudflare-prometheus-exporter
+default_branch: master
+commit: dc720b3c99a9254c0e23827a62b9b3629751d566
+original_path: mixin/jsonnetfile.lock.json
+permalink: https://github.com/transferwise/cloudflare-prometheus-exporter/blob/dc720b3c99a9254c0e23827a62b9b3629751d566/mixin/jsonnetfile.lock.json
+retrieved_at: "2026-08-13T12:21:56Z"
+sha256: e598f7a58e901e38ce87d57a62b27b62dcaea1a58f428960968b66b9c705a3ee
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/transferwise/cloudflare-prometheus-exporter/blob/dc720b3c99a9254c0e23827a62b9b3629751d566/LICENSE
+    sha256: e5c20e6a8067355d4a892c291f830f56851277ecd97821bd352a6223549d0829
+rationale: 'Common real-world lockfile: versioned schema, two Git dependencies, checksums, and legacyImports.'

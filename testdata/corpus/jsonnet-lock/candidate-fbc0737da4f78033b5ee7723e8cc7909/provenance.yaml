@@ -1,0 +1,18 @@
+version: 2
+detector_id: jsonnet-lock
+candidate_id: candidate-fbc0737da4f78033b5ee7723e8cc7909
+provider: github
+repository: adinhodovic/blackbox-exporter-mixin
+repository_url: https://github.com/adinhodovic/blackbox-exporter-mixin
+default_branch: main
+commit: 7d2b9263d7adae3ec937c8ae0cb6003492616710
+original_path: jsonnetfile.lock.json
+permalink: https://github.com/adinhodovic/blackbox-exporter-mixin/blob/7d2b9263d7adae3ec937c8ae0cb6003492616710/jsonnetfile.lock.json
+retrieved_at: "2026-08-13T12:23:47Z"
+sha256: 9ad7d80f6299569cfafe5d82b5b50a0d3731f2fbda7a211a53637e2a06554198
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/adinhodovic/blackbox-exporter-mixin/blob/7d2b9263d7adae3ec937c8ae0cb6003492616710/LICENSE
+    sha256: abc67af60bd61796d86afb4b7d3262e57dd44345ae61dbc349b5c46dbc039b9c
+rationale: Modern multi-dependency example with named and unnamed entries plus multiple subdirectories from one repository.
