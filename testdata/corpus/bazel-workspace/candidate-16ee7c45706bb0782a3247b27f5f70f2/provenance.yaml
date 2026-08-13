@@ -1,0 +1,18 @@
+version: 2
+detector_id: bazel-workspace
+candidate_id: candidate-16ee7c45706bb0782a3247b27f5f70f2
+provider: github
+repository: euphoria-io/heim
+repository_url: https://github.com/euphoria-io/heim
+default_branch: master
+commit: 978c921063e6b06012fc8d16d9fbf1b3a0be1191
+original_path: WORKSPACE
+permalink: https://github.com/euphoria-io/heim/blob/978c921063e6b06012fc8d16d9fbf1b3a0be1191/WORKSPACE
+retrieved_at: "2026-08-13T09:23:48Z"
+sha256: b685e74f892f9ad3f8af2b33db5e354b27dfa9ee2fffc7d7420ec9479dc49363
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/euphoria-io/heim/blob/978c921063e6b06012fc8d16d9fbf1b3a0be1191/LICENSE.md
+    sha256: 66dece6df585ffafdb669b9018dcfb622c2ac114abf48d72fb43de0f034b0143
+rationale: 'Adds mixed dependency mechanisms and ecosystems: Git repository, Node/npm setup, and Go/Gazelle toolchains.'

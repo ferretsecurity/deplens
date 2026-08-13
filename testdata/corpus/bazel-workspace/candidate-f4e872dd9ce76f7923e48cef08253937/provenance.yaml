@@ -1,0 +1,18 @@
+version: 2
+detector_id: bazel-workspace
+candidate_id: candidate-f4e872dd9ce76f7923e48cef08253937
+provider: github
+repository: realm/SwiftLint
+repository_url: https://github.com/realm/SwiftLint
+default_branch: main
+commit: ea29a5bee7f4e546587d3c4b907c62cff60928ef
+original_path: WORKSPACE
+permalink: https://github.com/realm/SwiftLint/blob/ea29a5bee7f4e546587d3c4b907c62cff60928ef/WORKSPACE
+retrieved_at: "2026-08-13T09:23:43Z"
+sha256: 89d35a780d50dd1364bd8b895997421a3dd59c956eb62d0ace3ed6c0daba20a8
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/realm/SwiftLint/blob/ea29a5bee7f4e546587d3c4b907c62cff60928ef/LICENSE
+    sha256: 6a4395f3b744b8cd94b6c810bc705440a75f1929689b65d2f557ee3e9895632f
+rationale: Compact minimal-workspace edge case, useful for recognizing a valid file with only a workspace declaration.

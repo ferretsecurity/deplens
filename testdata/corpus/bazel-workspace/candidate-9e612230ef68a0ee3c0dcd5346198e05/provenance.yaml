@@ -1,0 +1,18 @@
+version: 2
+detector_id: bazel-workspace
+candidate_id: candidate-9e612230ef68a0ee3c0dcd5346198e05
+provider: github
+repository: markisus/motor_sim
+repository_url: https://github.com/markisus/motor_sim
+default_branch: master
+commit: 62e3d5555e06b84bbc638b348595150e47fe751b
+original_path: WORKSPACE
+permalink: https://github.com/markisus/motor_sim/blob/62e3d5555e06b84bbc638b348595150e47fe751b/WORKSPACE
+retrieved_at: "2026-08-13T09:23:57Z"
+sha256: 6a16db41a1bf1c02a4a401ce35b4068e0207916fdd3e9b32d6dd903e97d541f9
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/markisus/motor_sim/blob/62e3d5555e06b84bbc638b348595150e47fe751b/LICENSE
+    sha256: f1e3469218b3b8b4dafb47bc102d8aae0f2e7510d0eb6425da77e33a6f970b1a
+rationale: 'Most representative real-world Bazel WORKSPACE: several pinned HTTP archives, mirrors, checksums, and rule setup.'
