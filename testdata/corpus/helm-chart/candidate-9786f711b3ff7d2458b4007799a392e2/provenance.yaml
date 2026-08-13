@@ -1,0 +1,18 @@
+version: 2
+detector_id: helm-chart
+candidate_id: candidate-9786f711b3ff7d2458b4007799a392e2
+provider: github
+repository: kviklet/kviklet
+repository_url: https://github.com/kviklet/kviklet
+default_branch: main
+commit: 4d0378686f484283c10e2ec44b611b7e396dba0f
+original_path: charts/kviklet-demo/Chart.yaml
+permalink: https://github.com/kviklet/kviklet/blob/4d0378686f484283c10e2ec44b611b7e396dba0f/charts/kviklet-demo/Chart.yaml
+retrieved_at: "2026-08-13T08:12:54Z"
+sha256: a3106f5046ae69e1c8198f0cd7aa5e531c729c15d525470af732b3f5db834f37
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/kviklet/kviklet/blob/4d0378686f484283c10e2ec44b611b7e396dba0f/LICENSE.md
+    sha256: fe5070a01f6051583a682c56af091a0431e48320c938ba6c9bda494465976e94
+rationale: Modern v2 demo chart that adds a local file dependency and a range-based dependency version.

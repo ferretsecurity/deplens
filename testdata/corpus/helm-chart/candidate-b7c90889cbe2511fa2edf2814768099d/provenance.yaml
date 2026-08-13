@@ -1,0 +1,18 @@
+version: 2
+detector_id: helm-chart
+candidate_id: candidate-b7c90889cbe2511fa2edf2814768099d
+provider: github
+repository: Twingate/helm-charts
+repository_url: https://github.com/Twingate/helm-charts
+default_branch: master
+commit: afc9ffacb45dd18f8ef3e3c90a1bf993824dd446
+original_path: stable/connector/Chart.yaml
+permalink: https://github.com/Twingate/helm-charts/blob/afc9ffacb45dd18f8ef3e3c90a1bf993824dd446/stable/connector/Chart.yaml
+retrieved_at: "2026-08-13T07:58:59Z"
+sha256: 8afa50c33aa579e93e178496e266b1ca48830f922b190116933be2c7a3035a99
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Twingate/helm-charts/blob/afc9ffacb45dd18f8ef3e3c90a1bf993824dd446/LICENSE
+    sha256: 91c87ec4c60c262933559dbb27e7fbb3615796d369ed6137833fb7ab25ccbd94
+rationale: Compact legacy Helm v1 chart, adding API-version and unquoted app-version variation.

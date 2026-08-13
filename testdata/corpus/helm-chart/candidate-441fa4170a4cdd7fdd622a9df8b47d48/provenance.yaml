@@ -1,0 +1,18 @@
+version: 2
+detector_id: helm-chart
+candidate_id: candidate-441fa4170a4cdd7fdd622a9df8b47d48
+provider: github
+repository: hmcts/hmcts-charts
+repository_url: https://github.com/hmcts/hmcts-charts
+default_branch: master
+commit: ec70b68aae9df8d000bdf5c7cf1facbe595dc566
+original_path: stable/labs-ieuanb74/Chart.yaml
+permalink: https://github.com/hmcts/hmcts-charts/blob/ec70b68aae9df8d000bdf5c7cf1facbe595dc566/stable/labs-ieuanb74/Chart.yaml
+retrieved_at: "2026-08-13T07:59:34Z"
+sha256: 277c58cee7bd4b11bef476aeef792075919ad2de695af0dbd85a207a6999942c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/hmcts/hmcts-charts/blob/ec70b68aae9df8d000bdf5c7cf1facbe595dc566/LICENSE
+    sha256: 812c25342a7bdc91c556df787a4536a761e3662d00e4d457f2729f2a3c408bc4
+rationale: Representative modern Helm v2 application chart with normal metadata and a remote dependency.
