@@ -1,0 +1,18 @@
+version: 2
+detector_id: homebrew-brewfile
+candidate_id: candidate-ee4e4a8ac08dff05954a6db9d835f5d5
+provider: github
+repository: microsoft/react-native-test-app
+repository_url: https://github.com/microsoft/react-native-test-app
+default_branch: trunk
+commit: 2bd913d4bd2344039eec5500b9be0079fafd5b06
+original_path: Brewfile
+permalink: https://github.com/microsoft/react-native-test-app/blob/2bd913d4bd2344039eec5500b9be0079fafd5b06/Brewfile
+retrieved_at: "2026-08-13T08:31:01Z"
+sha256: 63592e9a4302845f3b660243e0aeacaf14a85dfbd30e51a16b285cf683922219
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/microsoft/react-native-test-app/blob/2bd913d4bd2344039eec5500b9be0079fafd5b06/LICENSE
+    sha256: 9906940f61b1f0b533fa7d99baf55178b2808fbe113ea51dfbfad8572ccd5f2b
+rationale: Compact mobile-development edge case covering a tap, multiple versioned Java casks, and mixed platform tooling.

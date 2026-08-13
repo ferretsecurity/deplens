@@ -1,0 +1,18 @@
+version: 2
+detector_id: homebrew-brewfile
+candidate_id: candidate-2bf3fcff0597b3a5fda30538fecc4571
+provider: github
+repository: kshenoy/dotfiles
+repository_url: https://github.com/kshenoy/dotfiles
+default_branch: master
+commit: bd072a30e28091da54068d2ef2d9c59b368d5f3f
+original_path: Brewfile
+permalink: https://github.com/kshenoy/dotfiles/blob/bd072a30e28091da54068d2ef2d9c59b368d5f3f/Brewfile
+retrieved_at: "2026-08-13T08:33:44Z"
+sha256: 6bdaabe3296dc73df25b0975897e220404d00ee641359cda0fe0f7d52672750f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/kshenoy/dotfiles/blob/bd072a30e28091da54068d2ef2d9c59b368d5f3f/LICENSE
+    sha256: ee710dbd0399b08a3f077144d69a228734c8ee31388e9968aea0a4f0af6f14d8
+rationale: 'Best representative of a modern personal workstation Brewfile: standard formulas, casks, and Mac App Store entries.'
