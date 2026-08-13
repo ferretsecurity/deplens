@@ -1,0 +1,20 @@
+name: ic
+version: 0.9.0
+description: REPL Interface wrapping Crystal Interpreter (crystal-i).
+authors:
+  - I3oris
+
+crystal: 1.1.1
+
+license: MIT
+
+scripts:
+  postinstall: make postinstall
+
+dependencies:
+  reply:
+    version: 0.4.0
+    github: I3oris/reply
+  markd:
+    github: icyleaf/markd
+    commit: 03cd4f5d6f4e56054502a6548b4c2ff92fb3dc20

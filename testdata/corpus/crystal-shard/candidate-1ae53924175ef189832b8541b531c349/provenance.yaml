@@ -1,0 +1,18 @@
+version: 2
+detector_id: crystal-shard
+candidate_id: candidate-1ae53924175ef189832b8541b531c349
+provider: github
+repository: schovi/baked_file_system
+repository_url: https://github.com/schovi/baked_file_system
+default_branch: master
+commit: 559a49ab2a7242f60bfd0e939f6b0c70b96b575a
+original_path: benchmarks/baked/shard.yml
+permalink: https://github.com/schovi/baked_file_system/blob/559a49ab2a7242f60bfd0e939f6b0c70b96b575a/benchmarks/baked/shard.yml
+retrieved_at: "2026-08-13T07:04:59Z"
+sha256: cb123f05e9fff3c1bf88596abe2f56d0dfa6ebd3f6adf0dbe3f8eb75e4e9a462
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/schovi/baked_file_system/blob/559a49ab2a7242f60bfd0e939f6b0c70b96b575a/LICENSE
+    sha256: 58babb08e34cc5c31af2df160c7cd068dc4c760b6cde3faeec2002fda13a2790
+rationale: Adds the important local path dependency case while retaining a compact executable-target manifest.

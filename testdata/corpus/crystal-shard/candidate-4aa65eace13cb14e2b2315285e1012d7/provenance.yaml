@@ -1,0 +1,18 @@
+version: 2
+detector_id: crystal-shard
+candidate_id: candidate-4aa65eace13cb14e2b2315285e1012d7
+provider: github
+repository: I3oris/ic
+repository_url: https://github.com/I3oris/ic
+default_branch: master
+commit: 504ef43bb5d47a101e7b2582854ff487c8e1604b
+original_path: shard.yml
+permalink: https://github.com/I3oris/ic/blob/504ef43bb5d47a101e7b2582854ff487c8e1604b/shard.yml
+retrieved_at: "2026-08-13T07:05:04Z"
+sha256: 6200fb96bd9a51476aa42f9fc00b789acd15d9f3ca7d19b9486cbcbbce839e80
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/I3oris/ic/blob/504ef43bb5d47a101e7b2582854ff487c8e1604b/LICENSE
+    sha256: 4de19f397dd9b5d991745e7a187e4a2028bfd1da19b0d2796aa987bc2f24c719
+rationale: Adds lifecycle scripts and an exact commit-pinned dependency, covering less common but useful dependency resolution cases.

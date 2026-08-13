@@ -1,0 +1,18 @@
+version: 2
+detector_id: crystal-shard
+candidate_id: candidate-2575aa1cee778f87a4314e4851de2638
+provider: github
+repository: sjdonado/bit
+repository_url: https://github.com/sjdonado/bit
+default_branch: master
+commit: 000a9b12c503c58af88ba2440cc9056763db7d98
+original_path: shard.yml
+permalink: https://github.com/sjdonado/bit/blob/000a9b12c503c58af88ba2440cc9056763db7d98/shard.yml
+retrieved_at: "2026-08-13T07:05:09Z"
+sha256: e65b0275ce182052848c0c5d3f549e249ae779b62b03b4b3eccd3b931bf34a69
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/sjdonado/bit/blob/000a9b12c503c58af88ba2440cc9056763db7d98/LICENSE
+    sha256: 360b2b516bb6b7dca77324c4bad302c27ba2010a908e370fbc7aa6546ba253b1
+rationale: 'Most representative full application manifest: multiple targets, regular and development dependencies, version constraints, Crystal version, and license.'
