@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-nx
+candidate_id: candidate-0fc0913967b3f760814eb6c854703231
+provider: github
+repository: safe-global/safe-react-apps
+repository_url: https://github.com/safe-global/safe-react-apps
+default_branch: development
+commit: e8cccfb9a1042fa2954087988bae59c3b8c81780
+original_path: nx.json
+permalink: https://github.com/safe-global/safe-react-apps/blob/e8cccfb9a1042fa2954087988bae59c3b8c81780/nx.json
+retrieved_at: "2026-08-13T09:46:54Z"
+sha256: f0a5741d0ef3284818ee1fbe763a9beb8086666b90d2b64c4071ca59f3e30d03
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/safe-global/safe-react-apps/blob/e8cccfb9a1042fa2954087988bae59c3b8c81780/LICENSE.md
+    sha256: 27a253846dfe4d833e63c36902b46a5637c42a558dacd79b0d562898b05e67e0
+rationale: Short legacy-format edge case using an npm preset, explicit task runner, and older targetDependencies structure.

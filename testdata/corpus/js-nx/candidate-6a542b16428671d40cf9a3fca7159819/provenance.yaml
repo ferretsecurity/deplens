@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-nx
+candidate_id: candidate-6a542b16428671d40cf9a3fca7159819
+provider: github
+repository: CrawlerCode/payload-authjs
+repository_url: https://github.com/CrawlerCode/payload-authjs
+default_branch: main
+commit: 4f2b10bc94b3cde4ce817b45240735ba8afceb12
+original_path: nx.json
+permalink: https://github.com/CrawlerCode/payload-authjs/blob/4f2b10bc94b3cde4ce817b45240735ba8afceb12/nx.json
+retrieved_at: "2026-08-13T09:47:15Z"
+sha256: 0c45992066ddd8ba396c8c28ae7e1f73c92f5df9acc9424a047326257fafbc6e
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/CrawlerCode/payload-authjs/blob/4f2b10bc94b3cde4ce817b45240735ba8afceb12/LICENSE
+    sha256: a6c3efacb4ac267190b23ce8fe4d4a6e322af9c51ff4ec6461f84fbee34ce553
+rationale: Compact modern plugin-based workspace, adding Next.js target inference and a focused release configuration.

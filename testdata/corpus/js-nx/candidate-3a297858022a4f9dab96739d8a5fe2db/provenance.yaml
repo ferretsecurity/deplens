@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-nx
+candidate_id: candidate-3a297858022a4f9dab96739d8a5fe2db
+provider: github
+repository: Availity/availity-react
+repository_url: https://github.com/Availity/availity-react
+default_branch: master
+commit: 55b6035ccb172dde37bc8d657749812db0bd9b2d
+original_path: nx.json
+permalink: https://github.com/Availity/availity-react/blob/55b6035ccb172dde37bc8d657749812db0bd9b2d/nx.json
+retrieved_at: "2026-08-13T09:47:02Z"
+sha256: 7e0cdeabe2aa5d08deee3ad69cba6cf96914072aee1d97d546a4dc492e9c7bb0
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Availity/availity-react/blob/55b6035ccb172dde37bc8d657749812db0bd9b2d/LICENSE
+    sha256: 9fa56a06e867f3a3910ef3bdd2bdb5057cc8e95bf252fb18da8efb72dd740d02
+rationale: 'Representative modern Nx JavaScript/React workspace: production inputs, cached build/test/typecheck/lint, and dependency-aware builds.'

@@ -1,0 +1,54 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "defaultBase": "main",
+  "plugins": [
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
+    },
+    {
+      "plugin": "@nx/next/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "devTargetName": "dev",
+        "startTargetName": "start",
+        "serveStaticTargetName": "serve-static"
+      }
+    }
+  ],
+  "release": {
+    "version": {
+      "conventionalCommits": true
+    },
+    "changelog": {
+      "workspaceChangelog": {
+        "createRelease": "github",
+        "renderOptions": {
+          "authors": false
+        }
+      }
+    },
+    "conventionalCommits": {
+      "types": {
+        "chore": {
+          "changelog": true
+        },
+        "docs": {
+          "changelog": true
+        },
+        "ci": {
+          "changelog": true
+        },
+        "example": {
+          "changelog": {
+            "title": "📓 Examples"
+          }
+        }
+      }
+    }
+  },
+  "nxCloudId": "66da0f239e5a57722ba2e595",
+  "analytics": false
+}

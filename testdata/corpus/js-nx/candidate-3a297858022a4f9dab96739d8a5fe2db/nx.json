@@ -1,0 +1,36 @@
+{
+  "extends": "@nx/workspace/presets/npm.json",
+  "defaultBase": "master",
+  "useInferencePlugins": false,
+  "pluginsConfig": {
+    "@nx/js": {
+      "analyzeSourceFiles": true
+    }
+  },
+  "namedInputs": {
+    "production": [
+      "default",
+      "!{projectRoot}/**/*.test.{ts,js,tsx,jsx}",
+      "!{projectRoot}/vitest.config.ts"
+    ]
+  },
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["production", "^production"]
+    },
+    "test": {
+      "cache": true,
+      "inputs": ["default", "^default", "{workspaceRoot}/vitest.config.ts", "{projectRoot}/vitest.config.ts"]
+    },
+    "typecheck": {
+      "cache": true,
+      "inputs": ["default", "^default", "{workspaceRoot}/tsconfig.json"]
+    },
+    "@nx/eslint:lint": {
+      "cache": true,
+      "inputs": ["default", "{workspaceRoot}/eslint.config.js"]
+    }
+  }
+}
