@@ -1,0 +1,42 @@
+version: 2.0
+shards:
+  ameba:
+    git: https://github.com/crystal-ameba/ameba.git
+    version: 1.7.0-dev+git.commit.fe12a7566ac6c0f5b7b63ad07b89fb17a5ebf6f7
+
+  backtracer:
+    git: https://github.com/sija/backtracer.cr.git
+    version: 1.2.4
+
+  dotenv:
+    git: https://github.com/gdotdesign/cr-dotenv.git
+    version: 1.0.0+git.commit.8bedfcf5f127c29d85687c7212a47d22cba296a9
+
+  exception_page:
+    git: https://github.com/crystal-loot/exception_page.git
+    version: 0.5.0
+
+  kemal:
+    git: https://github.com/kemalcr/kemal.git
+    version: 1.7.1
+
+  pool:
+    git: https://github.com/ysbaddaden/pool.git
+    version: 0.2.4
+
+  radix:
+    git: https://github.com/luislavena/radix.git
+    version: 0.4.1
+
+  redis:
+    git: https://github.com/stefanwille/crystal-redis.git
+    version: 2.9.1+git.commit.5fc089cc4f73f08eb42170cb82e30205369a18ad
+
+  spec-kemal:
+    git: https://github.com/kemalcr/spec-kemal.git
+    version: 1.0.0+git.commit.97733e57c8348d0c8301989aa63471b2a72ea7a3
+
+  timecop:
+    git: https://github.com/crystal-community/timecop.cr.git
+    version: 0.5.0+git.commit.85a4fb2c8c58bf902442ca455e85343bf0fb9d9e
+

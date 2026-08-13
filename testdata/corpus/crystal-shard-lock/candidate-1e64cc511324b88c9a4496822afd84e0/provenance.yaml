@@ -1,0 +1,18 @@
+version: 2
+detector_id: crystal-shard-lock
+candidate_id: candidate-1e64cc511324b88c9a4496822afd84e0
+provider: github
+repository: dantebronto/crystal-api-backend
+repository_url: https://github.com/dantebronto/crystal-api-backend
+default_branch: master
+commit: 6d1fdfb05645e7f7928418c8460692dde0fa3d6e
+original_path: shard.lock
+permalink: https://github.com/dantebronto/crystal-api-backend/blob/6d1fdfb05645e7f7928418c8460692dde0fa3d6e/shard.lock
+retrieved_at: "2026-08-13T07:12:41Z"
+sha256: 18c4af34c1f74f4edfd356c24287ee2024e360bfd65a04a6103eda53f9d9dbb1
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/dantebronto/crystal-api-backend/blob/6d1fdfb05645e7f7928418c8460692dde0fa3d6e/LICENSE
+    sha256: bc60b0418ec1e293111d9331f1c4c7307cfcfc0c6282a2a902139f92ff001bcf
+rationale: Adds the older version 1 format, including GitHub shorthand sources and a mix of version and commit pins.

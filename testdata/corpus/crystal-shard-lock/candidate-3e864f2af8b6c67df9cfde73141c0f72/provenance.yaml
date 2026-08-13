@@ -1,0 +1,18 @@
+version: 2
+detector_id: crystal-shard-lock
+candidate_id: candidate-3e864f2af8b6c67df9cfde73141c0f72
+provider: github
+repository: thewalkingtoast/mpngin
+repository_url: https://github.com/thewalkingtoast/mpngin
+default_branch: master
+commit: f85b6e22ae1396bb6a6d3d994ca8bf004c8ef515
+original_path: shard.lock
+permalink: https://github.com/thewalkingtoast/mpngin/blob/f85b6e22ae1396bb6a6d3d994ca8bf004c8ef515/shard.lock
+retrieved_at: "2026-08-13T07:11:53Z"
+sha256: d4a0f4136b600e45fe37cb9ddc7fa40dcb87fbd2dc5904e83209677be5971c52
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/thewalkingtoast/mpngin/blob/f85b6e22ae1396bb6a6d3d994ca8bf004c8ef515/LICENSE
+    sha256: e6bd89cce819543a3142972560b3b33febf66afd824663581aae8605fad806e5
+rationale: 'Primary common-case example: a version 2 lockfile with a realistic multi-dependency web application and standard git sources.'

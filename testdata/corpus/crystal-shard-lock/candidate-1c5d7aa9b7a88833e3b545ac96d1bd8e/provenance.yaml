@@ -1,0 +1,18 @@
+version: 2
+detector_id: crystal-shard-lock
+candidate_id: candidate-1c5d7aa9b7a88833e3b545ac96d1bd8e
+provider: github
+repository: eltanin-engine/lirith
+repository_url: https://github.com/eltanin-engine/lirith
+default_branch: master
+commit: 04a63f2e0d2ef1483bc78f9c61a233c90c343482
+original_path: shard.lock
+permalink: https://github.com/eltanin-engine/lirith/blob/04a63f2e0d2ef1483bc78f9c61a233c90c343482/shard.lock
+retrieved_at: "2026-08-13T07:11:32Z"
+sha256: d58185776c1b5e7bc8744691abff8361eac334bff10e022e46bd8a62fc8fa0a1
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/eltanin-engine/lirith/blob/04a63f2e0d2ef1483bc78f9c61a233c90c343482/LICENSE
+    sha256: 372c3a76b908aa3f08382fc9027caeb35f693578088873ac7f4535485d46ae02
+rationale: Covers the important edge case of local path dependencies alongside a commit-pinned remote dependency.

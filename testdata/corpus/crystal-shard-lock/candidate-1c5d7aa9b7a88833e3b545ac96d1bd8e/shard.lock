@@ -1,0 +1,22 @@
+version: 1.0
+shards:
+  glew:
+    path: ../glew
+    version: 0.1.0
+
+  lib_gl:
+    path: ../lib_gl
+    version: 0.1.1
+
+  lib_glew:
+    github: lirith-engine/lib_glew
+    commit: 50773a1cd412a9f82f84a79b9663e284f27b6666
+
+  lib_glfw:
+    path: ../lib_glfw
+    version: 0.1.1
+
+  opengl:
+    path: ../opengl
+    version: 0.1.0
+
