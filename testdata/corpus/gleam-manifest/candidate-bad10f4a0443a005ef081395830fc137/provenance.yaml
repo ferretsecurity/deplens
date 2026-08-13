@@ -1,0 +1,18 @@
+version: 2
+detector_id: gleam-manifest
+candidate_id: candidate-bad10f4a0443a005ef081395830fc137
+provider: github
+repository: ErikSchierboom/exercism
+repository_url: https://github.com/ErikSchierboom/exercism
+default_branch: main
+commit: 7608679f6eaea328caa44888f532d77450a95ff4
+original_path: gleam/killer-sudoku-helper/manifest.toml
+permalink: https://github.com/ErikSchierboom/exercism/blob/7608679f6eaea328caa44888f532d77450a95ff4/gleam/killer-sudoku-helper/manifest.toml
+retrieved_at: "2026-08-13T07:30:47Z"
+sha256: 5d6a301999ac97e77fa7c491179dafbb61b627bdc6bdf7f51c5e0854bd820669
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ErikSchierboom/exercism/blob/7608679f6eaea328caa44888f532d77450a95ff4/LICENSE
+    sha256: 8a905172350a063c553351be91d00bab1d93081bf71837036bba1286cf6f3469
+rationale: Compact generated dependency lock manifest, covering arrays of inline tables and version requirements.

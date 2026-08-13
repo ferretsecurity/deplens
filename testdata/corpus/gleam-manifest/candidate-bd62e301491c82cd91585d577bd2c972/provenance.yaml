@@ -1,0 +1,18 @@
+version: 2
+detector_id: gleam-manifest
+candidate_id: candidate-bd62e301491c82cd91585d577bd2c972
+provider: github
+repository: mozilla-firefox/firefox
+repository_url: https://github.com/mozilla-firefox/firefox
+default_branch: main
+commit: 7a1829761d5b8d1dd0db6c1ad411544283a1e954
+original_path: testing/mozbase/mozcrash/tests/manifest.toml
+permalink: https://github.com/mozilla-firefox/firefox/blob/7a1829761d5b8d1dd0db6c1ad411544283a1e954/testing/mozbase/mozcrash/tests/manifest.toml
+retrieved_at: "2026-08-13T07:28:41Z"
+sha256: b7455f66d43e57660bcd4523cccd5df793857fedb6db870c3ef5f700327e0633
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/mozilla-firefox/firefox/blob/7a1829761d5b8d1dd0db6c1ad411544283a1e954/LICENSE
+    sha256: a799adf18bfb1911f16086dc0e2a6d1cd0e31272f47e7ee6841b465b74d249de
+rationale: Test-suite manifest with a default section and quoted table names, adding a useful structural edge case.

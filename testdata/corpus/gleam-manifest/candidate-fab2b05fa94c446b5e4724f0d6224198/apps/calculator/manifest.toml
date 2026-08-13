@@ -1,0 +1,21 @@
+[app]
+slug = "calculator"
+name = "Calculator"
+version = "0.1.0"
+description = "Calculator with basic and scientific modes"
+icon = "🧮"
+category = "tools"
+keywords = ["calculator", "math", "compute", "calculate"]
+
+[window]
+default_width = 360
+default_height = 540
+min_width = 300
+min_height = 400
+
+[frontend]
+directory = "frontend"
+index = "index.html"
+
+[permissions]
+roles = ["admin", "user"]

@@ -1,0 +1,18 @@
+version: 2
+detector_id: gleam-manifest
+candidate_id: candidate-fab2b05fa94c446b5e4724f0d6224198
+provider: github
+repository: ZZ0R0/ZRO
+repository_url: https://github.com/ZZ0R0/ZRO
+default_branch: main
+commit: 2fcace1d3285b5fe34697dd3791b695f3cdbcd26
+original_path: apps/calculator/manifest.toml
+permalink: https://github.com/ZZ0R0/ZRO/blob/2fcace1d3285b5fe34697dd3791b695f3cdbcd26/apps/calculator/manifest.toml
+retrieved_at: "2026-08-13T07:24:26Z"
+sha256: 0c0e97659227e64b5e634c08dd95b54e5a63a10624e58b55f6304415486feb6b
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ZZ0R0/ZRO/blob/2fcace1d3285b5fe34697dd3791b695f3cdbcd26/LICENSE
+    sha256: 326f0e81d043857df21e484c74f3f0b21c23d319515833f881fc4d422e535912
+rationale: 'Common application manifest: nested metadata, UI settings, arrays, and simple scalar values.'
