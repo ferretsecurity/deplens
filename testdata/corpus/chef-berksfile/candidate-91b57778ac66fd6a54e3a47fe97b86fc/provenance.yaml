@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-berksfile
+candidate_id: candidate-91b57778ac66fd6a54e3a47fe97b86fc
+provider: github
+repository: publicissapient-france/chef-confluence-jira-crowd
+repository_url: https://github.com/publicissapient-france/chef-confluence-jira-crowd
+default_branch: master
+commit: a26e29a85d1e75b9b612a560685940b40c971adc
+original_path: Berksfile
+permalink: https://github.com/publicissapient-france/chef-confluence-jira-crowd/blob/a26e29a85d1e75b9b612a560685940b40c971adc/Berksfile
+retrieved_at: "2026-08-13T11:39:02Z"
+sha256: 8d3815f1e93002c14a9e91b660edf4889d1f881be84dd3fcad3921512e29ad3d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/publicissapient-france/chef-confluence-jira-crowd/blob/a26e29a85d1e75b9b612a560685940b40c971adc/LICENSE
+    sha256: c24d74dd9c31923b2cb742b3d5c35bed7b8a5bcb45d122da28cf68372fa80672
+rationale: Adds external GitHub cookbook resolution and the older Berkshelf API source.

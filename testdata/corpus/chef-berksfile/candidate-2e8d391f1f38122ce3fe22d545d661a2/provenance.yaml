@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-berksfile
+candidate_id: candidate-2e8d391f1f38122ce3fe22d545d661a2
+provider: github
+repository: bdangit/chef-influxdb
+repository_url: https://github.com/bdangit/chef-influxdb
+default_branch: master
+commit: 557c0221075b9735a5380558277e9155e26f17de
+original_path: Berksfile
+permalink: https://github.com/bdangit/chef-influxdb/blob/557c0221075b9735a5380558277e9155e26f17de/Berksfile
+retrieved_at: "2026-08-13T11:36:09Z"
+sha256: 506f00dbfd6b2ab4ce6d64e364f0846016512807373614db5effcb6db380de92
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/bdangit/chef-influxdb/blob/557c0221075b9735a5380558277e9155e26f17de/LICENSE
+    sha256: 3d870ac2419688754051b2279fe6b1bec8a6ff8ae90e4f4320d8cae40c943de1
+rationale: Adds a test group containing both a local path cookbook and a registry dependency.

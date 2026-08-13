@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-berksfile
+candidate_id: candidate-23b1abd653fa35ac48887560f4a15dfc
+provider: github
+repository: tknerr/vagrant-managed-servers
+repository_url: https://github.com/tknerr/vagrant-managed-servers
+default_branch: master
+commit: a54615611628ce1e6203ac180048ded75ac35e96
+original_path: Berksfile
+permalink: https://github.com/tknerr/vagrant-managed-servers/blob/a54615611628ce1e6203ac180048ded75ac35e96/Berksfile
+retrieved_at: "2026-08-13T11:34:02Z"
+sha256: 289e66ca4432656df1f6516bd9a7c6b395b4cfed85770d0a99a5d1f806714f46
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/tknerr/vagrant-managed-servers/blob/a54615611628ce1e6203ac180048ded75ac35e96/LICENSE
+    sha256: 38692d6be701711db114ce51debc26d17e22378e2a24fac8838fa53d8b322e52
+rationale: 'Best common-use baseline: standard Supermarket source with ordinary cookbook dependencies.'
