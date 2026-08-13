@@ -1,0 +1,18 @@
+version: 2
+detector_id: bazel-build-file
+candidate_id: candidate-16604a9411f1c2dd3bb340a32ba945b9
+provider: github
+repository: jbeder/yaml-cpp
+repository_url: https://github.com/jbeder/yaml-cpp
+default_branch: master
+commit: 5bef9aa0038acaf85c7d5f7d8ffa303d926726a2
+original_path: BUILD.bazel
+permalink: https://github.com/jbeder/yaml-cpp/blob/5bef9aa0038acaf85c7d5f7d8ffa303d926726a2/BUILD.bazel
+retrieved_at: "2026-08-13T09:38:45Z"
+sha256: 1e43f4ab789897ce61c99e6b9753c45327c18f44beb990218e611d64c051158b
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/jbeder/yaml-cpp/blob/5bef9aa0038acaf85c7d5f7d8ffa303d926726a2/LICENSE
+    sha256: aa6fcc27be034e41e21dd832f9175bfe694a48491d9e14ff0fa278e19ad14f1b
+rationale: 'Common real-world Bazel C++ library: public and internal targets, header/source globs, and platform-specific selects.'

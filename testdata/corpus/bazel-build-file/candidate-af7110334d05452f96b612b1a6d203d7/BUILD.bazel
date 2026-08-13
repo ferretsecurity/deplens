@@ -1,0 +1,70 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+load("@rules_license//rules:license.bzl", "license")
+
+package(default_applicable_licenses = [":license"])
+
+license(
+    name = "license",
+    license_kinds = ["@rules_license//licenses/spdx:MIT"],
+    license_text = "LICENSE.txt",
+)
+
+exports_files(["LICENSE.txt"])
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)
+
+_DEFAULT_CMAKE_GENERATE_ARGS = [
+    "-G Ninja",
+    "-D CMAKE_INSTALL_LIBDIR=lib",  # Matches rules_foreign_cc's default out_lib_dir.
+]
+
+cmake(
+    name = "z3_dynamic",
+    generate_args = _DEFAULT_CMAKE_GENERATE_ARGS + [
+        "-D Z3_EXPORTED_TARGETS=",  # prevents installation, leaving symlinks between dylibs intact on copy
+    ],
+    lib_source = ":all_files",
+    out_binaries = ["z3"],
+    out_shared_libs = select({
+        # NOTE: These will need to be manually bumped along side the version in MODULE.bazel/VERSION.txt/CMake
+        "@platforms//os:linux": [
+            "libz3.so",
+            "libz3.so.4.17",
+            "libz3.so.4.17.0.0",
+        ],
+        "@platforms//os:osx": [
+            "libz3.dylib",
+            "libz3.4.17.dylib",
+            "libz3.4.17.0.0.dylib",
+        ],
+        "@platforms//os:windows": ["libz3.dll"],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    visibility = ["//visibility:public"],
+)
+
+cmake(
+    name = "z3_static",
+    generate_args = _DEFAULT_CMAKE_GENERATE_ARGS + [
+        "-D BUILD_SHARED_LIBS=OFF",
+        "-D Z3_BUILD_LIBZ3_SHARED=OFF",
+    ],
+    lib_source = ":all_files",
+    out_binaries = ["z3"],
+    out_static_libs = select({
+        "@platforms//os:linux": ["libz3.a"],
+        "@platforms//os:osx": ["libz3.a"],
+        "@platforms//os:windows": ["libz3.lib"],     # MSVC with Control Flow Guard enabled by default
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "z3",
+    actual = ":z3_dynamic",
+    visibility = ["//visibility:public"],
+)

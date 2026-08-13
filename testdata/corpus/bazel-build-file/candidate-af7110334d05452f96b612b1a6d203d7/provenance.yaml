@@ -1,0 +1,18 @@
+version: 2
+detector_id: bazel-build-file
+candidate_id: candidate-af7110334d05452f96b612b1a6d203d7
+provider: github
+repository: Z3Prover/z3
+repository_url: https://github.com/Z3Prover/z3
+default_branch: master
+commit: 9f184aa8ab8de3f93c5c2a80380a18aeac7928b5
+original_path: BUILD.bazel
+permalink: https://github.com/Z3Prover/z3/blob/9f184aa8ab8de3f93c5c2a80380a18aeac7928b5/BUILD.bazel
+retrieved_at: "2026-08-13T09:38:31Z"
+sha256: fda61f08985c3692a64bf5db9a16f67a20ed2d271611d04d6e3f57c599cff4b8
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/Z3Prover/z3/blob/9f184aa8ab8de3f93c5c2a80380a18aeac7928b5/LICENSE.txt
+    sha256: e617cad2ab9347e3129c2b171e87909332174e17961c5c3412d0799469111337
+rationale: 'Useful edge case: wraps a CMake project through rules_foreign_cc, with static/dynamic outputs and OS-specific library names.'
