@@ -1,0 +1,18 @@
+version: 2
+detector_id: bazel-module-lock
+candidate_id: candidate-2c45f0d10edc01ab0473e9ddfbb2d07d
+provider: github
+repository: ParAlg/gbbs
+repository_url: https://github.com/ParAlg/gbbs
+default_branch: master
+commit: bd48872385ad907010417bfa939f4fca04e563b8
+original_path: MODULE.bazel.lock
+permalink: https://github.com/ParAlg/gbbs/blob/bd48872385ad907010417bfa939f4fca04e563b8/MODULE.bazel.lock
+retrieved_at: "2026-08-13T09:35:46Z"
+sha256: 68b0f029d77e4e7e919dc41de1caa77c4c4859cf401aaa0f74188bea1d223db0
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ParAlg/gbbs/blob/bd48872385ad907010417bfa939f4fca04e563b8/LICENSE
+    sha256: 47dd7ced3344c50729f1b2e2be56cebaabd145733770e30eae62584fcb5cbca8
+rationale: Compact conventional C++/Bazel lockfile; represents the common dependency-resolution case.

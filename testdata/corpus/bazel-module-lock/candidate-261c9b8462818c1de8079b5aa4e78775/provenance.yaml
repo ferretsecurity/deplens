@@ -1,0 +1,18 @@
+version: 2
+detector_id: bazel-module-lock
+candidate_id: candidate-261c9b8462818c1de8079b5aa4e78775
+provider: github
+repository: hexdae/toolchains_arm_gnu
+repository_url: https://github.com/hexdae/toolchains_arm_gnu
+default_branch: master
+commit: 6895733b87d3a75a40056b12c3d6628bc6945011
+original_path: MODULE.bazel.lock
+permalink: https://github.com/hexdae/toolchains_arm_gnu/blob/6895733b87d3a75a40056b12c3d6628bc6945011/MODULE.bazel.lock
+retrieved_at: "2026-08-13T09:36:54Z"
+sha256: 0c6c44c9b0046e3d751ebe2d014b79f13e496de7254c34a0dee6591c45e2d20c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/hexdae/toolchains_arm_gnu/blob/6895733b87d3a75a40056b12c3d6628bc6945011/LICENSE
+    sha256: b8403cc86d94787777425178bdcec78f50fdf59c8133368d71ce174a3350a7c2
+rationale: 'Adds a strong edge case: cross-compilation toolchains with host-platform-specific generated repositories.'
