@@ -1,0 +1,18 @@
+version: 2
+detector_id: godot-plugin-cfg
+candidate_id: candidate-0623ca0eb5c87c1a23399ae0da4fa20b
+provider: github
+repository: addmix/godot_aerodynamic_physics
+repository_url: https://github.com/addmix/godot_aerodynamic_physics
+default_branch: main
+commit: f601150d0b04ae9bbd7544e20305c7aaa119d556
+original_path: plugin.cfg
+permalink: https://github.com/addmix/godot_aerodynamic_physics/blob/f601150d0b04ae9bbd7544e20305c7aaa119d556/plugin.cfg
+retrieved_at: "2026-08-13T12:47:59Z"
+sha256: 90824a62105955710a2ed294fd4a9ca73538c990bc2ed4803322aff2d5c17178
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/addmix/godot_aerodynamic_physics/blob/f601150d0b04ae9bbd7544e20305c7aaa119d556/LICENSE
+    sha256: 9b16a503fc84192f63c57f44d79f89f8c92dd23a370162bc23e127155c3b8081
+rationale: Compact, typical Godot plugin configuration with the standard five fields; represents the common case.

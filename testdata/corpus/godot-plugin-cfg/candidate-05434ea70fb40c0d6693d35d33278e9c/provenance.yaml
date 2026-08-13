@@ -1,0 +1,18 @@
+version: 2
+detector_id: godot-plugin-cfg
+candidate_id: candidate-05434ea70fb40c0d6693d35d33278e9c
+provider: github
+repository: MrGreenTea/GodotTiledImporter
+repository_url: https://github.com/MrGreenTea/GodotTiledImporter
+default_branch: master
+commit: c91e3b6111f7fcd69bbe87d45fe7a620bd6d6f14
+original_path: plugin.cfg
+permalink: https://github.com/MrGreenTea/GodotTiledImporter/blob/c91e3b6111f7fcd69bbe87d45fe7a620bd6d6f14/plugin.cfg
+retrieved_at: "2026-08-13T12:48:20Z"
+sha256: 98e0f8419d3a28cbd0d3a21aa83f90eadb09d131445e2a168d3d3e580f86c8a4
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/MrGreenTea/GodotTiledImporter/blob/c91e3b6111f7fcd69bbe87d45fe7a620bd6d6f14/LICENSE
+    sha256: 179c9fff58be090a8b32c4a3c6628ea48a0d62e8c63094384624e277d8e30ec6
+rationale: Adds CRLF line endings, spaced assignments, and an extra boolean field, covering formatting and optional-key variation.

@@ -1,0 +1,18 @@
+version: 2
+detector_id: godot-plugin-cfg
+candidate_id: candidate-2954ddcbc1e897ba7c4cd95edda7dc4b
+provider: github
+repository: AnidemDex/Godot-DialogPlugin
+repository_url: https://github.com/AnidemDex/Godot-DialogPlugin
+default_branch: main
+commit: 58358e44f6e26055ba252bf0c813d78baaf500d0
+original_path: plugin.cfg
+permalink: https://github.com/AnidemDex/Godot-DialogPlugin/blob/58358e44f6e26055ba252bf0c813d78baaf500d0/plugin.cfg
+retrieved_at: "2026-08-13T12:48:07Z"
+sha256: 5bff055397a4d17e2ef062a3a327a3afebaba08306d491400b80a36b7c06e39c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/AnidemDex/Godot-DialogPlugin/blob/58358e44f6e26055ba252bf0c813d78baaf500d0/LICENSE
+    sha256: 990f7abbcc61546e29812a21eb672746c9ea00babdcf40a3999d93ab8aee810f
+rationale: Covers a richer valid configuration with several URL metadata fields beyond the standard plugin fields.
