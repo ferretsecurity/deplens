@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-turbo
+candidate_id: candidate-0ddabf08489458b942544bd9e75d0203
+provider: github
+repository: haydenbleasel/batchwork
+repository_url: https://github.com/haydenbleasel/batchwork
+default_branch: main
+commit: 49ff87b246eb53f0917bd18ab4081914a773cd82
+original_path: turbo.json
+permalink: https://github.com/haydenbleasel/batchwork/blob/49ff87b246eb53f0917bd18ab4081914a773cd82/turbo.json
+retrieved_at: "2026-08-13T10:12:52Z"
+sha256: 7261278506d3328b7218fe0e5852e9cf85e9c05fe524492516a1fa2bac54577c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/haydenbleasel/batchwork/blob/49ff87b246eb53f0917bd18ab4081914a773cd82/LICENSE
+    sha256: e76b3f525b681b119e7284939032d1fd66e41d0d41b9e24dbe0170683562335c
+rationale: 'Common modern Turborepo setup: build, persistent dev, typecheck, and test tasks with realistic Next.js outputs.'

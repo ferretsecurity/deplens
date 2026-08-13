@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-turbo
+candidate_id: candidate-0cb93188305000c7119c175e58fbe941
+provider: github
+repository: tjallingt/react-youtube
+repository_url: https://github.com/tjallingt/react-youtube
+default_branch: canary
+commit: d2d147ac53ed9aa7ca2cde92bad425e9284b7298
+original_path: turbo.json
+permalink: https://github.com/tjallingt/react-youtube/blob/d2d147ac53ed9aa7ca2cde92bad425e9284b7298/turbo.json
+retrieved_at: "2026-08-13T10:10:04Z"
+sha256: e929eafb2dc7f6f17d069675591761a1b2537977b68de09f943be6d94f3bc912
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/tjallingt/react-youtube/blob/d2d147ac53ed9aa7ca2cde92bad425e9284b7298/LICENSE
+    sha256: 702d8a109f51bb25b7c8d01df4f5102bef89ca60ce12985341eeba004d629c3b
+rationale: Compact legacy `pipeline`-based configuration, covering an important schema-version variation.

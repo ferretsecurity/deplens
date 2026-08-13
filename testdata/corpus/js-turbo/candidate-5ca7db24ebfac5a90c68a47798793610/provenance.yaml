@@ -1,0 +1,18 @@
+version: 2
+detector_id: js-turbo
+candidate_id: candidate-5ca7db24ebfac5a90c68a47798793610
+provider: github
+repository: openstatusHQ/data-table-filters
+repository_url: https://github.com/openstatusHQ/data-table-filters
+default_branch: main
+commit: 0ec1e9cd276cf6d9e4b5b21f2760f70ce2d114cf
+original_path: turbo.json
+permalink: https://github.com/openstatusHQ/data-table-filters/blob/0ec1e9cd276cf6d9e4b5b21f2760f70ce2d114cf/turbo.json
+retrieved_at: "2026-08-13T10:10:13Z"
+sha256: 53d6e9613a035961d084a74d00663b56911d9af256f403fa0f6562ee8555fe57
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/openstatusHQ/data-table-filters/blob/0ec1e9cd276cf6d9e4b5b21f2760f70ce2d114cf/LICENSE
+    sha256: c4cfcf7c82146998d265bc428043d6d0fdf898b912b0387e2ea39b743c81dd75
+rationale: 'Adds a structural edge case: a custom registry build task that the main build depends on, plus an environment-dependent test.'
