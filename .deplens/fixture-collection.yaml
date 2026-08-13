@@ -59051,12 +59051,29 @@ detectors:
       form: constraint-file
       roles:
         - constraint
-      state: pending
-      iterations: 0
+      state: needs-collection-review
+      iterations: 1
       examples: []
       target: 3
       query_plan:
         - path:common/config/rush/common-versions.json
+      queries:
+        - path:common/config/rush/common-versions.json
+      search_cursors:
+        - provider: github
+          query: path:common/config/rush/common-versions.json
+          next_page: 2
+          exhausted: true
+      history:
+        - iteration: 1
+          result: unsuccessful
+          queries:
+            - path:common/config/rush/common-versions.json
+          search_cursors:
+            - provider: github
+              query: path:common/config/rush/common-versions.json
+              next_page: 2
+              exhausted: true
     - id: js-turbo
       form: tool-config
       roles:
