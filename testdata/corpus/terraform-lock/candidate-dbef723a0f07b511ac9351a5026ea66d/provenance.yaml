@@ -1,0 +1,18 @@
+version: 2
+detector_id: terraform-lock
+candidate_id: candidate-dbef723a0f07b511ac9351a5026ea66d
+provider: github
+repository: apresdev/apres-terraform
+repository_url: https://github.com/apresdev/apres-terraform
+default_branch: main
+commit: 699d1b98a0ebcfa97a68d51d1a3faf6e153ea444
+original_path: modules/aws/ecs/.terraform.lock.hcl
+permalink: https://github.com/apresdev/apres-terraform/blob/699d1b98a0ebcfa97a68d51d1a3faf6e153ea444/modules/aws/ecs/.terraform.lock.hcl
+retrieved_at: "2026-08-13T08:51:17Z"
+sha256: 50204b9a3ae496ef90adfe9177458ca577c2a61d542c6ad756b381abc65c0d92
+governing_license:
+    spdx: MIT
+    path: LICENSE.txt
+    permalink: https://github.com/apresdev/apres-terraform/blob/699d1b98a0ebcfa97a68d51d1a3faf6e153ea444/LICENSE.txt
+    sha256: df483e681d96ea6970696050c7d4c1f85aa5efc8034ad10409dcbf0e72c2534c
+rationale: OpenTofu edge case using the OpenTofu registry namespace and combined minimum-version constraints.

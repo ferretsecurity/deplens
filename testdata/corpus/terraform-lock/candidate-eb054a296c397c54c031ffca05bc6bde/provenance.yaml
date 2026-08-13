@@ -1,0 +1,18 @@
+version: 2
+detector_id: terraform-lock
+candidate_id: candidate-eb054a296c397c54c031ffca05bc6bde
+provider: github
+repository: Project-Trackly/Terraform
+repository_url: https://github.com/Project-Trackly/Terraform
+default_branch: main
+commit: d3648cb41c44a79ee959f18acc5876014ca0b019
+original_path: .terraform.lock.hcl
+permalink: https://github.com/Project-Trackly/Terraform/blob/d3648cb41c44a79ee959f18acc5876014ca0b019/.terraform.lock.hcl
+retrieved_at: "2026-08-13T08:58:20Z"
+sha256: 6a337a54934fa6ad4afda70ea3550e292dfd34f79a6d41f20f8ebff0ecd863e0
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Project-Trackly/Terraform/blob/d3648cb41c44a79ee959f18acc5876014ca0b019/LICENSE
+    sha256: f43f78faac1d005810188ce6c755f879b67907649201c162f93a1f77402d77d8
+rationale: Compact single-provider Google Cloud example, adding a major-cloud variation.

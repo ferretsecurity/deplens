@@ -1,0 +1,18 @@
+version: 2
+detector_id: terraform-lock
+candidate_id: candidate-aadc5ea65e2f5f5154d0ddc8ed12f24c
+provider: github
+repository: varshithvvs/aws-terraform
+repository_url: https://github.com/varshithvvs/aws-terraform
+default_branch: main
+commit: c903184deb89874195fa2e414c173e35081179e0
+original_path: examples/remote_backend/.terraform.lock.hcl
+permalink: https://github.com/varshithvvs/aws-terraform/blob/c903184deb89874195fa2e414c173e35081179e0/examples/remote_backend/.terraform.lock.hcl
+retrieved_at: "2026-08-13T08:50:42Z"
+sha256: 387754f49561179a654306f60510fa79dc3de16235cfc12ed7123b34c34ad1af
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/varshithvvs/aws-terraform/blob/c903184deb89874195fa2e414c173e35081179e0/LICENSE
+    sha256: 564add73852f786f4366c90909c62ef369066f911717d4e60ada511b7e514445
+rationale: 'Common Terraform case: a standard HashiCorp AWS provider lock with an exact minor-version constraint.'
