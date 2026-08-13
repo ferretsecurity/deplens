@@ -1,0 +1,18 @@
+version: 2
+detector_id: nim-nimble
+candidate_id: candidate-8e94c26f87f2bffe71b1dd14ff1fd451
+provider: github
+repository: guzba/zippy
+repository_url: https://github.com/guzba/zippy
+default_branch: master
+commit: 435b939234cd6b249da8cc5c2a0b1a286e5934a6
+original_path: zippy.nimble
+permalink: https://github.com/guzba/zippy/blob/435b939234cd6b249da8cc5c2a0b1a286e5934a6/zippy.nimble
+retrieved_at: "2026-08-13T06:40:13Z"
+sha256: 2e1ae2c225998323cffbbe7ccdc2eea093fceee76064269d6751865a7d3df7d2
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/guzba/zippy/blob/435b939234cd6b249da8cc5c2a0b1a286e5934a6/LICENSE
+    sha256: 3c6d1825d5de5659eb7535de14031d2d9330f72ab80f0a0386a502bf1793fc48
+rationale: 'Typical compact Nimble library manifest: standard metadata, srcDir, and one versioned dependency.'

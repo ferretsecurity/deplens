@@ -1,0 +1,18 @@
+version: 2
+detector_id: nim-nimble
+candidate_id: candidate-7d7dd798eac1f9aa345e566d0f12441a
+provider: github
+repository: ThomasTJdev/nim_websitecreator
+repository_url: https://github.com/ThomasTJdev/nim_websitecreator
+default_branch: master
+commit: fe5d5d55648d571206be5b5c00fab6f6a9266b87
+original_path: nimwc.nimble
+permalink: https://github.com/ThomasTJdev/nim_websitecreator/blob/fe5d5d55648d571206be5b5c00fab6f6a9266b87/nimwc.nimble
+retrieved_at: "2026-08-13T06:40:44Z"
+sha256: 7a38c320d4164fdbfb0836f279cc35d07598bf29e2a02075d7c41b5984a7fa78
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ThomasTJdev/nim_websitecreator/blob/fe5d5d55648d571206be5b5c00fab6f6a9266b87/LICENSE
+    sha256: 6d2aa8d302134dcca1e03a22e5bb754aac8af578287f564db37242836ad4fbb3
+rationale: Adds conditional dependencies by Nim version plus a practical setup task and foreign-system dependency edge cases.
