@@ -1,0 +1,18 @@
+version: 2
+detector_id: lua-rockspec
+candidate_id: candidate-f3f55a3e4ad10d440381c490db20ff80
+provider: github
+repository: Tieske/date
+repository_url: https://github.com/Tieske/date
+default_branch: master
+commit: d8e62012261a7df98b06993376d749c7a1bc1be1
+original_path: date-dev-1.rockspec
+permalink: https://github.com/Tieske/date/blob/d8e62012261a7df98b06993376d749c7a1bc1be1/date-dev-1.rockspec
+retrieved_at: "2026-08-13T06:22:39Z"
+sha256: 0d6b4beccc36c7dc534dcd6189d6a1cfe8ffc32568453ea2a71eb489db6a75e0
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Tieske/date/blob/d8e62012261a7df98b06993376d749c7a1bc1be1/LICENSE
+    sha256: ea7a851ff69d43fa7f13c80e0787e6c9055365822905502689b0440b658bb0d1
+rationale: Adds variable-based and computed rockspec fields while remaining a compact pure-Lua package.

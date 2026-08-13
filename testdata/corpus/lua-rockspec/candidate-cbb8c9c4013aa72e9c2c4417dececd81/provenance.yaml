@@ -1,0 +1,18 @@
+version: 2
+detector_id: lua-rockspec
+candidate_id: candidate-cbb8c9c4013aa72e9c2c4417dececd81
+provider: github
+repository: gvvaughan/lyaml
+repository_url: https://github.com/gvvaughan/lyaml
+default_branch: master
+commit: 2bd6b014922ea679f5f84207ea6baafa7916234d
+original_path: lyaml-git-1.rockspec
+permalink: https://github.com/gvvaughan/lyaml/blob/2bd6b014922ea679f5f84207ea6baafa7916234d/lyaml-git-1.rockspec
+retrieved_at: "2026-08-13T06:23:02Z"
+sha256: c1f3546fc353fae07cddb43dd1a47ffc341ff486dde29166c2dc7f02d241aeaf
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/gvvaughan/lyaml/blob/2bd6b014922ea679f5f84207ea6baafa7916234d/LICENSE
+    sha256: 30847a6989db6d5aeee177099fbaa1aaba793a0e5359ab0dafe1582eefb5a028
+rationale: Adds a command-built native binding with external dependencies and conditional source configuration.

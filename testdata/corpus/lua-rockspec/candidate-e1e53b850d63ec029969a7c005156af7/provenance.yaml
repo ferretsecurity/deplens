@@ -1,0 +1,18 @@
+version: 2
+detector_id: lua-rockspec
+candidate_id: candidate-e1e53b850d63ec029969a7c005156af7
+provider: github
+repository: JakobGreen/lua-requests
+repository_url: https://github.com/JakobGreen/lua-requests
+default_branch: master
+commit: b9f820da8d87a631588527feed93cee2c4f2bf6a
+original_path: rocks/dev.rockspec
+permalink: https://github.com/JakobGreen/lua-requests/blob/b9f820da8d87a631588527feed93cee2c4f2bf6a/rocks/dev.rockspec
+retrieved_at: "2026-08-13T06:22:48Z"
+sha256: ecbe88076a5d3022093fe076cdd9a5d4d8309225ae3db183e25c839973e78bea
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/JakobGreen/lua-requests/blob/b9f820da8d87a631588527feed93cee2c4f2bf6a/LICENSE.md
+    sha256: b2bfbbe59373aa78cbb5135ac108f35be9b445e2177feec714a15adb86f2d119
+rationale: 'Representative common package: standard source, dependency list, and simple builtin Lua module.'
