@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-policyfile
+candidate_id: candidate-91480f0c3a4ab771e9429da2840e623b
+provider: github
+repository: test-kitchen/test-kitchen
+repository_url: https://github.com/test-kitchen/test-kitchen
+default_branch: main
+commit: 42fb9a4d60527af6c4924e00ff47e98db0a20253
+original_path: Policyfile.rb
+permalink: https://github.com/test-kitchen/test-kitchen/blob/42fb9a4d60527af6c4924e00ff47e98db0a20253/Policyfile.rb
+retrieved_at: "2026-08-13T11:57:23Z"
+sha256: 9376827eda0564cceb88d4b23fa75424891253dd6789f4fdd0f97f86761262a7
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/test-kitchen/test-kitchen/blob/42fb9a4d60527af6c4924e00ff47e98db0a20253/LICENSE
+    sha256: 11bd09a850c10047568a78916d29e147c7da44bcd033c5ba79bb0eb62808a3dc
+rationale: 'Most common baseline: a small static Policyfile with one run list and a local test cookbook.'

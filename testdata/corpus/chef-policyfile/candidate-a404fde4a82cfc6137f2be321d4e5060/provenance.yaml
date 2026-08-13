@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-policyfile
+candidate_id: candidate-a404fde4a82cfc6137f2be321d4e5060
+provider: github
+repository: sous-chefs/confluence
+repository_url: https://github.com/sous-chefs/confluence
+default_branch: main
+commit: a9fd69aa3982b8919bc9087bcbf950e94823e1cf
+original_path: Policyfile.rb
+permalink: https://github.com/sous-chefs/confluence/blob/a9fd69aa3982b8919bc9087bcbf950e94823e1cf/Policyfile.rb
+retrieved_at: "2026-08-13T12:03:29Z"
+sha256: 493ef04d2f1dab15a046844c89a690e908b07ee94edc3182f75a831a0a18e9be
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/sous-chefs/confluence/blob/a9fd69aa3982b8919bc9087bcbf950e94823e1cf/LICENSE
+    sha256: f2afd2180c83fc2b9faad741599dfe2095fd2557df2e479873bf87af62cf111d
+rationale: 'Compact dynamic variant: derives named run lists from recipe files and uses explicit recipe[] notation.'

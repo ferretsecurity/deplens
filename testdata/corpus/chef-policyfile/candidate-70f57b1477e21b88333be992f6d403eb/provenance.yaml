@@ -1,0 +1,18 @@
+version: 2
+detector_id: chef-policyfile
+candidate_id: candidate-70f57b1477e21b88333be992f6d403eb
+provider: github
+repository: sous-chefs/network_interfaces
+repository_url: https://github.com/sous-chefs/network_interfaces
+default_branch: main
+commit: f91076bd5b014ab59aa7d17ee1bb15a25d6f02c1
+original_path: Policyfile.rb
+permalink: https://github.com/sous-chefs/network_interfaces/blob/f91076bd5b014ab59aa7d17ee1bb15a25d6f02c1/Policyfile.rb
+retrieved_at: "2026-08-13T12:04:55Z"
+sha256: e358937e285c82156fa259a31c850754413f79edb9626fa047777746c28246dc
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/sous-chefs/network_interfaces/blob/f91076bd5b014ab59aa7d17ee1bb15a25d6f02c1/LICENSE
+    sha256: ae0683b5a4dfe5b8050120f058e547486c93f1d83d1d8fee58bb21f0adfe6c65
+rationale: Adds dependency coverage with version-constrained Git cookbooks plus dynamically generated run lists.
