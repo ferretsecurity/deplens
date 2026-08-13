@@ -1,0 +1,18 @@
+version: 2
+detector_id: buf
+candidate_id: candidate-61f950f4b2b230dfd4a76c5f5cf1fc8f
+provider: github
+repository: Azure/kube-egress-gateway
+repository_url: https://github.com/Azure/kube-egress-gateway
+default_branch: main
+commit: 6ee70f73589d9cdf0ffc60131c4f6c65855c86f7
+original_path: buf.yaml
+permalink: https://github.com/Azure/kube-egress-gateway/blob/6ee70f73589d9cdf0ffc60131c4f6c65855c86f7/buf.yaml
+retrieved_at: "2026-08-13T08:25:07Z"
+sha256: 90d5fea4e86007627137328a9c88610b502c7a3a64b98f69ff66f1e0a9ab30ce
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/Azure/kube-egress-gateway/blob/6ee70f73589d9cdf0ffc60131c4f6c65855c86f7/LICENSE
+    sha256: c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383
+rationale: Common legacy v1 configuration, adding a straightforward external dependency case.

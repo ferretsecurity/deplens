@@ -1,0 +1,18 @@
+version: 2
+detector_id: buf
+candidate_id: candidate-c26fdf3c154c205d095e8226e1432809
+provider: github
+repository: tesseral-labs/tesseral
+repository_url: https://github.com/tesseral-labs/tesseral
+default_branch: main
+commit: de5d3348380b820b2670c96728d36e456f696538
+original_path: buf.yaml
+permalink: https://github.com/tesseral-labs/tesseral/blob/de5d3348380b820b2670c96728d36e456f696538/buf.yaml
+retrieved_at: "2026-08-13T08:25:02Z"
+sha256: acfd111dcb8fbda2718f28b17943ab75e53cccc4c31fb70ffaaef988489e2d5d
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/tesseral-labs/tesseral/blob/de5d3348380b820b2670c96728d36e456f696538/LICENSE
+    sha256: 4e5fd5e4543b974b7a4e20f1026c405a62fb4d17d8c2192839d670b681c69bbe
+rationale: Modern v2 multi-module layout, covering repositories that split protobufs across several internal services.

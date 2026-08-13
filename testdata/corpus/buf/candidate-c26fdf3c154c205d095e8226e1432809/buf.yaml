@@ -1,0 +1,14 @@
+version: v2
+deps:
+  - buf.build/googleapis/googleapis
+modules:
+  - path: internal/backend/proto
+  - path: internal/frontend/proto
+  - path: internal/intermediate/proto
+  - path: internal/common/proto
+lint:
+  use:
+    - STANDARD
+breaking:
+  use:
+    - FILE

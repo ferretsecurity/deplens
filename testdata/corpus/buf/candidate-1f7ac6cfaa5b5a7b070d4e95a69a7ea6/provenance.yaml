@@ -1,0 +1,18 @@
+version: 2
+detector_id: buf
+candidate_id: candidate-1f7ac6cfaa5b5a7b070d4e95a69a7ea6
+provider: github
+repository: kayac/go-katsubushi
+repository_url: https://github.com/kayac/go-katsubushi
+default_branch: v2
+commit: 4380afea15b8b3700e4e6fe4f4f08cb20cb05919
+original_path: buf.yaml
+permalink: https://github.com/kayac/go-katsubushi/blob/4380afea15b8b3700e4e6fe4f4f08cb20cb05919/buf.yaml
+retrieved_at: "2026-08-13T08:23:35Z"
+sha256: 064d7805f718db041ec3bd199e072ddfb1c871e088bc8a907cd898ba17858af4
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/kayac/go-katsubushi/blob/4380afea15b8b3700e4e6fe4f4f08cb20cb05919/LICENSE
+    sha256: dfc16b2007dd03e037cfe690eea9a21b5f60c806ea63cc7caf9f2d2f46ba3b94
+rationale: 'Typical modern Buf v2 setup: one non-root proto module with standard linting and file-level breaking checks.'
