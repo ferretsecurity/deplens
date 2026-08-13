@@ -1,0 +1,18 @@
+version: 2
+detector_id: nix-flake-lock
+candidate_id: candidate-7e8e3f881ba0f386905471bff0083ca7
+provider: github
+repository: quickplates/nixos
+repository_url: https://github.com/quickplates/nixos
+default_branch: main
+commit: 0713826eade1d1bd57088195e54b759006ce7d9b
+original_path: src/flake.lock
+permalink: https://github.com/quickplates/nixos/blob/0713826eade1d1bd57088195e54b759006ce7d9b/src/flake.lock
+retrieved_at: "2026-08-13T10:50:51Z"
+sha256: d44f41a150e0716e0d2d763bcbdd6166343b5aa13f8adf4be83d9a8547d144e3
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/quickplates/nixos/blob/0713826eade1d1bd57088195e54b759006ce7d9b/LICENSE
+    sha256: 15d92030a8553904a97c2afd3fd5cc4a3d943c5e2b42b3475d310440354aac12
+rationale: Typical NixOS configuration with several inputs that follow the root nixpkgs.

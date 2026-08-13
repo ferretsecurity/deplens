@@ -1,0 +1,18 @@
+version: 2
+detector_id: nix-flake-lock
+candidate_id: candidate-bf644d077f7d6d81575215a90c182ed1
+provider: github
+repository: junglerobba/angular-flake-builder
+repository_url: https://github.com/junglerobba/angular-flake-builder
+default_branch: main
+commit: f54892b98bd982abfa4f6a714e2b48ead90cb075
+original_path: flake.lock
+permalink: https://github.com/junglerobba/angular-flake-builder/blob/f54892b98bd982abfa4f6a714e2b48ead90cb075/flake.lock
+retrieved_at: "2026-08-13T10:49:57Z"
+sha256: 260e17f0eafd2ae4873a65a74b3276c72110803e579fdeacba25982009c586c5
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/junglerobba/angular-flake-builder/blob/f54892b98bd982abfa4f6a714e2b48ead90cb075/LICENSE
+    sha256: be35f4e2a856912fac2fc7e9fd934aa7441fde00c3fd3b8bb4084fffebefe253
+rationale: 'Common small project flake: nixpkgs plus flake-utils and systems.'
