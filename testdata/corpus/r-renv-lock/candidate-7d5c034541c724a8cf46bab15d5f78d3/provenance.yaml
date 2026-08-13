@@ -1,0 +1,18 @@
+version: 2
+detector_id: r-renv-lock
+candidate_id: candidate-7d5c034541c724a8cf46bab15d5f78d3
+provider: github
+repository: vhgauto/tidytuesday
+repository_url: https://github.com/vhgauto/tidytuesday
+default_branch: main
+commit: 9e98592970ff44ab7dc585d61eae5a1304f7f638
+original_path: renv.lock
+permalink: https://github.com/vhgauto/tidytuesday/blob/9e98592970ff44ab7dc585d61eae5a1304f7f638/renv.lock
+retrieved_at: "2026-08-13T06:20:41Z"
+sha256: b0279af166b26bac7031092ad701758e7cf1eabb1b0085b6ddeb594c119b2be9
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/vhgauto/tidytuesday/blob/9e98592970ff44ab7dc585d61eae5a1304f7f638/LICENSE
+    sha256: 1de5f7b38eb40fd23d4c09add81024b0128c767f82ecf74a3acb2b04ff407f40
+rationale: 'Most common case: a compact, modern CRAN-only lockfile for a standard ggplot-based analysis/visualization project.'

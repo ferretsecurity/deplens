@@ -1,0 +1,18 @@
+version: 2
+detector_id: r-renv-lock
+candidate_id: candidate-59d610dc7d05615b968134d32f4de2ad
+provider: github
+repository: RLesur/chrome_print_shiny
+repository_url: https://github.com/RLesur/chrome_print_shiny
+default_branch: master
+commit: 5ec340426ac89019df215b44a62863c7bc5d9c05
+original_path: renv.lock
+permalink: https://github.com/RLesur/chrome_print_shiny/blob/5ec340426ac89019df215b44a62863c7bc5d9c05/renv.lock
+retrieved_at: "2026-08-13T06:18:51Z"
+sha256: cc7101b5e4d673860dbefaab534df058cc1a32e9fc3f27f2d4a9fc917e438c80
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/RLesur/chrome_print_shiny/blob/5ec340426ac89019df215b44a62863c7bc5d9c05/LICENSE.md
+    sha256: fca4e770ccf3724edd1c8ef6a27ea0af858ab83c6d47245c564bbda8868d3787
+rationale: Adds a small Shiny application with document rendering, browser/printing, and websocket dependencies.

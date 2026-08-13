@@ -1,0 +1,18 @@
+version: 2
+detector_id: r-renv-lock
+candidate_id: candidate-828a144bfb8ecd0afe7eb62e046466e7
+provider: github
+repository: kiwirm/topomc
+repository_url: https://github.com/kiwirm/topomc
+default_branch: master
+commit: 1ee7631d0563176d8895a152dcd0b4ec5cace09c
+original_path: renv.lock
+permalink: https://github.com/kiwirm/topomc/blob/1ee7631d0563176d8895a152dcd0b4ec5cace09c/renv.lock
+retrieved_at: "2026-08-13T06:17:25Z"
+sha256: e26a3aab785b80ab488011ac0b66fbae8b986c24a5d2ef819ff185bd5958e610
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/kiwirm/topomc/blob/1ee7631d0563176d8895a152dcd0b4ec5cace09c/LICENSE
+    sha256: 0e289cddf69930c8e88cfd97f5bb22c6862ef8813863b9448154c4cf3104059e
+rationale: Adds a complex geospatial stack with native-heavy mapping, raster, and spatial-data dependencies.
