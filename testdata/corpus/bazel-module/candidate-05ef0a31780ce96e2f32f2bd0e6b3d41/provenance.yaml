@@ -1,0 +1,18 @@
+version: 2
+detector_id: bazel-module
+candidate_id: candidate-05ef0a31780ce96e2f32f2bd0e6b3d41
+provider: github
+repository: lestrrat-go/jwx
+repository_url: https://github.com/lestrrat-go/jwx
+default_branch: develop/v4
+commit: dec9e280c79236eaefa01c68a70d83be38692644
+original_path: MODULE.bazel
+permalink: https://github.com/lestrrat-go/jwx/blob/dec9e280c79236eaefa01c68a70d83be38692644/MODULE.bazel
+retrieved_at: "2026-08-13T09:27:30Z"
+sha256: 3016b8baf60457f8cde8557d8e5740f6c9ed9d87f7bec2be1362d6061f4473f9
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/lestrrat-go/jwx/blob/dec9e280c79236eaefa01c68a70d83be38692644/LICENSE
+    sha256: 0c4868a07b1c2dbb67c75767b4f1b2936c392d02ca2c7ee9827cac1a9d60ab1d
+rationale: 'Typical compact Bzlmod module: metadata, direct dependencies, and Go/Gazelle extensions.'

@@ -1,0 +1,18 @@
+version: 2
+detector_id: bazel-module
+candidate_id: candidate-938a6a84a7ffa75798af6fcbb6775d21
+provider: github
+repository: lewish/asciiflow
+repository_url: https://github.com/lewish/asciiflow
+default_branch: main
+commit: 758bcb00fde489542baebcd0cabd2a4af1e586fe
+original_path: MODULE.bazel
+permalink: https://github.com/lewish/asciiflow/blob/758bcb00fde489542baebcd0cabd2a4af1e586fe/MODULE.bazel
+retrieved_at: "2026-08-13T09:26:24Z"
+sha256: eb99c72f7ec9d1d79a55f1165d5babde6184d2fa65cd81a6c60e212d01ba67a1
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/lewish/asciiflow/blob/758bcb00fde489542baebcd0cabd2a4af1e586fe/LICENSE
+    sha256: e314b46b42ba0e67f38d4472fd1f0eb111cd18b8e05bd55d90a4caac0cc49397
+rationale: Adds a JavaScript/TypeScript project shape, including Node and npm lockfile extensions plus a pinned downloaded asset.

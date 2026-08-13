@@ -1,0 +1,18 @@
+version: 2
+detector_id: bazel-module
+candidate_id: candidate-c0624debc373a522cc06863777f3913c
+provider: github
+repository: uber/hermetic_cc_toolchain
+repository_url: https://github.com/uber/hermetic_cc_toolchain
+default_branch: main
+commit: aa105155acc9e9020b4194e22d1d619b6d472ab6
+original_path: MODULE.bazel
+permalink: https://github.com/uber/hermetic_cc_toolchain/blob/aa105155acc9e9020b4194e22d1d619b6d472ab6/MODULE.bazel
+retrieved_at: "2026-08-13T09:30:03Z"
+sha256: 4157d273074a1876fa674deca1e551bad66f06b87da1603dd856244e97b7ced8
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/uber/hermetic_cc_toolchain/blob/aa105155acc9e9020b4194e22d1d619b6d472ab6/LICENSE
+    sha256: 1e0b95be1cd67e05c1fff8cfc96c6fccb0e9fc7dda481fbc66af6247949a0ff8
+rationale: 'Adds toolchain-focused configuration: development-only dependencies, generated repositories, and explicit multi-platform toolchain registration.'
