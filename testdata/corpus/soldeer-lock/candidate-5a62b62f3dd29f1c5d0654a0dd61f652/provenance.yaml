@@ -1,0 +1,18 @@
+version: 2
+detector_id: soldeer-lock
+candidate_id: candidate-5a62b62f3dd29f1c5d0654a0dd61f652
+provider: github
+repository: 0xFacet/facet-node
+repository_url: https://github.com/0xFacet/facet-node
+default_branch: main
+commit: eef2187d22430ae0ae22f898b7def110bc062555
+original_path: contracts/soldeer.lock
+permalink: https://github.com/0xFacet/facet-node/blob/eef2187d22430ae0ae22f898b7def110bc062555/contracts/soldeer.lock
+retrieved_at: "2026-08-13T13:20:36Z"
+sha256: 5cf2a1ece71a2ffb89fd37b30651f560ace50622ff848b5732989cfbbfccb85f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/0xFacet/facet-node/blob/eef2187d22430ae0ae22f898b7def110bc062555/LICENSE
+    sha256: 6498a3d0b3090c0d6e422ffc7e7bce23cc00ee82e77582891a826ad919455daa
+rationale: 'Adds the important mixed-source edge case: several Git-pinned dependencies alongside a registry package.'

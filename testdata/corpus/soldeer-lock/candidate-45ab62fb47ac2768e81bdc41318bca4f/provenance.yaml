@@ -1,0 +1,18 @@
+version: 2
+detector_id: soldeer-lock
+candidate_id: candidate-45ab62fb47ac2768e81bdc41318bca4f
+provider: github
+repository: bitfinity-network/bit-fusion-sdk
+repository_url: https://github.com/bitfinity-network/bit-fusion-sdk
+default_branch: main
+commit: 2e9541cad8f0034b485a48a00e641402f9f8aeef
+original_path: solidity/soldeer.lock
+permalink: https://github.com/bitfinity-network/bit-fusion-sdk/blob/2e9541cad8f0034b485a48a00e641402f9f8aeef/solidity/soldeer.lock
+retrieved_at: "2026-08-13T13:18:41Z"
+sha256: a3ab674218480db9f2ef544303cace2a33fdc896075dfb1a0c6003843cd6ba4f
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/bitfinity-network/bit-fusion-sdk/blob/2e9541cad8f0034b485a48a00e641402f9f8aeef/LICENSE
+    sha256: 47efa0d1f2ab1dbe05f2789394dac06cc92d5deb45ac80539f2cad0f2ce28f1c
+rationale: Covers the alternate `source` field and a typical upgradeable-contract dependency set.

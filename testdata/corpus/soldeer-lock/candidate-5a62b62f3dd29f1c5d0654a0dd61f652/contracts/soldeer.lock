@@ -1,0 +1,48 @@
+[[dependencies]]
+name = "@openzeppelin-contracts"
+version = "5.1.0"
+git = "https://github.com/OpenZeppelin/openzeppelin-contracts.git"
+rev = "6e05b68bd96ab90a4049adb89f20fd578404b274"
+
+[[dependencies]]
+name = "buffer"
+version = "0.0.0"
+git = "https://github.com/ensdomains/buffer.git"
+rev = "82cc81935de1d1a82e021cf1030d902c5248982b"
+
+[[dependencies]]
+name = "eas-contracts"
+version = "1.3.0"
+git = "https://github.com/ethereum-attestation-service/eas-contracts.git"
+rev = "e4a9be156a3c024c647d09b84a20ee690fdb7d85"
+
+[[dependencies]]
+name = "ens-contracts"
+version = "1.0.1"
+git = "https://github.com/ensdomains/ens-contracts.git"
+rev = "5421b5689e695531dc9739f0ad861839bdd231cb"
+
+[[dependencies]]
+name = "facet-sol"
+version = "1.0.0"
+git = "https://github.com/0xFacet/facet-sol.git"
+rev = "56e009e3d18f0c3fdef132ffc171991bbaf33e37"
+
+[[dependencies]]
+name = "forge-std"
+version = "1.9.4"
+url = "https://soldeer-revisions.s3.amazonaws.com/forge-std/1_9_4_25-10-2024_14:36:59_forge-std-1.9.zip"
+checksum = "b5be24beb5e4dab5e42221b2ad1288b64c826bee5ee71b6159ba93ffe86f14d4"
+integrity = "3874463846ab995a6a9a88412913cacec6144f7605daa1af57c2d8bf3f210b13"
+
+[[dependencies]]
+name = "solady"
+version = "0.0.278"
+git = "https://github.com/vectorized/solady.git"
+rev = "a2f53c1f15ed07671d805e3a4a0e306b2a09d3bc"
+
+[[dependencies]]
+name = "verifications"
+version = "0.0.0"
+git = "https://github.com/coinbase/verifications.git"
+rev = "831a0d2449a0b0a6c467e87d80a292abc667f9a6"

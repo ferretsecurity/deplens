@@ -1,0 +1,18 @@
+version: 2
+detector_id: soldeer-lock
+candidate_id: candidate-1c39b5cd8522a018007e68e8861bb776
+provider: github
+repository: ZipLyne-Agency/CodeGrid
+repository_url: https://github.com/ZipLyne-Agency/CodeGrid
+default_branch: main
+commit: f30cbbee80adabbca16443cafba36ebb9df9185a
+original_path: staking/contracts/soldeer.lock
+permalink: https://github.com/ZipLyne-Agency/CodeGrid/blob/f30cbbee80adabbca16443cafba36ebb9df9185a/staking/contracts/soldeer.lock
+retrieved_at: "2026-08-13T13:22:17Z"
+sha256: 1f81efe8f6ddf1e93190b9dc46c5d69fc9364343bba9df44c087f5e1e174c9d6
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/ZipLyne-Agency/CodeGrid/blob/f30cbbee80adabbca16443cafba36ebb9df9185a/LICENSE
+    sha256: b785ba81b8a3368249a611cf256e7574429e42583e9b6ede8530457ea7673ee0
+rationale: 'Common compact lockfile: registry URL dependencies for OpenZeppelin and forge-std.'
