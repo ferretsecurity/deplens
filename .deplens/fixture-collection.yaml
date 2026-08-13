@@ -52018,12 +52018,29 @@ detectors:
       roles:
         - resolution
         - integrity
-      state: pending
-      iterations: 0
+      state: needs-collection-review
+      iterations: 1
       examples: []
       target: 3
       query_plan:
         - path:Packages/packages-lock.json
+      queries:
+        - path:Packages/packages-lock.json
+      search_cursors:
+        - provider: github
+          query: path:Packages/packages-lock.json
+          next_page: 2
+          exhausted: true
+      history:
+        - iteration: 1
+          result: unsuccessful
+          queries:
+            - path:Packages/packages-lock.json
+          search_cursors:
+            - provider: github
+              query: path:Packages/packages-lock.json
+              next_page: 2
+              exhausted: true
     - id: github-actions-action
       form: automation-definition
       roles:
