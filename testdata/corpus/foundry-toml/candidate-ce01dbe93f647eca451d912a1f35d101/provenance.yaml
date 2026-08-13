@@ -1,0 +1,18 @@
+version: 2
+detector_id: foundry-toml
+candidate_id: candidate-ce01dbe93f647eca451d912a1f35d101
+provider: github
+repository: code-423n4/2022-05-opensea-seaport
+repository_url: https://github.com/code-423n4/2022-05-opensea-seaport
+default_branch: main
+commit: 9284126e6e59b11d4e7f8b887391c55548bd0571
+original_path: foundry.toml
+permalink: https://github.com/code-423n4/2022-05-opensea-seaport/blob/9284126e6e59b11d4e7f8b887391c55548bd0571/foundry.toml
+retrieved_at: "2026-08-13T13:00:46Z"
+sha256: c414109f48c3590c78ec325e7ea99c0b586fdbc4de9183a7596ecd325347c5cf
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/code-423n4/2022-05-opensea-seaport/blob/9284126e6e59b11d4e7f8b887391c55548bd0571/LICENSE
+    sha256: ff76e913e0c5c8984dab309a7fc86ba0b57ead9f4d4672ffede8b67500682e12
+rationale: Covers a legacy `[default]` configuration and a complex multi-profile setup with compiler and source/output overrides.

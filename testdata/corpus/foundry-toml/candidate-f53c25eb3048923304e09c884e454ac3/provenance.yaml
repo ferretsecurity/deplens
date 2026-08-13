@@ -1,0 +1,18 @@
+version: 2
+detector_id: foundry-toml
+candidate_id: candidate-f53c25eb3048923304e09c884e454ac3
+provider: github
+repository: flare-foundation/flare-smart-contracts-v2
+repository_url: https://github.com/flare-foundation/flare-smart-contracts-v2
+default_branch: main
+commit: b69873e1e1a0785e2450d811f35c7927a625716b
+original_path: foundry.toml
+permalink: https://github.com/flare-foundation/flare-smart-contracts-v2/blob/b69873e1e1a0785e2450d811f35c7927a625716b/foundry.toml
+retrieved_at: "2026-08-13T13:00:55Z"
+sha256: 30bc073985d78d635d3d403fb5c0fd981ef729a5ce64153ef7e11b7c8d5a1983
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/flare-foundation/flare-smart-contracts-v2/blob/b69873e1e1a0785e2450d811f35c7927a625716b/LICENSE
+    sha256: 6919e8f3c4336ce71ff1991a54269699550bad58add5a39cd5e45ce57e76b08b
+rationale: Adds modern dependency-management coverage through Soldeer, plus nonstandard project paths and a coverage-specific remapping.

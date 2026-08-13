@@ -1,0 +1,18 @@
+version: 2
+detector_id: foundry-toml
+candidate_id: candidate-900d539f8c77fbd5e9dffd694c9b4b55
+provider: github
+repository: KlimaDAO/klimadao-solidity
+repository_url: https://github.com/KlimaDAO/klimadao-solidity
+default_branch: main
+commit: f8c0663a50d3d96c91b374d4bfd27443da31f53b
+original_path: foundry.toml
+permalink: https://github.com/KlimaDAO/klimadao-solidity/blob/f8c0663a50d3d96c91b374d4bfd27443da31f53b/foundry.toml
+retrieved_at: "2026-08-13T13:00:41Z"
+sha256: c7a0d428d9880078da2cca2de4f2341de1e4db76cb93758c936dc30747b3d8f1
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/KlimaDAO/klimadao-solidity/blob/f8c0663a50d3d96c91b374d4bfd27443da31f53b/LICENSE
+    sha256: 656d613b57c7cd26111ba2c8b535b2ca48086c579197221406dfdefc900dfd98
+rationale: 'Representative modern Foundry project: standard directories, optimizer, fuzzing, CI profile, RPC, formatting, and docs.'
