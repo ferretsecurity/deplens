@@ -1,0 +1,18 @@
+version: 2
+detector_id: fortran-fpm
+candidate_id: candidate-8751876a7e3bea762b16bad1bfb35ab6
+provider: github
+repository: fortran-lang/http-client
+repository_url: https://github.com/fortran-lang/http-client
+default_branch: main
+commit: 192574c101ce3cd48bb2d4e987781c4cdde186b5
+original_path: fpm.toml
+permalink: https://github.com/fortran-lang/http-client/blob/192574c101ce3cd48bb2d4e987781c4cdde186b5/fpm.toml
+retrieved_at: "2026-08-13T07:48:55Z"
+sha256: 1ddd511cc44dd1112b39ce252217891c61c1502d9e60a6db3c21922584206c09
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/fortran-lang/http-client/blob/192574c101ce3cd48bb2d4e987781c4cdde186b5/LICENSE
+    sha256: 3e11ef5f1ffc17efb11c8af4494faed279b4497145b5cfcff2f2b0d5e7888e72
+rationale: 'Representative real-world package: metadata, build/install settings, language rules, and external dependencies.'

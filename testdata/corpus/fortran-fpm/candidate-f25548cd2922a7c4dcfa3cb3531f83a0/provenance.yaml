@@ -1,0 +1,18 @@
+version: 2
+detector_id: fortran-fpm
+candidate_id: candidate-f25548cd2922a7c4dcfa3cb3531f83a0
+provider: github
+repository: fortran-lang/fftpack
+repository_url: https://github.com/fortran-lang/fftpack
+default_branch: main
+commit: 0fffe7c05a918363a7cc12ae138a695afd115f36
+original_path: fpm.toml
+permalink: https://github.com/fortran-lang/fftpack/blob/0fffe7c05a918363a7cc12ae138a695afd115f36/fpm.toml
+retrieved_at: "2026-08-13T07:46:34Z"
+sha256: b3d6b53121fe26e15de4695afd01e8fb37c183526ede6bca89a8fc32194cce0c
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/fortran-lang/fftpack/blob/0fffe7c05a918363a7cc12ae138a695afd115f36/LICENSE
+    sha256: 869f9003a4ce6a80faec8bcae8fc375187680745348c0444722f20794ee90ab4
+rationale: Covers a legacy-oriented package with fixed/default source handling, permissive Fortran settings, and development dependencies.

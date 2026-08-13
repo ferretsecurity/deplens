@@ -1,0 +1,18 @@
+version: 2
+detector_id: fortran-fpm
+candidate_id: candidate-038b0cd8ea26fbfd5693b50f730e6d4a
+provider: github
+repository: fortran-lang/fpm
+repository_url: https://github.com/fortran-lang/fpm
+default_branch: main
+commit: eaffbb36086abdb16c0d052961a3e7240cb22b0a
+original_path: example_packages/features_default_profile/fpm.toml
+permalink: https://github.com/fortran-lang/fpm/blob/eaffbb36086abdb16c0d052961a3e7240cb22b0a/example_packages/features_default_profile/fpm.toml
+retrieved_at: "2026-08-13T07:46:42Z"
+sha256: 702de30483e11281140a42f492dae213ea9989365757ff0cbfb4aa72ed067590
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/fortran-lang/fpm/blob/eaffbb36086abdb16c0d052961a3e7240cb22b0a/LICENSE
+    sha256: b7e33601c0130d1a674fcc772ed9b7804460d1896469a5b219ba4062efcd9fb9
+rationale: Covers feature and profile configuration, including profile defaults and preprocessing macros.
