@@ -1,0 +1,35 @@
+[GLOBAL]
+pants_version = "2.25.0"
+backend_packages = [
+  "pants.backend.experimental.go",
+  "pants.backend.experimental.go.lint.golangci_lint",
+]
+
+colors = true
+
+[source]
+root_patterns = ["/"]
+
+[golang]
+minimum_expected_version = "1.25"  # Updated for Go 1.25
+
+# Enable Go submodules
+goroot = "/usr/local/go"  # Adjust if go is installed elsewhere
+
+[golangci-lint]
+# Linting configuration
+version = "v1.61.0"
+args = [
+  "--timeout=5m",
+  "--enable=gofmt,govet,staticcheck",
+]
+
+[anonymous-telemetry]
+enabled = false
+
+[cli.alias]
+# Convenient shortcuts
+build-all = "package ::"
+test-all = "test ::"
+fmt-all = "fmt ::"
+lint-all = "lint ::"

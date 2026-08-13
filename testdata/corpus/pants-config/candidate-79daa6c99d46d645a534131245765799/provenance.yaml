@@ -1,0 +1,18 @@
+version: 2
+detector_id: pants-config
+candidate_id: candidate-79daa6c99d46d645a534131245765799
+provider: github
+repository: aws-powertools/powertools-lambda-python
+repository_url: https://github.com/aws-powertools/powertools-lambda-python
+default_branch: develop
+commit: 8db13c761d6f592a4e26dab74035af29412d6634
+original_path: examples/build_recipes/pants/basic_pants/pants.toml
+permalink: https://github.com/aws-powertools/powertools-lambda-python/blob/8db13c761d6f592a4e26dab74035af29412d6634/examples/build_recipes/pants/basic_pants/pants.toml
+retrieved_at: "2026-08-13T10:18:14Z"
+sha256: abf0b481d95e3aafd9717d3cd14016471e8a9eba0dc93d94b504e422789cc125
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/aws-powertools/powertools-lambda-python/blob/8db13c761d6f592a4e26dab74035af29412d6634/LICENSE
+    sha256: bcc1d2d9e0609b03d420c3dbecb438a7b89bfc53d54176ab56301ab1f96b4f0a
+rationale: 'Representative common modern Python Pants setup: core Python backend, standard lint/typecheck tools, source root, and broad interpreter range.'

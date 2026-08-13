@@ -1,0 +1,18 @@
+version: 2
+detector_id: pants-config
+candidate_id: candidate-230888040c8cd4df8b0d15e3bdea8422
+provider: github
+repository: eugenp/tutorials
+repository_url: https://github.com/eugenp/tutorials
+default_branch: master
+commit: 1e915565ccc5851b16c8e057783835ce96e3c139
+original_path: pants/pants.toml
+permalink: https://github.com/eugenp/tutorials/blob/1e915565ccc5851b16c8e057783835ce96e3c139/pants/pants.toml
+retrieved_at: "2026-08-13T10:17:41Z"
+sha256: dd6775aa4924d7ef19f2a76f43405e7926ae7df51a0dbe25bef97274c52847bb
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/eugenp/tutorials/blob/1e915565ccc5851b16c8e057783835ce96e3c139/LICENSE
+    sha256: 02ce5120b7c117c40a363416ec4445f5510d04029254e27a1e9d5caa2edc8000
+rationale: Adds JVM/Java coverage with source roots, JDK selection, test limits, formatting, and BSP integration.

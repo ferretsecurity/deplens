@@ -1,0 +1,18 @@
+version: 2
+detector_id: pants-config
+candidate_id: candidate-747b65714b6f9413560844e0a4e3004d
+provider: github
+repository: ryanmaclean/dd-skill-test
+repository_url: https://github.com/ryanmaclean/dd-skill-test
+default_branch: main
+commit: 558db7153e7d9d339cfe2c5e076986feb36ccb46
+original_path: datadog-skill-go/pants.toml
+permalink: https://github.com/ryanmaclean/dd-skill-test/blob/558db7153e7d9d339cfe2c5e076986feb36ccb46/datadog-skill-go/pants.toml
+retrieved_at: "2026-08-13T10:24:29Z"
+sha256: dd8fd75c8f1480f8b358c68ce71e9b44b5711778a7d3720839cb1a89de3c7152
+governing_license:
+    spdx: MIT
+    path: datadog-skill-go/LICENSE
+    permalink: https://github.com/ryanmaclean/dd-skill-test/blob/558db7153e7d9d339cfe2c5e076986feb36ccb46/datadog-skill-go/LICENSE
+    sha256: 320dc5c636e895c7f33291df81083375986d4d750c9ee61fc82ed1289ca350ec
+rationale: Adds a modern Go-specific configuration, including Go linting and command aliases.
