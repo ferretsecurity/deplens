@@ -1,0 +1,18 @@
+version: 2
+detector_id: foundry-remappings
+candidate_id: candidate-08ee7e0283b3a1aa54ca1f30d61904d8
+provider: github
+repository: nayms/contracts-v3
+repository_url: https://github.com/nayms/contracts-v3
+default_branch: main
+commit: 48bf15c7ff606def012ebf6889edce55714910e1
+original_path: remappings.txt
+permalink: https://github.com/nayms/contracts-v3/blob/48bf15c7ff606def012ebf6889edce55714910e1/remappings.txt
+retrieved_at: "2026-08-13T13:13:26Z"
+sha256: 214724d4f3f59bfd508c392b10e0a78b401e439fe6da9562d9a278713a2a290b
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/nayms/contracts-v3/blob/48bf15c7ff606def012ebf6889edce55714910e1/LICENSE
+    sha256: ffe187cbbc592673e1769e039616bfde9aa92c9ad6f5cb8839d58417d2c96d6b
+rationale: 'Typical Foundry project: standard forge-std, ds-test, OpenZeppelin, and several local library remappings.'

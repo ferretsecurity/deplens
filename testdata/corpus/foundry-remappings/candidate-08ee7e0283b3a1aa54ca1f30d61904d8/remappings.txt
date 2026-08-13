@@ -1,0 +1,7 @@
+forge-std/=lib/forge-std/src/
+ds-test/=lib/ds-test/src/
+@openzeppelin/contracts/=lib/oz/contracts/
+diamond-2-hardhat/=lib/diamond-2-hardhat/contracts/
+erc4626-tests/=lib/oz/lib/erc4626-tests/
+solady/=lib/solady/src/
+solmate/=lib/solmate/src/

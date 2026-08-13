@@ -1,0 +1,18 @@
+version: 2
+detector_id: foundry-remappings
+candidate_id: candidate-29544dfbe5052cadbbc801127b7d07e6
+provider: github
+repository: latticexyz/persona
+repository_url: https://github.com/latticexyz/persona
+default_branch: main
+commit: 6e722a9abd7ef1e52f1af8268728b44ce2ddad4b
+original_path: remappings.txt
+permalink: https://github.com/latticexyz/persona/blob/6e722a9abd7ef1e52f1af8268728b44ce2ddad4b/remappings.txt
+retrieved_at: "2026-08-13T13:12:19Z"
+sha256: 192d27ae84d9716cd945c737512e85b219be2a4fc26a75719fbee8f4eae52f5e
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/latticexyz/persona/blob/6e722a9abd7ef1e52f1af8268728b44ce2ddad4b/LICENSE
+    sha256: ebf15cf7fd1c1f96ddb0ff704819f978e3fb588946b6fc29974986efb5438d69
+rationale: Adds varied nested dependencies and an exact-prefix remapping without a trailing slash.

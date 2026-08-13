@@ -1,0 +1,18 @@
+version: 2
+detector_id: foundry-remappings
+candidate_id: candidate-6bc2d2ffdd1961880f6fdcc4520cc7ad
+provider: github
+repository: PaulRBerg/prb-proxy
+repository_url: https://github.com/PaulRBerg/prb-proxy
+default_branch: main
+commit: 70ca039790a4a4f8c6ae814b99ac93a4fc7b6ba9
+original_path: remappings.txt
+permalink: https://github.com/PaulRBerg/prb-proxy/blob/70ca039790a4a4f8c6ae814b99ac93a4fc7b6ba9/remappings.txt
+retrieved_at: "2026-08-13T13:06:57Z"
+sha256: 9324732e508592f27c9b9b7c38b0c1ea7e1dfc102df75f4b921861624c595fba
+governing_license:
+    spdx: MIT
+    path: LICENSE.md
+    permalink: https://github.com/PaulRBerg/prb-proxy/blob/70ca039790a4a4f8c6ae814b99ac93a4fc7b6ba9/LICENSE.md
+    sha256: 9b156f38a8989f2390eb7e7794fe770cf00378848a9e191f04e6737d275e5fcf
+rationale: Compact node_modules-based setup, covering a common alternative dependency layout.
