@@ -1,0 +1,18 @@
+version: 2
+detector_id: ocaml-esy
+candidate_id: candidate-e34a1271eeb4a6790696d56a36ba2e40
+provider: github
+repository: dialohq/inline-test-ppx
+repository_url: https://github.com/dialohq/inline-test-ppx
+default_branch: master
+commit: d3520d559184c2614f76a99ddce67849ab6ec7d6
+original_path: esy.json
+permalink: https://github.com/dialohq/inline-test-ppx/blob/d3520d559184c2614f76a99ddce67849ab6ec7d6/esy.json
+retrieved_at: "2026-08-13T06:56:22Z"
+sha256: 949b9cefc19843d3b5a53f4753f30fcd065bdb3e716524389a9f549765cdc2bb
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/dialohq/inline-test-ppx/blob/d3520d559184c2614f76a99ddce67849ab6ec7d6/LICENSE
+    sha256: 427154122c283bbc75bde10e9851761fa986cdc2d54cd5dd710620059805220d
+rationale: 'Representative modern OCaml/Dune library package: standard dependencies, development tools, build settings, and common scripts.'

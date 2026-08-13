@@ -1,0 +1,18 @@
+version: 2
+detector_id: ocaml-esy
+candidate_id: candidate-d18aeb474483218f7b310385f8ad36a5
+provider: github
+repository: anmonteiro/gh-feed-reader
+repository_url: https://github.com/anmonteiro/gh-feed-reader
+default_branch: master
+commit: f07ecb27a48f6485cae5708d336515aa8d88880c
+original_path: esy.json
+permalink: https://github.com/anmonteiro/gh-feed-reader/blob/f07ecb27a48f6485cae5708d336515aa8d88880c/esy.json
+retrieved_at: "2026-08-13T06:57:31Z"
+sha256: 3c7552983304e33795cf508b3ef30bdea80c0a3fe18259740a37a9a0647b1e39
+governing_license:
+    spdx: MIT
+    path: LICENSE
+    permalink: https://github.com/anmonteiro/gh-feed-reader/blob/f07ecb27a48f6485cae5708d336515aa8d88880c/LICENSE
+    sha256: 4d40ef98a4b96f2e39aae033d7b3cf4bc8d0dde623e49dcb8e1e1cec432c2273
+rationale: Adds a BuckleScript/Node-oriented configuration with package resolutions, a command-array build, and install configuration.

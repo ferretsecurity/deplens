@@ -1,0 +1,18 @@
+version: 2
+detector_id: ocaml-esy
+candidate_id: candidate-40c374413e100088fe94f891145e9232
+provider: github
+repository: realworldocaml/book
+repository_url: https://github.com/realworldocaml/book
+default_branch: master
+commit: d40de391c892f6804ddbbdb3ff6f35ac1b6afb37
+original_path: duniverse/lwt/esy.json
+permalink: https://github.com/realworldocaml/book/blob/d40de391c892f6804ddbbdb3ff6f35ac1b6afb37/duniverse/lwt/esy.json
+retrieved_at: "2026-08-13T06:52:04Z"
+sha256: fb901361c67766eb100b12bf2deb9e521c063d4b96d5e198dfe51208594879b4
+governing_license:
+    spdx: MIT
+    path: duniverse/lwt/LICENSE.md
+    permalink: https://github.com/realworldocaml/book/blob/d40de391c892f6804ddbbdb3ff6f35ac1b6afb37/duniverse/lwt/LICENSE.md
+    sha256: f9a48608e85754e42dabcc0fde932c90523a0b7531eac287ca8e3d977e10104e
+rationale: Covers the compact opam-source wrapper pattern, including an override block and nested dependency/resolution fields.
