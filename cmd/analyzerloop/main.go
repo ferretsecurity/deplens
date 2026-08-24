@@ -226,25 +226,30 @@ func unfinishedSelected(path string, selection []int) int {
 func runSelection(value string, once bool, ledger analyzerloop.Ledger) ([]int, error) {
 	if value == "" {
 		for _, item := range ledger.WorkItems {
-			if item.State != analyzerloop.StateCompleted {
+			if item.State != analyzerloop.StateCompleted && item.State != analyzerloop.StateIgnored {
 				return []int{item.Number}, nil
 			}
 		}
-		return nil, errors.New("all work items are completed")
+		return nil, errors.New("all work items are completed or ignored")
 	}
 	numbers, err := analyzerloop.ParseSelection(value, len(ledger.WorkItems))
 	if err != nil {
 		return nil, err
 	}
-	if once {
-		for _, number := range numbers {
-			if ledger.WorkItems[number-1].State != analyzerloop.StateCompleted {
-				return []int{number}, nil
-			}
+	runnable := numbers[:0]
+	for _, number := range numbers {
+		state := ledger.WorkItems[number-1].State
+		if state != analyzerloop.StateCompleted && state != analyzerloop.StateIgnored {
+			runnable = append(runnable, number)
 		}
-		return nil, errors.New("selected work items are completed")
 	}
-	return numbers, nil
+	if len(runnable) == 0 {
+		return nil, errors.New("selected work items are completed or ignored")
+	}
+	if once {
+		return runnable[:1], nil
+	}
+	return runnable, nil
 }
 
 func verificationDeplensCommit(path string) (string, error) {

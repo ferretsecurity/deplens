@@ -51,6 +51,22 @@ func TestRunnerLeavesItemPendingWhenImplementerFails(t *testing.T) {
 	}
 }
 
+func TestRunnerSkipsIgnoredWorkItem(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "ledger.yaml")
+	ledger := Ledger{Version: 1, WorkItems: []WorkItem{{Number: 1, ID: "demo", State: StateIgnored, IgnoreReason: "not a dependency source"}}}
+	if err := SaveLedger(path, ledger); err != nil {
+		t.Fatal(err)
+	}
+	executor := &fakeExecutor{}
+	runner := Runner{LedgerPath: path, Executor: executor, Journal: &MemoryJournal{}}
+	if err := runner.Run(context.Background(), []int{1}); err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	if len(executor.attempts) != 0 {
+		t.Fatalf("ignored item started attempts: %#v", executor.attempts)
+	}
+}
+
 type fakeExecutor struct {
 	results  []AttemptResult
 	attempts []Attempt

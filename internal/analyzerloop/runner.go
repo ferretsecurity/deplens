@@ -99,7 +99,7 @@ func (r Runner) Run(ctx context.Context, selection []int) error {
 		if item.Number != number {
 			return fmt.Errorf("ledger item %d has inconsistent number %d", number, item.Number)
 		}
-		if item.State == StateCompleted {
+		if item.State == StateCompleted || item.State == StateIgnored {
 			continue
 		}
 		if item.State != StatePending && item.State != StateInProgress {

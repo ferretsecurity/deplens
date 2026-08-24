@@ -143,27 +143,29 @@ func sha256Text(value string) string {
 func TestRunSelectionDefaultsToFirstUnfinishedItem(t *testing.T) {
 	ledger := analyzerloop.Ledger{WorkItems: []analyzerloop.WorkItem{
 		{Number: 1, State: analyzerloop.StateCompleted},
-		{Number: 2, State: analyzerloop.StateInProgress},
+		{Number: 2, State: analyzerloop.StateIgnored, IgnoreReason: "not a dependency source"},
+		{Number: 3, State: analyzerloop.StateInProgress},
 	}}
 	got, err := runSelection("", false, ledger)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := []int{2}; !reflect.DeepEqual(got, want) {
+	if want := []int{3}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("selection = %v, want %v", got, want)
 	}
 }
 
-func TestRunSelectionOnceSkipsCompletedSelectedItems(t *testing.T) {
+func TestRunSelectionSkipsCompletedAndIgnoredSelectedItems(t *testing.T) {
 	ledger := analyzerloop.Ledger{WorkItems: []analyzerloop.WorkItem{
 		{Number: 1, State: analyzerloop.StateCompleted},
-		{Number: 2, State: analyzerloop.StatePending},
+		{Number: 2, State: analyzerloop.StateIgnored, IgnoreReason: "not supported"},
+		{Number: 3, State: analyzerloop.StatePending},
 	}}
-	got, err := runSelection("1,2", true, ledger)
+	got, err := runSelection("1...3", true, ledger)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := []int{2}; !reflect.DeepEqual(got, want) {
+	if want := []int{3}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("selection = %v, want %v", got, want)
 	}
 }

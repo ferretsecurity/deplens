@@ -87,6 +87,14 @@ func TestPlanRefusesExistingLedger(t *testing.T) {
 	}
 }
 
+func TestLoadLedgerRequiresReasonForIgnoredWorkItem(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "ledger.yaml")
+	writeTestFile(t, path, "version: 1\nwork_items:\n  - number: 1\n    state: ignored\n")
+	if _, err := LoadLedger(path); err == nil {
+		t.Fatal("LoadLedger succeeded without an ignore reason")
+	}
+}
+
 func TestParseSelectionNormalizesRanges(t *testing.T) {
 	got, err := ParseSelection("3,1...2,3", 3)
 	if err != nil {

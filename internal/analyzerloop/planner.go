@@ -19,6 +19,7 @@ const (
 	StatePending    = "pending"
 	StateInProgress = "in_progress"
 	StateCompleted  = "completed"
+	StateIgnored    = "ignored"
 )
 
 // PlanOptions identifies immutable inputs and the destination ledger.
@@ -50,12 +51,13 @@ type DeplensStamp struct {
 // WorkItem is independently completable. Checkpoints are append-only
 // accepted results; transient failures live only in the runtime journal.
 type WorkItem struct {
-	Number      int          `yaml:"number"`
-	ID          string       `yaml:"id"`
-	Detector    Detector     `yaml:"detector"`
-	Candidates  []Candidate  `yaml:"candidates"`
-	State       string       `yaml:"state"`
-	Checkpoints []Checkpoint `yaml:"checkpoints,omitempty"`
+	Number       int          `yaml:"number"`
+	ID           string       `yaml:"id"`
+	Detector     Detector     `yaml:"detector"`
+	Candidates   []Candidate  `yaml:"candidates"`
+	State        string       `yaml:"state"`
+	IgnoreReason string       `yaml:"ignore_reason,omitempty"`
+	Checkpoints  []Checkpoint `yaml:"checkpoints,omitempty"`
 }
 
 type Detector struct {
@@ -222,6 +224,11 @@ func LoadLedger(path string) (Ledger, error) {
 	}
 	if ledger.Version != 1 {
 		return Ledger{}, fmt.Errorf("unsupported analyzer ledger version %d", ledger.Version)
+	}
+	for _, item := range ledger.WorkItems {
+		if item.State == StateIgnored && strings.TrimSpace(item.IgnoreReason) == "" {
+			return Ledger{}, fmt.Errorf("ignored work item %d requires ignore_reason", item.Number)
+		}
 	}
 	return ledger, nil
 }
