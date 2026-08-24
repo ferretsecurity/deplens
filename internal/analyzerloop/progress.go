@@ -9,7 +9,7 @@ type ProgressReporter interface {
 	AttemptStarted(Attempt)
 	AgentStarted(Attempt, string, string)
 	AgentMessage(Attempt, string)
-	AgentCommand(Attempt, bool)
+	AgentCommand(Attempt, string, string, int)
 	AgentEdited(Attempt, []string)
 	AgentHeartbeat(Attempt, time.Duration)
 	AgentFinished(Attempt, time.Duration)

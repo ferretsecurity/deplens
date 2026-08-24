@@ -23,7 +23,7 @@ Accepted patches are applied to the target branch and committed with `Ralph-Run`
 
 The Codex adapter is pinned to `gpt-5.6-terra`, `high` reasoning effort, `workspace-write`, and no approvals. Its final result is a small JSON marker containing a summary and the three fixture paths. Raw attempt output and content-free JSONL outcome records live below `.ralph/runs/` with private permissions. They are never committed and are not automatically removed.
 
-Every run writes a compact stdout narrative of configuration, work items, agent and validation phases, accepted checkpoints, and terminal results. Add `--follow` to show bounded agent messages, raw-log paths, a ready-to-run `tail -f` command, and periodic heartbeats. It never mirrors raw engine output; raw diagnostics may contain sensitive data.
+Every run writes a compact stdout narrative of configuration, work items, agent and validation phases, accepted checkpoints, and terminal results. Add `--follow` to show bounded agent messages, executed agent commands, raw-log paths, a ready-to-run `tail -f` command, and periodic heartbeats. It never mirrors raw engine output. Displayed commands and raw diagnostics may contain sensitive data.
 
 ## Selection and recovery
 

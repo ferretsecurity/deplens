@@ -83,9 +83,10 @@ func TestProgressRendererFollowIncludesRawLogCommand(t *testing.T) {
 	var output bytes.Buffer
 	renderer := newProgressRenderer(&output, true, "/repo/.ralph/runs/123")
 	renderer.AgentStarted(analyzerloop.Attempt{}, "/repo/.ralph/runs/123/attempts/1.jsonl", "/repo")
+	renderer.AgentCommand(analyzerloop.Attempt{}, "/repo", "go test ./...", 0)
 	renderer.AgentHeartbeat(analyzerloop.Attempt{}, time.Minute)
 	text := output.String()
-	if !strings.Contains(text, "tail -f") || !strings.Contains(text, "Agent is still running") {
+	if !strings.Contains(text, "tail -f") || !strings.Contains(text, "go test ./...") || !strings.Contains(text, "Agent is still running") {
 		t.Fatalf("follow output = %q", text)
 	}
 }

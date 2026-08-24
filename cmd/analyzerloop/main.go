@@ -346,7 +346,7 @@ func (p *progressRenderer) AgentStarted(_ analyzerloop.Attempt, rawPath, _ strin
 	if !p.follow {
 		return
 	}
-	p.printf("      Raw output      %s\n      Follow          tail -f %q\n      Sensitive data  Runtime diagnostics may contain sensitive data\n", rawPath, rawPath)
+	p.printf("      Raw output      %s\n      Follow          tail -f %q\n      Sensitive data  Raw logs and displayed commands may contain sensitive data\n", rawPath, rawPath)
 }
 
 func (p *progressRenderer) AgentMessage(_ analyzerloop.Attempt, message string) {
@@ -360,15 +360,15 @@ func (p *progressRenderer) AgentMessage(_ analyzerloop.Attempt, message string) 
 	p.printf("      💭 %s\n", message)
 }
 
-func (p *progressRenderer) AgentCommand(_ analyzerloop.Attempt, succeeded bool) {
+func (p *progressRenderer) AgentCommand(_ analyzerloop.Attempt, workdir, command string, exitCode int) {
 	if !p.follow {
 		return
 	}
 	result := "✓ Agent command completed"
-	if !succeeded {
-		result = "⚠ Agent command exited nonzero"
+	if exitCode != 0 {
+		result = fmt.Sprintf("⚠ Agent command exited %d", exitCode)
 	}
-	p.printf("      ╭─ agent\n      ╰─$ <command hidden: safe sanitization unavailable>  [sanitized]\n      %s\n", result)
+	p.printf("      ╭─ agent · %s\n      ╰─$ %s\n      %s\n", workdir, command, result)
 }
 
 func (p *progressRenderer) AgentEdited(_ analyzerloop.Attempt, paths []string) {

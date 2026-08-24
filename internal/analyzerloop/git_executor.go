@@ -50,9 +50,9 @@ func (e CodexEngine) Execute(ctx context.Context, attempt Attempt) (AttemptResul
 			return AttemptResult{}, fmt.Errorf("open Codex output: %w", openErr)
 		}
 		defer file.Close()
-		capture = &engineOutputCapture{output: &output, file: file, progress: e.Progress, attempt: attempt}
+		capture = &engineOutputCapture{output: &output, file: file, progress: e.Progress, attempt: attempt, workdir: e.Workdir}
 	} else {
-		capture = &engineOutputCapture{output: &output, progress: e.Progress, attempt: attempt}
+		capture = &engineOutputCapture{output: &output, progress: e.Progress, attempt: attempt, workdir: e.Workdir}
 	}
 	stdout, pipeErr := command.StdoutPipe()
 	if pipeErr != nil {
@@ -122,6 +122,7 @@ type engineOutputCapture struct {
 	pending  []byte
 	progress ProgressReporter
 	attempt  Attempt
+	workdir  string
 }
 
 func (capture *engineOutputCapture) Write(data []byte) (int, error) {
@@ -141,36 +142,44 @@ func (capture *engineOutputCapture) Write(data []byte) (int, error) {
 		}
 		line := capture.pending[:lineEnd]
 		capture.pending = capture.pending[lineEnd+1:]
-		message, command, succeeded := agentEvent(line)
+		message, command := agentEvent(line)
 		if message != "" {
 			report(capture.progress, func(progress ProgressReporter) { progress.AgentMessage(capture.attempt, message) })
 		}
-		if command {
-			report(capture.progress, func(progress ProgressReporter) { progress.AgentCommand(capture.attempt, succeeded) })
+		if command.Command != "" {
+			report(capture.progress, func(progress ProgressReporter) {
+				progress.AgentCommand(capture.attempt, capture.workdir, command.Command, command.ExitCode)
+			})
 		}
 	}
 	return len(data), nil
 }
 
-func agentEvent(line []byte) (string, bool, bool) {
+type agentCommand struct {
+	Command  string
+	ExitCode int
+}
+
+func agentEvent(line []byte) (string, agentCommand) {
 	var event struct {
 		Type string `json:"type"`
 		Item struct {
 			Type     string `json:"type"`
 			Text     string `json:"text"`
+			Command  string `json:"command"`
 			ExitCode int    `json:"exit_code"`
 		} `json:"item"`
 	}
 	if err := json.Unmarshal(line, &event); err != nil || event.Type != "item.completed" {
-		return "", false, false
+		return "", agentCommand{}
 	}
 	if event.Item.Type == "agent_message" {
-		return strings.TrimSpace(event.Item.Text), false, false
+		return strings.TrimSpace(event.Item.Text), agentCommand{}
 	}
 	if event.Item.Type == "command_execution" {
-		return "", true, event.Item.ExitCode == 0
+		return "", agentCommand{Command: strings.TrimSpace(event.Item.Command), ExitCode: event.Item.ExitCode}
 	}
-	return "", false, false
+	return "", agentCommand{}
 }
 
 func prompt(corpusRoot string, attempt Attempt) string {

@@ -26,12 +26,12 @@ func TestRecognizedCandidateRejectsUnsupportedExtraction(t *testing.T) {
 }
 
 func TestAgentEventExtractsFollowDetails(t *testing.T) {
-	message, command, succeeded := agentEvent([]byte(`{"type":"item.completed","item":{"type":"agent_message","text":"checking fixture"}}`))
-	if message != "checking fixture" || command || succeeded {
-		t.Fatalf("agent message = (%q, %t, %t)", message, command, succeeded)
+	message, command := agentEvent([]byte(`{"type":"item.completed","item":{"type":"agent_message","text":"checking fixture"}}`))
+	if message != "checking fixture" || command != (agentCommand{}) {
+		t.Fatalf("agent message = (%q, %#v)", message, command)
 	}
-	message, command, succeeded = agentEvent([]byte(`{"type":"item.completed","item":{"type":"command_execution","exit_code":1}}`))
-	if message != "" || !command || succeeded {
-		t.Fatalf("agent command = (%q, %t, %t)", message, command, succeeded)
+	message, command = agentEvent([]byte(`{"type":"item.completed","item":{"type":"command_execution","command":"go test ./...","exit_code":1}}`))
+	if message != "" || command.Command != "go test ./..." || command.ExitCode != 1 {
+		t.Fatalf("agent command = (%q, %#v)", message, command)
 	}
 }
