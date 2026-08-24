@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/ferretsecurity/deplens/internal/analyzerloop"
+	"gopkg.in/yaml.v3"
 )
 
 func main() {
@@ -63,6 +64,16 @@ func plan(args []string, workingDir string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "error: %v\n", err)
 		return 1
 	}
+	verificationPath := filepath.Join(*corpus, ".deplens", "corpus-verification.yaml")
+	baseCommit, err := verificationDeplensCommit(verificationPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "error: %v\n", err)
+		return 1
+	}
+	if err := descendantOf(workingDir, baseCommit, commit); err != nil {
+		fmt.Fprintf(stderr, "error: current commit does not descend from the corpus base: %v\n", err)
+		return 1
+	}
 	corpusCommit, err := gitValue(*corpus, "rev-parse", "HEAD")
 	if err != nil {
 		fmt.Fprintf(stderr, "error: %v\n", err)
@@ -75,9 +86,9 @@ func plan(args []string, workingDir string, stdout, stderr io.Writer) int {
 	}
 	created, err := analyzerloop.Plan(analyzerloop.PlanOptions{
 		CorpusRoot:       *corpus,
-		VerificationPath: filepath.Join(*corpus, ".deplens", "corpus-verification.yaml"),
+		VerificationPath: verificationPath,
 		LedgerPath:       *ledger,
-		DeplensCommit:    commit,
+		DeplensCommit:    baseCommit,
 		RulesSHA256:      rulesHash,
 		CorpusCommit:     corpusCommit,
 	})
@@ -224,6 +235,25 @@ func hashFile(path string) (string, error) {
 	}
 	sum := sha256.Sum256(data)
 	return fmt.Sprintf("%x", sum), nil
+}
+
+func verificationDeplensCommit(path string) (string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("read corpus verification ledger: %w", err)
+	}
+	var verification struct {
+		Deplens struct {
+			Commit string `yaml:"commit"`
+		} `yaml:"deplens"`
+	}
+	if err := yaml.Unmarshal(data, &verification); err != nil {
+		return "", fmt.Errorf("parse corpus verification ledger: %w", err)
+	}
+	if verification.Deplens.Commit == "" {
+		return "", errors.New("corpus verification ledger has no deplens commit")
+	}
+	return verification.Deplens.Commit, nil
 }
 
 func gitValue(dir string, args ...string) (string, error) {

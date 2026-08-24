@@ -133,7 +133,7 @@ func Plan(options PlanOptions) (Ledger, error) {
 		return Ledger{}, fmt.Errorf("corpus targets deplens commit %q, current commit is %q", verified.Deplens.Commit, options.DeplensCommit)
 	}
 	if options.RulesSHA256 != "" && verified.Deplens.RulesSHA256 != options.RulesSHA256 {
-		return Ledger{}, errors.New("corpus rules hash does not match current default rules")
+		return Ledger{}, fmt.Errorf("corpus rules hash %q does not match current default rules %q", verified.Deplens.RulesSHA256, options.RulesSHA256)
 	}
 
 	corpusPath := verified.Corpus.Path
