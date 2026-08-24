@@ -49,9 +49,15 @@ func TestPromptSeparatesImplementerAndVerifierResponsibilities(t *testing.T) {
 	if !strings.Contains(implementer, "Implement a real source analyzer") || !strings.Contains(implementer, "Create exactly three") {
 		t.Fatalf("implementer prompt missing extraction requirements: %q", implementer)
 	}
+	if !strings.Contains(implementer, "TestMatchSelectorOnlySourceMatchesSupportedFiles") || !strings.Contains(implementer, "go test ./internal/analyze") {
+		t.Fatalf("implementer prompt missing analyzer migration checks: %q", implementer)
+	}
 	verifier := prompt("/corpus", Attempt{WorkItem: workItem, Role: RoleVerifier})
 	if !strings.Contains(verifier, "Do not add, remove, or replace fixtures") || strings.Contains(verifier, "Create exactly three") {
 		t.Fatalf("verifier prompt has incorrect fixture instructions: %q", verifier)
+	}
+	if !strings.Contains(verifier, "TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources") || !strings.Contains(verifier, "go test ./internal/analyze") {
+		t.Fatalf("verifier prompt missing analyzer migration checks: %q", verifier)
 	}
 }
 

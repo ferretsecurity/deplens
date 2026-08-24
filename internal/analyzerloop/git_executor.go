@@ -185,7 +185,8 @@ func agentEvent(line []byte) (string, agentCommand) {
 func prompt(corpusRoot string, attempt Attempt) string {
 	common := fmt.Sprintf(`You are the %s for dependency detector %q (work item %d).
 Work only in the current detached worktree. You may read the three original candidates from %q.
-Do not change the loop harness, ledger, corpus repository, Go modules, or unrelated files. Never copy originals or provenance. Follow repository conventions, including updating README.md for the detector when required.`, attempt.Role, attempt.WorkItem.ID, attempt.WorkItem.Number, corpusRoot)
+Do not change the loop harness, ledger, corpus repository, Go modules, or unrelated files. Never copy originals or provenance. Follow repository conventions, including updating README.md for the detector when required.
+If this change makes a previously selector-only rule analyzer-backed, update the selector-only regression coverage: remove the filename from TestMatchSelectorOnlySourceMatchesSupportedFiles and add it to TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources. Do the equivalent for any existing repository test that distinguishes selector-only from analyzer-backed rules.`, attempt.Role, attempt.WorkItem.ID, attempt.WorkItem.Number, corpusRoot)
 	var roleInstructions string
 	switch attempt.Role {
 	case RoleImplementer:
@@ -201,7 +202,7 @@ Do not add, remove, or replace fixtures. Repair the analyzer, registration, rule
 		roleInstructions = "\nVerify the dependency extractor according to repository conventions."
 	}
 	return common + roleInstructions + `
-Run focused tests.
+Before reporting success, run go test ./internal/analyze. The harness runs the same package-level test suite; tests limited to files you added are not sufficient.
 At the end, output exactly one line and nothing after it:
 <analyzerloop-result>{"summary":"short description","fixtures":["testdata/...","testdata/...","testdata/..."]}</analyzerloop-result>`
 }
@@ -382,7 +383,7 @@ func validateWorktree(ctx context.Context, worktree, corpusRoot string, attempt 
 		}
 	}
 	if output, err := command(ctx, worktree, "go", "test", "./internal/analyze"); err != nil {
-		return fmt.Errorf("run focused analyzer tests: %w: %s", err, strings.TrimSpace(string(output)))
+		return fmt.Errorf("run analyzer package tests: %w: %s", err, strings.TrimSpace(string(output)))
 	}
 	if attempt.Role == RoleVerifier {
 		if output, err := command(ctx, worktree, "go", "test", "./..."); err != nil {
