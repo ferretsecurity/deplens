@@ -1,0 +1,2135 @@
+version: 1
+corpus:
+    path: /home/jekos/ghq/github.com/ferretsecurity/deplens-fixture-corpus/testdata/corpus
+    commit: 2eb94e17f9461c6592722913d48d220be0bc7f61
+deplens:
+    commit: 28cd8d9537e01353aed0b7b3294037cee757cc09
+work_items:
+    - number: 1
+      id: bazel-build-file
+      detector:
+        id: bazel-build-file
+        form: build-definition
+        roles:
+            - declaration
+            - constraint
+            - configuration
+      candidates:
+        - candidate_id: candidate-16604a9411f1c2dd3bb340a32ba945b9
+          original_path: BUILD.bazel
+          source_sha256: 1e43f4ab789897ce61c99e6b9753c45327c18f44beb990218e611d64c051158b
+        - candidate_id: candidate-8f57d10254c074b1cd2dcd4e49be060c
+          original_path: BUILD.bazel
+          source_sha256: 0f0f320e5636b5b051f131f47afdbd78d65f5ade6ab564f51f43cef0815d1308
+        - candidate_id: candidate-af7110334d05452f96b612b1a6d203d7
+          original_path: BUILD.bazel
+          source_sha256: fda61f08985c3692a64bf5db9a16f67a20ed2d271611d04d6e3f57c599cff4b8
+      state: pending
+    - number: 2
+      id: bazel-module
+      detector:
+        id: bazel-module
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-05ef0a31780ce96e2f32f2bd0e6b3d41
+          original_path: MODULE.bazel
+          source_sha256: 3016b8baf60457f8cde8557d8e5740f6c9ed9d87f7bec2be1362d6061f4473f9
+        - candidate_id: candidate-938a6a84a7ffa75798af6fcbb6775d21
+          original_path: MODULE.bazel
+          source_sha256: eb99c72f7ec9d1d79a55f1165d5babde6184d2fa65cd81a6c60e212d01ba67a1
+        - candidate_id: candidate-c0624debc373a522cc06863777f3913c
+          original_path: MODULE.bazel
+          source_sha256: 4157d273074a1876fa674deca1e551bad66f06b87da1603dd856244e97b7ced8
+      state: pending
+    - number: 3
+      id: bazel-workspace
+      detector:
+        id: bazel-workspace
+        form: workspace-definition
+        roles:
+            - workspace
+            - configuration
+      candidates:
+        - candidate_id: candidate-16ee7c45706bb0782a3247b27f5f70f2
+          original_path: WORKSPACE
+          source_sha256: b685e74f892f9ad3f8af2b33db5e354b27dfa9ee2fffc7d7420ec9479dc49363
+        - candidate_id: candidate-9e612230ef68a0ee3c0dcd5346198e05
+          original_path: WORKSPACE
+          source_sha256: 6a16db41a1bf1c02a4a401ce35b4068e0207916fdd3e9b32d6dd903e97d541f9
+        - candidate_id: candidate-f4e872dd9ce76f7923e48cef08253937
+          original_path: WORKSPACE
+          source_sha256: 89d35a780d50dd1364bd8b895997421a3dd59c956eb62d0ace3ed6c0daba20a8
+      state: pending
+    - number: 4
+      id: buf
+      detector:
+        id: buf
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-1f7ac6cfaa5b5a7b070d4e95a69a7ea6
+          original_path: buf.yaml
+          source_sha256: 064d7805f718db041ec3bd199e072ddfb1c871e088bc8a907cd898ba17858af4
+        - candidate_id: candidate-61f950f4b2b230dfd4a76c5f5cf1fc8f
+          original_path: buf.yaml
+          source_sha256: 90d5fea4e86007627137328a9c88610b502c7a3a64b98f69ff66f1e0a9ab30ce
+        - candidate_id: candidate-c26fdf3c154c205d095e8226e1432809
+          original_path: buf.yaml
+          source_sha256: acfd111dcb8fbda2718f28b17943ab75e53cccc4c31fb70ffaaef988489e2d5d
+      state: pending
+    - number: 5
+      id: buf-lock
+      detector:
+        id: buf-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-2cb58f508d8c5594f583bc70052971c7
+          original_path: buf.lock
+          source_sha256: 3c5460588706a9cd3429b3b8df30dc23a668f252c115fae522d1e274a0ce4bb7
+        - candidate_id: candidate-a66266b8238b059cac5fe8d9487a1b45
+          original_path: buf.lock
+          source_sha256: 9ebd8c84cb61a76fc72df017894b7e675bb44c62c5bfacb375438f2bb94a90e4
+        - candidate_id: candidate-ae351323d565cb34d423232a4aaca41c
+          original_path: apiv2/buf.lock
+          source_sha256: 3847a1487162ea0014a292460405ee719432a620b658c03092c9a10e059eb225
+      state: pending
+    - number: 6
+      id: chef-berksfile
+      detector:
+        id: chef-berksfile
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-23b1abd653fa35ac48887560f4a15dfc
+          original_path: Berksfile
+          source_sha256: 289e66ca4432656df1f6516bd9a7c6b395b4cfed85770d0a99a5d1f806714f46
+        - candidate_id: candidate-2e8d391f1f38122ce3fe22d545d661a2
+          original_path: Berksfile
+          source_sha256: 506f00dbfd6b2ab4ce6d64e364f0846016512807373614db5effcb6db380de92
+        - candidate_id: candidate-91b57778ac66fd6a54e3a47fe97b86fc
+          original_path: Berksfile
+          source_sha256: 8d3815f1e93002c14a9e91b660edf4889d1f881be84dd3fcad3921512e29ad3d
+      state: pending
+    - number: 7
+      id: chef-berksfile-lock
+      detector:
+        id: chef-berksfile-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-2608376964dfb85fe20e38ada59b5994
+          original_path: Berksfile.lock
+          source_sha256: f5cce5f7f8b44503a6d76453258d24d7d582eaac3eef8792407339cf6bfcadc1
+        - candidate_id: candidate-29d99712e4ac2dd99cbd1636b7bd9870
+          original_path: Berksfile.lock
+          source_sha256: dea0a51ec213a64a42ee57ac4181441e646381fef77f29eac023a47c9bf2da74
+        - candidate_id: candidate-2a56cb00f7115075bb82d6d703a56c9f
+          original_path: Berksfile.lock
+          source_sha256: 702c299b3b5673fc72743f4c333bdf267c61d744dccce54601d0b6c05e4e88c8
+      state: pending
+    - number: 8
+      id: chef-metadata
+      detector:
+        id: chef-metadata
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-3e66dfc9550f34063e70ac07ece341d9
+          original_path: cookbooks/heat/metadata.rb
+          source_sha256: 62acf9639497708d2e0f1bfc7313c93f7445b859beb0dfb119072c10a848594f
+        - candidate_id: candidate-493d7cce466c7b9b48b84e8ae75096c4
+          original_path: cookbooks/ceilometer/metadata.rb
+          source_sha256: d0e65219a0342334f03cab4d2fb1882d86db4aa3892f823696e1157712cbd038
+        - candidate_id: candidate-66454bf53dd746470db26b8474794e29
+          original_path: metadata.rb
+          source_sha256: a62d0964b340a0802979ff54458fe2328264b64bae11559a2c153cad89f48855
+      state: pending
+    - number: 9
+      id: chef-policyfile
+      detector:
+        id: chef-policyfile
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-70f57b1477e21b88333be992f6d403eb
+          original_path: Policyfile.rb
+          source_sha256: e358937e285c82156fa259a31c850754413f79edb9626fa047777746c28246dc
+        - candidate_id: candidate-91480f0c3a4ab771e9429da2840e623b
+          original_path: Policyfile.rb
+          source_sha256: 9376827eda0564cceb88d4b23fa75424891253dd6789f4fdd0f97f86761262a7
+        - candidate_id: candidate-a404fde4a82cfc6137f2be321d4e5060
+          original_path: Policyfile.rb
+          source_sha256: 493ef04d2f1dab15a046844c89a690e908b07ee94edc3182f75a831a0a18e9be
+      state: pending
+    - number: 10
+      id: chef-policyfile-lock
+      detector:
+        id: chef-policyfile-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-3f42434c108cc22bb5b100e20a3b978b
+          original_path: hashicorp-vault/Policyfile.lock.json
+          source_sha256: 93ae8d2d54325c02437f705e697d3eed534bc90f4a6832890fa6efe63e240b2b
+        - candidate_id: candidate-413ff2226917a170534a90cc18fded6a
+          original_path: spec/data/Policyfile.lock.json
+          source_sha256: c24a075a6fe2ddff127ff422dc75078905420bb345ea310b33be931b3c919157
+        - candidate_id: candidate-f2bb2f402ecffc2f95ae34df554820a4
+          original_path: 36-chef-infra-automation/policyfiles/Policyfile.lock.json
+          source_sha256: d66f475c06b69680f22be27164a628682a9ddee0f9e24062c7263f87edea8d0e
+      state: pending
+    - number: 11
+      id: clojure-boot
+      detector:
+        id: clojure-boot
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-0c38d7897b917c472c961d8941dc8865
+          original_path: build.boot
+          source_sha256: 1beca601e35c9ae5e44f5879323def31898678ab3da8cad78af12bc0d0c647d5
+        - candidate_id: candidate-5cab3b14155374e1e54a0cb99ec52276
+          original_path: build.boot
+          source_sha256: 7abf053d332758f4268986b31dd0da805b579561c591863cfcb25bcbd9cf86c7
+        - candidate_id: candidate-cea2fa0bdd143c601103e2a00ae1ddd4
+          original_path: build.boot
+          source_sha256: d657da47774f7c58a2a3e8bf5586ac945480f20378c9ca111e0c94d626cdac42
+      state: pending
+    - number: 12
+      id: clojure-deps-edn
+      detector:
+        id: clojure-deps-edn
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-0e2a72ec491e7a0482793cb4b7562316
+          original_path: deps.edn
+          source_sha256: 5bebf82b5dd986dbc2d4e2787a5e16df02120af8eb3299bf3fe18819686399cb
+        - candidate_id: candidate-0f808b45ecf4ddd895f07425702d3641
+          original_path: deps.edn
+          source_sha256: 517d73655db4b5f4e920b7dc36dfccb3b62c911adcacfd52728d92ad529ee224
+        - candidate_id: candidate-fb8c155c9139fe3b3b613c797b17a1c7
+          original_path: deps.edn
+          source_sha256: 9c949482d15520e7c1a08ace867d3f8a9b2795237eccc7af7edeca46a31adcec
+      state: pending
+    - number: 13
+      id: clojure-project-clj
+      detector:
+        id: clojure-project-clj
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-4acbeb6eca1bb065844e5f24f3da3951
+          original_path: project.clj
+          source_sha256: 4d14337befc9253a04e6608f69d48fa9313e0b77b9bb753854b8a2d300d40808
+        - candidate_id: candidate-b29bcb3600b6c86dc4536232d17b4c08
+          original_path: project.clj
+          source_sha256: 7a6c3113c25cf66275913d565a2e1046b6e6b7e785d49936032690cae3d9808a
+        - candidate_id: candidate-e0a9d9010c707d401401b89ae458926d
+          original_path: project.clj
+          source_sha256: d10ef96450d81a1ff97a824a75583ac6a79e3375885577e096040eca07ebb38c
+      state: pending
+    - number: 14
+      id: cpp-autotools
+      detector:
+        id: cpp-autotools
+        form: build-definition
+        roles:
+            - declaration
+            - constraint
+            - configuration
+      candidates:
+        - candidate_id: candidate-59ec50793a26d23ad233923fd0732269
+          original_path: configure.ac
+          source_sha256: 7d291e42b9de9a8f167a4684c5a5c01c94a4672118f67629a40041b24dd4103c
+        - candidate_id: candidate-91fc5f379c226261d45c580642f63fde
+          original_path: configure.ac
+          source_sha256: 3db9f3692f7d439df084d11a91bf759c3a49e34e614e94b9d33d7bdfd9498109
+        - candidate_id: candidate-bf672e2b1aeaa2a29ba0de4a0c176fd2
+          original_path: configure.ac
+          source_sha256: f2ad52a82945e5939de6727b381f3f02155dce905c1368aef486072a5115d947
+      state: pending
+    - number: 15
+      id: cpp-cmake
+      detector:
+        id: cpp-cmake
+        form: build-definition
+        roles:
+            - declaration
+            - constraint
+            - configuration
+      candidates:
+        - candidate_id: candidate-0b3cbc8ad3d8de8e73b73d56b210977e
+          original_path: cli/CMakeLists.txt
+          source_sha256: e4fd58eb33a5273fd275f4a598be8df381b577e30b682f858f5e53e29e4be046
+        - candidate_id: candidate-6b5b7ff8cab42e5e4833413ba995973f
+          original_path: components/Adafruit_BusIO/CMakeLists.txt
+          source_sha256: 3553b0b86877e6c4067a3ef2524bd7a3b53d2d089f838f1ba13e621b1bdea1ce
+        - candidate_id: candidate-93ac0c1dec88ab8636bbd7934c932c91
+          original_path: unicorn/all/test_package/CMakeLists.txt
+          source_sha256: 64481a0c10d6d0c7d30266fdbf6015a2597c4da243c44d81a7fbf729ca6b972a
+      state: pending
+    - number: 16
+      id: cpp-cmake-modules
+      detector:
+        id: cpp-cmake-modules
+        form: build-definition
+        roles:
+            - declaration
+            - constraint
+            - configuration
+      candidates:
+        - candidate_id: candidate-5cde448c3a33231d2141b2f6ac7b5da4
+          original_path: cmake/cxx.cmake
+          source_sha256: 11a6a91b3ef06ec35309007147baac2357734e02f09e7f7c3f082f3c273d9ae0
+        - candidate_id: candidate-5e5517ff3ca88728a2c45ab8418b3ca4
+          original_path: cmake/lz4.cmake
+          source_sha256: 8c3868627a365bb5d620ad8a85c06ce9f85dbc080409773c26d62904ff9ad4a7
+        - candidate_id: candidate-a3cbb7d2bfd08c13d6ef7f7375657cdc
+          original_path: cmake/32.cmake
+          source_sha256: 2ef4e27f9b0933b45927da9d54e0c006e45a325e1de1ed9f295f8edc2d98b25f
+      state: pending
+    - number: 17
+      id: cpp-conan-lock
+      detector:
+        id: cpp-conan-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-36e2c71f6bac05eed434da70a6176a48
+          original_path: conan.lock
+          source_sha256: 3f6e3e887baa7f5801e433150cdd9c37438c0c21f65b91da780c6143e98adb06
+        - candidate_id: candidate-58b3c4f01c4059092ccae32da8ca6811
+          original_path: conan.lock
+          source_sha256: 7577e5c42ebc07a2f4fd42db0d1cf4388e9cb360ece5ffdb7285b2aed90b1763
+        - candidate_id: candidate-c5c44c614950bebbe58bfdd03cd0290b
+          original_path: Exe/.conan/conan.lock
+          source_sha256: 2efb1ef362d4b6efe5dd10c34589a5d6b41e2f5329002b8de3346845e899351f
+      state: pending
+    - number: 18
+      id: cpp-conanfile
+      detector:
+        id: cpp-conanfile
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-04ab94af7fe37740b3d3202ec0220d3c
+          original_path: conanfile.txt
+          source_sha256: cb7bf664b8d05dec7c65302b95368ac49822cf1ba50779af29462fbd654728f2
+        - candidate_id: candidate-30a5135708acd82b4ec2766eb14223cd
+          original_path: conanfile.txt
+          source_sha256: 787893ddfa1fa7328b84dc927b1eef148df971ca22df20d491fb8254cd38014b
+        - candidate_id: candidate-36021247e8e87b1a70948f0d24a82479
+          original_path: conanfile.txt
+          source_sha256: b3018600d10b22175017f25e84b4b67cbf7297c60ffdd3a38318b298076108c9
+      state: pending
+    - number: 19
+      id: cpp-conanfile-py
+      detector:
+        id: cpp-conanfile-py
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-036118ff2724d4a6ce4e49971a92ddd6
+          original_path: conanfile.py
+          source_sha256: 9154e9a4f8deefe61190423862cc57666a2522d2677897af9c277db145975336
+        - candidate_id: candidate-3740c8e893d5a8e39ecb275bdbfc357b
+          original_path: conanfile.py
+          source_sha256: d9af8f8fc94a5d8dd329374c7b6e1cd3e2d3d09a37626d14e1ce7ea24a3137ae
+        - candidate_id: candidate-78322dd993c32d084aa6c1998737e3bd
+          original_path: conanfile.py
+          source_sha256: df572bdd5efd6e8e73867a1df949401257a55577330b52fce0e36cd7d8982df7
+      state: pending
+    - number: 20
+      id: cpp-meson
+      detector:
+        id: cpp-meson
+        form: build-definition
+        roles:
+            - declaration
+            - constraint
+            - configuration
+      candidates:
+        - candidate_id: candidate-18284bbcb606219feea7bd166c206126
+          original_path: meson.build
+          source_sha256: 29523937a59cb56acfb8a71027c04064018cc62bf4762d908363c21a8115dd41
+        - candidate_id: candidate-19d4a90e7a7eed97a949a4dd4c758797
+          original_path: meson.build
+          source_sha256: b59148b17f32ce11cc3b7f99ed8e1e6b98895cc054decdd743ab98284e379b5d
+        - candidate_id: candidate-649ea9295ef375309844724c47bb5a3b
+          original_path: meson.build
+          source_sha256: 1b0f0f199b09e5c9ec2f8a5a8019fb5a8acc199fd94a9e5d2ef7c17b9a3af82c
+      state: pending
+    - number: 21
+      id: cpp-meson-wrap
+      detector:
+        id: cpp-meson-wrap
+        form: build-definition
+        roles:
+            - declaration
+            - constraint
+            - configuration
+      candidates:
+        - candidate_id: candidate-392d08833830d026bedecc6e310a4cf6
+          original_path: subprojects/klib.wrap
+          source_sha256: 081602f65d3f9b5d36b04805e877cdd3760f83d2b0822f1347227cd069321e3c
+        - candidate_id: candidate-50f4abb7a6b563a200f727caef541305
+          original_path: subprojects/fmt.wrap
+          source_sha256: 19407aecef56e2500ece55c0f9345370201b0a1736f7af023b247f5d2448bac1
+        - candidate_id: candidate-9d5549e23d0fe3b20dd50d6e2516c9c5
+          original_path: subprojects/ppm.wrap
+          source_sha256: a815cd8a8386ed4afe3194ed2698f24878b5494e5388c7bc656d96302eae1d18
+      state: pending
+    - number: 22
+      id: cpp-vcpkg
+      detector:
+        id: cpp-vcpkg
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-095b3af419083d4672acccf306c80c59
+          original_path: vcpkg.json
+          source_sha256: 2ea98b7703df0684263becd3c9a9dc43fa8dfda924a15991c7ed7c0adcbb5d6d
+        - candidate_id: candidate-46e1d6381b9d1d2e9f3c2ed9812c51a9
+          original_path: vcpkg.json
+          source_sha256: 3488ee1ded59add2d3cd64bcb34eed43c5fac1d1e77545450601c67aa8568cc5
+        - candidate_id: candidate-87d61f543ecb4acae358ebfbc0df8838
+          original_path: ChampSim/vcpkg/ports/libpff/vcpkg.json
+          source_sha256: 6b1930d7a62a505be00af74be88c729d57230d612f5bc9529b0b4b258fc80563
+      state: pending
+    - number: 23
+      id: cpp-vcpkg-config
+      detector:
+        id: cpp-vcpkg-config
+        form: tool-config
+        roles:
+            - configuration
+      candidates:
+        - candidate_id: candidate-2969fde9b5296df2ef77ecf94bc36d53
+          original_path: vcpkg-configuration.json
+          source_sha256: 92025c909792af060f298477ed9710da60012ba1ac18f56f93527850450c6d4f
+        - candidate_id: candidate-c48a1cf6bc0aed48dedd151fc01c6505
+          original_path: vcpkg-configuration.json
+          source_sha256: dfbae9cfeff99c7e0212618511b0f57aea10818d09be7970715d994acea9e8b7
+        - candidate_id: candidate-cbcf323d21263f370e42c981274e87e4
+          original_path: vcpkg-configuration.json
+          source_sha256: 79cd138250155ecee4d35f515201375ce7b4ccad8f6398e2781d0be8968390b9
+      state: pending
+    - number: 24
+      id: crystal-shard
+      detector:
+        id: crystal-shard
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-1ae53924175ef189832b8541b531c349
+          original_path: benchmarks/baked/shard.yml
+          source_sha256: cb123f05e9fff3c1bf88596abe2f56d0dfa6ebd3f6adf0dbe3f8eb75e4e9a462
+        - candidate_id: candidate-2575aa1cee778f87a4314e4851de2638
+          original_path: shard.yml
+          source_sha256: e65b0275ce182052848c0c5d3f549e249ae779b62b03b4b3eccd3b931bf34a69
+        - candidate_id: candidate-4aa65eace13cb14e2b2315285e1012d7
+          original_path: shard.yml
+          source_sha256: 6200fb96bd9a51476aa42f9fc00b789acd15d9f3ca7d19b9486cbcbbce839e80
+      state: pending
+    - number: 25
+      id: crystal-shard-lock
+      detector:
+        id: crystal-shard-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-1c5d7aa9b7a88833e3b545ac96d1bd8e
+          original_path: shard.lock
+          source_sha256: d58185776c1b5e7bc8744691abff8361eac334bff10e022e46bd8a62fc8fa0a1
+        - candidate_id: candidate-1e64cc511324b88c9a4496822afd84e0
+          original_path: shard.lock
+          source_sha256: 18c4af34c1f74f4edfd356c24287ee2024e360bfd65a04a6103eda53f9d9dbb1
+        - candidate_id: candidate-3e864f2af8b6c67df9cfde73141c0f72
+          original_path: shard.lock
+          source_sha256: d4a0f4136b600e45fe37cb9ddc7fa40dcb87fbd2dc5904e83209677be5971c52
+      state: pending
+    - number: 26
+      id: dart-pubspec
+      detector:
+        id: dart-pubspec
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-0a9f86e27cde0fe45ff980cb37a1a06c
+          original_path: packages/services/e2e_crypto/pubspec.yaml
+          source_sha256: 256dd1f297ab61f93606bb5a60b80604a71592c6385cb4f09af0473d0c379210
+        - candidate_id: candidate-4837beb707206c1cc8a64dd035daf769
+          original_path: mobile/local_plugins/nfc_manager/example/pubspec.yaml
+          source_sha256: 7163f3d8672af07d5ef7269738420716bce94de2b2ad79e33f4292c032609232
+        - candidate_id: candidate-d93a0de25282f1a18676ba22ec7ef4fe
+          original_path: navigation_demo/pubspec.yaml
+          source_sha256: 0031bad69f8320fe5e7aaa933cbc4d61df91953c261f6719aec9828c20d44a58
+      state: pending
+    - number: 27
+      id: dart-pubspec-lock
+      detector:
+        id: dart-pubspec-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-3f7f0856bd668c6271bd4c32de06b3bf
+          original_path: pubspec.lock
+          source_sha256: be338b248f36529cc731cae3271abc0993d96aaf7449dac13dc0cc6c83143498
+        - candidate_id: candidate-7c3f7ba2f059b5377f27e4374b6a0817
+          original_path: pubspec.lock
+          source_sha256: d64fddd41e423c178f9666e46623b711f6ab788e87e7fba5158432272821fc74
+        - candidate_id: candidate-ddc491fa5f0320b246c5d3a9e4b37e13
+          original_path: pubspec.lock
+          source_sha256: 54a67ca06aa284c114490aededb1e700cc59ade9e54364df688bf37b072aa721
+      state: pending
+    - number: 28
+      id: deno-json
+      detector:
+        id: deno-json
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-3e9b9709bb30af1a660a99b007d5f295
+          original_path: deno.json
+          source_sha256: 144a5438d7bc2e0bac3aef8cbd3c03d5152d428a0e7bf20095be65d56d2f9a22
+        - candidate_id: candidate-5e0ceb4106f3d6784251dd83ff065287
+          original_path: deno.json
+          source_sha256: 8cda3a3f6b98e58866179f44cfe10085b854933c06486a44b9b6a72946ea16aa
+        - candidate_id: candidate-9ba6a3e0d8e7ea5e0abf2291029abe96
+          original_path: deno.json
+          source_sha256: 7b62b6913cd3b4ca09a4068bfdab1a47dd188359a627eb4f4a572ad36126c24c
+      state: pending
+    - number: 29
+      id: deno-jsonc
+      detector:
+        id: deno-jsonc
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-02ff0b47e1e0c8dd252124770dbd03b0
+          original_path: deno.jsonc
+          source_sha256: f6e2aa048101284c4da8b584b9b71e94649b04e3da76cd3e34ffd0f5b63f7759
+        - candidate_id: candidate-1a6b0ad04fbff348ba723a5a9b4483aa
+          original_path: deno.jsonc
+          source_sha256: 66544251e4385fea9ef572ba312cbb73a1998d03308e581422829069394cac61
+        - candidate_id: candidate-f60796b3879932680827511d29921cb1
+          original_path: deno.jsonc
+          source_sha256: 2d65a137868832813c2011e9f4c519aee7c550c5d0cea1d911ef73f7fb5ca8b0
+      state: pending
+    - number: 30
+      id: deno-lock
+      detector:
+        id: deno-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-0c04b5aa5dc9626785e3665fe8fb0a0e
+          original_path: deno.lock
+          source_sha256: 961ef453f82c8ce5bb8a6bb4bf819c66ec5caf2eed7a8e67b2cbe0867bb15905
+        - candidate_id: candidate-1e932bbda5a5730e91cd69417a559179
+          original_path: deno.lock
+          source_sha256: 4e50271f3e43e3cc278306c1b5a27ddaf1a0a1d4232b824d2917dcd9b138070d
+        - candidate_id: candidate-251b66c04eccf0a5cdef3cf14b0da823
+          original_path: deno.lock
+          source_sha256: 20d7851a812c26442804a1ca22cd6f21117f266a9321753a31b584ad68730669
+      state: pending
+    - number: 31
+      id: dotnet-directory-build
+      detector:
+        id: dotnet-directory-build
+        form: build-definition
+        roles:
+            - declaration
+            - constraint
+            - configuration
+      candidates:
+        - candidate_id: candidate-7154495ed49045d02a9d91be5897cd96
+          original_path: Directory.Build.props
+          source_sha256: f13223b0589bcf15170ed13c26db612e641e8c8dc4d999f6ce71ecc2cfc3764e
+        - candidate_id: candidate-7cecdff27c84f4a64b08b8af5dbc19c4
+          original_path: Directory.Build.props
+          source_sha256: b29028baa9f3229ec597839308a73f2e2ad7aef7882060b2b44dbad8a66dd243
+        - candidate_id: candidate-bd8281f9c5550757297f7b0a9fae8928
+          original_path: Directory.Build.props
+          source_sha256: 42583f56e02334e9ed3e15edced09efb6f68f86071f63e930c666dff118469f5
+      state: pending
+    - number: 32
+      id: dotnet-packages-lock
+      detector:
+        id: dotnet-packages-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-218deaf700ea4a89baaab65dc14f1078
+          original_path: src/packages.lock.json
+          source_sha256: 1d2303039177af31901713dd636621dad43c54f37eb761fdb4c363b4e7e2cd51
+        - candidate_id: candidate-227df7a5d27a76293330775e2b2582da
+          original_path: src/Docs/packages.lock.json
+          source_sha256: 5b2266c136a0e6368070b69a8253b5cb1174eab71ea689d87617428c392285e2
+        - candidate_id: candidate-780a0833794bffb335cc17a81d123c2b
+          original_path: cli/packages.lock.json
+          source_sha256: 037d7e617cf2143d2120bfd8312e8e4a1189b15ae9887efecf8fed0504d79a25
+      state: pending
+    - number: 33
+      id: dotnet-paket-dependencies
+      detector:
+        id: dotnet-paket-dependencies
+        form: requirements
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-0a7a2906773d85e978425ad09e72f150
+          original_path: paket.dependencies
+          source_sha256: 150f2219470577bbb8055d88107fdf64b7287a0b4c974cb431ea45425dac716b
+        - candidate_id: candidate-549f3e81a28bb4ef7204ff90b619a4da
+          original_path: paket.dependencies
+          source_sha256: 5a0cbd895c5bdaee316f0565e6a9bee9ac9ec4173ff0edd4fdbadeeaa51fdc14
+        - candidate_id: candidate-69709179f2778ba6ad91fbc2568f1629
+          original_path: paket.dependencies
+          source_sha256: ec4293e58408ddfe7b29aea4317011d113fa90e99f386f89f1d69b13a9827559
+      state: pending
+    - number: 34
+      id: dotnet-paket-lock
+      detector:
+        id: dotnet-paket-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-3d41d4fc015baf0ed5086ac89817afb0
+          original_path: paket.lock
+          source_sha256: 8d35031421f8e6b1d8e3fed34503e404ad416bd5c2a14df0fdaf9e3de8994fcd
+        - candidate_id: candidate-56bd1e65e5f6f9791890d709ab4ee948
+          original_path: paket.lock
+          source_sha256: 237b1f148b7d4b270d6eeda3943920bb9d4e269d7aa5e0f7b90ac65d8b7f5de5
+        - candidate_id: candidate-e95102a324ee573898203583ee5ca02f
+          original_path: paket.lock
+          source_sha256: c1ab218560a128eefc2515053ee5756aa16cdfcd797d25320c16fc3d7da305eb
+      state: pending
+    - number: 35
+      id: dotnet-paket-references
+      detector:
+        id: dotnet-paket-references
+        form: requirements
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-47402eaf99577074582a3c0c5d645c65
+          original_path: build/paket.references
+          source_sha256: d5e7abb10814d2e937b35a2efee3b196d1fe7824ec93968386706b361ec7c657
+        - candidate_id: candidate-53a8c2ea2090a3cd169bb0ca61c0fbbf
+          original_path: Scotch/paket.references
+          source_sha256: 158ee1d7a304acf456f2368d186f0926011fb421e61abd8107d43e6a98948db2
+        - candidate_id: candidate-f76d9962710053de4b5f402916bfa8f1
+          original_path: src/cs2fs/paket.references
+          source_sha256: e8bf84b8d172f4392f2ec2adcf2c071e414605f6b9f71f5c35bae5858d62af14
+      state: pending
+    - number: 36
+      id: elixir-mix
+      detector:
+        id: elixir-mix
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-088216a6ccaa7c85981929f36be5cbc3
+          original_path: mix.exs
+          source_sha256: a471f3b4eab8d5f3a7bbe0310feebca84038fc45047b0799c44e9305430b9c1b
+        - candidate_id: candidate-34042bac68316fb38bd52c8e912ab572
+          original_path: mix.exs
+          source_sha256: 85c83ad581cd718ccc164b1d5d596d1f7b6dabc4f20a4b7c25d7d02e4f0a507b
+        - candidate_id: candidate-b015d269fc9a36a8cc9c11f95b094d03
+          original_path: mix.exs
+          source_sha256: 32492bff79671788da5c1900e326338f55ea3f49aacbbeec8715b11f2fd7154c
+      state: pending
+    - number: 37
+      id: emacs-cask
+      detector:
+        id: emacs-cask
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-70a2e40724681909a03b42e9a647e981
+          original_path: Cask
+          source_sha256: 10cc9660e43a605bd9fe30f69bf2010712264f7c90be0447acb54daa317ef7cf
+        - candidate_id: candidate-8c51361ac1fbbde7a659a08d7c55d47f
+          original_path: Cask
+          source_sha256: 981c5f93987bc280117985ce6d63916fd365be7e9024fbfecd46d339937de047
+        - candidate_id: candidate-923c65bb51655217866bff37a87ff473
+          original_path: Cask
+          source_sha256: 5b192c74b503a1ceb44bb1c7e6bdfe6b7142c9617a696ed98d0cc6a9480ebc28
+      state: pending
+    - number: 38
+      id: erlang-rebar-config
+      detector:
+        id: erlang-rebar-config
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-18aa287e50dd08a1546b86011b16f45f
+          original_path: rebar.config
+          source_sha256: 47f4af95d9bb4e7bc301eb99f1710b603941471dc663973fdb0682c881ffe70a
+        - candidate_id: candidate-924c33dc71a8cf02157f1f5437cac40e
+          original_path: rebar.config
+          source_sha256: 60d63d8b3b21e7ba86db01b5b74b6bda39e3c1660eed2c25464abfd251f03fac
+        - candidate_id: candidate-af628ab67c6d68ef26e830a330eb957e
+          original_path: rebar.config
+          source_sha256: aaee329f231f2f7fbadd64b03f73c39e8b32da0b7d0d4b1732dbbbd68555c94b
+      state: pending
+    - number: 39
+      id: erlang-rebar-lock
+      detector:
+        id: erlang-rebar-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-26c51d72d63a4c1edf80719e305b2f3d
+          original_path: rebar.lock
+          source_sha256: 5307ade7feb533e76dce0afc9d0a061c0659476f2b7c77e858102e42bc25d395
+        - candidate_id: candidate-8b29e9b54c24608e46652b807911ee87
+          original_path: rebar.lock
+          source_sha256: f0ab9e4ed0ad8b45bfe78a1205ee5edec2472665e1a34951c3e0964fced262a9
+        - candidate_id: candidate-e639b0266a19a8108da1010c0e59a24f
+          original_path: rebar.lock
+          source_sha256: 4cd6e62c19236750fb29bfeb5cf935cd47a48002a92fb794e99bdf6269d66223
+      state: pending
+    - number: 40
+      id: fortran-fpm
+      detector:
+        id: fortran-fpm
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-038b0cd8ea26fbfd5693b50f730e6d4a
+          original_path: example_packages/features_default_profile/fpm.toml
+          source_sha256: 702de30483e11281140a42f492dae213ea9989365757ff0cbfb4aa72ed067590
+        - candidate_id: candidate-8751876a7e3bea762b16bad1bfb35ab6
+          original_path: fpm.toml
+          source_sha256: 1ddd511cc44dd1112b39ce252217891c61c1502d9e60a6db3c21922584206c09
+        - candidate_id: candidate-f25548cd2922a7c4dcfa3cb3531f83a0
+          original_path: fpm.toml
+          source_sha256: b3d6b53121fe26e15de4695afd01e8fb37c183526ede6bca89a8fc32194cce0c
+      state: pending
+    - number: 41
+      id: foundry-remappings
+      detector:
+        id: foundry-remappings
+        form: constraint-file
+        roles:
+            - constraint
+      candidates:
+        - candidate_id: candidate-08ee7e0283b3a1aa54ca1f30d61904d8
+          original_path: remappings.txt
+          source_sha256: 214724d4f3f59bfd508c392b10e0a78b401e439fe6da9562d9a278713a2a290b
+        - candidate_id: candidate-29544dfbe5052cadbbc801127b7d07e6
+          original_path: remappings.txt
+          source_sha256: 192d27ae84d9716cd945c737512e85b219be2a4fc26a75719fbee8f4eae52f5e
+        - candidate_id: candidate-6bc2d2ffdd1961880f6fdcc4520cc7ad
+          original_path: remappings.txt
+          source_sha256: 9324732e508592f27c9b9b7c38b0c1ea7e1dfc102df75f4b921861624c595fba
+      state: pending
+    - number: 42
+      id: foundry-toml
+      detector:
+        id: foundry-toml
+        form: tool-config
+        roles:
+            - configuration
+      candidates:
+        - candidate_id: candidate-900d539f8c77fbd5e9dffd694c9b4b55
+          original_path: foundry.toml
+          source_sha256: c7a0d428d9880078da2cca2de4f2341de1e4db76cb93758c936dc30747b3d8f1
+        - candidate_id: candidate-ce01dbe93f647eca451d912a1f35d101
+          original_path: foundry.toml
+          source_sha256: c414109f48c3590c78ec325e7ea99c0b586fdbc4de9183a7596ecd325347c5cf
+        - candidate_id: candidate-f53c25eb3048923304e09c884e454ac3
+          original_path: foundry.toml
+          source_sha256: 30bc073985d78d635d3d403fb5c0fd981ef729a5ce64153ef7e11b7c8d5a1983
+      state: pending
+    - number: 43
+      id: git-submodules
+      detector:
+        id: git-submodules
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-5a7874110896a7e1655cd98c1315ef97
+          original_path: .gitmodules
+          source_sha256: 06311ac9208556b502e30100b8ab1fd1a2d1bb7a2b49370d6b3f8e6ea4c2dff6
+        - candidate_id: candidate-725e8107844c6c30d3fa90495ba9c20f
+          original_path: .gitmodules
+          source_sha256: 6f9ec8a838b7ecc6e91eb6323d73e561f01c4adfa9da438cf975e50f6d5272bc
+        - candidate_id: candidate-c3a5cb9bf4ea69ea44e89a1a124adff2
+          original_path: .gitmodules
+          source_sha256: 877614fe0a1a27a98c50f00fb965dc9d06c3d451bf74c04af4c02de7b3bffc76
+      state: pending
+    - number: 44
+      id: github-actions-action
+      detector:
+        id: github-actions-action
+        form: automation-definition
+        roles:
+            - configuration
+            - usage
+      candidates:
+        - candidate_id: candidate-20ae2fdbdb35d0d6049e3bcfaef7e416
+          original_path: action.yaml
+          source_sha256: 7535bed2f9e33a84ebd515d9a8041da41d04c3b5705019ebb5df4774d0446f65
+        - candidate_id: candidate-256ea16c3222b438f4b52f30476c74ac
+          original_path: upload-artifact/action.yaml
+          source_sha256: c499b6d56612f83b186d865efd0520cb497753a8eeeb3a66130b111bcf686d09
+        - candidate_id: candidate-cc6ae59aef9b8f986baeba96c73141ec
+          original_path: action.yaml
+          source_sha256: e26ad1936c0c3aa0d119b37ea2d591c85b651560b8472ed152888ba5ca76cdf5
+      state: pending
+    - number: 45
+      id: gleam
+      detector:
+        id: gleam
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-23d98c882ee7a2045bbb1dce231a4e7d
+          original_path: gleam.toml
+          source_sha256: 838e3793f19c659360531674b88658e48b066ba56eb531286216af7a11ea5a8c
+        - candidate_id: candidate-5f8e0eb193e369dd9234af857873f577
+          original_path: gleam.toml
+          source_sha256: f08184c99b65fc40aa3d43e976eea041c279b6b18c40877110719b0f7992e4c0
+        - candidate_id: candidate-83b2846deb9d66b4c817af0e719b22dd
+          original_path: gleam.toml
+          source_sha256: 310fa63fa7ea6b6c86664097daf1d26f5e1d03d8e7ed629a8ebfd87d45fad55d
+      state: pending
+    - number: 46
+      id: go-glide-lock
+      detector:
+        id: go-glide-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-09296640b62cd864c03e613f590b7c6e
+          original_path: Chapter06/03_observer/glide.lock
+          source_sha256: b66c635a943ffe1108c35db6e7072766fb2309f59b8daf9698deac7dcfa7daa1
+        - candidate_id: candidate-362643ec3fcbecb5c88bc70caf709210
+          original_path: glide.lock
+          source_sha256: d3c72bfc1619e0c5b58a66de143215596f638e6fc1568b29bee58856fe9ade7f
+        - candidate_id: candidate-5b3333facfe1789382cb435d4b63f90e
+          original_path: specs/g/golang-github-gorilla-sessions/glide.lock
+          source_sha256: 0e11c0e11957bc28bcb9734d27523701622693b0a13f58f96b0368c7997d2f41
+      state: pending
+    - number: 47
+      id: go-glide-yaml
+      detector:
+        id: go-glide-yaml
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-379ccfeccc6b6f16b87641fee155082c
+          original_path: glide.yaml
+          source_sha256: 706dcbdc1f2870d733bfe3fb8f013dd4cdb238e32791a99e4e91d8840c8c912d
+        - candidate_id: candidate-47e109bc4a4fe39c56f8a498993208e1
+          original_path: glide.yaml
+          source_sha256: 819f63d9b5527227d331f8d0e2af3a8323efa623c567772fd5b5a030db3e17ee
+        - candidate_id: candidate-7a1d2a4ca7237ea656849de5f79f9a6d
+          original_path: glide.yaml
+          source_sha256: e1e8245ad62002e012a4a5dcb64fbd2e2bd37463711df72646e5e3c3464297ce
+      state: pending
+    - number: 48
+      id: go-gopkg-lock
+      detector:
+        id: go-gopkg-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-0b67b0e608f51a752bf41719356820b7
+          original_path: Gopkg.lock
+          source_sha256: 5ccdaa9f07e84b9e224adb05ddade51eac3a1fbeb6e5657d089c38e6bc8efee6
+        - candidate_id: candidate-e3d879042fc5d2793b9c8dcffa94b990
+          original_path: Gopkg.lock
+          source_sha256: ec0692b5e9ae137d76d7989b6f2587d5c613526bd0aef680faa3709eac39d1c9
+        - candidate_id: candidate-f201266a1894f66e14956c8816bf62c6
+          original_path: Gopkg.lock
+          source_sha256: 603e8a18b834254ffd28bb9270d753d5fa246c85ca663147c45e4487b417f8ae
+      state: pending
+    - number: 49
+      id: go-gopkg-toml
+      detector:
+        id: go-gopkg-toml
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-3975cbf9c6fcae093a99b48e3d10a56b
+          original_path: Gopkg.toml
+          source_sha256: 4bcd7b02f7291db5d3a7f9b28f3ae07749d65957b09bdb1abf37da99dea43a46
+        - candidate_id: candidate-5b9b5762b988d16430f3416133f60aca
+          original_path: Gopkg.toml
+          source_sha256: 6a38105d5a7842f7977e4ba9696dd57f7c2ff5191b591efb753153496a317918
+        - candidate_id: candidate-5c0195710f1873061bf2d1ed2e1cb39f
+          original_path: Gopkg.toml
+          source_sha256: 4781d0c04e505b8bfb753e4e363be42b072c765fd6ee8d2e45127d28a2ba0bcb
+      state: pending
+    - number: 50
+      id: go-work
+      detector:
+        id: go-work
+        form: workspace-definition
+        roles:
+            - workspace
+            - configuration
+      candidates:
+        - candidate_id: candidate-1c122765fd13b2bb8fdc33c1393df85f
+          original_path: go.work
+          source_sha256: 03b53935b805075df9e41f42bdc51f5648b264aa7da8ebbc67fdbc07beabfaa6
+        - candidate_id: candidate-2c7016bb8b53cfef30bb0da06fb8e24e
+          original_path: go.work
+          source_sha256: e52836d18431bf0c9272cd566e27c06abe9419dbcbf0c81f50be17d431b7832e
+        - candidate_id: candidate-cb55b79c21f11d7bb01ac17426ae87bb
+          original_path: go.work
+          source_sha256: 64cc89f7401dabc6d1331d5f58630c8de0903321512e545ce5957dcab04c247e
+      state: pending
+    - number: 51
+      id: godot-plugin-cfg
+      detector:
+        id: godot-plugin-cfg
+        form: tool-config
+        roles:
+            - configuration
+      candidates:
+        - candidate_id: candidate-05434ea70fb40c0d6693d35d33278e9c
+          original_path: plugin.cfg
+          source_sha256: 98e0f8419d3a28cbd0d3a21aa83f90eadb09d131445e2a168d3d3e580f86c8a4
+        - candidate_id: candidate-0623ca0eb5c87c1a23399ae0da4fa20b
+          original_path: plugin.cfg
+          source_sha256: 90824a62105955710a2ed294fd4a9ca73538c990bc2ed4803322aff2d5c17178
+        - candidate_id: candidate-2954ddcbc1e897ba7c4cd95edda7dc4b
+          original_path: plugin.cfg
+          source_sha256: 5bff055397a4d17e2ef062a3a327a3afebaba08306d491400b80a36b7c06e39c
+      state: pending
+    - number: 52
+      id: haskell-cabal
+      detector:
+        id: haskell-cabal
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-4291292dce5e148603e10b27e54c950e
+          original_path: LambdaCircus.cabal
+          source_sha256: ec4c2cdd80c6657229d46a0363a037dd8e21de7d1c2e64f85ac37ab7183ce8f8
+        - candidate_id: candidate-68c75c2992b94cf309df34ddb382b45b
+          original_path: ParMonad/Parallel-Arrows-ParMonad.cabal
+          source_sha256: fae73e99b0059b0025133f8ea80cd09b13cb59f659aafad433bf6b4d36f201d1
+        - candidate_id: candidate-9473ba116d0979924db94933f81d832d
+          original_path: Orchid.cabal
+          source_sha256: 8cb96b7fd9ba02a7d10a32d99b009e7e6bcaab79daf939311d4e69ce21405e62
+      state: pending
+    - number: 53
+      id: haskell-cabal-project-freeze
+      detector:
+        id: haskell-cabal-project-freeze
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-16a91e1cc94a1f6e9b04ec7a17c999db
+          original_path: cabal.project.freeze
+          source_sha256: a91520256777e585dff27afca1c08c458cd14df98d9f05d93160694effb0a0e2
+        - candidate_id: candidate-1b316a649838a17a1662c7371ec9ddbc
+          original_path: cabal.project.freeze
+          source_sha256: f76898e7a0c972d52faf4dcb2912a18e19fbf778d0786576dea7f73a3ad88655
+        - candidate_id: candidate-b81b19fd71c4028881757f9263a583b2
+          original_path: cabal.project.freeze
+          source_sha256: aecb3d9977a653aec75969d4f288a5016ff536b06ec288284b65219b0b79aa7e
+      state: pending
+    - number: 54
+      id: haskell-package-yaml
+      detector:
+        id: haskell-package-yaml
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-5f4c568adb28a5c38528418908804e10
+          original_path: exercises/practice/custom-set/package.yaml
+          source_sha256: 61d0bf6048fd8fbe50d0a3ae3155ebdc774808a5a0d8057172b5382d5c258834
+        - candidate_id: candidate-652a51fca99cce4b3d13fa8f98ed7f2a
+          original_path: package.yaml
+          source_sha256: 10ca0dd6b2d6e5f6e0c7a4b0a4c755644f4b5f28a264259fbda4eaf41e55feb4
+        - candidate_id: candidate-69f4658610d2e07bb88c99f832157002
+          original_path: package.yaml
+          source_sha256: 164b45c63e192d7b4dc21d0d6e833faba9e7371ab181212acdc8c51d9b280bcd
+      state: pending
+    - number: 55
+      id: haskell-stack
+      detector:
+        id: haskell-stack
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-6b3a0753e48da4da79011f6279f5a3f4
+          original_path: stack.yaml
+          source_sha256: 2a1a4b7e18edcd38c45de5da09b49ab8300e3678359df6372d50c9c9ec9c0c9c
+        - candidate_id: candidate-ca53f0f6a26e6c1025958331deb56e4b
+          original_path: pyffi/stack.yaml
+          source_sha256: 85232795e024392eb9c0b0ee079f4bacf3956310bda58ac06ff895713216299f
+        - candidate_id: candidate-f0c77618a0c535c3fe247152213fbc54
+          original_path: exercism/haskell/sum-of-multiples/stack.yaml
+          source_sha256: d33660194e56c9399180199286cfdd1510f5e7ea809cd7c5af4bea98980149a6
+      state: pending
+    - number: 56
+      id: haskell-stack-lock
+      detector:
+        id: haskell-stack-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-0938c788f62c411c25b6ef11f1919b76
+          original_path: stack.yaml.lock
+          source_sha256: a42a21904c91342419eba13c7fd1b609868f1d5c3429cafce407b791623f082d
+        - candidate_id: candidate-0b03d68928409cd22054efd39fdc491a
+          original_path: stack.yaml.lock
+          source_sha256: 95ede683a51ae6597218a04926154d97725ddd3ab44af2c965a5f2855f9f975f
+        - candidate_id: candidate-0fca9835677fa4475777be20dce45eca
+          original_path: stack.yaml.lock
+          source_sha256: 9f6f6af8b384d86e9669acd7ed1b7a8960a50542bb153e6b6a89b8e2fa69646b
+      state: pending
+    - number: 57
+      id: helm-chart
+      detector:
+        id: helm-chart
+        form: deployment-definition
+        roles:
+            - declaration
+            - configuration
+      candidates:
+        - candidate_id: candidate-441fa4170a4cdd7fdd622a9df8b47d48
+          original_path: stable/labs-ieuanb74/Chart.yaml
+          source_sha256: 277c58cee7bd4b11bef476aeef792075919ad2de695af0dbd85a207a6999942c
+        - candidate_id: candidate-9786f711b3ff7d2458b4007799a392e2
+          original_path: charts/kviklet-demo/Chart.yaml
+          source_sha256: a3106f5046ae69e1c8198f0cd7aa5e531c729c15d525470af732b3f5db834f37
+        - candidate_id: candidate-b7c90889cbe2511fa2edf2814768099d
+          original_path: stable/connector/Chart.yaml
+          source_sha256: 8afa50c33aa579e93e178496e266b1ca48830f922b190116933be2c7a3035a99
+      state: pending
+    - number: 58
+      id: helm-chart-lock
+      detector:
+        id: helm-chart-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-395e83976262573d3cfd5996f5f4465e
+          original_path: helm/Chart.lock
+          source_sha256: 6309c0b61c3ecbce9ac4c0975d618db8ce6ad108aa7c09f545666d6b067c3c51
+        - candidate_id: candidate-5b2c88e0bdd57f99630748f256a5b3c8
+          original_path: k8s/Chart.lock
+          source_sha256: 30be7ca007fa3932dc2a6b552223108c7b3a4b99e273e03398b23b2ed898166c
+        - candidate_id: candidate-c37bb763a24c342a2924167c6fce9b14
+          original_path: helms/Chart.lock
+          source_sha256: 32335de257ffda224b1ad33bd0be35bc672e27dec3bfd94be8a49f34ee492bb5
+      state: pending
+    - number: 59
+      id: homebrew-brewfile
+      detector:
+        id: homebrew-brewfile
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-2bf3fcff0597b3a5fda30538fecc4571
+          original_path: Brewfile
+          source_sha256: 6bdaabe3296dc73df25b0975897e220404d00ee641359cda0fe0f7d52672750f
+        - candidate_id: candidate-45b9b0eb9d596dac85c4f4a2ff19de4c
+          original_path: Brewfile
+          source_sha256: 16a7424179bbdedaf0b81d45e82d91f85e538beb4005421c6af9b9f9c0f3244b
+        - candidate_id: candidate-ee4e4a8ac08dff05954a6db9d835f5d5
+          original_path: Brewfile
+          source_sha256: 63592e9a4302845f3b660243e0aeacaf14a85dfbd30e51a16b285cf683922219
+      state: pending
+    - number: 60
+      id: homebrew-brewfile-lock
+      detector:
+        id: homebrew-brewfile-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-2a155e41af1dd210c3b27c6f0eae1d40
+          original_path: Brewfile.lock.json
+          source_sha256: bde6182abe63ddef2c43fa46703725af009f4c656c17f3f717ca40d1f81a2f35
+        - candidate_id: candidate-8dc02340c4920b5352327c4e8d21b20e
+          original_path: Brewfile.lock.json
+          source_sha256: 4ce2576c19ace0fd156cfe62374cab34c189b8840096baac8ffe3548af7b924e
+        - candidate_id: candidate-bb2494dd2a5ebe9b388bde17807a7755
+          original_path: Brewfile.lock.json
+          source_sha256: 576aa15220a08371fd924a4adaa37ebfaa299a8ddfe2b3bec9354ab9dc1e82a5
+      state: pending
+    - number: 61
+      id: ios-cartfile
+      detector:
+        id: ios-cartfile
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-cd037d1c8f7849f28672529d20445097
+          original_path: Cartfile
+          source_sha256: cc6cc06f54dec113c00b9e2f1754093055d0529afb490265fb9a89a6507415fe
+        - candidate_id: candidate-dff458429eb9c51a30cd1ccd1acfd469
+          original_path: Cartfile
+          source_sha256: be97526f656e479258978f50a50178b457874f44a24d06215a6fccba87f2361e
+        - candidate_id: candidate-f0c727c9360c4bf327eed5a7d7a7ef50
+          original_path: Cartfile
+          source_sha256: eefa89e64a5a577a44778cb438a44e85f498fd555f841e0be222fb439e3205b4
+      state: pending
+    - number: 62
+      id: ios-cartfile-resolved
+      detector:
+        id: ios-cartfile-resolved
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-1e61f3cbd9a468edaf13d0c59405ac4b
+          original_path: Cartfile.resolved
+          source_sha256: 285a39311131cd2a0024a3f4a8e4aebc3a9137ef994c2aaa27f66cac39e7d79e
+        - candidate_id: candidate-8e051088f936cd2228096bf3a4bda041
+          original_path: Cartfile.resolved
+          source_sha256: 6c4cc34083f83899f14c947ba58407f4357770b8d2fcadc61b8af4e929aeb418
+        - candidate_id: candidate-a742292f1f08405799d1703190e3e024
+          original_path: Cartfile.resolved
+          source_sha256: 13a2182f64a0b2189b68ced2cdfce1d38c31358878bb0a61dc13404bffff37f7
+      state: pending
+    - number: 63
+      id: ios-podfile
+      detector:
+        id: ios-podfile
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-0fb6845e61f842798a56e50fae576891
+          original_path: Podfile
+          source_sha256: 89ba570ac0560a7821d92099dbd8bef21d1321ca4a5d7d0f5fe3c3c07d40d815
+        - candidate_id: candidate-4a2a50c18105f0f7539ab6143caaeadd
+          original_path: Podfile
+          source_sha256: 340a364b1572c48e4a0d1e4130969876d29125cd1caa64cb49dfdea128a93b78
+        - candidate_id: candidate-8ed1bff5d87bf15d6c5c2aac8dfc9695
+          original_path: Podfile
+          source_sha256: ed241b05ca571f3e73cb0f00f53d8a32b9fe5ebe0d4f8797a01a5af68966c12b
+      state: pending
+    - number: 64
+      id: ios-podfile-lock
+      detector:
+        id: ios-podfile-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-59dca4098c046b5fd53eb9ce2b54f438
+          original_path: Podfile.lock
+          source_sha256: 3da9e2358cb0b6381a86e3db40b5292dc8fec5255281067219d72c67e29e16e3
+        - candidate_id: candidate-68a9f21dce4f439e15a361c3d3f4a6d2
+          original_path: Podfile.lock
+          source_sha256: 0018d89d1927202d65952fbac43d5b7c643e68767f6f7a47872a33e14d0a897e
+        - candidate_id: candidate-8422183ced229c713e3371ea1ef0ea16
+          original_path: Podfile.lock
+          source_sha256: 81c2e51cfa882375d5e3fa448f3b24a3edaca4e70de2ec8b585cb84c501ff8c5
+      state: pending
+    - number: 65
+      id: ios-podspec
+      detector:
+        id: ios-podspec
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-32ef2dad0937434c10153209f8a7e314
+          original_path: Mew.podspec
+          source_sha256: febb19580b1205d9eca155f353aa3a7ff7da5cf42727cbd55f414f7e070b6de1
+        - candidate_id: candidate-954b04f25c4051f7a82f6d3fffc5da34
+          original_path: RNV8.podspec
+          source_sha256: 3d39cc1dd920147dbd5edf6f63d4e3badfa414f183a4251bf42845c4822a7fb7
+        - candidate_id: candidate-b3fe22e2cc53c5650728af5581211ff5
+          original_path: Drops.podspec
+          source_sha256: 9b8e18fa9e1640a033b9d5be637a582ef8f1e91218bea290bfc394dc44df620d
+      state: pending
+    - number: 66
+      id: java-gradle-settings
+      detector:
+        id: java-gradle-settings
+        form: workspace-definition
+        roles:
+            - workspace
+            - configuration
+      candidates:
+        - candidate_id: candidate-12a68ad28179f0cab38f4ec9f011cc9b
+          original_path: settings.gradle
+          source_sha256: 1053b321aa576deaa0db2dab45c6326629638d39b2d1fbd5084bd855135b8908
+        - candidate_id: candidate-16e824878ec078a9ef31a7ed75edf63e
+          original_path: settings.gradle
+          source_sha256: 63a3f6d2d6d0bf441d8ffbda32517b6974a9b7e0d7b3812d5c9571c8021aea0c
+        - candidate_id: candidate-c0c460f7cca4b919dc035f7f8754b3b8
+          original_path: settings.gradle
+          source_sha256: e54aac6e53ea94f1e84a442754ca69c7fd09177428bc8e2537177b21076ef2db
+      state: pending
+    - number: 67
+      id: java-gradle-settings-kts
+      detector:
+        id: java-gradle-settings-kts
+        form: workspace-definition
+        roles:
+            - workspace
+            - configuration
+      candidates:
+        - candidate_id: candidate-112f7565211eedb7166c8f4207b0eeec
+          original_path: settings.gradle.kts
+          source_sha256: 60c05f07220c29423bea77bd8749ccd364a053a454847798e2e8ecc3848a2d00
+        - candidate_id: candidate-49d3d7cc84c77786fb12481805fca043
+          original_path: settings.gradle.kts
+          source_sha256: 471ec12c43e07f5f1cde17d5cf45928623b504420d0ff0b9419f46a3b0470fa6
+        - candidate_id: candidate-abf0733dd8dd1aa79d6f9c2dbb5e35ae
+          original_path: settings.gradle.kts
+          source_sha256: efe0d23e8372bbd7f41e02f328f75a7895bf2ed70732c83eb28510f35d546376
+      state: pending
+    - number: 68
+      id: java-ivy
+      detector:
+        id: java-ivy
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-2b51b71fb4e7ed779c5a4d06a5edc95d
+          original_path: ivy.xml
+          source_sha256: f8a08588689d0003705b8ee7aea3a0324711922d00f807a0b46f1730426f4c22
+        - candidate_id: candidate-9e48269ab9d37157d7aa9abee2889467
+          original_path: ivy.xml
+          source_sha256: e51e162a56ae730c7762b202d1c71e24450728c1d86320063101a058da5c3575
+        - candidate_id: candidate-c7480e6149cde7fee458499ff68ce341
+          original_path: ivy.xml
+          source_sha256: 6ee4cff3410094078fcb32b1e1179ecfc1c7674e8f5bd1c346156004f2063169
+      state: pending
+    - number: 69
+      id: js-bower
+      detector:
+        id: js-bower
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-1c372009fd2bd6cd95eebbc64100a47b
+          original_path: bower.json
+          source_sha256: c69be5c0c811bbcfbfa0d4b59a574177b1f442f2e7c0aeaf23d5be894d54313b
+        - candidate_id: candidate-4f19bd0858469c20c1307c187f60df69
+          original_path: bower.json
+          source_sha256: 759bf470074744bc0f89bae6ca7b45309325bfe5091091cc9b3c2593f99269fa
+        - candidate_id: candidate-ceadbc3241c80b17526bc2d179d517c0
+          original_path: bower.json
+          source_sha256: e27dabdd47577eea3825f4a76ad8fb86e68959eeca58c01ca2df46938f4fec8d
+      state: pending
+    - number: 70
+      id: js-bun-lock
+      detector:
+        id: js-bun-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-0ea616606eb30d7a3672df51ac9307ab
+          original_path: bun.lock
+          source_sha256: a06537cb1b068b8be99ec9c20079026a4bd90b4e6ba76c909878561be0950db2
+        - candidate_id: candidate-1ed97dafca6df36e305fa5ab335c2b2b
+          original_path: seeder/bun.lock
+          source_sha256: cf32ff0ac0aba6fca6a5bc6539dc5760eb0183571b9261e0382760e47d64b55d
+        - candidate_id: candidate-3f494c538ef9bdc2bcb48f903228a2bd
+          original_path: bun.lock
+          source_sha256: d25fe5c70a09983210b42fa42bef5d272a027374eb9a6f02ba3026f04ed4578e
+      state: pending
+    - number: 71
+      id: js-importmap
+      detector:
+        id: js-importmap
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-203b2be0424d3697220679b8f3def477
+          original_path: Chapter11/example01/importmap.json
+          source_sha256: ca669e4e633ff23292db3c8f03ac5be6189640a2bd28578858e64dbd4118fd76
+        - candidate_id: candidate-377269f22f7c504edffe25bce086a188
+          original_path: importmap.json
+          source_sha256: 3d512048862532b155f2b7f89c205378740d4ee9977ef6d9327689e9b1f647a6
+        - candidate_id: candidate-751356d2508f8e41ce12dd8b881e0871
+          original_path: bustime/static/importmap.json
+          source_sha256: 45015b4b555e6064b9be8d3c20e2e91bf0aa81444ec0f6f0c0d1cc93e326be21
+      state: pending
+    - number: 72
+      id: js-lerna
+      detector:
+        id: js-lerna
+        form: tool-config
+        roles:
+            - configuration
+      candidates:
+        - candidate_id: candidate-06a1aebacd501047e3877aaf261bea86
+          original_path: lerna.json
+          source_sha256: b9231b36581bffd05532c63f9b05f498d86b9e79ab0e746537d794738cb85bb4
+        - candidate_id: candidate-c936c9636826e017da845746028f51ba
+          original_path: lerna.json
+          source_sha256: ad0ff787eb2d2e4de8a0356eb7e14a4c599e119e105b7d66b331e5302a1d0fad
+        - candidate_id: candidate-f9a6a4d2c77589f5ff8a4fe133d492a9
+          original_path: lerna.json
+          source_sha256: 2e3c45972121c434570af6299f3e6f54516ae1eff0c0254ddb97a8a9fb1a1aa3
+      state: pending
+    - number: 73
+      id: js-npmrc
+      detector:
+        id: js-npmrc
+        form: tool-config
+        roles:
+            - configuration
+      candidates:
+        - candidate_id: candidate-4224ac7f3fb65b7e3d7e5961af2c193d
+          original_path: packages/api-gateway-npm/.npmrc
+          source_sha256: 0aea01ab59188675a64038c6ad1b9483317b39b1e3672529c4f2c530ebc93f07
+        - candidate_id: candidate-a9efcfb5f2a56806462fc3d71c7e5d7f
+          original_path: frontend/ant-design-pro-template/.npmrc
+          source_sha256: a093bb2fed59d699b7f9a62a5203cc196054c624e9c39c6d908c9e7db5dd2464
+        - candidate_id: candidate-b1edf70b3b4efed3f5e6f94760a9d131
+          original_path: src/packages/config-prettier/.npmrc
+          source_sha256: 791619c3775b3f7b68c13aea67972c2a6cf70881b454cec872d71ed5d3c3d9a8
+      state: pending
+    - number: 74
+      id: js-nx
+      detector:
+        id: js-nx
+        form: tool-config
+        roles:
+            - configuration
+      candidates:
+        - candidate_id: candidate-0fc0913967b3f760814eb6c854703231
+          original_path: nx.json
+          source_sha256: f0a5741d0ef3284818ee1fbe763a9beb8086666b90d2b64c4071ca59f3e30d03
+        - candidate_id: candidate-3a297858022a4f9dab96739d8a5fe2db
+          original_path: nx.json
+          source_sha256: 7e0cdeabe2aa5d08deee3ad69cba6cf96914072aee1d97d546a4dc492e9c7bb0
+        - candidate_id: candidate-6a542b16428671d40cf9a3fca7159819
+          original_path: nx.json
+          source_sha256: 0c45992066ddd8ba396c8c28ae7e1f73c92f5df9acc9424a047326257fafbc6e
+      state: pending
+    - number: 75
+      id: js-pnpm-workspace
+      detector:
+        id: js-pnpm-workspace
+        form: workspace-definition
+        roles:
+            - workspace
+            - configuration
+      candidates:
+        - candidate_id: candidate-13560437a6b947b2d42824cf9ae15067
+          original_path: pnpm-workspace.yaml
+          source_sha256: 8df403cc21c456d6570084081a9b4396d80aa28883435691ee485bfdc4f94d4b
+        - candidate_id: candidate-204a2b0b607dd0e40d33379dd80f9905
+          original_path: pnpm-workspace.yaml
+          source_sha256: 76bd0d96a97e01bf167125ab08e4772593d1801e6ac041b652b505c628f5fd79
+        - candidate_id: candidate-2c2f032c210bd8f4f6f6e104398e2b4f
+          original_path: pnpm-workspace.yaml
+          source_sha256: 9189851b4c0df6e430cd9ee26f9c8fadb7b028adf45ddcd29714b3ad2c7519c2
+      state: pending
+    - number: 76
+      id: js-rush
+      detector:
+        id: js-rush
+        form: tool-config
+        roles:
+            - configuration
+      candidates:
+        - candidate_id: candidate-10f7e74c5c242dcee1a32c846ff41f3f
+          original_path: rush.json
+          source_sha256: 343dd8ca171832c8306bc28c6ba9ae2b9c9b17498273965bd498ae3980e30017
+        - candidate_id: candidate-6282c145fd76c3ee5bdcfc1c8773d777
+          original_path: monorepo/workspace-tools/scripts/jest/__fixtures__/monorepo-rush-yarn/rush.json
+          source_sha256: 116dff139febae7688583a8112c145ffe135ce1bc0054e6c3c1d77011cb1d59a
+        - candidate_id: candidate-ba904cfe08a6c280f627b85f8edb877d
+          original_path: rush.json
+          source_sha256: 44947f9cc9fdc0227369523674dbfa2b5cba51ddff212e2193502ee508540805
+      state: pending
+    - number: 77
+      id: js-turbo
+      detector:
+        id: js-turbo
+        form: tool-config
+        roles:
+            - configuration
+      candidates:
+        - candidate_id: candidate-0cb93188305000c7119c175e58fbe941
+          original_path: turbo.json
+          source_sha256: e929eafb2dc7f6f17d069675591761a1b2537977b68de09f943be6d94f3bc912
+        - candidate_id: candidate-0ddabf08489458b942544bd9e75d0203
+          original_path: turbo.json
+          source_sha256: 7261278506d3328b7218fe0e5852e9cf85e9c05fe524492516a1fa2bac54577c
+        - candidate_id: candidate-5ca7db24ebfac5a90c68a47798793610
+          original_path: turbo.json
+          source_sha256: 53d6e9613a035961d084a74d00663b56911d9af256f403fa0f6562ee8555fe57
+      state: pending
+    - number: 78
+      id: js-yarnrc
+      detector:
+        id: js-yarnrc
+        form: tool-config
+        roles:
+            - configuration
+      candidates:
+        - candidate_id: candidate-0cc028729593324de7753ff2b3fc1527
+          original_path: .yarnrc.yml
+          source_sha256: a13bffdd4565b3c13cbd2fb0da0f1fd4cb6f44e565159f7bfe28f5dfbc9ebb9f
+        - candidate_id: candidate-250ceb212e7eb32be29f4ccddb90a1f3
+          original_path: .yarnrc.yml
+          source_sha256: 5e6604cb2cb0d5cc86080870bc47d9a670f35f014d665a6aa07034ee2d542ad4
+        - candidate_id: candidate-57fcf79ef1f9f71131991c7dad05a52e
+          original_path: .yarnrc.yml
+          source_sha256: e9033c7cc254d49fb96aa8bb9835d70e67ff44f236d9b6e3a00bbfed95fc1ce5
+      state: pending
+    - number: 79
+      id: jsonnet-bundler
+      detector:
+        id: jsonnet-bundler
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-02700c0befb4999dbce0fd34373feba4
+          original_path: pinecone-mixin/jsonnetfile.json
+          source_sha256: 01c2bc7a034fc10e4e8c0e3087ff68c14f26fc3a09833dcfb7e037c47ea13181
+        - candidate_id: candidate-dd9169a49dd689661ea3ee8a95d9974d
+          original_path: consul/jsonnetfile.json
+          source_sha256: d1868f9731039cdbcc4ba161648984a1416f4baa03ea4c0ea5d01927d51aa04f
+        - candidate_id: candidate-f4803ec9a6a0b7eeaf82bdc9f6b9b84a
+          original_path: windows-mixin/jsonnetfile.json
+          source_sha256: bdbb4276be869367809ce908d8146637a980c19642dfbf356c27c692262da9e0
+      state: pending
+    - number: 80
+      id: jsonnet-lock
+      detector:
+        id: jsonnet-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-0588a0c4b1b23d0a1e2a2d8680a10768
+          original_path: jsonnetfile.lock.json
+          source_sha256: 6229b24cfba4e0352df8ada8f9d2f9b95965197a88b28d9de8954f1be861b810
+        - candidate_id: candidate-0fc6d04602a6116a1f2dbbb91d5eaa9d
+          original_path: mixin/jsonnetfile.lock.json
+          source_sha256: e598f7a58e901e38ce87d57a62b27b62dcaea1a58f428960968b66b9c705a3ee
+        - candidate_id: candidate-fbc0737da4f78033b5ee7723e8cc7909
+          original_path: jsonnetfile.lock.json
+          source_sha256: 9ad7d80f6299569cfafe5d82b5b50a0d3731f2fbda7a211a53637e2a06554198
+      state: pending
+    - number: 81
+      id: julia-project
+      detector:
+        id: julia-project
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-0e88ca827756691dede1ce516466b6a2
+          original_path: julia/offline_julia_bundle/depot/packages/ZMQ/yNY0H/gen/Project.toml
+          source_sha256: cf125730f8248652748cc70a0c753e325efc761c3bb246b915378962222e2377
+        - candidate_id: candidate-118988184f81f796f856212d7cbf11a0
+          original_path: Project.toml
+          source_sha256: bd7de068036ce5d8858e907d3f55aa1bd5ad9bba8197c020ddb23e7299524d2f
+        - candidate_id: candidate-a7a5308030c1c1bc767bc72cf164dbe6
+          original_path: Project.toml
+          source_sha256: b5e6fce56146678a45d643a4edc018f712f0d2a4e93ff416c3bdc4338491ae91
+      state: pending
+    - number: 82
+      id: lua-rockspec
+      detector:
+        id: lua-rockspec
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-cbb8c9c4013aa72e9c2c4417dececd81
+          original_path: lyaml-git-1.rockspec
+          source_sha256: c1f3546fc353fae07cddb43dd1a47ffc341ff486dde29166c2dc7f02d241aeaf
+        - candidate_id: candidate-e1e53b850d63ec029969a7c005156af7
+          original_path: rocks/dev.rockspec
+          source_sha256: ecbe88076a5d3022093fe076cdd9a5d4d8309225ae3db183e25c839973e78bea
+        - candidate_id: candidate-f3f55a3e4ad10d440381c490db20ff80
+          original_path: date-dev-1.rockspec
+          source_sha256: 0d6b4beccc36c7dc534dcd6189d6a1cfe8ffc32568453ea2a71eb489db6a75e0
+      state: pending
+    - number: 83
+      id: nix-default-shell
+      detector:
+        id: nix-default-shell
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-069b912acddc4d444e2423f845a72c88
+          original_path: default.nix
+          source_sha256: 2464a8b1fb4ed9c1360b6e55390f47fcfbd941713fa21bc9c6f5df325037c274
+        - candidate_id: candidate-4efa0c2e4a802dec6d54f6083a515b66
+          original_path: default.nix
+          source_sha256: f69133caadd35f5f00ebb441c5f624a4ff0dffb9f3c7fbe67c937b44452511d0
+        - candidate_id: candidate-53918128bb5b733f5536e0c4ff89f1b4
+          original_path: default.nix
+          source_sha256: 3f5d5abf5af2db5dea3b4f17510f6f6dd47448925909795ef58480adc48da0d6
+      state: pending
+    - number: 84
+      id: nix-flake
+      detector:
+        id: nix-flake
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-1742df981769affce5a417585d4bf5e8
+          original_path: flake.nix
+          source_sha256: bdf6d034088f8f719ea141eb6f6a8e38d4a5d0ce5ed9d950325260d86fd141f9
+        - candidate_id: candidate-292c174dcc1260a0c719a3c19a183f34
+          original_path: flake.nix
+          source_sha256: 8895a8e9dd0aea1531a4d1773d0d9d2d4cbf0e5377ceb46557781aacd0d0f944
+        - candidate_id: candidate-3f96af2fc73c06f5ac3dcf19465ca54b
+          original_path: flake.nix
+          source_sha256: 79ce8bc9c42b6a623f098eeb5b16075b00a9b53d654f040c16a6bec7f69f1e25
+      state: pending
+    - number: 85
+      id: nix-flake-lock
+      detector:
+        id: nix-flake-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-7e8e3f881ba0f386905471bff0083ca7
+          original_path: src/flake.lock
+          source_sha256: d44f41a150e0716e0d2d763bcbdd6166343b5aa13f8adf4be83d9a8547d144e3
+        - candidate_id: candidate-bf644d077f7d6d81575215a90c182ed1
+          original_path: flake.lock
+          source_sha256: 260e17f0eafd2ae4873a65a74b3276c72110803e579fdeacba25982009c586c5
+        - candidate_id: candidate-cdb95170b43c321834555636062c703f
+          original_path: flake.lock
+          source_sha256: 73af65c3b1c64797ee8f5ebd6cbb10e64a7be936453431a8374e7ace6f058a42
+      state: pending
+    - number: 86
+      id: ocaml-dune-project
+      detector:
+        id: ocaml-dune-project
+        form: workspace-definition
+        roles:
+            - workspace
+            - configuration
+      candidates:
+        - candidate_id: candidate-050ae39e6f62373c5a7b6fb0990a8ad2
+          original_path: dune-project
+          source_sha256: 4f20b1b9e52697bcb5dbf4964da1578c27fe650385141a2f342ba1afab82afd0
+        - candidate_id: candidate-12f663ae01effca9b4a90b9501860782
+          original_path: dune-project
+          source_sha256: 866ac949414c31c360b95d11fac4447afc1d2c03dab451a036121e1638054c28
+        - candidate_id: candidate-2f51a6118c11ae64772b89a229204d7a
+          original_path: dune-project
+          source_sha256: cd0715678d051cdbfb13d4752ea2e1dc0669a4bd859c894b4b27351214986b7f
+      state: pending
+    - number: 87
+      id: ocaml-esy
+      detector:
+        id: ocaml-esy
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-40c374413e100088fe94f891145e9232
+          original_path: duniverse/lwt/esy.json
+          source_sha256: fb901361c67766eb100b12bf2deb9e521c063d4b96d5e198dfe51208594879b4
+        - candidate_id: candidate-d18aeb474483218f7b310385f8ad36a5
+          original_path: esy.json
+          source_sha256: 3c7552983304e33795cf508b3ef30bdea80c0a3fe18259740a37a9a0647b1e39
+        - candidate_id: candidate-e34a1271eeb4a6790696d56a36ba2e40
+          original_path: esy.json
+          source_sha256: 949b9cefc19843d3b5a53f4753f30fcd065bdb3e716524389a9f549765cdc2bb
+      state: pending
+    - number: 88
+      id: ocaml-opam
+      detector:
+        id: ocaml-opam
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-2e3f6d6b5d447ed80418a415f99fa45e
+          original_path: base.opam
+          source_sha256: ccf53670b4f5048498125b396085d62fac988a4e15becf869bb15cc91c17f319
+        - candidate_id: candidate-78df215ae86e4d4562d6216cb3050cc1
+          original_path: ccl.opam
+          source_sha256: c85fb51e1fb2394ece82fca6f7641d0b77fb34bd8880d36bc8ab14420bbfd232
+        - candidate_id: candidate-f0b18bb2829a5718d6161f4187977ec3
+          original_path: utf8.opam
+          source_sha256: 869a5dfd38c08e0e7ae376fb811139d8d892206ae37d4f624f9e59119c447502
+      state: pending
+    - number: 89
+      id: pants-config
+      detector:
+        id: pants-config
+        form: tool-config
+        roles:
+            - configuration
+      candidates:
+        - candidate_id: candidate-230888040c8cd4df8b0d15e3bdea8422
+          original_path: pants/pants.toml
+          source_sha256: dd6775aa4924d7ef19f2a76f43405e7926ae7df51a0dbe25bef97274c52847bb
+        - candidate_id: candidate-747b65714b6f9413560844e0a4e3004d
+          original_path: datadog-skill-go/pants.toml
+          source_sha256: dd8fd75c8f1480f8b358c68ce71e9b44b5711778a7d3720839cb1a89de3c7152
+        - candidate_id: candidate-79daa6c99d46d645a534131245765799
+          original_path: examples/build_recipes/pants/basic_pants/pants.toml
+          source_sha256: abf0b481d95e3aafd9717d3cd14016471e8a9eba0dc93d94b504e422789cc125
+      state: pending
+    - number: 90
+      id: perl-build-pl
+      detector:
+        id: perl-build-pl
+        form: build-definition
+        roles:
+            - declaration
+            - constraint
+            - configuration
+      candidates:
+        - candidate_id: candidate-58f668ebe091d928a5988185ad6301ca
+          original_path: Build.PL
+          source_sha256: 3d585ad6eae3fe20d5cc7c63aeffa93a63238b04e75a569a9f0dc60468ecb256
+        - candidate_id: candidate-679401e432492ec1f39bf0c05d92fe3a
+          original_path: recipes/panoct/Build.PL
+          source_sha256: f429bf1d5a2058496e8ed1281245b5552cbab04ba4fa60858568c7bbe582cc13
+        - candidate_id: candidate-8c41af57b57d1e8064dff4e256a514d9
+          original_path: Build.PL
+          source_sha256: 637d1acf0e771f00ad0a2fb9c90bd31d30ca3a95fdf0ca429a99d9b27ee103e2
+      state: pending
+    - number: 91
+      id: perl-cpanfile
+      detector:
+        id: perl-cpanfile
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-10ea3943580ccc8b8cb3c5e319dc0e20
+          original_path: cpanfile
+          source_sha256: 25cd8c8ecefdce68fb66de55f9312c7264e2fad0af5f826fad8180d47e1fe198
+        - candidate_id: candidate-4c0c5f96d145ac2d218c0078f90eb7d1
+          original_path: cpanfile
+          source_sha256: 9ef71d0ac614ec43447bc27cda0952192018f374529c18bb91d49489c841111c
+        - candidate_id: candidate-61e0414309e34584c88ce83cf18a6edd
+          original_path: cpanfile
+          source_sha256: 590170e54759e2dd510c8e81d6f5ff998122b4488ce3d663c35d0d2b4db5ba45
+      state: pending
+    - number: 92
+      id: perl-cpanfile-snapshot
+      detector:
+        id: perl-cpanfile-snapshot
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-2e5d44c14086fb8caadfe428af930e2b
+          original_path: webapp/perl/cpanfile.snapshot
+          source_sha256: 28b9b6616f16ebdbe3fd24164ab260e7ebf8e951625d8ac106e0c71a8a6ffbe7
+        - candidate_id: candidate-55882f871c339933ec1ae9e14de1350b
+          original_path: cpanfile.snapshot
+          source_sha256: 392c7d51c3ea242e2d9bf71ea265fe59b6f01461f74665661f9f088f0bb61933
+        - candidate_id: candidate-653a15727e1a28bd987d1edb35d80538
+          original_path: cpanfile.snapshot
+          source_sha256: 27c95ccd89237678ea20d592797a359522a0cce8083d943574d43e886d43fc21
+      state: pending
+    - number: 93
+      id: perl-makefile-pl
+      detector:
+        id: perl-makefile-pl
+        form: build-definition
+        roles:
+            - declaration
+            - constraint
+            - configuration
+      candidates:
+        - candidate_id: candidate-76b05c52623eb828e91f6d938105442f
+          original_path: Makefile.PL
+          source_sha256: 6038dd65b8cf9ff5d451a9341453cab6788f0f9c78dcd10c848e3bdf0cab2dbf
+        - candidate_id: candidate-82db94ad2e02c864b3a097ff29eebfd3
+          original_path: Modules/SGE-0.02/Status/Makefile.PL
+          source_sha256: 2ccb4633dc8dc59433ab115ca29ec4f4e095d6d4d974ed9a982c00720cd268f8
+        - candidate_id: candidate-bfd390f6a3aded273e804e01ebdeaac3
+          original_path: Makefile.PL
+          source_sha256: 7466910c55f0367724aff406e9eb4083f26e4e4c5f0a8deee086fb2ceedf58e3
+      state: pending
+    - number: 94
+      id: python-conda-env-alt
+      detector:
+        id: python-conda-env-alt
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-0c31c3d6a3fa6ba6047330d30d8e2264
+          original_path: conda.yaml
+          source_sha256: fa7fbfd10d9b4b54abc5578a621c91b417b015d3ccbffba12fafa81ebdf5f52f
+        - candidate_id: candidate-1f456d47303fa3a7fa69f2f9ee14c1d0
+          original_path: conda.yaml
+          source_sha256: 6619c34b15a44551fba1e94c65b601658e182d8b5302f887d89f37bc78545756
+        - candidate_id: candidate-20c147eccb89be368b71529acdcfad65
+          original_path: dev/conda.yaml
+          source_sha256: 0ad2a4781ae717ea9841ffc7433f7946d6b66642bf4b64fdcd79eed695ffd050
+      state: pending
+    - number: 95
+      id: python-conda-environment
+      detector:
+        id: python-conda-environment
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-2a9c60234af7242bd79948f498d71a53
+          original_path: environment.yaml
+          source_sha256: ca2cec896f998e9e5816fd39348441f8c011e6f85db0f1f960c712d6cebca88e
+        - candidate_id: candidate-56194f32f40cd3db58e3c26f0267ca4a
+          original_path: environment.yaml
+          source_sha256: 91f321779208497d484d2f07f42dd91261d095ca7ffad0fe650c265d126399f3
+        - candidate_id: candidate-6d388794e59fab7059e551b13285b708
+          original_path: wrappers/metaphlan/environment.yaml
+          source_sha256: 76a20da7fe6a0ab6bfe11e0ede4b51e9db873db7536c28b9147c25840573fc26
+      state: pending
+    - number: 96
+      id: python-constraints
+      detector:
+        id: python-constraints
+        form: constraint-file
+        roles:
+            - constraint
+      candidates:
+        - candidate_id: candidate-0afb44d3b032bf0bec6a76d892843e7f
+          original_path: constraints.txt
+          source_sha256: 26f7df96a9e753921b70e8a880a7c1d9f5d6a6818fa0f0b37c2d092245cae79f
+        - candidate_id: candidate-702df399bc11a2905ab0b1c81466c28d
+          original_path: constraints.txt
+          source_sha256: 06bc7ba9901164d670802f924c5148db84ac125cd6a13cf585955a40a883c97c
+        - candidate_id: candidate-e55140ac2b2be0b6955cdfd9f44cdb9f
+          original_path: constraints.txt
+          source_sha256: 8b3ce3a62b2f62b3691b95800dfcddce671386e68515ab4d8a90402a288bafa8
+      state: pending
+    - number: 97
+      id: python-pdm-lock
+      detector:
+        id: python-pdm-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-84223c25c6f3c34c7a4dd76ca8871179
+          original_path: pdm.lock
+          source_sha256: af14818457f87ca2153281c3df30ea207d9c3dfefcc01dcb723f05ca9c8eff9d
+        - candidate_id: candidate-9daab4053bfa7f1de47500790ff17397
+          original_path: pdm.lock
+          source_sha256: 7fcf2d486fb1ecab50d43fbae5091a9c801593fc631f9d854c5d24b267d078ec
+        - candidate_id: candidate-eb648a2250e1f18845b7f1b0d382389e
+          original_path: pdm.lock
+          source_sha256: 80f4edf0b9f2d943932db4a7fb614563a8c7d0cd4e1bb949bff9e23c7e2e88bf
+      state: pending
+    - number: 98
+      id: r-renv-lock
+      detector:
+        id: r-renv-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-59d610dc7d05615b968134d32f4de2ad
+          original_path: renv.lock
+          source_sha256: cc7101b5e4d673860dbefaab534df058cc1a32e9fc3f27f2d4a9fc917e438c80
+        - candidate_id: candidate-7d5c034541c724a8cf46bab15d5f78d3
+          original_path: renv.lock
+          source_sha256: b0279af166b26bac7031092ad701758e7cf1eabb1b0085b6ddeb594c119b2be9
+        - candidate_id: candidate-828a144bfb8ecd0afe7eb62e046466e7
+          original_path: renv.lock
+          source_sha256: e26a3aab785b80ab488011ac0b66fbae8b986c24a5d2ef819ff185bd5958e610
+      state: pending
+    - number: 99
+      id: raku-meta
+      detector:
+        id: raku-meta
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-3976f6a88a2ad64703beabd083eff982
+          original_path: META6.json
+          source_sha256: 38995fa3c9002153e5f93287b8564224db88ac68d25c3bce01b0b1674fe6fdc9
+        - candidate_id: candidate-e04e05ba9568c5994c8cd4b0153593a2
+          original_path: META6.json
+          source_sha256: 98f9c8e0cdc0068363dded9020ddac542c359b64e6a3bc9d94e9cd541ec35853
+        - candidate_id: candidate-e8944a72e1b8432c145b070cc91d333c
+          original_path: META6.json
+          source_sha256: 99dce2d13ab73829610d2416f42c4264a2070b2b47cacdf9d3dec55167e6e877
+      state: pending
+    - number: 100
+      id: ruby-appraisal
+      detector:
+        id: ruby-appraisal
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-39d5ba49cea3e8446d680bf963d6bc2c
+          original_path: gemfiles/rails8.gemfile
+          source_sha256: 91b640bccf34c32b6a117be5aadc3b68647e526b53beb70a5001954081b9f118
+        - candidate_id: candidate-3f2a5fff4e1072ddf25450e9c6cf9127
+          original_path: gemfiles/7.1.gemfile
+          source_sha256: 988b3eaad187ffc5400f59ab5c5b37bd956af2f2d4c1219fa86fb893257d878b
+        - candidate_id: candidate-54b5aecc9a7273fae706353a7af71d25
+          original_path: gemfiles/dalli3.gemfile
+          source_sha256: 85b4a761bd2f5a183f804663859cf4a28d539e604b73485004ae1a62c92c84cc
+      state: pending
+    - number: 101
+      id: ruby-gemspec
+      detector:
+        id: ruby-gemspec
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-28360e611a3e1f0f4dc94730c18d7208
+          original_path: ruby/solana-pay-kit.gemspec
+          source_sha256: 4e8bb4f6d002098a7ed247bdc9bc69027a3399590285e6d4411f5f96e48edfd1
+        - candidate_id: candidate-f64b32288e31461e57bf59692936d13b
+          original_path: clients/ruby/flags2env.gemspec
+          source_sha256: 4706941a5dfcee45b7bcaa03f17471aa4e3fedc24419fb821cce256b60902858
+        - candidate_id: candidate-f75ed3f3af5e88c3f6eaebfb4fe4e0da
+          original_path: lang.gemspec
+          source_sha256: 85b16e613cdab7d939a1b54514272003577b78c3ae7a3f350ae9275b94958c59
+      state: pending
+    - number: 102
+      id: scala-mill
+      detector:
+        id: scala-mill
+        form: build-definition
+        roles:
+            - declaration
+            - constraint
+            - configuration
+      candidates:
+        - candidate_id: candidate-72fd7f82d3b84cbaf043ddb8b60098c3
+          original_path: build.sc
+          source_sha256: 8211000b1b0386c0b74d2b999cf10d9cf1dce7fa5a8e13038860b1d95123992c
+        - candidate_id: candidate-e1ddf4b084ada27c304f3aa1b297fb65
+          original_path: 3 - Web Services/14 - Simple Web and API Servers/4 - Websockets/build.sc
+          source_sha256: edd761f0b0d42952b4ba4e1f637a0678206a328886c6c75ee9e80733b20320ef
+        - candidate_id: candidate-ed816c2c632bb5c435550e8d203db5eb
+          original_path: build.sc
+          source_sha256: e159916af01ad45b01a60543fb51343f2608857b57a590ba1e2fde906e3b49a9
+      state: pending
+    - number: 103
+      id: scala-sbt-build
+      detector:
+        id: scala-sbt-build
+        form: build-definition
+        roles:
+            - declaration
+            - constraint
+            - configuration
+      candidates:
+        - candidate_id: candidate-098bc70dae2350cbba7c6e8177f2e6b9
+          original_path: build.sbt
+          source_sha256: 566e0416835ea562223e3936b23498458358f7149b4e73ef6e36916803c667c7
+        - candidate_id: candidate-5e0da7d0a0af7d60dfb7e1eef30dda6a
+          original_path: build.sbt
+          source_sha256: ab7328a23989bccd751b52d86d0e7b24ea7ea6c90441be1fe17c6f8199dd759f
+        - candidate_id: candidate-d75ba219d41268bb05b9ed64b4c0166e
+          original_path: build.sbt
+          source_sha256: 132bfb9229ee36ec8d7b7f3f1457f5e79bde331b8d9a0141b14b61da51b4bff9
+      state: pending
+    - number: 104
+      id: soldeer-lock
+      detector:
+        id: soldeer-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-1c39b5cd8522a018007e68e8861bb776
+          original_path: staking/contracts/soldeer.lock
+          source_sha256: 1f81efe8f6ddf1e93190b9dc46c5d69fc9364343bba9df44c087f5e1e174c9d6
+        - candidate_id: candidate-45ab62fb47ac2768e81bdc41318bca4f
+          original_path: solidity/soldeer.lock
+          source_sha256: a3ab674218480db9f2ef544303cace2a33fdc896075dfb1a0c6003843cd6ba4f
+        - candidate_id: candidate-5a62b62f3dd29f1c5d0654a0dd61f652
+          original_path: contracts/soldeer.lock
+          source_sha256: 5cf2a1ece71a2ffb89fd37b30651f560ace50622ff848b5732989cfbbfccb85f
+      state: pending
+    - number: 105
+      id: swift-package
+      detector:
+        id: swift-package
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-0ac89ad24dad07ee2d7d8de9f240b029
+          original_path: Package.swift
+          source_sha256: a6828b12195521d56de18b4300b6dec186b913db71b167785ad1549f9f55af23
+        - candidate_id: candidate-6053c90b3bc9389c66a3080092500060
+          original_path: Package.swift
+          source_sha256: afb3c226797ec3e9f32aadb78baac7b67d8c3f0b32308ab2f31a7d339a459a4d
+        - candidate_id: candidate-78fc7ecb5b6535e97356e43293b9aad3
+          original_path: Package.swift
+          source_sha256: 1be45e52621fd24fd8ca1ea705f6670c0a544d6d5dc9dd29b239279f0fdce747
+      state: pending
+    - number: 106
+      id: swift-package-resolved
+      detector:
+        id: swift-package-resolved
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-029881ff45420758cdfe17bc9cb7cea6
+          original_path: Package.resolved
+          source_sha256: 2caeacfab09d278d7c90fecb4b72d15bd6e79e577593b723bd3a5c019eafc5c3
+        - candidate_id: candidate-20484ee541c1df8423b629610cf9ce27
+          original_path: Package.resolved
+          source_sha256: 0bde18417f881b033d47b8a5476d00bfcd97c3052a19261f24bade59f44528f9
+        - candidate_id: candidate-7468f6fd16c4febfef92f1c3cae16706
+          original_path: Package.resolved
+          source_sha256: 4544799021c7ebd2f6ddbf47f9cf1a6e21a3a56b8559a83784fc17a0462131cc
+      state: pending
+    - number: 107
+      id: terraform-lock
+      detector:
+        id: terraform-lock
+        form: lockfile
+        roles:
+            - resolution
+            - integrity
+      candidates:
+        - candidate_id: candidate-aadc5ea65e2f5f5154d0ddc8ed12f24c
+          original_path: examples/remote_backend/.terraform.lock.hcl
+          source_sha256: 387754f49561179a654306f60510fa79dc3de16235cfc12ed7123b34c34ad1af
+        - candidate_id: candidate-dbef723a0f07b511ac9351a5026ea66d
+          original_path: modules/aws/ecs/.terraform.lock.hcl
+          source_sha256: 50204b9a3ae496ef90adfe9177458ca577c2a61d542c6ad756b381abc65c0d92
+        - candidate_id: candidate-eb054a296c397c54c031ffca05bc6bde
+          original_path: .terraform.lock.hcl
+          source_sha256: 6a337a54934fa6ad4afda70ea3550e292dfd34f79a6d41f20f8ebff0ecd863e0
+      state: pending
+    - number: 108
+      id: unreal-uplugin
+      detector:
+        id: unreal-uplugin
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-04e9a99475fe74f468678aa24c2a89cf
+          original_path: TCPWrapper.uplugin
+          source_sha256: b52fb4c4e07db10e263a77e037eb3fcc6d1e8a5a20c9b841d6796744d67b67f1
+        - candidate_id: candidate-2a54b4a92c609a5c1bffcfde2151df6a
+          original_path: Cubiquity.uplugin
+          source_sha256: a07109a502ca0ecf4e3c082a83c53b93a8106c2125848af72e1a232279281cbf
+        - candidate_id: candidate-debb949c5c88b150b35fea8d3bc96ce3
+          original_path: DlgSystem.uplugin
+          source_sha256: 925a5587e26cf5e5076eafffcef1c50b521c3b325d960bc99f2dee871f23a964
+      state: pending
+    - number: 109
+      id: unreal-uproject
+      detector:
+        id: unreal-uproject
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-34dd7a72e9337f22150ecaa3f41e65ef
+          original_path: TDT.uproject
+          source_sha256: e24bd8bf3dfa285c007f499f4e430471b730eb8a6a8293c3834e3c4cd2639ba7
+        - candidate_id: candidate-389557865d020f1f7f9acada877846ed
+          original_path: CPP.uproject
+          source_sha256: dc7f1494bd3a24f8a4f8b7758b6e6851138d3b476a26560e09550444a6bd1539
+        - candidate_id: candidate-5b6c95decf79253bd375eae9157e80d0
+          original_path: Map4.uproject
+          source_sha256: 9681b3f60d8c8ec4a68a1c348a024d8f668d483c539cfa958b4d286354c7f19c
+      state: pending
+    - number: 110
+      id: vlang
+      detector:
+        id: vlang
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-408e04615a747e9148e2a4424908aa37
+          original_path: v.mod
+          source_sha256: 23912a645340de6185e4510fa48975f43b1476230c9507fe52246c9ef38cbbaa
+        - candidate_id: candidate-528a23a673c584af8e8a3ba16246139f
+          original_path: v.mod
+          source_sha256: d601068eb961719f2f5b014ba755f7758f895e61a01d5a70d713decab991515d
+        - candidate_id: candidate-975f97ed63c62b2fef1028d1e8b8c317
+          original_path: examples/microchip/pic16f87x/uart_tx/v.mod
+          source_sha256: f6a797a3a3f69e732506a57810795ceb2c47ee07d19979429280b6b4456645fc
+      state: pending
+    - number: 111
+      id: zig-build
+      detector:
+        id: zig-build
+        form: build-definition
+        roles:
+            - declaration
+            - constraint
+            - configuration
+      candidates:
+        - candidate_id: candidate-4bc7ae9e175e00ef79650ceb28018bf2
+          original_path: build.zig
+          source_sha256: 748d99a8aa21dfc8e987e82f12543675e0b09651099778381d051821377d1f38
+        - candidate_id: candidate-75d33d6ba171bd283041888c3f6014c6
+          original_path: build.zig
+          source_sha256: 37e29dd6de1ce2a1424c538c337831db2c7652d93612b13ea425dfe4b0858f48
+        - candidate_id: candidate-7ad538aa1f011ef7e9b81850fe1c50dc
+          original_path: build.zig
+          source_sha256: e12a8b7000fd1233c8c65b45d6d5209ba229d77d3d629825c6fc5bcf09d80920
+      state: pending
+    - number: 112
+      id: zig-build-zon
+      detector:
+        id: zig-build-zon
+        form: manifest
+        roles:
+            - declaration
+            - constraint
+      candidates:
+        - candidate_id: candidate-30dd9104671cfd44cc2fc1d442a5f679
+          original_path: build.zig.zon
+          source_sha256: 956311c11c9f0a565981bb69a2e35edad5111b9a591094205c0cebf1b7b67a97
+        - candidate_id: candidate-3feaf78b455e7c7f8f4d2aa7ee0736dc
+          original_path: build.zig.zon
+          source_sha256: 266a10cdb3754e1a6b67624f8a4eddd34039d006a84b42b717c69876c4a9b1e8
+        - candidate_id: candidate-6927419c29e972c2886a3eb91fd68d1a
+          original_path: build.zig.zon
+          source_sha256: 6693ab6ddc56a53de192069c6109d25f24d6c7b7b1d5cde69b765e2ec9153398
+      state: pending
