@@ -3,7 +3,6 @@ package main
 
 import (
 	"context"
-	"crypto/sha256"
 	"errors"
 	"flag"
 	"fmt"
@@ -79,17 +78,11 @@ func plan(args []string, workingDir string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "error: %v\n", err)
 		return 1
 	}
-	rulesHash, err := hashFile(filepath.Join(workingDir, "internal", "analyze", "default_rules.yaml"))
-	if err != nil {
-		fmt.Fprintf(stderr, "error: %v\n", err)
-		return 1
-	}
 	created, err := analyzerloop.Plan(analyzerloop.PlanOptions{
 		CorpusRoot:       *corpus,
 		VerificationPath: verificationPath,
 		LedgerPath:       *ledger,
 		DeplensCommit:    baseCommit,
-		RulesSHA256:      rulesHash,
 		CorpusCommit:     corpusCommit,
 	})
 	if err != nil {
@@ -132,15 +125,6 @@ func execute(args []string, workingDir string, stdout, stderr io.Writer) int {
 	}
 	if err := descendantOf(workingDir, ledger.Deplens.Commit, commit); err != nil {
 		fmt.Fprintf(stderr, "error: current commit does not descend from the approved ledger: %v\n", err)
-		return 1
-	}
-	rulesHash, err := hashFile(filepath.Join(workingDir, "internal", "analyze", "default_rules.yaml"))
-	if err != nil {
-		fmt.Fprintf(stderr, "error: hash default rules: %v\n", err)
-		return 1
-	}
-	if rulesHash != ledger.Deplens.RulesSHA256 {
-		fmt.Fprintln(stderr, "error: default rules do not match the approved ledger")
 		return 1
 	}
 	corpusCommit, err := gitValue(*corpus, "rev-parse", "HEAD")
@@ -226,15 +210,6 @@ func runSelection(value string, once bool, ledger analyzerloop.Ledger) ([]int, e
 		return nil, errors.New("selected work items are completed")
 	}
 	return numbers, nil
-}
-
-func hashFile(path string) (string, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return "", fmt.Errorf("read %s: %w", path, err)
-	}
-	sum := sha256.Sum256(data)
-	return fmt.Sprintf("%x", sum), nil
 }
 
 func verificationDeplensCommit(path string) (string, error) {

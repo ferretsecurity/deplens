@@ -28,16 +28,11 @@ func TestPlanAcceptsCorpusBaseCommitAncestor(t *testing.T) {
 	for index := 1; index <= 3; index++ {
 		writeFile(t, filepath.Join(corpus, "testdata", "corpus", "example", fmt.Sprintf("candidate-%d", index), "example.lock"), fmt.Sprintf("source-%d", index))
 	}
-	rulesHash, err := hashFile(filepath.Join(deplens, "internal", "analyze", "default_rules.yaml"))
-	if err != nil {
-		t.Fatal(err)
-	}
 	verification := fmt.Sprintf(`version: 1
 corpus:
   path: testdata/corpus
 deplens:
   commit: %s
-  rules_sha256: %s
 work_items:
   - id: example
     detector: {id: example, form: lockfile, roles: [resolution]}
@@ -55,7 +50,7 @@ work_items:
         original_path: example.lock
         source_sha256: %s
         verdict: valid
-`, base, rulesHash, sha256Text("source-1"), sha256Text("source-2"), sha256Text("source-3"))
+`, base, sha256Text("source-1"), sha256Text("source-2"), sha256Text("source-3"))
 	writeFile(t, filepath.Join(corpus, ".deplens", "corpus-verification.yaml"), verification)
 	gitCommit(t, corpus, "corpus")
 

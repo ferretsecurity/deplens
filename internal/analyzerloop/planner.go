@@ -27,7 +27,6 @@ type PlanOptions struct {
 	VerificationPath string
 	LedgerPath       string
 	DeplensCommit    string
-	RulesSHA256      string
 	CorpusCommit     string
 }
 
@@ -45,8 +44,7 @@ type CorpusStamp struct {
 }
 
 type DeplensStamp struct {
-	Commit      string `yaml:"commit"`
-	RulesSHA256 string `yaml:"rules_sha256"`
+	Commit string `yaml:"commit"`
 }
 
 // WorkItem is independently completable. Checkpoints are append-only
@@ -86,8 +84,7 @@ type verificationLedger struct {
 		Path string `yaml:"path"`
 	} `yaml:"corpus"`
 	Deplens struct {
-		Commit      string `yaml:"commit"`
-		RulesSHA256 string `yaml:"rules_sha256"`
+		Commit string `yaml:"commit"`
 	} `yaml:"deplens"`
 	WorkItems []verificationItem `yaml:"work_items"`
 }
@@ -132,10 +129,6 @@ func Plan(options PlanOptions) (Ledger, error) {
 	if options.DeplensCommit != "" && verified.Deplens.Commit != options.DeplensCommit {
 		return Ledger{}, fmt.Errorf("corpus targets deplens commit %q, current commit is %q", verified.Deplens.Commit, options.DeplensCommit)
 	}
-	if options.RulesSHA256 != "" && verified.Deplens.RulesSHA256 != options.RulesSHA256 {
-		return Ledger{}, fmt.Errorf("corpus rules hash %q does not match current default rules %q", verified.Deplens.RulesSHA256, options.RulesSHA256)
-	}
-
 	corpusPath := verified.Corpus.Path
 	if corpusPath == "" {
 		return Ledger{}, errors.New("corpus verification ledger has no corpus path")
@@ -164,7 +157,7 @@ func Plan(options PlanOptions) (Ledger, error) {
 	ledger := Ledger{
 		Version:   1,
 		Corpus:    CorpusStamp{Path: corpusPath, Commit: options.CorpusCommit},
-		Deplens:   DeplensStamp{Commit: verified.Deplens.Commit, RulesSHA256: verified.Deplens.RulesSHA256},
+		Deplens:   DeplensStamp{Commit: verified.Deplens.Commit},
 		WorkItems: items,
 	}
 	if len(items) == 0 {

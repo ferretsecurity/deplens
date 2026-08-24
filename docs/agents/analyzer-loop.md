@@ -4,9 +4,9 @@
 
 ## Workflow
 
-Run `analyzerloop plan --corpus ../deplens-fixture-corpus` on a clean dedicated branch. Planning reads the corpus verification ledger and creates `.deplens/analyzer-implementation.yaml` only when it does not exist. An item is eligible only if its result is `OK`, it has exactly three candidates, all candidates are `valid`, the candidate files exist, and their SHA-256 hashes match. The planner also checks the frozen DepLens commit and default-rules hash. Items are sorted by detector ID and start in `pending` state.
+Run `analyzerloop plan --corpus ../deplens-fixture-corpus` on a clean dedicated branch. Planning reads the corpus verification ledger and creates `.deplens/analyzer-implementation.yaml` only when it does not exist. An item is eligible only if its result is `OK`, it has exactly three candidates, all candidates are `valid`, and the candidate files' SHA-256 hashes match. The planner checks the frozen DepLens commit. Items are sorted by detector ID and start in `pending` state.
 
-Review and commit that ledger before `analyzerloop run`. Planning and running allow commits that descend from the corpus's approved DepLens base; this permits the ledger and accepted checkpoints to be committed. The run command requires clean DepLens and corpus worktrees, a non-default branch, and configured Git identity. It rejects a different history or rules hash.
+Review and commit that ledger before `analyzerloop run`. Planning and running allow commits that descend from the corpus's approved DepLens base; this permits the ledger and accepted checkpoints to be committed. The run command requires clean DepLens and corpus worktrees, a non-default branch, and configured Git identity. It rejects a different history.
 
 Each work item has two independent stages:
 

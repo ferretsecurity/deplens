@@ -18,7 +18,6 @@ corpus:
   path: testdata/corpus
 deplens:
   commit: test-commit
-  rules_sha256: rules-hash
 work_items:
   - id: zulu
     detector: {id: zulu, form: lockfile, roles: [resolution]}
@@ -64,7 +63,7 @@ work_items:
 	writeTestFile(t, filepath.Join(corpus, ".deplens", "corpus-verification.yaml"), verification)
 
 	ledgerPath := filepath.Join(root, "ledger.yaml")
-	ledger, err := Plan(PlanOptions{CorpusRoot: corpus, VerificationPath: filepath.Join(corpus, ".deplens", "corpus-verification.yaml"), LedgerPath: ledgerPath, DeplensCommit: "test-commit", RulesSHA256: "rules-hash"})
+	ledger, err := Plan(PlanOptions{CorpusRoot: corpus, VerificationPath: filepath.Join(corpus, ".deplens", "corpus-verification.yaml"), LedgerPath: ledgerPath, DeplensCommit: "test-commit"})
 	if err != nil {
 		t.Fatalf("Plan() error = %v", err)
 	}
