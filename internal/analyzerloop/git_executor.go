@@ -36,8 +36,8 @@ func (e CodexEngine) Execute(ctx context.Context, attempt Attempt) (AttemptResul
 	ctx, cancel := context.WithTimeout(ctx, e.Timeout)
 	defer cancel()
 	command := exec.CommandContext(ctx, e.Executable,
-		"exec", "--json", "--model", "gpt-5.6-terra", "--sandbox", "workspace-write", "--ask-for-approval", "never",
-		"--config", "model_reasoning_effort=high", "--config", "mcp_servers={}", prompt(e.CorpusRoot, attempt))
+		"exec", "--json", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--model", "gpt-5.6-terra", "--sandbox", "workspace-write",
+		"--config", "model_reasoning_effort=high", "--config", "approval_policy=\"never\"", "--config", "mcp_servers={}", prompt(e.CorpusRoot, attempt))
 	command.Dir = e.Workdir
 	output, err := command.CombinedOutput()
 	if e.OutputPath != "" {
