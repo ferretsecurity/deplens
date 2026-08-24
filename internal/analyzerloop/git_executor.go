@@ -183,16 +183,38 @@ func agentEvent(line []byte) (string, agentCommand) {
 }
 
 func prompt(corpusRoot string, attempt Attempt) string {
-	return fmt.Sprintf(`You are the %s for dependency detector %q (work item %d).
-Work only in the current detached worktree. You may read originals from %q.
-Implement or verify the detector according to repository conventions. Inspect all three candidates, create exactly three minimized synthetic fixtures under testdata, and never copy originals or provenance. Do not change the loop harness, ledger, corpus repository, Go modules, or unrelated files. Run focused tests as needed.
+	common := fmt.Sprintf(`You are the %s for dependency detector %q (work item %d).
+Work only in the current detached worktree. You may read the three original candidates from %q.
+Do not change the loop harness, ledger, corpus repository, Go modules, or unrelated files. Never copy originals or provenance. Follow repository conventions, including updating README.md for the detector when required.`, attempt.Role, attempt.WorkItem.ID, attempt.WorkItem.Number, corpusRoot)
+	var roleInstructions string
+	switch attempt.Role {
+	case RoleImplementer:
+		roleInstructions = `
+Implement a real source analyzer for this detector. A filename-only match, a rule-only change, or fixtures without extracted dependencies is not a solution.
+Inspect all three originals and determine the dependency references the analyzer must extract. Add or update the analyzer, its registration, rule configuration, and focused tests as needed. The analyzer must report at least one dependency for each original with analysis presence "present" and extraction "complete".
+Create exactly three minimized synthetic fixtures under testdata, one for each original's distinct dependency pattern. Add focused tests that assert their extracted dependency references. Do not merely assert that the files are detected.`
+	case RoleVerifier:
+		roleInstructions = `
+Verify the existing implementation as a dependency extractor, not merely as a filename detector. Inspect all three originals and the three existing minimized fixtures. Confirm that each produces at least one extracted dependency with analysis presence "present" and extraction "complete", and that focused tests assert the expected references.
+Do not add, remove, or replace fixtures. Repair the analyzer, registration, rule configuration, tests, or documentation only when necessary to make the extraction correct.`
+	default:
+		roleInstructions = "\nVerify the dependency extractor according to repository conventions."
+	}
+	return common + roleInstructions + `
+Run focused tests.
 At the end, output exactly one line and nothing after it:
-<analyzerloop-result>{"summary":"short description","fixtures":["testdata/...","testdata/...","testdata/..."]}</analyzerloop-result>`, attempt.Role, attempt.WorkItem.ID, attempt.WorkItem.Number, corpusRoot)
+<analyzerloop-result>{"summary":"short description","fixtures":["testdata/...","testdata/...","testdata/..."]}</analyzerloop-result>`
 }
 
 func parseEngineResult(output []byte) (AttemptResult, error) {
 	const open, close = "<analyzerloop-result>", "</analyzerloop-result>"
 	text := string(output)
+	for _, line := range bytes.Split(output, []byte{'\n'}) {
+		message, _ := agentEvent(line)
+		if strings.Contains(message, open) {
+			text = message
+		}
+	}
 	start := strings.LastIndex(text, open)
 	if start < 0 {
 		return AttemptResult{}, errors.New("Codex did not return an analyzer loop result")
@@ -262,6 +284,9 @@ func (e DirectExecutor) Execute(ctx context.Context, attempt Attempt) (AttemptRe
 	if err := verifyFixtures(e.RepositoryRoot, attempt, result, paths, addedPaths(beforeFixtures, afterFixtures)); err != nil {
 		return AttemptResult{}, err
 	}
+	if err := validateFixtures(ctx, e.RepositoryRoot, attempt, result.Fixtures); err != nil {
+		return AttemptResult{}, err
+	}
 	result.ChangedPaths = paths
 	report(engine.Progress, func(progress ProgressReporter) { progress.ValidationAccepted(attempt, paths) })
 	return result, nil
@@ -319,6 +344,9 @@ func (e GitWorktreeExecutor) Execute(ctx context.Context, attempt Attempt) (Atte
 	if err := verifyFixtures(worktree, attempt, result, paths, newFixtures); err != nil {
 		return AttemptResult{}, err
 	}
+	if err := validateFixtures(ctx, worktree, attempt, result.Fixtures); err != nil {
+		return AttemptResult{}, err
+	}
 	patch, err := git(ctx, worktree, "diff", "--binary")
 	if err != nil {
 		return AttemptResult{}, fmt.Errorf("create validated attempt patch: %w", err)
@@ -366,10 +394,30 @@ func validateWorktree(ctx context.Context, worktree, corpusRoot string, attempt 
 	}
 	for _, candidate := range attempt.WorkItem.Candidates {
 		path := filepath.Join(corpusRoot, attempt.WorkItem.ID, candidate.ID)
-		output, err := command(ctx, worktree, "go", "run", "./cmd/deplens", "--json", path)
-		if err != nil || !recognizedCandidate(output, attempt.WorkItem.ID) {
-			return fmt.Errorf("original candidate %q was not recognized by detector %q", candidate.ID, attempt.WorkItem.ID)
+		if err := validateExtractedSource(ctx, worktree, path, attempt.WorkItem.ID); err != nil {
+			return fmt.Errorf("original candidate %q: %w", candidate.ID, err)
 		}
+	}
+	return nil
+}
+
+func validateFixtures(ctx context.Context, worktree string, attempt Attempt, fixtures []string) error {
+	for _, fixture := range fixtures {
+		path := filepath.Join(worktree, filepath.FromSlash(fixture))
+		if err := validateExtractedSource(ctx, worktree, path, attempt.WorkItem.ID); err != nil {
+			return fmt.Errorf("fixture %q: %w", fixture, err)
+		}
+	}
+	return nil
+}
+
+func validateExtractedSource(ctx context.Context, worktree, path, detector string) error {
+	output, err := command(ctx, worktree, "go", "run", "./cmd/deplens", "--json", path)
+	if err != nil {
+		return fmt.Errorf("scan dependency source: %w", err)
+	}
+	if !recognizedCandidate(output, detector) {
+		return fmt.Errorf("does not produce complete dependency extraction for detector %q", detector)
 	}
 	return nil
 }
@@ -377,8 +425,9 @@ func validateWorktree(ctx context.Context, worktree, corpusRoot string, attempt 
 func recognizedCandidate(output []byte, detector string) bool {
 	var scan struct {
 		Sources []struct {
-			Detector string `json:"detector"`
-			Analysis struct {
+			Detector     string            `json:"detector"`
+			Dependencies []json.RawMessage `json:"dependencies"`
+			Analysis     struct {
 				Presence   string `json:"presence"`
 				Extraction string `json:"extraction"`
 			} `json:"analysis"`
@@ -388,7 +437,7 @@ func recognizedCandidate(output []byte, detector string) bool {
 		return false
 	}
 	for _, source := range scan.Sources {
-		if source.Detector == detector && source.Analysis.Presence != "unknown" && source.Analysis.Extraction != "unsupported" && source.Analysis.Extraction != "failed" {
+		if source.Detector == detector && source.Analysis.Presence == "present" && source.Analysis.Extraction == "complete" && len(source.Dependencies) > 0 {
 			return true
 		}
 	}
