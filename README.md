@@ -21,6 +21,18 @@ Useful flags:
 
 The removed `--show-empty` flag is not accepted.
 
+### Analyzer implementation loop
+
+`analyzerloop` turns the separately verified fixture corpus into a reviewed work ledger for semantic analyzer work. It never contacts a package registry or GitHub itself.
+
+```bash
+go run ./cmd/analyzerloop plan --corpus ../deplens-fixture-corpus
+# Review and commit .deplens/analyzer-implementation.yaml.
+go run ./cmd/analyzerloop run --select 1...3
+```
+
+Planning accepts only corpus work items whose result is `OK` and whose three candidates are all valid and hash-verified. A run uses fresh implementer and verifier sessions, creates three synthesized test fixtures per item, and commits every accepted checkpoint. Runtime logs are private local data under `.ralph/` and are ignored. See [the operator guide](docs/agents/analyzer-loop.md).
+
 Human output is path-first and includes the source form plus its analysis state:
 
 ```text

@@ -38,6 +38,7 @@ desktop.ini
 
 # AI and agent tools
 .codex
+.ralph/
 .claude/
 .cursor/
 .aider*
