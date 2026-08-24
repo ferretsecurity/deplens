@@ -24,7 +24,8 @@ work_items:
         - candidate_id: candidate-af7110334d05452f96b612b1a6d203d7
           original_path: BUILD.bazel
           source_sha256: fda61f08985c3692a64bf5db9a16f67a20ed2d271611d04d6e3f57c599cff4b8
-      state: pending
+      state: ignored
+      ignore_reason: "dont understand how to handle bazel files yet"
     - number: 2
       id: bazel-module
       detector:
@@ -43,7 +44,8 @@ work_items:
         - candidate_id: candidate-c0624debc373a522cc06863777f3913c
           original_path: MODULE.bazel
           source_sha256: 4157d273074a1876fa674deca1e551bad66f06b87da1603dd856244e97b7ced8
-      state: pending
+      state: ignored
+      ignore_reason: "dont understand how to handle bazel files yet"
     - number: 3
       id: bazel-workspace
       detector:
@@ -62,7 +64,8 @@ work_items:
         - candidate_id: candidate-f4e872dd9ce76f7923e48cef08253937
           original_path: WORKSPACE
           source_sha256: 89d35a780d50dd1364bd8b895997421a3dd59c956eb62d0ace3ed6c0daba20a8
-      state: pending
+      state: ignored
+      ignore_reason: "dont understand how to handle bazel files yet"
     - number: 4
       id: buf
       detector:
