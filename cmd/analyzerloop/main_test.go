@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/ferretsecurity/deplens/internal/analyzerloop"
@@ -64,6 +65,16 @@ work_items:
 	}
 	if ledger.Deplens.Commit != base {
 		t.Fatalf("ledger base commit = %q, want %q", ledger.Deplens.Commit, base)
+	}
+}
+
+func TestRunHelpSucceeds(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	if code := run([]string{"run", "--help"}, &stdout, &stderr); code != 0 {
+		t.Fatalf("run --help = %d, stderr = %s", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "-select") {
+		t.Fatalf("help output = %q, want -select flag", stdout.String())
 	}
 }
 

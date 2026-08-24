@@ -51,6 +51,10 @@ func plan(args []string, workingDir string, stdout, stderr io.Writer) int {
 	corpus := fs.String("corpus", filepath.Join(workingDir, "..", "deplens-fixture-corpus"), "path to deplens-fixture-corpus")
 	ledger := fs.String("ledger", filepath.Join(workingDir, ".deplens", "analyzer-implementation.yaml"), "ledger output path")
 	if err := fs.Parse(args); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			printFlagUsage(stdout, "analyzerloop plan", fs)
+			return 0
+		}
 		fmt.Fprintf(stderr, "error: %v\n", err)
 		return 1
 	}
@@ -106,6 +110,10 @@ func execute(args []string, workingDir string, stdout, stderr io.Writer) int {
 	once := fs.Bool("once", false, "run only the first selected unfinished work item")
 	noCommit := fs.Bool("no-commit", false, "leave accepted changes uncommitted")
 	if err := fs.Parse(args); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			printFlagUsage(stdout, "analyzerloop run", fs)
+			return 0
+		}
 		fmt.Fprintf(stderr, "error: %v\n", err)
 		return 1
 	}
@@ -229,6 +237,12 @@ func verificationDeplensCommit(path string) (string, error) {
 		return "", errors.New("corpus verification ledger has no deplens commit")
 	}
 	return verification.Deplens.Commit, nil
+}
+
+func printFlagUsage(output io.Writer, command string, fs *flag.FlagSet) {
+	fmt.Fprintf(output, "Usage: %s [flags]\n", command)
+	fs.SetOutput(output)
+	fs.PrintDefaults()
 }
 
 func gitValue(dir string, args ...string) (string, error) {
