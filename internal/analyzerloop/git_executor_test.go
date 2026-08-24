@@ -24,3 +24,14 @@ func TestRecognizedCandidateRejectsUnsupportedExtraction(t *testing.T) {
 		t.Fatal("complete source was rejected")
 	}
 }
+
+func TestAgentEventExtractsFollowDetails(t *testing.T) {
+	message, command, succeeded := agentEvent([]byte(`{"type":"item.completed","item":{"type":"agent_message","text":"checking fixture"}}`))
+	if message != "checking fixture" || command || succeeded {
+		t.Fatalf("agent message = (%q, %t, %t)", message, command, succeeded)
+	}
+	message, command, succeeded = agentEvent([]byte(`{"type":"item.completed","item":{"type":"command_execution","exit_code":1}}`))
+	if message != "" || !command || succeeded {
+		t.Fatalf("agent command = (%q, %t, %t)", message, command, succeeded)
+	}
+}

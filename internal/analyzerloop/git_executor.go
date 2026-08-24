@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -21,6 +23,7 @@ type CodexEngine struct {
 	CorpusRoot string
 	OutputPath string
 	Timeout    time.Duration
+	Progress   ProgressReporter
 }
 
 func (e CodexEngine) Execute(ctx context.Context, attempt Attempt) (AttemptResult, error) {
@@ -39,23 +42,135 @@ func (e CodexEngine) Execute(ctx context.Context, attempt Attempt) (AttemptResul
 		"exec", "--json", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--model", "gpt-5.6-terra", "--sandbox", "workspace-write",
 		"--config", "model_reasoning_effort=high", "--config", "approval_policy=\"never\"", "--config", "mcp_servers={}", prompt(e.CorpusRoot, attempt))
 	command.Dir = e.Workdir
-	output, err := command.CombinedOutput()
+	var output bytes.Buffer
+	var capture *engineOutputCapture
 	if e.OutputPath != "" {
-		if writeErr := os.WriteFile(e.OutputPath, output, 0o600); writeErr != nil {
-			return AttemptResult{}, fmt.Errorf("write Codex output: %w", writeErr)
+		file, openErr := os.OpenFile(e.OutputPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
+		if openErr != nil {
+			return AttemptResult{}, fmt.Errorf("open Codex output: %w", openErr)
 		}
+		defer file.Close()
+		capture = &engineOutputCapture{output: &output, file: file, progress: e.Progress, attempt: attempt}
+	} else {
+		capture = &engineOutputCapture{output: &output, progress: e.Progress, attempt: attempt}
 	}
+	stdout, pipeErr := command.StdoutPipe()
+	if pipeErr != nil {
+		return AttemptResult{}, fmt.Errorf("open Codex stdout: %w", pipeErr)
+	}
+	stderr, pipeErr := command.StderrPipe()
+	if pipeErr != nil {
+		return AttemptResult{}, fmt.Errorf("open Codex stderr: %w", pipeErr)
+	}
+	report(e.Progress, func(progress ProgressReporter) { progress.AgentStarted(attempt, e.OutputPath, e.Workdir) })
+	started := time.Now()
+	if err := command.Start(); err != nil {
+		return AttemptResult{}, fmt.Errorf("start isolated Codex attempt: %w", err)
+	}
+	var copies sync.WaitGroup
+	copies.Add(2)
+	go func() { defer copies.Done(); _, _ = io.Copy(capture, stdout) }()
+	go func() { defer copies.Done(); _, _ = io.Copy(capture, stderr) }()
+	done := make(chan struct{})
+	go reportHeartbeats(done, e.Progress, attempt, started)
+	err := command.Wait()
+	close(done)
+	copies.Wait()
+	report(e.Progress, func(progress ProgressReporter) { progress.AgentFinished(attempt, time.Since(started)) })
+	outputBytes := output.Bytes()
 	if err != nil {
 		if ctx.Err() != nil {
 			return AttemptResult{}, ctx.Err()
 		}
 		return AttemptResult{}, fmt.Errorf("run isolated Codex attempt: %w", err)
 	}
-	result, err := parseEngineResult(output)
+	result, err := parseEngineResult(outputBytes)
 	if err != nil {
 		return AttemptResult{}, err
 	}
 	return result, nil
+}
+
+func reportHeartbeats(done <-chan struct{}, progress ProgressReporter, attempt Attempt, started time.Time) {
+	if progress == nil {
+		return
+	}
+	timer := time.NewTimer(time.Minute)
+	defer timer.Stop()
+	select {
+	case <-done:
+		return
+	case <-timer.C:
+		report(progress, func(reporter ProgressReporter) { reporter.AgentHeartbeat(attempt, time.Since(started)) })
+	}
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-done:
+			return
+		case <-ticker.C:
+			report(progress, func(reporter ProgressReporter) { reporter.AgentHeartbeat(attempt, time.Since(started)) })
+		}
+	}
+}
+
+type engineOutputCapture struct {
+	mu       sync.Mutex
+	output   *bytes.Buffer
+	file     *os.File
+	pending  []byte
+	progress ProgressReporter
+	attempt  Attempt
+}
+
+func (capture *engineOutputCapture) Write(data []byte) (int, error) {
+	capture.mu.Lock()
+	defer capture.mu.Unlock()
+	if capture.file != nil {
+		if _, err := capture.file.Write(data); err != nil {
+			return 0, err
+		}
+	}
+	_, _ = capture.output.Write(data)
+	capture.pending = append(capture.pending, data...)
+	for {
+		lineEnd := bytes.IndexByte(capture.pending, '\n')
+		if lineEnd < 0 {
+			break
+		}
+		line := capture.pending[:lineEnd]
+		capture.pending = capture.pending[lineEnd+1:]
+		message, command, succeeded := agentEvent(line)
+		if message != "" {
+			report(capture.progress, func(progress ProgressReporter) { progress.AgentMessage(capture.attempt, message) })
+		}
+		if command {
+			report(capture.progress, func(progress ProgressReporter) { progress.AgentCommand(capture.attempt, succeeded) })
+		}
+	}
+	return len(data), nil
+}
+
+func agentEvent(line []byte) (string, bool, bool) {
+	var event struct {
+		Type string `json:"type"`
+		Item struct {
+			Type     string `json:"type"`
+			Text     string `json:"text"`
+			ExitCode int    `json:"exit_code"`
+		} `json:"item"`
+	}
+	if err := json.Unmarshal(line, &event); err != nil || event.Type != "item.completed" {
+		return "", false, false
+	}
+	if event.Item.Type == "agent_message" {
+		return strings.TrimSpace(event.Item.Text), false, false
+	}
+	if event.Item.Type == "command_execution" {
+		return "", true, event.Item.ExitCode == 0
+	}
+	return "", false, false
 }
 
 func prompt(corpusRoot string, attempt Attempt) string {
@@ -119,12 +234,14 @@ func (e DirectExecutor) Execute(ctx context.Context, attempt Attempt) (AttemptRe
 	if err != nil {
 		return AttemptResult{}, err
 	}
-	if err := validateWorktree(ctx, e.RepositoryRoot, e.CorpusRoot, attempt); err != nil {
-		return AttemptResult{}, err
-	}
 	paths, err := changedPaths(ctx, e.RepositoryRoot)
 	if err != nil {
 		return AttemptResult{}, fmt.Errorf("list direct attempt changes: %w", err)
+	}
+	report(engine.Progress, func(progress ProgressReporter) { progress.AgentEdited(attempt, paths) })
+	report(engine.Progress, func(progress ProgressReporter) { progress.ValidationStarted(attempt) })
+	if err := validateWorktree(ctx, e.RepositoryRoot, e.CorpusRoot, attempt); err != nil {
+		return AttemptResult{}, err
 	}
 	if err := allowedChangedPaths(paths); err != nil {
 		return AttemptResult{}, err
@@ -137,6 +254,7 @@ func (e DirectExecutor) Execute(ctx context.Context, attempt Attempt) (AttemptRe
 		return AttemptResult{}, err
 	}
 	result.ChangedPaths = paths
+	report(engine.Progress, func(progress ProgressReporter) { progress.ValidationAccepted(attempt, paths) })
 	return result, nil
 }
 
@@ -169,6 +287,12 @@ func (e GitWorktreeExecutor) Execute(ctx context.Context, attempt Attempt) (Atte
 	if err := includeUntracked(ctx, worktree); err != nil {
 		return AttemptResult{}, err
 	}
+	edited, err := changedPaths(ctx, worktree)
+	if err != nil {
+		return AttemptResult{}, fmt.Errorf("list attempt changes: %w", err)
+	}
+	report(engine.Progress, func(progress ProgressReporter) { progress.AgentEdited(attempt, edited) })
+	report(engine.Progress, func(progress ProgressReporter) { progress.ValidationStarted(attempt) })
 	if err := validateWorktree(ctx, worktree, e.CorpusRoot, attempt); err != nil {
 		return AttemptResult{}, err
 	}
@@ -195,6 +319,7 @@ func (e GitWorktreeExecutor) Execute(ctx context.Context, attempt Attempt) (Atte
 	}
 	if len(bytes.TrimSpace(patch)) == 0 {
 		result.ChangedPaths = paths
+		report(engine.Progress, func(progress ProgressReporter) { progress.ValidationAccepted(attempt, paths) })
 		return result, nil
 	}
 	apply := exec.CommandContext(ctx, "git", "apply", "--whitespace=error")
@@ -203,6 +328,7 @@ func (e GitWorktreeExecutor) Execute(ctx context.Context, attempt Attempt) (Atte
 		return AttemptResult{}, fmt.Errorf("apply validated attempt patch: %w: %s", err, strings.TrimSpace(string(output)))
 	}
 	result.ChangedPaths = paths
+	report(engine.Progress, func(progress ProgressReporter) { progress.ValidationAccepted(attempt, paths) })
 	return result, nil
 }
 

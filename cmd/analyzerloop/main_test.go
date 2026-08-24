@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ferretsecurity/deplens/internal/analyzerloop"
 )
@@ -73,8 +74,19 @@ func TestRunHelpSucceeds(t *testing.T) {
 	if code := run([]string{"run", "--help"}, &stdout, &stderr); code != 0 {
 		t.Fatalf("run --help = %d, stderr = %s", code, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "-select") {
-		t.Fatalf("help output = %q, want -select flag", stdout.String())
+	if !strings.Contains(stdout.String(), "-follow") {
+		t.Fatalf("help output = %q, want -follow flag", stdout.String())
+	}
+}
+
+func TestProgressRendererFollowIncludesRawLogCommand(t *testing.T) {
+	var output bytes.Buffer
+	renderer := newProgressRenderer(&output, true, "/repo/.ralph/runs/123")
+	renderer.AgentStarted(analyzerloop.Attempt{}, "/repo/.ralph/runs/123/attempts/1.jsonl", "/repo")
+	renderer.AgentHeartbeat(analyzerloop.Attempt{}, time.Minute)
+	text := output.String()
+	if !strings.Contains(text, "tail -f") || !strings.Contains(text, "Agent is still running") {
+		t.Fatalf("follow output = %q", text)
 	}
 }
 

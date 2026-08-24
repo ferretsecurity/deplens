@@ -23,6 +23,7 @@ type Attempt struct {
 	WorkItem WorkItem
 	Role     Role
 	Number   int
+	Limit    int
 }
 
 type AttemptResult struct {
@@ -74,6 +75,7 @@ type Runner struct {
 	Executor            Executor
 	Journal             Journal
 	Committer           Committer
+	Progress            ProgressReporter
 	ImplementerAttempts int
 	VerifierAttempts    int
 }
@@ -103,12 +105,14 @@ func (r Runner) Run(ctx context.Context, selection []int) error {
 		if item.State != StatePending && item.State != StateInProgress {
 			return fmt.Errorf("work item %d has invalid state %q", number, item.State)
 		}
+		report(r.Progress, func(progress ProgressReporter) { progress.WorkItemStarted(*item) })
 		if item.State == StatePending {
 			result, ok, err := r.accept(ctx, *item, RoleImplementer, r.implementerLimit())
 			if err != nil {
 				return err
 			}
 			if !ok {
+				report(r.Progress, func(progress ProgressReporter) { progress.WorkItemFinished(*item, false) })
 				continue
 			}
 			checkpoint := checkpoint(RoleImplementer, len(item.Checkpoints)+1, result)
@@ -128,6 +132,7 @@ func (r Runner) Run(ctx context.Context, selection []int) error {
 			return err
 		}
 		if !ok {
+			report(r.Progress, func(progress ProgressReporter) { progress.WorkItemFinished(*item, false) })
 			continue
 		}
 		checkpoint := checkpoint(RoleVerifier, len(item.Checkpoints)+1, result)
@@ -141,16 +146,21 @@ func (r Runner) Run(ctx context.Context, selection []int) error {
 				return fmt.Errorf("commit verification checkpoint for work item %d: %w", item.Number, err)
 			}
 		}
+		report(r.Progress, func(progress ProgressReporter) { progress.WorkItemFinished(*item, true) })
 	}
 	return nil
 }
 
 func (r Runner) accept(ctx context.Context, item WorkItem, role Role, limit int) (AttemptResult, bool, error) {
 	for attempt := 1; attempt <= limit; attempt++ {
-		result, err := r.Executor.Execute(ctx, Attempt{WorkItem: item, Role: role, Number: attempt})
+		current := Attempt{WorkItem: item, Role: role, Number: attempt, Limit: limit}
+		started := time.Now()
+		report(r.Progress, func(progress ProgressReporter) { progress.AttemptStarted(current) })
+		result, err := r.Executor.Execute(ctx, current)
 		if err == nil {
 			err = validateAttemptResult(result)
 		}
+		report(r.Progress, func(progress ProgressReporter) { progress.AttemptFinished(current, result, err, time.Since(started)) })
 		entry := JournalEntry{At: time.Now().UTC(), WorkItem: item.Number, Role: role, Attempt: attempt}
 		if err != nil {
 			entry.Outcome, entry.Message = "rejected", err.Error()
