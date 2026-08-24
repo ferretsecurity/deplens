@@ -170,7 +170,7 @@ func Plan(options PlanOptions) (Ledger, error) {
 	if len(items) == 0 {
 		return ledger, nil
 	}
-	if err := SaveLedger(options.LedgerPath, ledger); err != nil {
+	if err := CreateLedger(options.LedgerPath, ledger); err != nil {
 		return Ledger{}, err
 	}
 	return ledger, nil
@@ -238,6 +238,20 @@ func SaveLedger(path string, ledger Ledger) error {
 	if err != nil {
 		return fmt.Errorf("encode analyzer ledger: %w", err)
 	}
+	return writeLedger(path, data, false)
+}
+
+// CreateLedger publishes a complete new ledger without ever replacing an
+// existing approval record, even when planners race.
+func CreateLedger(path string, ledger Ledger) error {
+	data, err := yaml.Marshal(ledger)
+	if err != nil {
+		return fmt.Errorf("encode analyzer ledger: %w", err)
+	}
+	return writeLedger(path, data, true)
+}
+
+func writeLedger(path string, data []byte, noReplace bool) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return fmt.Errorf("create ledger directory: %w", err)
 	}
@@ -257,6 +271,15 @@ func SaveLedger(path string, ledger Ledger) error {
 	}
 	if err := temporary.Close(); err != nil {
 		return fmt.Errorf("close temporary ledger: %w", err)
+	}
+	if noReplace {
+		if err := os.Link(temporaryPath, path); err != nil {
+			if errors.Is(err, os.ErrExist) {
+				return fmt.Errorf("refusing to overwrite existing ledger %q", path)
+			}
+			return fmt.Errorf("create ledger atomically: %w", err)
+		}
+		return nil
 	}
 	if err := os.Rename(temporaryPath, path); err != nil {
 		return fmt.Errorf("replace ledger atomically: %w", err)

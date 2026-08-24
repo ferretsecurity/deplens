@@ -105,6 +105,10 @@ type DirectExecutor struct {
 }
 
 func (e DirectExecutor) Execute(ctx context.Context, attempt Attempt) (AttemptResult, error) {
+	beforeFixtures, err := untrackedTestdata(ctx, e.RepositoryRoot)
+	if err != nil {
+		return AttemptResult{}, err
+	}
 	outputPath := filepath.Join(e.RuntimeRoot, "attempts", fmt.Sprintf("%03d-%s-%d.jsonl", attempt.WorkItem.Number, attempt.Role, attempt.Number))
 	if err := os.MkdirAll(filepath.Dir(outputPath), 0o700); err != nil {
 		return AttemptResult{}, fmt.Errorf("create attempt output directory: %w", err)
@@ -123,6 +127,13 @@ func (e DirectExecutor) Execute(ctx context.Context, attempt Attempt) (AttemptRe
 		return AttemptResult{}, fmt.Errorf("list direct attempt changes: %w", err)
 	}
 	if err := allowedChangedPaths(paths); err != nil {
+		return AttemptResult{}, err
+	}
+	afterFixtures, err := untrackedTestdata(ctx, e.RepositoryRoot)
+	if err != nil {
+		return AttemptResult{}, err
+	}
+	if err := verifyFixtures(e.RepositoryRoot, attempt, result, paths, addedPaths(beforeFixtures, afterFixtures)); err != nil {
 		return AttemptResult{}, err
 	}
 	result.ChangedPaths = paths
@@ -168,12 +179,23 @@ func (e GitWorktreeExecutor) Execute(ctx context.Context, attempt Attempt) (Atte
 	if err := allowedChangedPaths(paths); err != nil {
 		return AttemptResult{}, err
 	}
+	newFixtures, err := addedTestdata(ctx, worktree)
+	if err != nil {
+		return AttemptResult{}, err
+	}
+	if err := verifyFixtures(worktree, attempt, result, paths, newFixtures); err != nil {
+		return AttemptResult{}, err
+	}
 	patch, err := git(ctx, worktree, "diff", "--binary")
 	if err != nil {
 		return AttemptResult{}, fmt.Errorf("create validated attempt patch: %w", err)
 	}
-	if len(bytes.TrimSpace(patch)) == 0 {
+	if len(bytes.TrimSpace(patch)) == 0 && attempt.Role == RoleImplementer {
 		return AttemptResult{}, errors.New("attempt produced no changes")
+	}
+	if len(bytes.TrimSpace(patch)) == 0 {
+		result.ChangedPaths = paths
+		return result, nil
 	}
 	apply := exec.CommandContext(ctx, "git", "apply", "--whitespace=error")
 	apply.Dir, apply.Stdin = e.RepositoryRoot, bytes.NewReader(patch)
@@ -232,6 +254,56 @@ func recognizedCandidate(output []byte, detector string) bool {
 	}
 	for _, source := range scan.Sources {
 		if source.Detector == detector && source.Analysis.Presence != "unknown" && source.Analysis.Extraction != "unsupported" && source.Analysis.Extraction != "failed" {
+			return true
+		}
+	}
+	return false
+}
+
+func verifyFixtures(worktree string, attempt Attempt, result AttemptResult, changed, added []string) error {
+	if err := validateAttemptResult(result); err != nil {
+		return err
+	}
+	for _, fixture := range result.Fixtures {
+		info, err := os.Stat(filepath.Join(worktree, filepath.FromSlash(fixture)))
+		if err != nil {
+			return fmt.Errorf("recorded fixture %q does not exist: %w", fixture, err)
+		}
+		if !info.Mode().IsRegular() {
+			return fmt.Errorf("recorded fixture %q is not a regular file", fixture)
+		}
+	}
+	fixtureSet := make(map[string]bool, len(result.Fixtures))
+	for _, fixture := range result.Fixtures {
+		fixtureSet[filepath.ToSlash(fixture)] = true
+	}
+	for _, path := range changed {
+		path = filepath.ToSlash(path)
+		if strings.HasPrefix(path, "testdata/") && !fixtureSet[path] {
+			return fmt.Errorf("attempt changed unrecorded fixture %q", path)
+		}
+	}
+	if attempt.Role != RoleImplementer {
+		if len(added) != 0 {
+			return fmt.Errorf("verifier added fixture %q", added[0])
+		}
+		return nil
+	}
+	if len(added) != len(result.Fixtures) {
+		return fmt.Errorf("implementer added %d fixtures, want exactly 3", len(added))
+	}
+	for _, fixture := range result.Fixtures {
+		if !containsPath(added, fixture) {
+			return fmt.Errorf("implementer fixture %q was not newly created", fixture)
+		}
+	}
+	return nil
+}
+
+func containsPath(paths []string, wanted string) bool {
+	wanted = filepath.ToSlash(wanted)
+	for _, path := range paths {
+		if filepath.ToSlash(path) == wanted {
 			return true
 		}
 	}
@@ -298,6 +370,36 @@ func changedPaths(ctx context.Context, dir string) ([]string, error) {
 		return nil, err
 	}
 	return append(paths, untracked...), nil
+}
+
+func addedTestdata(ctx context.Context, dir string) ([]string, error) {
+	output, err := git(ctx, dir, "diff", "--name-only", "--diff-filter=A", "--", "testdata")
+	if err != nil {
+		return nil, fmt.Errorf("list newly added fixtures: %w", err)
+	}
+	return strings.Fields(string(output)), nil
+}
+
+func untrackedTestdata(ctx context.Context, dir string) ([]string, error) {
+	paths, err := gitLines(ctx, dir, "ls-files", "--others", "--exclude-standard", "--", "testdata")
+	if err != nil {
+		return nil, fmt.Errorf("list untracked fixtures: %w", err)
+	}
+	return paths, nil
+}
+
+func addedPaths(before, after []string) []string {
+	known := make(map[string]bool, len(before))
+	for _, path := range before {
+		known[filepath.ToSlash(path)] = true
+	}
+	added := make([]string, 0, len(after))
+	for _, path := range after {
+		if !known[filepath.ToSlash(path)] {
+			added = append(added, path)
+		}
+	}
+	return added
 }
 
 func command(ctx context.Context, dir, name string, args ...string) ([]byte, error) {

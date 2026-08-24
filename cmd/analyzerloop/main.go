@@ -115,13 +115,30 @@ func execute(args []string, workingDir string, stdout, stderr io.Writer) int {
 		return 1
 	}
 	commit, err := gitValue(workingDir, "rev-parse", "HEAD")
-	if err != nil || commit != ledger.Deplens.Commit {
-		fmt.Fprintln(stderr, "error: current commit does not match the approved ledger")
+	if err != nil {
+		fmt.Fprintf(stderr, "error: read current commit: %v\n", err)
+		return 1
+	}
+	if err := descendantOf(workingDir, ledger.Deplens.Commit, commit); err != nil {
+		fmt.Fprintf(stderr, "error: current commit does not descend from the approved ledger: %v\n", err)
 		return 1
 	}
 	rulesHash, err := hashFile(filepath.Join(workingDir, "internal", "analyze", "default_rules.yaml"))
-	if err != nil || rulesHash != ledger.Deplens.RulesSHA256 {
+	if err != nil {
+		fmt.Fprintf(stderr, "error: hash default rules: %v\n", err)
+		return 1
+	}
+	if rulesHash != ledger.Deplens.RulesSHA256 {
 		fmt.Fprintln(stderr, "error: default rules do not match the approved ledger")
+		return 1
+	}
+	corpusCommit, err := gitValue(*corpus, "rev-parse", "HEAD")
+	if err != nil {
+		fmt.Fprintf(stderr, "error: read corpus commit: %v\n", err)
+		return 1
+	}
+	if corpusCommit != ledger.Corpus.Commit {
+		fmt.Fprintln(stderr, "error: corpus commit does not match the approved ledger")
 		return 1
 	}
 	if err := analyzerloop.PreflightRun(context.Background(), workingDir, *corpus); err != nil {
@@ -215,6 +232,21 @@ func gitValue(dir string, args ...string) (string, error) {
 		return "", fmt.Errorf("git %s: %w", strings.Join(args, " "), err)
 	}
 	return strings.TrimSpace(string(output)), nil
+}
+
+func descendantOf(dir, ancestor, descendant string) error {
+	if ancestor == "" {
+		return errors.New("approved ledger has no base commit")
+	}
+	output, err := command(context.Background(), dir, "git", "merge-base", "--is-ancestor", ancestor, descendant)
+	if err != nil {
+		var exitError *exec.ExitError
+		if errors.As(err, &exitError) && exitError.ExitCode() == 1 {
+			return fmt.Errorf("%s is not an ancestor of %s", ancestor, descendant)
+		}
+		return fmt.Errorf("run git merge-base --is-ancestor: %w: %s", err, strings.TrimSpace(string(output)))
+	}
+	return nil
 }
 
 func command(ctx context.Context, dir, name string, args ...string) ([]byte, error) {
