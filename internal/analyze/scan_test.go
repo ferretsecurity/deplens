@@ -421,6 +421,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"conan.lock",
 		"meson.build",
 		"shard.lock",
+		"gleam.toml",
 		"paket.dependencies",
 		"paket.references",
 		"Cask",
