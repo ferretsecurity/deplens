@@ -53,6 +53,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newPackageJSONParser)
 	case "deno-json":
 		return decodeAndCreate(raw.Analyzer, newDenoJSONParser)
+	case "deno-jsonc":
+		return decodeAndCreate(raw.Analyzer, newDenoJSONCParser)
 	case "pnpm-lock":
 		return decodeAndCreate(raw.Analyzer, newPNPMLockParser)
 	case "composer-lock":

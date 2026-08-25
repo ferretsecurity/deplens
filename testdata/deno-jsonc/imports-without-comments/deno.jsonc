@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@example/cli": "jsr:@example/cli@1.2.3-rc.1",
+    "bundler": "npm:bundler@2.3.4",
+    "validator": "npm:validator@next"
+  }
+}

@@ -1097,7 +1097,23 @@ work_items:
         - candidate_id: candidate-f60796b3879932680827511d29921cb1
           original_path: deno.jsonc
           source_sha256: 2d65a137868832813c2011e9f4c519aee7c550c5d0cea1d911ef73f7fb5ca8b0
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/deno-jsonc/imports-with-comments/deno.jsonc
+            - testdata/deno-jsonc/imports-without-comments/deno.jsonc
+            - testdata/deno-jsonc/no-imports/deno.jsonc
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/deno_jsonc.go
+            - internal/analyze/deno_jsonc_test.go
+            - internal/analyze/parser_factory.go
+            - testdata/deno-jsonc/imports-with-comments/deno.jsonc
+            - testdata/deno-jsonc/imports-without-comments/deno.jsonc
+            - testdata/deno-jsonc/no-imports/deno.jsonc
     - number: 30
       id: deno-lock
       detector:

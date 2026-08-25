@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "@sample/assert": "jsr:@sample/assert@^1.2.3",
+    "tooling": "npm:tooling@^4.5.6",
+    "local": "./src/module.ts", // local module
+  },
+  // unrelated configuration
+  "compilerOptions": {"strict": true},
+}
