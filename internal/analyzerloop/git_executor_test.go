@@ -23,7 +23,7 @@ func TestAllowedChangedPathsRejectsHarnessAndCorpusChanges(t *testing.T) {
 	}
 }
 
-func TestRecognizedCandidateRequiresCompleteExtractionWithDependencies(t *testing.T) {
+func TestRecognizedCandidateAcceptsCompleteDependencyAndEmptySources(t *testing.T) {
 	unsupported := []byte(`{"sources":[{"detector":"demo","analysis":{"presence":"present","extraction":"unsupported"}}]}`)
 	if recognizedCandidate(unsupported, "demo") {
 		t.Fatal("unsupported source was accepted")
@@ -31,6 +31,14 @@ func TestRecognizedCandidateRequiresCompleteExtractionWithDependencies(t *testin
 	completeWithoutDependencies := []byte(`{"sources":[{"detector":"demo","analysis":{"presence":"present","extraction":"complete"}}]}`)
 	if recognizedCandidate(completeWithoutDependencies, "demo") {
 		t.Fatal("dependency-free source was accepted")
+	}
+	empty := []byte(`{"sources":[{"detector":"demo","analysis":{"presence":"absent","extraction":"complete"}}]}`)
+	if !recognizedCandidate(empty, "demo") {
+		t.Fatal("complete empty source was rejected")
+	}
+	emptyWithDependencies := []byte(`{"sources":[{"detector":"demo","analysis":{"presence":"absent","extraction":"complete"},"dependencies":[{"name":"unexpected"}]}]}`)
+	if recognizedCandidate(emptyWithDependencies, "demo") {
+		t.Fatal("empty source with dependencies was accepted")
 	}
 	complete := []byte(`{"sources":[{"detector":"demo","analysis":{"presence":"present","extraction":"complete"},"dependencies":[{"name":"example"}]}]}`)
 	if !recognizedCandidate(complete, "demo") {
@@ -58,12 +66,18 @@ func TestPromptSeparatesImplementerAndVerifierResponsibilities(t *testing.T) {
 	if !strings.Contains(implementer, "TestMatchSelectorOnlySourceMatchesSupportedFiles") || !strings.Contains(implementer, "go test ./internal/analyze") {
 		t.Fatalf("implementer prompt missing analyzer migration checks: %q", implementer)
 	}
+	if !strings.Contains(implementer, "analysis presence \"absent\" and extraction \"complete\"") {
+		t.Fatalf("implementer prompt missing empty-source requirement: %q", implementer)
+	}
 	verifier := prompt("/corpus", Attempt{WorkItem: workItem, Role: RoleVerifier})
 	if !strings.Contains(verifier, "Do not add, remove, or replace fixtures") || strings.Contains(verifier, "Create exactly three") {
 		t.Fatalf("verifier prompt has incorrect fixture instructions: %q", verifier)
 	}
 	if !strings.Contains(verifier, "TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources") || !strings.Contains(verifier, "go test ./internal/analyze") {
 		t.Fatalf("verifier prompt missing analyzer migration checks: %q", verifier)
+	}
+	if !strings.Contains(verifier, "analysis presence \"absent\" and extraction \"complete\"") {
+		t.Fatalf("verifier prompt missing empty-source requirement: %q", verifier)
 	}
 }
 

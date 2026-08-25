@@ -193,12 +193,13 @@ If this change makes a previously selector-only rule analyzer-backed, update the
 	switch attempt.Role {
 	case RoleImplementer:
 		roleInstructions = `
-Implement a real source analyzer for this detector. A filename-only match, a rule-only change, or fixtures without extracted dependencies is not a solution.
-Inspect all three originals and determine the dependency references the analyzer must extract. Add or update the analyzer, its registration, rule configuration, and focused tests as needed. The analyzer must report at least one dependency for each original with analysis presence "present" and extraction "complete".
-Create exactly three new minimized synthetic fixtures under testdata, one for each original's distinct dependency pattern. Do not change, remove, or replace existing fixtures. Report each of the three new fixture paths. Add focused tests that assert their extracted dependency references. Do not merely assert that the files are detected.`
+Implement a real source analyzer for this detector. A filename-only match, a rule-only change, or an analyzer that does not extract dependencies from dependency-bearing fixtures is not a solution.
+Inspect all three originals and determine the dependency references the analyzer must extract. Add or update the analyzer, its registration, rule configuration, and focused tests as needed. The analyzer must report each dependency-bearing original with analysis presence "present", extraction "complete", and at least one dependency.
+For a valid original with no dependency references, it must instead report analysis presence "absent" and extraction "complete" with no dependencies.
+Create exactly three new minimized synthetic fixtures under testdata, one for each original's distinct content and dependency pattern. Do not change, remove, or replace existing fixtures. Report each of the three new fixture paths. Add focused tests that assert their extracted dependency references or confirmed empty result. Do not merely assert that the files are detected.`
 	case RoleVerifier:
 		roleInstructions = `
-Verify the existing implementation as a dependency extractor, not merely as a filename detector. Inspect all three originals and the three existing minimized fixtures. Confirm that each produces at least one extracted dependency with analysis presence "present" and extraction "complete", and that focused tests assert the expected references.
+Verify the existing implementation as a dependency extractor, not merely as a filename detector. Inspect all three originals and the three existing minimized fixtures. Confirm that every dependency-bearing source produces at least one extracted dependency with analysis presence "present" and extraction "complete". Confirm that a valid dependency-free source produces no dependencies with analysis presence "absent" and extraction "complete", and that focused tests assert the expected references or confirmed empty result.
 Do not add, remove, or replace fixtures. Repair the analyzer, registration, rule configuration, tests, or documentation only when necessary to make the extraction correct.`
 	default:
 		roleInstructions = "\nVerify the dependency extractor according to repository conventions."
@@ -538,7 +539,13 @@ func recognizedCandidate(output []byte, detector string) bool {
 		return false
 	}
 	for _, source := range scan.Sources {
-		if source.Detector == detector && source.Analysis.Presence == "present" && source.Analysis.Extraction == "complete" && len(source.Dependencies) > 0 {
+		if source.Detector != detector || source.Analysis.Extraction != "complete" {
+			continue
+		}
+		if source.Analysis.Presence == "present" && len(source.Dependencies) > 0 {
+			return true
+		}
+		if source.Analysis.Presence == "absent" && len(source.Dependencies) == 0 {
 			return true
 		}
 	}
