@@ -68,7 +68,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "mix.lock", want: DetectorID("elixir-mix-lock")},
 		{name: "demo.cabal", want: DetectorID("haskell-cabal")},
 		{name: "demo.gemspec", want: DetectorID("ruby-gemspec")},
-		{name: "conanfile.txt", want: DetectorID("cpp-conanfile")},
 		{name: "cpanfile", want: DetectorID("perl-cpanfile")},
 		{name: "build.zig.zon", want: DetectorID("zig-build-zon")},
 		{name: "demo.nimble", want: DetectorID("nim-nimble")},
@@ -428,6 +427,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"metadata.rb",
 		"Policyfile.rb",
 		"Policyfile.lock.json",
+		"conanfile.txt",
 		"conan.lock",
 	}
 

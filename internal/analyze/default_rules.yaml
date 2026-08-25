@@ -559,9 +559,12 @@ rules:
     analyzer:
       type: dotnet-project
   - id: cpp-conanfile
+    package-type: conan
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^conanfile\.txt$'
+    analyzer:
+      type: conanfile
   - id: cpp-conan-lock
     form: lockfile
     roles: [resolution, integrity]

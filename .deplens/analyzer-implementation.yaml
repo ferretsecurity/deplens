@@ -637,7 +637,25 @@ work_items:
         - candidate_id: candidate-36021247e8e87b1a70948f0d24a82479
           original_path: conanfile.txt
           source_sha256: b3018600d10b22175017f25e84b4b67cbf7297c60ffdd3a38318b298076108c9
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/cpp/conanfile-runtime-test/conanfile.txt
+            - testdata/cpp/conanfile-user-channel/conanfile.txt
+            - testdata/cpp/conanfile-version-range/conanfile.txt
+          changed_paths:
+            - README.md
+            - internal/analyze/conanfile.go
+            - internal/analyze/conanfile_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/cpp/conanfile-runtime-test/conanfile.txt
+            - testdata/cpp/conanfile-user-channel/conanfile.txt
+            - testdata/cpp/conanfile-version-range/conanfile.txt
     - number: 19
       id: cpp-conanfile-py
       detector:

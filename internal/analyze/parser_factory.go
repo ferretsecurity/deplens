@@ -99,6 +99,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newBufManifestParser)
 	case "buf-lock":
 		return decodeAndCreate(raw.Analyzer, newBufLockParser)
+	case "conanfile":
+		return decodeAndCreate(raw.Analyzer, newConanfileParser)
 	case "conan-lock":
 		return decodeAndCreate(raw.Analyzer, newConanLockParser)
 	case "erlang-rebar-config":
