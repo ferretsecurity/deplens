@@ -2229,7 +2229,7 @@ work_items:
         - candidate_id: candidate-b7c90889cbe2511fa2edf2814768099d
           original_path: stable/connector/Chart.yaml
           source_sha256: 8afa50c33aa579e93e178496e266b1ca48830f922b190116933be2c7a3035a99
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -2249,6 +2249,13 @@ work_items:
             - testdata/helm/chart-empty/Chart.yaml
             - testdata/helm/chart-local-repository/Chart.yaml
             - testdata/helm/chart-registry-repository/Chart.yaml
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/helm/chart-registry-repository/Chart.yaml
+            - testdata/helm/chart-local-repository/Chart.yaml
+            - testdata/helm/chart-empty/Chart.yaml
+          changed_paths: []
     - number: 58
       id: helm-chart-lock
       detector:
