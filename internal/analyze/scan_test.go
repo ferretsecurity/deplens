@@ -132,7 +132,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "flake.nix", want: DetectorID("nix-flake")},
 		{name: "flake.lock", want: DetectorID("nix-flake-lock")},
 		// Group 1l: Infrastructure and ops tooling
-		{name: "Chart.lock", want: DetectorID("helm-chart-lock")},
 		{name: "Brewfile.lock.json", want: DetectorID("homebrew-brewfile-lock")},
 		{name: "Puppetfile", want: DetectorID("puppet-puppetfile")},
 		{name: "jsonnetfile.lock.json", want: DetectorID("jsonnet-lock")},
@@ -430,6 +429,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		".gitmodules",
 		"action.yml",
 		"action.yaml",
+		"Chart.lock",
 	}
 
 	for _, tc := range testCases {

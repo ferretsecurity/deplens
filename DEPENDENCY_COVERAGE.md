@@ -165,7 +165,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `nix-default-shell` | `manifest` | `declaration, constraint` | — | select |
 | `nix-flake` | `manifest` | `declaration, constraint` | — | select |
 | `nix-flake-lock` | `lockfile` | `resolution, integrity` | — | select |
-| `helm-chart-lock` | `lockfile` | `resolution, integrity` | — | select |
+| `helm-chart-lock` | `lockfile` | `resolution, integrity` | `helm-chart-lock` | select, recognize, extract, normalize, relate |
 | `homebrew-brewfile-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `buf-lock` | `lockfile` | `resolution, integrity` | `buf-lock` | select, recognize, extract, normalize, relate |
 | `puppet-puppetfile` | `manifest` | `declaration, constraint` | — | select |

@@ -1,0 +1,6 @@
+dependencies:
+- name: mongodb
+  repository: oci://registry.example.test/charts
+  version: 19.1.16
+digest: sha256:example
+generated: "2026-07-03T14:16:07Z"

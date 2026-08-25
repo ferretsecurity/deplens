@@ -2274,7 +2274,26 @@ work_items:
         - candidate_id: candidate-c37bb763a24c342a2924167c6fce9b14
           original_path: helms/Chart.lock
           source_sha256: 32335de257ffda224b1ad33bd0be35bc672e27dec3bfd94be8a49f34ee492bb5
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/helm/chart-lock-http-repository/Chart.lock
+            - testdata/helm/chart-lock-oci-registry/Chart.lock
+            - testdata/helm/chart-lock-local-repository/Chart.lock
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/helm_chart_lock.go
+            - internal/analyze/helm_chart_lock_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/helm/chart-lock-http-repository/Chart.lock
+            - testdata/helm/chart-lock-local-repository/Chart.lock
+            - testdata/helm/chart-lock-oci-registry/Chart.lock
     - number: 59
       id: homebrew-brewfile
       detector:

@@ -1,0 +1,6 @@
+dependencies:
+- name: nginx
+  repository: https://charts.example.test/stable
+  version: 8.8.4
+digest: sha256:example
+generated: "2021-10-21T16:46:24Z"

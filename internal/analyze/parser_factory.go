@@ -39,6 +39,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newGithubActionsActionParser)
 	case "helm-chart":
 		return decodeAndCreate(raw.Analyzer, newHelmChartParser)
+	case "helm-chart-lock":
+		return decodeAndCreate(raw.Analyzer, newHelmChartLockParser)
 	case "typescript":
 		return decodeAndCreate(raw.Analyzer, newTypeScriptMatcher)
 	case "python":

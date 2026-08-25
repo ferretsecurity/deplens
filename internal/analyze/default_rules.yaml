@@ -957,9 +957,12 @@ rules:
     roles: [resolution, integrity]
     filename-regex: '^flake\.lock$'
   - id: helm-chart-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Chart\.lock$'
+    analyzer:
+      type: helm-chart-lock
   - id: homebrew-brewfile-lock
     form: lockfile
     roles: [resolution, integrity]
