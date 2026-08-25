@@ -160,7 +160,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "Brewfile.lock.json", want: DetectorID("homebrew-brewfile-lock")},
 		{name: "buf.lock", want: DetectorID("buf-lock")},
 		{name: "Puppetfile", want: DetectorID("puppet-puppetfile")},
-		{name: "Policyfile.rb", want: DetectorID("chef-policyfile")},
 		{name: "Policyfile.lock.json", want: DetectorID("chef-policyfile-lock")},
 		{name: "jsonnetfile.lock.json", want: DetectorID("jsonnet-lock")},
 		{name: "Cask", want: DetectorID("emacs-cask")},
@@ -430,6 +429,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"Berksfile",
 		"Berksfile.lock",
 		"metadata.rb",
+		"Policyfile.rb",
 	}
 
 	for _, tc := range testCases {

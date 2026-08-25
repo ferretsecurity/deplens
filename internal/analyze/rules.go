@@ -167,6 +167,7 @@ type gemfileLockMatcherConfig struct{}
 type chefBerksfileMatcherConfig struct{}
 type chefBerksfileLockMatcherConfig struct{}
 type chefMetadataMatcherConfig struct{}
+type chefPolicyfileMatcherConfig struct{}
 type dockerfileMatcherConfig struct{}
 type dockerComposeMatcherConfig struct{}
 type mavenPOMMatcherConfig struct{}

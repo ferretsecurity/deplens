@@ -280,7 +280,25 @@ work_items:
         - candidate_id: candidate-a404fde4a82cfc6137f2be321d4e5060
           original_path: Policyfile.rb
           source_sha256: 493ef04d2f1dab15a046844c89a690e908b07ee94edc3182f75a831a0a18e9be
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/chef/policyfile-local-and-git/Policyfile.rb
+            - testdata/chef/policyfile-local-paths/Policyfile.rb
+            - testdata/chef/policyfile-single-local-path/Policyfile.rb
+          changed_paths:
+            - README.md
+            - internal/analyze/chef_policyfile.go
+            - internal/analyze/chef_policyfile_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/chef/policyfile-local-and-git/Policyfile.rb
+            - testdata/chef/policyfile-local-paths/Policyfile.rb
+            - testdata/chef/policyfile-single-local-path/Policyfile.rb
     - number: 10
       id: chef-policyfile-lock
       detector:
