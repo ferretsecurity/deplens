@@ -967,7 +967,7 @@ work_items:
         - candidate_id: candidate-d93a0de25282f1a18676ba22ec7ef4fe
           original_path: navigation_demo/pubspec.yaml
           source_sha256: 0031bad69f8320fe5e7aaa933cbc4d61df91953c261f6719aec9828c20d44a58
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -986,6 +986,13 @@ work_items:
             - testdata/dart/pubspec-flutter-sdk-and-path/pubspec.yaml
             - testdata/dart/pubspec-flutter-sdk-and-registry/pubspec.yaml
             - testdata/dart/pubspec-registry-groups/pubspec.yaml
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/dart/pubspec-flutter-sdk-and-registry/pubspec.yaml
+            - testdata/dart/pubspec-registry-groups/pubspec.yaml
+            - testdata/dart/pubspec-flutter-sdk-and-path/pubspec.yaml
+          changed_paths: []
     - number: 27
       id: dart-pubspec-lock
       detector:
