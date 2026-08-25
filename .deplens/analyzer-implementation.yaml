@@ -191,7 +191,7 @@ work_items:
         - candidate_id: candidate-2a56cb00f7115075bb82d6d703a56c9f
           original_path: Berksfile.lock
           source_sha256: 702c299b3b5673fc72743f4c333bdf267c61d744dccce54601d0b6c05e4e88c8
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -210,6 +210,13 @@ work_items:
             - testdata/chef/berksfile-lock-json/Berksfile.lock
             - testdata/chef/berksfile-lock-legacy-git/Berksfile.lock
             - testdata/chef/berksfile-lock-path/Berksfile.lock
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/chef/berksfile-lock-legacy-git/Berksfile.lock
+            - testdata/chef/berksfile-lock-path/Berksfile.lock
+            - testdata/chef/berksfile-lock-json/Berksfile.lock
+          changed_paths: []
     - number: 8
       id: chef-metadata
       detector:
