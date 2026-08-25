@@ -36,6 +36,11 @@ func TestGopkgLockFixturesExtractDependencyReferences(t *testing.T) {
 				{PackageType: "golang", Raw: "example.test/web@4444444444444444", Name: "example.test/web", Version: "4444444444444444", SourceGroup: "projects", Relationship: RelationshipInconclusive, Scope: ScopeRuntime, Attributes: map[string]string{"source_tag": "v1.2"}},
 			},
 		},
+		{
+			name:       "no projects",
+			fixtureDir: "gopkg-lock-no-deps",
+			want:       []DependencyReference{},
+		},
 	}
 
 	ruleset := mustLoadDefaultRules(t)
@@ -50,6 +55,9 @@ func TestGopkgLockFixturesExtractDependencyReferences(t *testing.T) {
 			}
 			source := result.Sources[0]
 			wantAnalysis := SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}
+			if len(tc.want) == 0 {
+				wantAnalysis.Presence = PresenceAbsent
+			}
 			if source.Detector != "go-gopkg-lock" || source.Analysis != wantAnalysis {
 				t.Fatalf("source = %+v", source)
 			}
