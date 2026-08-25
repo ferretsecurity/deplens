@@ -394,7 +394,7 @@ work_items:
         - candidate_id: candidate-cea2fa0bdd143c601103e2a00ae1ddd4
           original_path: build.boot
           source_sha256: d657da47774f7c58a2a3e8bf5586ac945480f20378c9ca111e0c94d626cdac42
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -414,6 +414,13 @@ work_items:
             - testdata/clojure/boot-client/build.boot
             - testdata/clojure/boot-library/build.boot
             - testdata/clojure/boot-service/build.boot
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/clojure/boot-client/build.boot
+            - testdata/clojure/boot-service/build.boot
+            - testdata/clojure/boot-library/build.boot
+          changed_paths: []
     - number: 12
       id: clojure-deps-edn
       detector:
