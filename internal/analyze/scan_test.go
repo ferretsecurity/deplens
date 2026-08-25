@@ -58,7 +58,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "stack.yaml", want: DetectorID("haskell-stack")},
 		{name: "stack.yaml.lock", want: DetectorID("haskell-stack-lock")},
 		{name: "cabal.project", want: DetectorID("haskell-cabal-project")},
-		{name: "paket.lock", want: DetectorID("dotnet-paket-lock")},
 		{name: "go.sum", want: DetectorID("go-sum")},
 		{name: "go.work", want: DetectorID("go-work")},
 		{name: "Gopkg.toml", want: DetectorID("go-gopkg-toml")},
@@ -3902,6 +3901,14 @@ func TestMatchSelectorOnlySourceIgnoresGopkgLockParserRule(t *testing.T) {
 
 	if _, ok := ruleset.MatchSelectorOnlySource("Gopkg.lock"); ok {
 		t.Fatalf("expected selector-only detection to ignore Gopkg.lock parser rule")
+	}
+}
+
+func TestMatchSelectorOnlySourceIgnoresDotnetPaketLockParserRule(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	if _, ok := ruleset.MatchSelectorOnlySource("paket.lock"); ok {
+		t.Fatalf("expected selector-only detection to ignore paket.lock parser rule")
 	}
 }
 

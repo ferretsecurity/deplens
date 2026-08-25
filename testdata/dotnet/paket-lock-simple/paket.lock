@@ -1,0 +1,5 @@
+STORAGE: NONE
+RESTRICTION: == net6.0
+NUGET
+  remote: https://packages.example.test/v3/index.json
+    Acme.Template (6.2.0)

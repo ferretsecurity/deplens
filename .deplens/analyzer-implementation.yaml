@@ -1293,7 +1293,26 @@ work_items:
         - candidate_id: candidate-e95102a324ee573898203583ee5ca02f
           original_path: paket.lock
           source_sha256: c1ab218560a128eefc2515053ee5756aa16cdfcd797d25320c16fc3d7da305eb
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/dotnet/paket-lock-legacy-github/paket.lock
+            - testdata/dotnet/paket-lock-multi-group/paket.lock
+            - testdata/dotnet/paket-lock-simple/paket.lock
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/dotnet_paket_lock.go
+            - internal/analyze/dotnet_paket_lock_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rule_schema_test.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/dotnet/paket-lock-legacy-github/paket.lock
+            - testdata/dotnet/paket-lock-multi-group/paket.lock
+            - testdata/dotnet/paket-lock-simple/paket.lock
     - number: 35
       id: dotnet-paket-references
       detector:

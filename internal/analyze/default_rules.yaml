@@ -461,6 +461,8 @@ rules:
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^paket\.lock$'
+    analyzer:
+      type: dotnet-paket-lock
   - id: dotnet-fsproj
     package-type: nuget
     form: build-definition

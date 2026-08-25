@@ -178,6 +178,7 @@ type dotnetProjectMatcherConfig struct{}
 type dotnetCentralPackagesMatcherConfig struct{}
 type dotnetPackagesConfigMatcherConfig struct{}
 type dotnetPackagesLockMatcherConfig struct{}
+type dotnetPaketLockMatcherConfig struct{}
 type bufLockMatcherConfig struct{}
 type denoLockParserConfig struct{}
 type conanfileMatcherConfig struct{}
