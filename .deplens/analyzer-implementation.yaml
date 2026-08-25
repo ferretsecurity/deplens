@@ -1708,7 +1708,7 @@ work_items:
         - candidate_id: candidate-cc6ae59aef9b8f986baeba96c73141ec
           original_path: action.yaml
           source_sha256: e26ad1936c0c3aa0d119b37ea2d591c85b651560b8472ed152888ba5ca76cdf5
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -1728,6 +1728,13 @@ work_items:
             - testdata/github-actions/composite-action-uses/action.yaml
             - testdata/github-actions/docker-action-empty/action.yaml
             - testdata/github-actions/node-action-empty/action.yaml
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/github-actions/composite-action-uses/action.yaml
+            - testdata/github-actions/docker-action-empty/action.yaml
+            - testdata/github-actions/node-action-empty/action.yaml
+          changed_paths: []
     - number: 45
       id: gleam
       detector:
