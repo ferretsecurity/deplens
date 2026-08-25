@@ -235,7 +235,7 @@ work_items:
         - candidate_id: candidate-66454bf53dd746470db26b8474794e29
           original_path: metadata.rb
           source_sha256: a62d0964b340a0802979ff54458fe2328264b64bae11559a2c153cad89f48855
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -255,6 +255,13 @@ work_items:
             - testdata/chef/metadata-quoted-constraint/metadata.rb
             - testdata/chef/metadata-static-list-monitoring/metadata.rb
             - testdata/chef/metadata-static-list/metadata.rb
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/chef/metadata-static-list/metadata.rb
+            - testdata/chef/metadata-static-list-monitoring/metadata.rb
+            - testdata/chef/metadata-quoted-constraint/metadata.rb
+          changed_paths: []
     - number: 9
       id: chef-policyfile
       detector:
