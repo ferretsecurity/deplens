@@ -181,9 +181,12 @@ rules:
     roles: [resolution, integrity]
     filename-regex: '^bun\.lockb$'
   - id: deno-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^deno\.lock$'
+    analyzer:
+      type: deno-lock
   - id: deno-json
     package-type: generic
     form: manifest

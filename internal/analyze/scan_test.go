@@ -389,6 +389,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"bower.json",
 		"composer.json",
 		"composer.lock",
+		"deno.lock",
 		"deno.json",
 		"deno.jsonc",
 		"pyproject.toml",

@@ -1,0 +1,11 @@
+{
+  "version": "5",
+  "jsr": {
+    "@deno/dnt@0.42.3": {"integrity": "hash"}
+  },
+  "npm": {
+    "@noble/post-quantum@0.5.4": {"integrity": "hash"},
+    "mlkem-wasm@0.0.7": {"integrity": "hash"}
+  },
+  "workspace": {"dependencies": ["jsr:@deno/dnt@~0.42.3"]}
+}

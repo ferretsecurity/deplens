@@ -1139,7 +1139,25 @@ work_items:
         - candidate_id: candidate-251b66c04eccf0a5cdef3cf14b0da823
           original_path: deno.lock
           source_sha256: 20d7851a812c26442804a1ca22cd6f21117f266a9321753a31b584ad68730669
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/deno-lock/remote-modules/deno.lock
+            - testdata/deno-lock/nested-jsr-packages/deno.lock
+            - testdata/deno-lock/top-level-jsr-and-npm-packages/deno.lock
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/deno_lock.go
+            - internal/analyze/deno_lock_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/deno-lock/nested-jsr-packages/deno.lock
+            - testdata/deno-lock/remote-modules/deno.lock
+            - testdata/deno-lock/top-level-jsr-and-npm-packages/deno.lock
     - number: 31
       id: dotnet-directory-build
       detector:
