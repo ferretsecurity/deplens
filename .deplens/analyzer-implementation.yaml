@@ -1382,7 +1382,24 @@ work_items:
         - candidate_id: candidate-b015d269fc9a36a8cc9c11f95b094d03
           original_path: mix.exs
           source_sha256: 32492bff79671788da5c1900e326338f55ea3f49aacbbeec8715b11f2fd7154c
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/elixir/mix-registry-dependencies/mix.exs
+            - testdata/elixir/mix-empty-function-call/mix.exs
+            - testdata/elixir/mix-empty-atom-reference/mix.exs
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/elixir_mix.go
+            - internal/analyze/elixir_mix_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/elixir/mix-empty-atom-reference/mix.exs
+            - testdata/elixir/mix-empty-function-call/mix.exs
+            - testdata/elixir/mix-registry-dependencies/mix.exs
     - number: 37
       id: emacs-cask
       detector:

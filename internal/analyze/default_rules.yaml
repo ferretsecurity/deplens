@@ -642,9 +642,12 @@ rules:
         - PODS
         - DEPENDENCIES
   - id: elixir-mix
+    package-type: hex
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^mix\.exs$'
+    analyzer:
+      type: elixir-mix
   - id: elixir-mix-lock
     form: lockfile
     roles: [resolution, integrity]
