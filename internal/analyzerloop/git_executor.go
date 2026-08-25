@@ -193,7 +193,7 @@ If this change makes a previously selector-only rule analyzer-backed, update the
 		roleInstructions = `
 Implement a real source analyzer for this detector. A filename-only match, a rule-only change, or fixtures without extracted dependencies is not a solution.
 Inspect all three originals and determine the dependency references the analyzer must extract. Add or update the analyzer, its registration, rule configuration, and focused tests as needed. The analyzer must report at least one dependency for each original with analysis presence "present" and extraction "complete".
-Create exactly three minimized synthetic fixtures under testdata, one for each original's distinct dependency pattern. Add focused tests that assert their extracted dependency references. Do not merely assert that the files are detected.`
+Create exactly three new minimized synthetic fixtures under testdata, one for each original's distinct dependency pattern. Do not change, remove, or replace existing fixtures. Report each of the three new fixture paths. Add focused tests that assert their extracted dependency references. Do not merely assert that the files are detected.`
 	case RoleVerifier:
 		roleInstructions = `
 Verify the existing implementation as a dependency extractor, not merely as a filename detector. Inspect all three originals and the three existing minimized fixtures. Confirm that each produces at least one extracted dependency with analysis presence "present" and extraction "complete", and that focused tests assert the expected references.
@@ -251,7 +251,24 @@ type DirectExecutor struct {
 	Engine         CodexEngine
 }
 
-func (e DirectExecutor) Execute(ctx context.Context, attempt Attempt) (AttemptResult, error) {
+func (e DirectExecutor) Execute(ctx context.Context, attempt Attempt) (result AttemptResult, err error) {
+	snapshot, err := captureDirectAttempt(ctx, e.RepositoryRoot, e.RuntimeRoot)
+	if err != nil {
+		return AttemptResult{}, err
+	}
+	accepted := false
+	defer func() {
+		if accepted {
+			_ = os.RemoveAll(snapshot.directory)
+			return
+		}
+		if restoreErr := snapshot.restore(ctx); restoreErr != nil {
+			err = fmt.Errorf("restore rejected direct attempt (snapshot %q): %w", snapshot.directory, restoreErr)
+			return
+		}
+		_ = os.RemoveAll(snapshot.directory)
+	}()
+
 	beforeFixtures, err := untrackedTestdata(ctx, e.RepositoryRoot)
 	if err != nil {
 		return AttemptResult{}, err
@@ -262,7 +279,7 @@ func (e DirectExecutor) Execute(ctx context.Context, attempt Attempt) (AttemptRe
 	}
 	engine := e.Engine
 	engine.Workdir, engine.CorpusRoot, engine.OutputPath = e.RepositoryRoot, e.CorpusRoot, outputPath
-	result, err := engine.Execute(ctx, attempt)
+	result, err = engine.Execute(ctx, attempt)
 	if err != nil {
 		return AttemptResult{}, err
 	}
@@ -290,6 +307,7 @@ func (e DirectExecutor) Execute(ctx context.Context, attempt Attempt) (AttemptRe
 	}
 	result.ChangedPaths = paths
 	report(engine.Progress, func(progress ProgressReporter) { progress.ValidationAccepted(attempt, paths) })
+	accepted = true
 	return result, nil
 }
 
@@ -404,7 +422,7 @@ func validateWorktree(ctx context.Context, worktree, corpusRoot string, attempt 
 
 func validateFixtures(ctx context.Context, worktree string, attempt Attempt, fixtures []string) error {
 	for _, fixture := range fixtures {
-		path := filepath.Join(worktree, filepath.FromSlash(fixture))
+		path := fixtureDirectory(worktree, fixture)
 		if err := validateExtractedSource(ctx, worktree, path, attempt.WorkItem.ID); err != nil {
 			return fmt.Errorf("fixture %q: %w", fixture, err)
 		}
@@ -412,9 +430,16 @@ func validateFixtures(ctx context.Context, worktree string, attempt Attempt, fix
 	return nil
 }
 
+func fixtureDirectory(worktree, fixture string) string {
+	return filepath.Dir(filepath.Join(worktree, filepath.FromSlash(fixture)))
+}
+
 func validateExtractedSource(ctx context.Context, worktree, path, detector string) error {
 	output, err := command(ctx, worktree, "go", "run", "./cmd/deplens", "--json", path)
 	if err != nil {
+		if message := strings.TrimSpace(string(output)); message != "" {
+			return fmt.Errorf("scan dependency source: %w: %s", err, message)
+		}
 		return fmt.Errorf("scan dependency source: %w", err)
 	}
 	if !recognizedCandidate(output, detector) {
@@ -585,6 +610,150 @@ func addedPaths(before, after []string) []string {
 		}
 	}
 	return added
+}
+
+// directAttemptSnapshot restores a rejected direct attempt to the exact
+// worktree state at its start. Accepted attempts deliberately remain visible
+// so a verifier can inspect and improve the implementer checkpoint.
+type directAttemptSnapshot struct {
+	worktree       string
+	directory      string
+	stagedPatch    []byte
+	unstagedPatch  []byte
+	untrackedPaths []string
+}
+
+func captureDirectAttempt(ctx context.Context, worktree, runtimeRoot string) (directAttemptSnapshot, error) {
+	if err := os.MkdirAll(runtimeRoot, 0o700); err != nil {
+		return directAttemptSnapshot{}, fmt.Errorf("create direct attempt runtime directory: %w", err)
+	}
+	directory, err := os.MkdirTemp(runtimeRoot, ".attempt-state-")
+	if err != nil {
+		return directAttemptSnapshot{}, fmt.Errorf("create direct attempt snapshot: %w", err)
+	}
+	snapshot := directAttemptSnapshot{worktree: worktree, directory: directory}
+	fail := func(err error) (directAttemptSnapshot, error) {
+		_ = os.RemoveAll(directory)
+		return directAttemptSnapshot{}, err
+	}
+	if snapshot.stagedPatch, err = git(ctx, worktree, "diff", "--cached", "--binary"); err != nil {
+		return fail(fmt.Errorf("capture staged direct attempt changes: %w", err))
+	}
+	if snapshot.unstagedPatch, err = git(ctx, worktree, "diff", "--binary"); err != nil {
+		return fail(fmt.Errorf("capture unstaged direct attempt changes: %w", err))
+	}
+	if snapshot.untrackedPaths, err = gitLines(ctx, worktree, "ls-files", "--others", "--exclude-standard"); err != nil {
+		return fail(fmt.Errorf("list untracked direct attempt files: %w", err))
+	}
+	for _, path := range snapshot.untrackedPaths {
+		from, err := safeSnapshotPath(worktree, path)
+		if err != nil {
+			return fail(err)
+		}
+		to, err := safeSnapshotPath(directory, path)
+		if err != nil {
+			return fail(err)
+		}
+		if err := copySnapshotFile(from, to); err != nil {
+			return fail(fmt.Errorf("snapshot untracked file %q: %w", path, err))
+		}
+	}
+	return snapshot, nil
+}
+
+func (snapshot directAttemptSnapshot) restore(ctx context.Context) error {
+	if _, err := git(ctx, snapshot.worktree, "reset", "--quiet", "--", "."); err != nil {
+		return fmt.Errorf("reset tracked files: %w", err)
+	}
+	if _, err := git(ctx, snapshot.worktree, "restore", "--worktree", "--", "."); err != nil {
+		return fmt.Errorf("restore tracked files: %w", err)
+	}
+	current, err := gitLines(ctx, snapshot.worktree, "ls-files", "--others", "--exclude-standard")
+	if err != nil {
+		return fmt.Errorf("list new untracked files: %w", err)
+	}
+	for _, path := range current {
+		file, err := safeSnapshotPath(snapshot.worktree, path)
+		if err != nil {
+			return err
+		}
+		if err := os.Remove(file); err != nil && !os.IsNotExist(err) {
+			return fmt.Errorf("remove untracked file %q: %w", path, err)
+		}
+	}
+	if err := applySnapshotPatch(ctx, snapshot.worktree, snapshot.stagedPatch, true); err != nil {
+		return fmt.Errorf("restore staged changes: %w", err)
+	}
+	if err := applySnapshotPatch(ctx, snapshot.worktree, snapshot.unstagedPatch, false); err != nil {
+		return fmt.Errorf("restore unstaged changes: %w", err)
+	}
+	for _, path := range snapshot.untrackedPaths {
+		from, err := safeSnapshotPath(snapshot.directory, path)
+		if err != nil {
+			return err
+		}
+		to, err := safeSnapshotPath(snapshot.worktree, path)
+		if err != nil {
+			return err
+		}
+		if err := copySnapshotFile(from, to); err != nil {
+			return fmt.Errorf("restore untracked file %q: %w", path, err)
+		}
+	}
+	return nil
+}
+
+func applySnapshotPatch(ctx context.Context, worktree string, patch []byte, index bool) error {
+	if len(bytes.TrimSpace(patch)) == 0 {
+		return nil
+	}
+	args := []string{"apply"}
+	if index {
+		args = append(args, "--index")
+	}
+	command := exec.CommandContext(ctx, "git", args...)
+	command.Dir = worktree
+	command.Stdin = bytes.NewReader(patch)
+	if output, err := command.CombinedOutput(); err != nil {
+		return fmt.Errorf("git %s: %w: %s", strings.Join(args, " "), err, strings.TrimSpace(string(output)))
+	}
+	return nil
+}
+
+func safeSnapshotPath(root, path string) (string, error) {
+	path = filepath.Clean(path)
+	if path == "." || filepath.IsAbs(path) || path == ".." || strings.HasPrefix(path, ".."+string(filepath.Separator)) {
+		return "", fmt.Errorf("unsafe snapshot path %q", path)
+	}
+	return filepath.Join(root, path), nil
+}
+
+func copySnapshotFile(from, to string) error {
+	info, err := os.Stat(from)
+	if err != nil {
+		return err
+	}
+	if !info.Mode().IsRegular() {
+		return fmt.Errorf("not a regular file")
+	}
+	if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
+		return err
+	}
+	input, err := os.Open(from)
+	if err != nil {
+		return err
+	}
+	defer input.Close()
+	output, err := os.OpenFile(to, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode().Perm())
+	if err != nil {
+		return err
+	}
+	_, copyErr := io.Copy(output, input)
+	closeErr := output.Close()
+	if copyErr != nil {
+		return copyErr
+	}
+	return closeErr
 }
 
 func command(ctx context.Context, dir, name string, args ...string) ([]byte, error) {

@@ -1,6 +1,10 @@
 package analyzerloop
 
 import (
+	"context"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -46,7 +50,7 @@ func TestParseEngineResultReadsCodexAgentMessage(t *testing.T) {
 func TestPromptSeparatesImplementerAndVerifierResponsibilities(t *testing.T) {
 	workItem := WorkItem{Number: 1, ID: "demo"}
 	implementer := prompt("/corpus", Attempt{WorkItem: workItem, Role: RoleImplementer})
-	if !strings.Contains(implementer, "Implement a real source analyzer") || !strings.Contains(implementer, "Create exactly three") {
+	if !strings.Contains(implementer, "Implement a real source analyzer") || !strings.Contains(implementer, "Create exactly three") || !strings.Contains(implementer, "Do not change, remove, or replace existing fixtures") {
 		t.Fatalf("implementer prompt missing extraction requirements: %q", implementer)
 	}
 	if !strings.Contains(implementer, "TestMatchSelectorOnlySourceMatchesSupportedFiles") || !strings.Contains(implementer, "go test ./internal/analyze") {
@@ -58,6 +62,78 @@ func TestPromptSeparatesImplementerAndVerifierResponsibilities(t *testing.T) {
 	}
 	if !strings.Contains(verifier, "TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources") || !strings.Contains(verifier, "go test ./internal/analyze") {
 		t.Fatalf("verifier prompt missing analyzer migration checks: %q", verifier)
+	}
+}
+
+func TestFixtureDirectoryUsesContainingDirectory(t *testing.T) {
+	worktree := filepath.Join("repo", "checkout")
+	got := fixtureDirectory(worktree, "testdata/demo/fixture.yaml")
+	want := filepath.Join(worktree, "testdata", "demo")
+	if got != want {
+		t.Fatalf("fixture directory = %q, want %q", got, want)
+	}
+}
+
+func TestDirectAttemptSnapshotRestoresRejectedChanges(t *testing.T) {
+	ctx := context.Background()
+	worktree := t.TempDir()
+	runTestGit(t, worktree, "init")
+	runTestGit(t, worktree, "config", "user.name", "Test User")
+	runTestGit(t, worktree, "config", "user.email", "test@example.com")
+	writeTestFile(t, filepath.Join(worktree, ".gitignore"), "/.ralph/\n")
+	writeTestFile(t, filepath.Join(worktree, "tracked.txt"), "base\n")
+	runTestGit(t, worktree, "add", ".")
+	runTestGit(t, worktree, "commit", "-m", "base")
+
+	writeTestFile(t, filepath.Join(worktree, "tracked.txt"), "accepted\n")
+	writeTestFile(t, filepath.Join(worktree, "staged.txt"), "accepted\n")
+	runTestGit(t, worktree, "add", "staged.txt")
+	writeTestFile(t, filepath.Join(worktree, "testdata", "demo", "accepted.txt"), "accepted\n")
+	snapshot, err := captureDirectAttempt(ctx, worktree, filepath.Join(worktree, ".ralph"))
+	if err != nil {
+		t.Fatalf("captureDirectAttempt: %v", err)
+	}
+	defer os.RemoveAll(snapshot.directory)
+
+	writeTestFile(t, filepath.Join(worktree, "tracked.txt"), "rejected\n")
+	writeTestFile(t, filepath.Join(worktree, "staged.txt"), "rejected\n")
+	writeTestFile(t, filepath.Join(worktree, "testdata", "demo", "accepted.txt"), "rejected\n")
+	writeTestFile(t, filepath.Join(worktree, "testdata", "demo", "rejected.txt"), "rejected\n")
+	runTestGit(t, worktree, "add", "-A")
+
+	if err := snapshot.restore(ctx); err != nil {
+		t.Fatalf("snapshot.restore: %v", err)
+	}
+	assertTestFile(t, filepath.Join(worktree, "tracked.txt"), "accepted\n")
+	assertTestFile(t, filepath.Join(worktree, "staged.txt"), "accepted\n")
+	assertTestFile(t, filepath.Join(worktree, "testdata", "demo", "accepted.txt"), "accepted\n")
+	if _, err := os.Stat(filepath.Join(worktree, "testdata", "demo", "rejected.txt")); !os.IsNotExist(err) {
+		t.Fatalf("rejected fixture still exists, stat error = %v", err)
+	}
+	if output := runTestGit(t, worktree, "diff", "--cached", "--name-only"); output != "staged.txt\n" {
+		t.Fatalf("staged files = %q, want staged.txt", output)
+	}
+}
+
+func runTestGit(t *testing.T, dir string, args ...string) string {
+	t.Helper()
+	command := exec.Command("git", args...)
+	command.Dir = dir
+	output, err := command.CombinedOutput()
+	if err != nil {
+		t.Fatalf("git %s: %v: %s", strings.Join(args, " "), err, output)
+	}
+	return string(output)
+}
+
+func assertTestFile(t *testing.T, path, want string) {
+	t.Helper()
+	got, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read %q: %v", path, err)
+	}
+	if string(got) != want {
+		t.Fatalf("contents of %q = %q, want %q", path, got, want)
 	}
 }
 
