@@ -53,6 +53,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newGoModMatcher)
 	case "go-gopkg-lock":
 		return decodeAndCreate(raw.Analyzer, newGopkgLockParser)
+	case "go-gopkg-toml":
+		return decodeAndCreate(raw.Analyzer, newGopkgTOMLParser)
 	case "go-glide-lock":
 		return decodeAndCreate(raw.Analyzer, newGlideLockParser)
 	case "go-glide-yaml":

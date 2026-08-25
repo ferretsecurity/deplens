@@ -1,0 +1,7 @@
+[[override]]
+  name = "example.test/log"
+  source = "example.test/forks/log"
+
+[[override]]
+  name = "example.test/network"
+  branch = "master"

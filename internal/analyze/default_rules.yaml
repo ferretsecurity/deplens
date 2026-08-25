@@ -510,9 +510,12 @@ rules:
     roles: [workspace, configuration]
     filename-regex: '^go\.work$'
   - id: go-gopkg-toml
+    package-type: golang
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Gopkg\.toml$'
+    analyzer:
+      type: go-gopkg-toml
   - id: go-glide-yaml
     package-type: golang
     form: manifest

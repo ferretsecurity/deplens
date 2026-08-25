@@ -1927,7 +1927,24 @@ work_items:
         - candidate_id: candidate-5c0195710f1873061bf2d1ed2e1cb39f
           original_path: Gopkg.toml
           source_sha256: 4781d0c04e505b8bfb753e4e363be42b072c765fd6ee8d2e45127d28a2ba0bcb
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/go/gopkg-toml-overrides/Gopkg.toml
+            - testdata/go/gopkg-toml-constraints/Gopkg.toml
+            - testdata/go/gopkg-toml-source-constraint/Gopkg.toml
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/go_gopkg_toml.go
+            - internal/analyze/go_gopkg_toml_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/go/gopkg-toml-constraints/Gopkg.toml
+            - testdata/go/gopkg-toml-overrides/Gopkg.toml
+            - testdata/go/gopkg-toml-source-constraint/Gopkg.toml
     - number: 50
       id: go-work
       detector:
