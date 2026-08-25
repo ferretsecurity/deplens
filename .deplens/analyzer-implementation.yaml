@@ -1425,7 +1425,26 @@ work_items:
         - candidate_id: candidate-923c65bb51655217866bff37a87ff473
           original_path: Cask
           source_sha256: 5b192c74b503a1ceb44bb1c7e6bdfe6b7142c9617a696ed98d0cc6a9480ebc28
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/emacs/cask-package/Cask
+            - testdata/emacs/cask-files/Cask
+            - testdata/emacs/cask-versioned/Cask
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/emacs_cask.go
+            - internal/analyze/emacs_cask_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rule_schema_test.go
+            - internal/analyze/scan_test.go
+            - testdata/emacs/cask-files/Cask
+            - testdata/emacs/cask-package/Cask
+            - testdata/emacs/cask-versioned/Cask
     - number: 38
       id: erlang-rebar-config
       detector:

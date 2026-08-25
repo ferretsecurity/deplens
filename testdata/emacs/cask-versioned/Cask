@@ -1,0 +1,6 @@
+(package "env-tools" "0.1.0" "A sample package.")
+
+(depends-on "string-helper" "2.4.0")
+(depends-on "list-helper" "1.9.0")
+(development
+ (depends-on "test-runner"))

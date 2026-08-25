@@ -135,6 +135,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newElixirMixParser)
 	case "clojure-boot":
 		return decodeAndCreate(raw.Analyzer, newClojureBootParser)
+	case "emacs-cask":
+		return decodeAndCreate(raw.Analyzer, newEmacsCaskParser)
 	case "clojure-deps-edn":
 		return decodeAndCreate(raw.Analyzer, newClojureDepsEDNParser)
 	case "clojure-project-clj":

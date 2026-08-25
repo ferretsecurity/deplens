@@ -175,7 +175,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `chef-policyfile` | `manifest` | `declaration, constraint` | — | select |
 | `chef-policyfile-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `jsonnet-lock` | `lockfile` | `resolution, integrity` | — | select |
-| `emacs-cask` | `manifest` | `declaration, constraint` | — | select |
+| `emacs-cask` | `manifest` | `declaration, constraint` | `emacs-cask` | select, recognize, extract, normalize, relate |
 | `unreal-uproject` | `manifest` | `declaration, constraint` | — | select |
 | `unreal-uplugin` | `manifest` | `declaration, constraint` | — | select |
 | `godot-plugin-cfg` | `tool-config` | `configuration` | — | select |

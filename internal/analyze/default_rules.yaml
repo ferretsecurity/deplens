@@ -999,9 +999,12 @@ rules:
     roles: [resolution, integrity]
     filename-regex: '^jsonnetfile\.lock\.json$'
   - id: emacs-cask
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Cask$'
+    analyzer:
+      type: emacs-cask
   - id: unreal-uproject
     form: manifest
     roles: [declaration, constraint]

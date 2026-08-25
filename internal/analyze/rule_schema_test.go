@@ -153,6 +153,7 @@ func TestRuleSchemaRejectsConfigurationForSemanticAnalyzers(t *testing.T) {
 		"dockerfile",
 		"docker-compose",
 		"clojure-boot",
+		"emacs-cask",
 		"maven-pom",
 		"cargo-manifest",
 		"composer-manifest",

@@ -147,7 +147,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "Brewfile.lock.json", want: DetectorID("homebrew-brewfile-lock")},
 		{name: "Puppetfile", want: DetectorID("puppet-puppetfile")},
 		{name: "jsonnetfile.lock.json", want: DetectorID("jsonnet-lock")},
-		{name: "Cask", want: DetectorID("emacs-cask")},
 		// Group 1m: Game engines
 		{name: "MyGame.uproject", want: DetectorID("unreal-uproject")},
 		{name: "MyPlugin.uplugin", want: DetectorID("unreal-uplugin")},
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"shard.lock",
 		"paket.dependencies",
 		"paket.references",
+		"Cask",
 	}
 
 	for _, tc := range testCases {
