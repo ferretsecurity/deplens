@@ -1,0 +1,8 @@
+version: 1.0
+shards:
+  glew:
+    path: ../glew
+    version: 0.1.0
+  lib_glew:
+    github: example/lib_glew
+    commit: 50773a1c

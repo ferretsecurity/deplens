@@ -924,7 +924,24 @@ work_items:
         - candidate_id: candidate-3e864f2af8b6c67df9cfde73141c0f72
           original_path: shard.lock
           source_sha256: d4a0f4136b600e45fe37cb9ddc7fa40dcb87fbd2dc5904e83209677be5971c52
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/crystal/shard-lock-v1-github/shard.lock
+            - testdata/crystal/shard-lock-v1-path/shard.lock
+            - testdata/crystal/shard-lock-v2-git/shard.lock
+          changed_paths:
+            - README.md
+            - internal/analyze/crystal_shard_lock.go
+            - internal/analyze/crystal_shard_lock_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/crystal/shard-lock-v1-github/shard.lock
+            - testdata/crystal/shard-lock-v1-path/shard.lock
+            - testdata/crystal/shard-lock-v2-git/shard.lock
     - number: 26
       id: dart-pubspec
       detector:

@@ -121,6 +121,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newClojureProjectCLJParser)
 	case "crystal-shard":
 		return decodeAndCreate(raw.Analyzer, newCrystalShardParser)
+	case "crystal-shard-lock":
+		return decodeAndCreate(raw.Analyzer, newCrystalShardLockParser)
 	case "yaml":
 		return decodeAndCreate(raw.Analyzer, newYAMLQueryParser)
 	case "toml":

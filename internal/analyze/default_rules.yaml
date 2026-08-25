@@ -751,9 +751,12 @@ rules:
     analyzer:
       type: crystal-shard
   - id: crystal-shard-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^shard\.lock$'
+    analyzer:
+      type: crystal-shard-lock
   - id: gleam
     form: manifest
     roles: [declaration, constraint]

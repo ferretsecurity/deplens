@@ -139,7 +139,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "dune-project", want: DetectorID("ocaml-dune-project")},
 		{name: "esy.json", want: DetectorID("ocaml-esy")},
 		// DRAFT (Group 3): {name: "dune", want: DetectorID("ocaml-dune")},
-		{name: "shard.lock", want: DetectorID("crystal-shard-lock")},
 		{name: "manifest.toml", want: DetectorID("gleam-manifest")},
 		{name: "fpm.toml", want: DetectorID("fortran-fpm")},
 		// Group 1k: Nix
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"conanfile.py",
 		"conan.lock",
 		"meson.build",
+		"shard.lock",
 	}
 
 	for _, tc := range testCases {
