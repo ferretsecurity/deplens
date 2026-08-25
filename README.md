@@ -55,7 +55,7 @@ Absent sources are counted by `Found N dependency sources` but hidden from the d
 
 ### Semantic coverage for common formats
 
-`package.json`, Maven POM, Cargo, Composer, and .NET manifests; Gradle builds, lockfiles, and version catalogs; Gemfiles and Bundler lockfiles; Dockerfiles; and Docker Compose files have built-in semantic analyzers. Static declarations are normalized into dependency records; executable or interpolated declarations that cannot be resolved without running external tools produce partial analysis warnings.
+`package.json`, Maven POM, Cargo, Composer, .NET, and Buf manifests; Gradle builds, lockfiles, and version catalogs; Gemfiles and Bundler lockfiles; Dockerfiles; and Docker Compose files have built-in semantic analyzers. Static declarations are normalized into dependency records; executable or interpolated declarations that cannot be resolved without running external tools produce partial analysis warnings.
 
 For example, `package.json` was previously limited to presence assessment:
 
@@ -375,7 +375,7 @@ analyzer:
     - devDependencies
 ```
 
-The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `maven-pom`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, and `dotnet-packages-config` can also be used by custom rules. They reject analyzer fields other than `type`.
+The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `maven-pom`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, `dotnet-packages-config`, and `buf` can also be used by custom rules. They reject analyzer fields other than `type`.
 
 The old rule shape is rejected. The migration is intentionally atomic:
 

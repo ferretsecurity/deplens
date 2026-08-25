@@ -767,13 +767,12 @@ rules:
         - roles
         - collections
   - id: buf
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^buf\.yaml$'
     analyzer:
-      type: yaml
-      exists-any:
-        - deps
+      type: buf
   - id: homebrew-brewfile
     form: manifest
     roles: [declaration, constraint]

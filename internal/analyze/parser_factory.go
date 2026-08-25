@@ -85,6 +85,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newDotnetCentralPackagesParser)
 	case "dotnet-packages-config":
 		return decodeAndCreate(raw.Analyzer, newDotnetPackagesConfigParser)
+	case "buf":
+		return decodeAndCreate(raw.Analyzer, newBufManifestParser)
 	case "yaml":
 		return decodeAndCreate(raw.Analyzer, newYAMLQueryParser)
 	case "toml":
