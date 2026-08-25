@@ -585,9 +585,12 @@ rules:
     roles: [declaration, constraint, configuration]
     filename-regex: '^CMakeLists\.txt$'
   - id: cpp-conanfile-py
+    package-type: conan
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^conanfile\.py$'
+    analyzer:
+      type: conanfile-py
   - id: cpp-vcpkg-config
     form: tool-config
     roles: [configuration]

@@ -102,7 +102,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `cpp-conan-lock` | `lockfile` | `resolution, integrity` | `conan-lock` | select, recognize, extract, normalize, relate |
 | `cpp-vcpkg` | `manifest` | `declaration, constraint` | `json` | select, recognize, assess-presence |
 | `cpp-cmake` | `build-definition` | `declaration, constraint, configuration` | — | select |
-| `cpp-conanfile-py` | `manifest` | `declaration, constraint` | — | select |
+| `cpp-conanfile-py` | `manifest` | `declaration, constraint` | `conanfile-py` | select, recognize, extract, normalize, relate |
 | `cpp-vcpkg-config` | `tool-config` | `configuration` | — | select |
 | `cpp-meson` | `build-definition` | `declaration, constraint, configuration` | — | select |
 | `cpp-autotools` | `build-definition` | `declaration, constraint, configuration` | — | select |

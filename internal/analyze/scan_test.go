@@ -99,7 +99,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "build.xml", want: DetectorID("java-ant-build")},
 		// Group 1d: C/C++ ecosystem extensions
 		{name: "CMakeLists.txt", want: DetectorID("cpp-cmake")},
-		{name: "conanfile.py", want: DetectorID("cpp-conanfile-py")},
 		{name: "vcpkg-configuration.json", want: DetectorID("cpp-vcpkg-config")},
 		{name: "meson.build", want: DetectorID("cpp-meson")},
 		{name: "configure.ac", want: DetectorID("cpp-autotools")},
@@ -428,6 +427,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"Policyfile.rb",
 		"Policyfile.lock.json",
 		"conanfile.txt",
+		"conanfile.py",
 		"conan.lock",
 	}
 

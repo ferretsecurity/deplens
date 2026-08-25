@@ -681,7 +681,26 @@ work_items:
         - candidate_id: candidate-78322dd993c32d084aa6c1998737e3bd
           original_path: conanfile.py
           source_sha256: df572bdd5efd6e8e73867a1df949401257a55577330b52fce0e36cd7d8982df7
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/cpp/conanfile-py-toolchain/conanfile.py
+            - testdata/cpp/conanfile-py-requirements/conanfile.py
+            - testdata/cpp/conanfile-py-library/conanfile.py
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/conanfile_py.go
+            - internal/analyze/conanfile_py_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/cpp/conanfile-py-library/conanfile.py
+            - testdata/cpp/conanfile-py-requirements/conanfile.py
+            - testdata/cpp/conanfile-py-toolchain/conanfile.py
     - number: 20
       id: cpp-meson
       detector:
