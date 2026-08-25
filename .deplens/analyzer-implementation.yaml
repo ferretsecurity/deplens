@@ -1055,7 +1055,7 @@ work_items:
         - candidate_id: candidate-9ba6a3e0d8e7ea5e0abf2291029abe96
           original_path: deno.json
           source_sha256: 7b62b6913cd3b4ca09a4068bfdab1a47dd188359a627eb4f4a572ad36126c24c
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -1072,6 +1072,13 @@ work_items:
             - testdata/deno/import-map-jsr/deno.json
             - testdata/deno/import-map-no-dependencies/deno.json
             - testdata/deno/import-map-url-and-npm/deno.json
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/deno/import-map-url-and-npm/deno.json
+            - testdata/deno/import-map-no-dependencies/deno.json
+            - testdata/deno/import-map-jsr/deno.json
+          changed_paths: []
     - number: 29
       id: deno-jsonc
       detector:
