@@ -77,6 +77,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newChefMetadataParser)
 	case "chef-policyfile":
 		return decodeAndCreate(raw.Analyzer, newChefPolicyfileParser)
+	case "chef-policyfile-lock":
+		return decodeAndCreate(raw.Analyzer, newChefPolicyfileLockParser)
 	case "dockerfile":
 		return decodeAndCreate(raw.Analyzer, newDockerfileParser)
 	case "docker-compose":

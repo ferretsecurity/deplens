@@ -168,6 +168,7 @@ type chefBerksfileMatcherConfig struct{}
 type chefBerksfileLockMatcherConfig struct{}
 type chefMetadataMatcherConfig struct{}
 type chefPolicyfileMatcherConfig struct{}
+type chefPolicyfileLockMatcherConfig struct{}
 type dockerfileMatcherConfig struct{}
 type dockerComposeMatcherConfig struct{}
 type mavenPOMMatcherConfig struct{}

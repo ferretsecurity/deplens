@@ -324,7 +324,25 @@ work_items:
         - candidate_id: candidate-f2bb2f402ecffc2f95ae34df554820a4
           original_path: 36-chef-infra-automation/policyfiles/Policyfile.lock.json
           source_sha256: d66f475c06b69680f22be27164a628682a9ddee0f9e24062c7263f87edea8d0e
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/chef/policyfile-lock-local-checkout-and-registry/Policyfile.lock.json
+            - testdata/chef/policyfile-lock-supermarket/Policyfile.lock.json
+            - testdata/chef/policyfile-lock-local-paths/Policyfile.lock.json
+          changed_paths:
+            - README.md
+            - internal/analyze/chef_policyfile_lock.go
+            - internal/analyze/chef_policyfile_lock_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/chef/policyfile-lock-local-checkout-and-registry/Policyfile.lock.json
+            - testdata/chef/policyfile-lock-local-paths/Policyfile.lock.json
+            - testdata/chef/policyfile-lock-supermarket/Policyfile.lock.json
     - number: 11
       id: clojure-boot
       detector:

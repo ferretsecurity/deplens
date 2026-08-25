@@ -955,9 +955,12 @@ rules:
     analyzer:
       type: chef-policyfile
   - id: chef-policyfile-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Policyfile\.lock\.json$'
+    analyzer:
+      type: chef-policyfile-lock
   - id: jsonnet-lock
     form: lockfile
     roles: [resolution, integrity]
