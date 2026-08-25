@@ -1055,7 +1055,23 @@ work_items:
         - candidate_id: candidate-9ba6a3e0d8e7ea5e0abf2291029abe96
           original_path: deno.json
           source_sha256: 7b62b6913cd3b4ca09a4068bfdab1a47dd188359a627eb4f4a572ad36126c24c
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/deno/import-map-url-and-npm/deno.json
+            - testdata/deno/import-map-no-dependencies/deno.json
+            - testdata/deno/import-map-jsr/deno.json
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/deno_json.go
+            - internal/analyze/deno_json_test.go
+            - internal/analyze/parser_factory.go
+            - testdata/deno/import-map-jsr/deno.json
+            - testdata/deno/import-map-no-dependencies/deno.json
+            - testdata/deno/import-map-url-and-npm/deno.json
     - number: 29
       id: deno-jsonc
       detector:

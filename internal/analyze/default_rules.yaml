@@ -185,13 +185,12 @@ rules:
     roles: [resolution, integrity]
     filename-regex: '^deno\.lock$'
   - id: deno-json
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^deno\.json$'
     analyzer:
-      type: json
-      exists-any:
-        - imports
+      type: deno-json
   - id: deno-jsonc
     form: manifest
     roles: [declaration, constraint]
