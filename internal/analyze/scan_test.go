@@ -1379,10 +1379,11 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			typ:  DetectorID("julia-manifest"),
 		},
 		{
-			name: "gleam project",
-			root: filepath.Join("..", "..", "testdata", "gleam", "project"),
-			path: "gleam.toml",
-			typ:  DetectorID("gleam"),
+			name:      "gleam project",
+			root:      filepath.Join("..", "..", "testdata", "gleam", "project"),
+			path:      "gleam.toml",
+			typ:       DetectorID("gleam"),
+			extracted: true,
 		},
 		{
 			name:      "dotnet csproj",

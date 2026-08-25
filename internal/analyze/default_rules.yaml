@@ -766,13 +766,12 @@ rules:
     analyzer:
       type: crystal-shard-lock
   - id: gleam
+    package-type: hex
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^gleam\.toml$'
     analyzer:
-      type: toml
-      table-exists-any:
-        - dependencies
+      type: gleam
   - id: gleam-manifest
     form: lockfile
     roles: [resolution, integrity]

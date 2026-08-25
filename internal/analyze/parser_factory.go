@@ -155,6 +155,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newCrystalShardParser)
 	case "crystal-shard-lock":
 		return decodeAndCreate(raw.Analyzer, newCrystalShardLockParser)
+	case "gleam":
+		return decodeAndCreate(raw.Analyzer, newGleamParser)
 	case "yaml":
 		return decodeAndCreate(raw.Analyzer, newYAMLQueryParser)
 	case "toml":
