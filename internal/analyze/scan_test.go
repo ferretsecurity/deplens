@@ -102,7 +102,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		// Group 1e: .NET ecosystem extensions
 		{name: "Directory.Build.props", want: DetectorID("dotnet-directory-build")},
 		{name: "Directory.Build.targets", want: DetectorID("dotnet-directory-build")},
-		{name: "paket.references", want: DetectorID("dotnet-paket-references")},
 		// Group 1f: JavaScript/Node ecosystem extensions
 		{name: ".pnp.cjs", want: DetectorID("js-pnp")},
 		{name: ".pnp.loader.mjs", want: DetectorID("js-pnp")},
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"meson.build",
 		"shard.lock",
 		"paket.dependencies",
+		"paket.references",
 	}
 
 	for _, tc := range testCases {

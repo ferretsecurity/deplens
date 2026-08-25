@@ -1338,7 +1338,25 @@ work_items:
         - candidate_id: candidate-f76d9962710053de4b5f402916bfa8f1
           original_path: src/cs2fs/paket.references
           source_sha256: e8bf84b8d172f4392f2ec2adcf2c071e414605f6b9f71f5c35bae5858d62af14
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/dotnet/paket-references-default/paket.references
+            - testdata/dotnet/paket-references-fake-group/paket.references
+            - testdata/dotnet/paket-references-file-directive/paket.references
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/dotnet_paket_references.go
+            - internal/analyze/dotnet_paket_references_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rule_schema_test.go
+            - internal/analyze/scan_test.go
+            - testdata/dotnet/paket-references-default/paket.references
+            - testdata/dotnet/paket-references-fake-group/paket.references
+            - testdata/dotnet/paket-references-file-directive/paket.references
     - number: 36
       id: elixir-mix
       detector:

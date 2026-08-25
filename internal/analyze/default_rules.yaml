@@ -485,6 +485,8 @@ rules:
     form: requirements
     roles: [declaration, constraint]
     filename-regex: '^paket\.references$'
+    analyzer:
+      type: dotnet-paket-references
   - id: dotnet-tools-manifest
     form: manifest
     roles: [declaration, constraint]
