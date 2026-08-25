@@ -970,6 +970,11 @@ func TestScanMatchesPubspecYAMLWithDependencies(t *testing.T) {
 	if result.Sources[0].Analysis.Presence != PresencePresent {
 		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
+	dependencies := result.Sources[0].Dependencies
+	if len(dependencies) != 1 || dependencies[0].Name != "http" || dependencies[0].VersionConstraint != "^1.2.0" ||
+		dependencies[0].OriginKind != OriginRegistry || dependencies[0].Scope != ScopeRuntime {
+		t.Fatalf("expected extracted Pub dependency, got %+v", dependencies)
+	}
 }
 
 func TestScanMatchesPubspecYAMLWithoutDependencies(t *testing.T) {
@@ -984,6 +989,9 @@ func TestScanMatchesPubspecYAMLWithoutDependencies(t *testing.T) {
 	}
 	if result.Sources[0].Analysis.Presence != PresenceAbsent {
 		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	}
+	if len(result.Sources[0].Dependencies) != 0 || result.Sources[0].Analysis.Extraction != ExtractionComplete {
+		t.Fatalf("expected complete empty extraction, got %+v", result.Sources[0])
 	}
 }
 

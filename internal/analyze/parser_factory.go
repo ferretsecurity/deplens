@@ -111,6 +111,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newVcpkgParser)
 	case "vcpkg-configuration":
 		return decodeAndCreate(raw.Analyzer, newVcpkgConfigurationParser)
+	case "dart-pubspec":
+		return decodeAndCreate(raw.Analyzer, newDartPubspecParser)
 	case "erlang-rebar-config":
 		return decodeAndCreate(raw.Analyzer, newErlangRebarConfigParser)
 	case "clojure-boot":

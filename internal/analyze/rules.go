@@ -184,6 +184,7 @@ type conanLockMatcherConfig struct{}
 type mesonMatcherConfig struct{}
 type vcpkgMatcherConfig struct{}
 type vcpkgConfigurationMatcherConfig struct{}
+type dartPubspecMatcherConfig struct{}
 
 type sourceAnalyzer interface {
 	Analyze(path string, content []byte) (sourceAnalyzerResult, error)

@@ -356,15 +356,12 @@ rules:
     analyzer:
       type: composer-lock
   - id: dart-pubspec
+    package-type: pub
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^pubspec\.yaml$'
     analyzer:
-      type: yaml
-      exists-any:
-        - dependencies
-        - dev_dependencies
-        - dependency_overrides
+      type: dart-pubspec
   - id: dart-pubspec-lock
     form: lockfile
     roles: [resolution, integrity]
