@@ -1352,10 +1352,11 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			typ:  DetectorID("helm-chart"),
 		},
 		{
-			name: "crystal shard",
-			root: filepath.Join("..", "..", "testdata", "crystal", "shard"),
-			path: "shard.yml",
-			typ:  DetectorID("crystal-shard"),
+			name:      "crystal shard",
+			root:      filepath.Join("..", "..", "testdata", "crystal", "shard"),
+			path:      "shard.yml",
+			typ:       DetectorID("crystal-shard"),
+			extracted: true,
 		},
 		{
 			name: "julia project",

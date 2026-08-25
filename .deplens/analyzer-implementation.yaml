@@ -881,7 +881,24 @@ work_items:
         - candidate_id: candidate-4aa65eace13cb14e2b2315285e1012d7
           original_path: shard.yml
           source_sha256: 6200fb96bd9a51476aa42f9fc00b789acd15d9f3ca7d19b9486cbcbbce839e80
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/crystal/shard-github-and-path/shard.yml
+            - testdata/crystal/shard-runtime-and-development/shard.yml
+            - testdata/crystal/shard-github-commit/shard.yml
+          changed_paths:
+            - README.md
+            - internal/analyze/crystal_shard.go
+            - internal/analyze/crystal_shard_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/crystal/shard-github-and-path/shard.yml
+            - testdata/crystal/shard-github-commit/shard.yml
+            - testdata/crystal/shard-runtime-and-development/shard.yml
     - number: 25
       id: crystal-shard-lock
       detector:

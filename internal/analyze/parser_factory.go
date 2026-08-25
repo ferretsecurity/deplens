@@ -119,6 +119,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newClojureDepsEDNParser)
 	case "clojure-project-clj":
 		return decodeAndCreate(raw.Analyzer, newClojureProjectCLJParser)
+	case "crystal-shard":
+		return decodeAndCreate(raw.Analyzer, newCrystalShardParser)
 	case "yaml":
 		return decodeAndCreate(raw.Analyzer, newYAMLQueryParser)
 	case "toml":

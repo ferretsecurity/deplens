@@ -744,13 +744,12 @@ rules:
   #   roles: [declaration, configuration]
   #   filename-regex: '^dune$'
   - id: crystal-shard
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^shard\.yml$'
     analyzer:
-      type: yaml
-      exists-any:
-        - dependencies
+      type: crystal-shard
   - id: crystal-shard-lock
     form: lockfile
     roles: [resolution, integrity]
