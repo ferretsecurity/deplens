@@ -793,7 +793,26 @@ work_items:
         - candidate_id: candidate-87d61f543ecb4acae358ebfbc0df8838
           original_path: ChampSim/vcpkg/ports/libpff/vcpkg.json
           source_sha256: 6b1930d7a62a505be00af74be88c729d57230d612f5bc9529b0b4b258fc80563
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/cpp/vcpkg-string-dependencies/vcpkg.json
+            - testdata/cpp/vcpkg-feature-dependencies/vcpkg.json
+            - testdata/cpp/vcpkg-host-dependencies/vcpkg.json
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - internal/analyze/vcpkg.go
+            - internal/analyze/vcpkg_test.go
+            - testdata/cpp/vcpkg-feature-dependencies/vcpkg.json
+            - testdata/cpp/vcpkg-host-dependencies/vcpkg.json
+            - testdata/cpp/vcpkg-string-dependencies/vcpkg.json
     - number: 23
       id: cpp-vcpkg-config
       detector:

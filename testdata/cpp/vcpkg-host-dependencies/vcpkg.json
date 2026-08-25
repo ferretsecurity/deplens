@@ -1,0 +1,7 @@
+{
+  "name": "sample-port",
+  "dependencies": [
+    {"name": "build-helper", "host": true},
+    "runtime-lib"
+  ]
+}

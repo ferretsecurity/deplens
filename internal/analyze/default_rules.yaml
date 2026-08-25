@@ -573,13 +573,12 @@ rules:
     analyzer:
       type: conan-lock
   - id: cpp-vcpkg
+    package-type: vcpkg
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^vcpkg\.json$'
     analyzer:
-      type: json
-      exists-any:
-        - dependencies
+      type: vcpkg
   - id: cpp-cmake
     form: build-definition
     roles: [declaration, constraint, configuration]

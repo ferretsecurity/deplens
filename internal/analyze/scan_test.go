@@ -4486,8 +4486,12 @@ func TestScanMatchesVcpkgWithDependencies(t *testing.T) {
 	if result.Sources[0].Analysis.Presence != PresencePresent {
 		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if result.Sources[0].Dependencies != nil {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
+	want := []DependencyReference{
+		{PackageType: "vcpkg", Raw: "fmt", Name: "fmt", SourceGroup: "dependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime},
+		{PackageType: "vcpkg", Raw: "openssl", Name: "openssl", SourceGroup: "dependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime},
+	}
+	if !reflect.DeepEqual(result.Sources[0].Dependencies, want) {
+		t.Fatalf("dependencies = %#v, want %#v", result.Sources[0].Dependencies, want)
 	}
 }
 
@@ -4504,8 +4508,11 @@ func TestScanMarksVcpkgWithoutDependenciesAsNoDependencies(t *testing.T) {
 	if result.Sources[0].Detector != DetectorID("cpp-vcpkg") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresenceAbsent {
-		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	if want := (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}); result.Sources[0].Analysis != want {
+		t.Fatalf("analysis = %+v, want %+v", result.Sources[0].Analysis, want)
+	}
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 

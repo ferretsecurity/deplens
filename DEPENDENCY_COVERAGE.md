@@ -1,6 +1,6 @@
 # Dependency coverage
 
-This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 72 have semantic analyzers and 113 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
+This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 73 have semantic analyzers and 113 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
@@ -100,7 +100,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `dotnet-csproj` | `build-definition` | `declaration, constraint, configuration` | `dotnet-project` | select, recognize, extract, normalize, relate |
 | `cpp-conanfile` | `manifest` | `declaration, constraint` | — | select |
 | `cpp-conan-lock` | `lockfile` | `resolution, integrity` | `conan-lock` | select, recognize, extract, normalize, relate |
-| `cpp-vcpkg` | `manifest` | `declaration, constraint` | `json` | select, recognize, assess-presence |
+| `cpp-vcpkg` | `manifest` | `declaration, constraint` | `vcpkg` | select, recognize, extract, normalize, relate |
 | `cpp-cmake` | `build-definition` | `declaration, constraint, configuration` | — | select |
 | `cpp-conanfile-py` | `manifest` | `declaration, constraint` | `conanfile-py` | select, recognize, extract, normalize, relate |
 | `cpp-vcpkg-config` | `tool-config` | `configuration` | — | select |
