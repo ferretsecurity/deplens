@@ -927,9 +927,12 @@ rules:
   #   roles: [declaration, constraint]
   #   path-glob: '**/cookbooks/*/metadata.json'
   - id: chef-berksfile
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Berksfile$'
+    analyzer:
+      type: chef-berksfile
   - id: chef-berksfile-lock
     form: lockfile
     roles: [resolution, integrity]

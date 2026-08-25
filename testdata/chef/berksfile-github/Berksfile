@@ -1,0 +1,1 @@
+cookbook "confluence", github: "esciara/chef-confluence"
