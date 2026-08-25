@@ -485,7 +485,25 @@ work_items:
         - candidate_id: candidate-e0a9d9010c707d401401b89ae458926d
           original_path: project.clj
           source_sha256: d10ef96450d81a1ff97a824a75583ac6a79e3375885577e096040eca07ebb38c
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/clojure/project-clj-root-dependencies/project.clj
+            - testdata/clojure/project-clj-profile-dependencies/project.clj
+            - testdata/clojure/project-clj-profile-plugins/project.clj
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/clojure_project_clj.go
+            - internal/analyze/clojure_project_clj_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/clojure/project-clj-profile-dependencies/project.clj
+            - testdata/clojure/project-clj-profile-plugins/project.clj
+            - testdata/clojure/project-clj-root-dependencies/project.clj
     - number: 14
       id: cpp-autotools
       detector:

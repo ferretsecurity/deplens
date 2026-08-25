@@ -392,9 +392,12 @@ rules:
     analyzer:
       type: clojure-deps-edn
   - id: clojure-project-clj
+    package-type: maven
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^project\.clj$'
+    analyzer:
+      type: clojure-project-clj
   - id: clojure-boot
     package-type: maven
     form: manifest
