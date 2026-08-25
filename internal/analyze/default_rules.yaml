@@ -374,9 +374,12 @@ rules:
       exists-any:
         - packages
   - id: erlang-rebar-config
+    package-type: hex
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^rebar\.config$'
+    analyzer:
+      type: erlang-rebar-config
   - id: erlang-rebar-lock
     form: lockfile
     roles: [resolution, integrity]

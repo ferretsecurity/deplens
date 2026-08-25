@@ -54,7 +54,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "Package.swift", want: DetectorID("swift-package")},
 		{name: "Podfile", want: DetectorID("ios-podfile")},
 		{name: "Cartfile", want: DetectorID("ios-cartfile")},
-		{name: "rebar.config", want: DetectorID("erlang-rebar-config")},
 		{name: "rebar.lock", want: DetectorID("erlang-rebar-lock")},
 		{name: "deps.edn", want: DetectorID("clojure-deps-edn")},
 		{name: "project.clj", want: DetectorID("clojure-project-clj")},
@@ -430,6 +429,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"index.html",
 		"job.tf",
 		"app.js",
+		"rebar.config",
 	}
 
 	for _, tc := range testCases {

@@ -763,7 +763,32 @@ work_items:
         - candidate_id: candidate-af628ab67c6d68ef26e830a330eb957e
           original_path: rebar.config
           source_sha256: aaee329f231f2f7fbadd64b03f73c39e8b32da0b7d0d4b1732dbbbd68555c94b
-      state: pending
+      state: completed
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/erlang/rebar-config-registry-git/rebar.config
+            - testdata/erlang/rebar-config-bare-plugin/rebar.config
+            - testdata/erlang/rebar-config-profiles/rebar.config
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/erlang_rebar_config.go
+            - internal/analyze/erlang_rebar_config_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/erlang/rebar-config-bare-plugin/rebar.config
+            - testdata/erlang/rebar-config-profiles/rebar.config
+            - testdata/erlang/rebar-config-registry-git/rebar.config
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/erlang/rebar-config-registry-git/rebar.config
+            - testdata/erlang/rebar-config-bare-plugin/rebar.config
+            - testdata/erlang/rebar-config-profiles/rebar.config
+          changed_paths: []
     - number: 39
       id: erlang-rebar-lock
       detector:
