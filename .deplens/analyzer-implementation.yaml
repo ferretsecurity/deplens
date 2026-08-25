@@ -146,7 +146,7 @@ work_items:
         - candidate_id: candidate-91b57778ac66fd6a54e3a47fe97b86fc
           original_path: Berksfile
           source_sha256: 8d3815f1e93002c14a9e91b660edf4889d1f881be84dd3fcad3921512e29ad3d
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -166,6 +166,13 @@ work_items:
             - testdata/chef/berksfile-github/Berksfile
             - testdata/chef/berksfile-registry/Berksfile
             - testdata/chef/berksfile-test-path/Berksfile
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/chef/berksfile-registry/Berksfile
+            - testdata/chef/berksfile-github/Berksfile
+            - testdata/chef/berksfile-test-path/Berksfile
+          changed_paths: []
     - number: 7
       id: chef-berksfile-lock
       detector:
