@@ -284,6 +284,9 @@ func (p *erlangTermParser) parseTerm() (erlangTerm, error) {
 	if p.pos == len(p.content) {
 		return erlangTerm{}, p.errorf("expected term")
 	}
+	if p.content[p.pos] == '<' && p.pos+1 < len(p.content) && p.content[p.pos+1] == '<' {
+		return p.parseBinaryString()
+	}
 	switch p.content[p.pos] {
 	case '{':
 		return p.parseCollection('{', '}', erlangTuple)
@@ -305,6 +308,24 @@ func (p *erlangTermParser) parseTerm() (erlangTerm, error) {
 		}
 		return erlangTerm{kind: erlangAtom, value: string(p.content[start:p.pos])}, nil
 	}
+}
+
+func (p *erlangTermParser) parseBinaryString() (erlangTerm, error) {
+	p.pos += 2
+	p.skipIgnored()
+	if p.pos == len(p.content) || p.content[p.pos] != '"' {
+		return erlangTerm{}, p.errorf("expected quoted binary string")
+	}
+	value, err := p.parseQuoted('"')
+	if err != nil {
+		return erlangTerm{}, err
+	}
+	p.skipIgnored()
+	if p.pos+1 >= len(p.content) || p.content[p.pos] != '>' || p.content[p.pos+1] != '>' {
+		return erlangTerm{}, p.errorf("expected '>>' after binary string")
+	}
+	p.pos += 2
+	return erlangTerm{kind: erlangString, value: value}, nil
 }
 
 func (p *erlangTermParser) parseCollection(open, close byte, kind erlangTermKind) (erlangTerm, error) {

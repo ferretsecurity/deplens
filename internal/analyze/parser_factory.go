@@ -131,6 +131,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newDartPubspecLockParser)
 	case "erlang-rebar-config":
 		return decodeAndCreate(raw.Analyzer, newErlangRebarConfigParser)
+	case "erlang-rebar-lock":
+		return decodeAndCreate(raw.Analyzer, newErlangRebarLockParser)
 	case "elixir-mix":
 		return decodeAndCreate(raw.Analyzer, newElixirMixParser)
 	case "clojure-boot":

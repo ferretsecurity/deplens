@@ -378,9 +378,12 @@ rules:
     analyzer:
       type: erlang-rebar-config
   - id: erlang-rebar-lock
+    package-type: hex
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^rebar\.lock$'
+    analyzer:
+      type: erlang-rebar-lock
   - id: clojure-deps-edn
     package-type: maven
     form: manifest

@@ -1514,7 +1514,25 @@ work_items:
         - candidate_id: candidate-e639b0266a19a8108da1010c0e59a24f
           original_path: rebar.lock
           source_sha256: 4cd6e62c19236750fb29bfeb5cf935cd47a48002a92fb794e99bdf6269d66223
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/erlang/rebar-lock-v11-hex/rebar.lock
+            - testdata/erlang/rebar-lock-v12-mixed/rebar.lock
+            - testdata/erlang/rebar-lock-legacy-git/rebar.lock
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/erlang_rebar_config.go
+            - internal/analyze/erlang_rebar_lock.go
+            - internal/analyze/erlang_rebar_lock_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/erlang/rebar-lock-legacy-git/rebar.lock
+            - testdata/erlang/rebar-lock-v11-hex/rebar.lock
+            - testdata/erlang/rebar-lock-v12-mixed/rebar.lock
     - number: 40
       id: fortran-fpm
       detector:
