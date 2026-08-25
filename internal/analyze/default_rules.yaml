@@ -923,9 +923,12 @@ rules:
   #   roles: [declaration, constraint, configuration]
   #   filename-regex: '^BUILD$'
   - id: git-submodules
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^\.gitmodules$'
+    analyzer:
+      type: git-submodules
   - id: nix-default-shell
     form: manifest
     roles: [declaration, constraint]

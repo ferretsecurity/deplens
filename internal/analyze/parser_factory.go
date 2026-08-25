@@ -33,6 +33,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newTerraformResourceParser)
 	case "ini":
 		return decodeAndCreate(raw.Analyzer, newINIQueryParser)
+	case "git-submodules":
+		return decodeAndCreate(raw.Analyzer, newGitSubmodulesParser)
 	case "typescript":
 		return decodeAndCreate(raw.Analyzer, newTypeScriptMatcher)
 	case "python":

@@ -86,7 +86,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "rush.json", want: DetectorID("js-rush")},
 		{name: "turbo.json", want: DetectorID("js-turbo")},
 		{name: "pants.toml", want: DetectorID("pants-config")},
-		{name: ".gitmodules", want: DetectorID("git-submodules")},
 		// Group 1c: JVM ecosystem extensions
 		{name: "build.sbt", want: DetectorID("scala-sbt-build")},
 		{name: "build.sc", want: DetectorID("scala-mill")},
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"Cask",
 		"fpm.toml",
 		"foundry.toml",
+		".gitmodules",
 	}
 
 	for _, tc := range testCases {
