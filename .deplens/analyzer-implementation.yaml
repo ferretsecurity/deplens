@@ -2186,7 +2186,7 @@ work_items:
         - candidate_id: candidate-0fca9835677fa4475777be20dce45eca
           original_path: stack.yaml.lock
           source_sha256: 9f6f6af8b384d86e9669acd7ed1b7a8960a50542bb153e6b6a89b8e2fa69646b
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -2204,6 +2204,13 @@ work_items:
             - testdata/haskell/stack-lock-hackage-package/stack.yaml.lock
             - testdata/haskell/stack-lock-no-packages/stack.yaml.lock
             - testdata/haskell/stack-lock-url-package/stack.yaml.lock
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/haskell/stack-lock-url-package/stack.yaml.lock
+            - testdata/haskell/stack-lock-hackage-package/stack.yaml.lock
+            - testdata/haskell/stack-lock-no-packages/stack.yaml.lock
+          changed_paths: []
     - number: 57
       id: helm-chart
       detector:
