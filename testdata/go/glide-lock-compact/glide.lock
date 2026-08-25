@@ -1,0 +1,7 @@
+hash: synthetic-compact-lock
+imports:
+  - name: example.com/session
+    version: 2222222222222222
+  - name: example.com/context
+    version: 1111111111111111
+updated: '2018-06-11T15:46:37+00:00'

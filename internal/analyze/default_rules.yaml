@@ -553,9 +553,12 @@ rules:
       exists-any:
         - projects
   - id: go-glide-lock
+    package-type: golang
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^glide\.lock$'
+    analyzer:
+      type: go-glide-lock
   - id: dotnet-csproj
     package-type: nuget
     form: build-definition
