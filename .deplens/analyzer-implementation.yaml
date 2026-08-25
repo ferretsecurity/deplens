@@ -1204,7 +1204,7 @@ work_items:
         - candidate_id: candidate-780a0833794bffb335cc17a81d123c2b
           original_path: cli/packages.lock.json
           source_sha256: 037d7e617cf2143d2120bfd8312e8e4a1189b15ae9887efecf8fed0504d79a25
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -1224,6 +1224,13 @@ work_items:
             - testdata/dotnet/packages-lock-v1-direct-transitive/packages.lock.json
             - testdata/dotnet/packages-lock-v1-rid-project/packages.lock.json
             - testdata/dotnet/packages-lock-v2-central-transitive/packages.lock.json
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/dotnet/packages-lock-v1-direct-transitive/packages.lock.json
+            - testdata/dotnet/packages-lock-v1-rid-project/packages.lock.json
+            - testdata/dotnet/packages-lock-v2-central-transitive/packages.lock.json
+          changed_paths: []
     - number: 33
       id: dotnet-paket-dependencies
       detector:
