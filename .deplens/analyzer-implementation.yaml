@@ -1558,7 +1558,25 @@ work_items:
         - candidate_id: candidate-f25548cd2922a7c4dcfa3cb3531f83a0
           original_path: fpm.toml
           source_sha256: b3d6b53121fe26e15de4695afd01e8fb37c183526ede6bca89a8fc32194cce0c
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/fortran-fpm/features-default-profile/fpm.toml
+            - testdata/fortran-fpm/runtime-git-and-registry/fpm.toml
+            - testdata/fortran-fpm/dev-git-dependency/fpm.toml
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/fortran_fpm.go
+            - internal/analyze/fortran_fpm_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/fortran-fpm/dev-git-dependency/fpm.toml
+            - testdata/fortran-fpm/features-default-profile/fpm.toml
+            - testdata/fortran-fpm/runtime-git-and-registry/fpm.toml
     - number: 41
       id: foundry-remappings
       detector:

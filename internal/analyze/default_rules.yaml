@@ -778,9 +778,12 @@ rules:
     roles: [resolution, integrity]
     filename-regex: '^manifest\.toml$'
   - id: fortran-fpm
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^fpm\.toml$'
+    analyzer:
+      type: fortran-fpm
   - id: vlang
     form: manifest
     roles: [declaration, constraint]

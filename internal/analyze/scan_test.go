@@ -135,7 +135,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "esy.json", want: DetectorID("ocaml-esy")},
 		// DRAFT (Group 3): {name: "dune", want: DetectorID("ocaml-dune")},
 		{name: "manifest.toml", want: DetectorID("gleam-manifest")},
-		{name: "fpm.toml", want: DetectorID("fortran-fpm")},
 		// Group 1k: Nix
 		{name: "default.nix", want: DetectorID("nix-default-shell")},
 		{name: "shell.nix", want: DetectorID("nix-default-shell")},
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"paket.dependencies",
 		"paket.references",
 		"Cask",
+		"fpm.toml",
 	}
 
 	for _, tc := range testCases {

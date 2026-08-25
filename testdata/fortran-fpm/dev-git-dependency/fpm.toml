@@ -1,0 +1,4 @@
+name = "fftpack"
+
+[dev-dependencies]
+test-drive = {git = "https://github.com/fortran-lang/test-drive"}

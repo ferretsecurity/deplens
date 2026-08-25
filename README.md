@@ -120,7 +120,7 @@ Dockerfile analysis extracts external images from `FROM` and external `COPY --fr
 
 Meson build definitions extract static `dependency()` declarations, compiler `find_library()` calls, and Python installation dependency objects. A Meson file without those references reports a complete empty result.
 
-Maven POMs, Cargo manifests, Composer manifests, and .NET project or central-package files also preserve source groups, constraints, scopes, and relationships. Consuming declarations are direct; non-consuming catalogs such as Maven `dependencyManagement`, Cargo `workspace.dependencies`, and .NET `PackageVersion` entries are inconclusive:
+Maven POMs, Cargo manifests, Composer manifests, Fortran fpm manifests, and .NET project or central-package files also preserve source groups, constraints, scopes, and relationships. Fortran fpm extracts registry, Git, and local-path dependencies from `dependencies` and test-scoped `dev-dependencies`. Consuming declarations are direct; non-consuming catalogs such as Maven `dependencyManagement`, Cargo `workspace.dependencies`, and .NET `PackageVersion` entries are inconclusive:
 
 ```text
 pom.xml [manifest · 2 dependencies]

@@ -135,7 +135,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `crystal-shard-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `gleam` | `manifest` | `declaration, constraint` | `toml` | select, recognize, assess-presence |
 | `gleam-manifest` | `lockfile` | `resolution, integrity` | — | select |
-| `fortran-fpm` | `manifest` | `declaration, constraint` | — | select |
+| `fortran-fpm` | `manifest` | `declaration, constraint` | `fortran-fpm` | select, recognize, extract, normalize |
 | `vlang` | `manifest` | `declaration, constraint` | — | select |
 | `helm-chart` | `deployment-definition` | `declaration, configuration` | `yaml` | select, recognize, assess-presence |
 | `ansible-requirements` | `requirements` | `declaration, constraint` | `yaml` | select, recognize, assess-presence |
