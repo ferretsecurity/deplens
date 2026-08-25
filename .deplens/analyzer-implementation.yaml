@@ -1665,7 +1665,7 @@ work_items:
         - candidate_id: candidate-c3a5cb9bf4ea69ea44e89a1a124adff2
           original_path: .gitmodules
           source_sha256: 877614fe0a1a27a98c50f00fb965dc9d06c3d451bf74c04af4c02de7b3bffc76
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -1683,6 +1683,13 @@ work_items:
             - testdata/git/submodules-branch/.gitmodules
             - testdata/git/submodules-multiple/.gitmodules
             - testdata/git/submodules-single/.gitmodules
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/git/submodules-multiple/.gitmodules
+            - testdata/git/submodules-branch/.gitmodules
+            - testdata/git/submodules-single/.gitmodules
+          changed_paths: []
     - number: 44
       id: github-actions-action
       detector:
