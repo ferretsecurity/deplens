@@ -681,7 +681,7 @@ work_items:
         - candidate_id: candidate-78322dd993c32d084aa6c1998737e3bd
           original_path: conanfile.py
           source_sha256: df572bdd5efd6e8e73867a1df949401257a55577330b52fce0e36cd7d8982df7
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -701,6 +701,13 @@ work_items:
             - testdata/cpp/conanfile-py-library/conanfile.py
             - testdata/cpp/conanfile-py-requirements/conanfile.py
             - testdata/cpp/conanfile-py-toolchain/conanfile.py
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/cpp/conanfile-py-toolchain/conanfile.py
+            - testdata/cpp/conanfile-py-requirements/conanfile.py
+            - testdata/cpp/conanfile-py-library/conanfile.py
+          changed_paths: []
     - number: 20
       id: cpp-meson
       detector:
