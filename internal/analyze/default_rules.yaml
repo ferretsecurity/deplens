@@ -543,13 +543,12 @@ rules:
     roles: [configuration]
     path-glob: '**/.cargo/config.toml'
   - id: go-gopkg-lock
+    package-type: golang
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Gopkg\.lock$'
     analyzer:
-      type: toml
-      exists-any:
-        - projects
+      type: go-gopkg-lock
   - id: go-glide-lock
     package-type: golang
     form: lockfile

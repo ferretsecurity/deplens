@@ -1883,7 +1883,24 @@ work_items:
         - candidate_id: candidate-f201266a1894f66e14956c8816bf62c6
           original_path: Gopkg.lock
           source_sha256: 603e8a18b834254ffd28bb9270d753d5fa246c85ca663147c45e4487b417f8ae
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/go/gopkg-lock-versioned-and-branch/Gopkg.lock
+            - testdata/go/gopkg-lock-single-project/Gopkg.lock
+            - testdata/go/gopkg-lock-multiple-projects/Gopkg.lock
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/go_gopkg_lock.go
+            - internal/analyze/go_gopkg_lock_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/go/gopkg-lock-multiple-projects/Gopkg.lock
+            - testdata/go/gopkg-lock-single-project/Gopkg.lock
+            - testdata/go/gopkg-lock-versioned-and-branch/Gopkg.lock
     - number: 49
       id: go-gopkg-toml
       detector:

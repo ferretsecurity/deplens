@@ -1134,11 +1134,11 @@ func TestScanFindsGopkgLockInFixture(t *testing.T) {
 
 	for _, source := range result.Sources {
 		if source.Detector == DetectorID("go-gopkg-lock") && source.Path == "go-service/Gopkg.lock" {
-			if source.Analysis.Presence != PresencePresent {
-				t.Fatalf("expected go-service/Gopkg.lock fixture to have presence=present, got %+v", source.Analysis)
+			if source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
+				t.Fatalf("expected go-service/Gopkg.lock fixture to be fully extracted, got %+v", source.Analysis)
 			}
-			if source.Dependencies != nil {
-				t.Fatalf("expected go-service/Gopkg.lock fixture to remain non-extracting, got %+v", source.Dependencies)
+			if len(source.Dependencies) != 1 || source.Dependencies[0].Name != "github.com/example/dep" {
+				t.Fatalf("expected extracted go-service/Gopkg.lock dependency, got %+v", source.Dependencies)
 			}
 			return
 		}
@@ -1434,10 +1434,11 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			extracted: true,
 		},
 		{
-			name: "gopkg lock",
-			root: filepath.Join("..", "..", "testdata", "go", "gopkg-lock-with-deps"),
-			path: "Gopkg.lock",
-			typ:  DetectorID("go-gopkg-lock"),
+			name:      "gopkg lock",
+			root:      filepath.Join("..", "..", "testdata", "go", "gopkg-lock-with-deps"),
+			path:      "Gopkg.lock",
+			typ:       DetectorID("go-gopkg-lock"),
+			extracted: true,
 		},
 		{
 			name: "swift package resolved",
