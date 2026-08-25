@@ -59,3 +59,18 @@ func TestGopkgTOMLFixturesExtractDependencyReferences(t *testing.T) {
 		})
 	}
 }
+
+func TestGopkgTOMLWithoutDependenciesIsCompleteAndAbsent(t *testing.T) {
+	parser, err := newGopkgTOMLParser(gopkgTOMLMatcherConfig{})
+	if err != nil {
+		t.Fatalf("newGopkgTOMLParser: %v", err)
+	}
+
+	result, err := parser.Analyze("Gopkg.toml", []byte("[prune]\n  go-tests = true\n  unused-packages = true\n"))
+	if err != nil {
+		t.Fatalf("Analyze: %v", err)
+	}
+	if result.Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) || len(result.Dependencies) != 0 {
+		t.Fatalf("result = %+v", result)
+	}
+}
