@@ -1,6 +1,6 @@
 # Dependency coverage
 
-This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 77 have semantic analyzers and 111 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
+This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 78 have semantic analyzers and 110 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
@@ -137,7 +137,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `gleam-manifest` | `lockfile` | `resolution, integrity` | — | select |
 | `fortran-fpm` | `manifest` | `declaration, constraint` | `fortran-fpm` | select, recognize, extract, normalize |
 | `vlang` | `manifest` | `declaration, constraint` | — | select |
-| `helm-chart` | `deployment-definition` | `declaration, configuration` | `yaml` | select, recognize, assess-presence |
+| `helm-chart` | `deployment-definition` | `declaration, configuration` | `helm-chart` | select, recognize, extract, normalize, relate |
 | `ansible-requirements` | `requirements` | `declaration, constraint` | `yaml` | select, recognize, assess-presence |
 | `buf` | `manifest` | `declaration, constraint` | `buf` | select, recognize, extract, normalize, relate |
 | `homebrew-brewfile` | `manifest` | `declaration, constraint` | — | select |

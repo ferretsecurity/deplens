@@ -802,13 +802,12 @@ rules:
     roles: [declaration, constraint]
     filename-regex: '^v\.mod$'
   - id: helm-chart
+    package-type: generic
     form: deployment-definition
     roles: [declaration, configuration]
     filename-regex: '^Chart\.yaml$'
     analyzer:
-      type: yaml
-      exists-any:
-        - dependencies
+      type: helm-chart
   - id: ansible-requirements
     form: requirements
     roles: [declaration, constraint]
