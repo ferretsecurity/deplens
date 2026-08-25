@@ -855,9 +855,12 @@ rules:
     analyzer:
       type: docker-compose
   - id: github-actions-action
+    package-type: github
     form: automation-definition
     roles: [configuration, usage]
     filename-regex: '^action\.ya?ml$'
+    analyzer:
+      type: github-actions-action
   - id: github-actions-workflow
     form: automation-definition
     roles: [configuration, usage]

@@ -1,6 +1,6 @@
 # Dependency coverage
 
-This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 75 have semantic analyzers and 112 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
+This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 76 have semantic analyzers and 111 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
@@ -147,7 +147,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `unity-packages-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `docker-dockerfile` | `deployment-definition` | `declaration, configuration` | `dockerfile` | select, recognize, extract, normalize, relate |
 | `docker-compose` | `deployment-definition` | `declaration, configuration` | `docker-compose` | select, recognize, extract, normalize, relate |
-| `github-actions-action` | `automation-definition` | `configuration, usage` | — | select |
+| `github-actions-action` | `automation-definition` | `configuration, usage` | `github-actions-action` | select, recognize, extract, normalize, relate |
 | `github-actions-workflow` | `automation-definition` | `configuration, usage` | — | select |
 | `bazel-workspace` | `workspace-definition` | `workspace, configuration` | — | select |
 | `bazel-module` | `manifest` | `declaration, constraint` | — | select |

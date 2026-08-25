@@ -116,7 +116,7 @@ build.gradle.kts [build-definition · 1 dependency · partial]
   warning [dependency-extraction-incomplete]: version-catalog alias libs.jackson.databind could not be resolved from this build file
 ```
 
-Dockerfile analysis extracts external images from `FROM` and external `COPY --from` instructions, while excluding `scratch` and previously declared stage aliases. Compose analysis extracts `services.*.image`. It does not treat packages installed by `RUN` or local build contexts as package dependencies.
+Dockerfile analysis extracts external images from `FROM` and external `COPY --from` instructions, while excluding `scratch` and previously declared stage aliases. Compose analysis extracts `services.*.image`. It does not treat packages installed by `RUN` or local build contexts as package dependencies. GitHub Action metadata extracts direct external action references from composite `runs.steps[].uses` declarations. Node and Docker action definitions without such references report a complete empty result.
 
 Meson build definitions extract static `dependency()` declarations, compiler `find_library()` calls, and Python installation dependency objects. A Meson file without those references reports a complete empty result.
 
@@ -379,7 +379,7 @@ analyzer:
     - devDependencies
 ```
 
-The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `git-submodules`, `maven-pom`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, `dotnet-packages-config`, `dotnet-packages-lock`, `dotnet-paket-dependencies`, `dotnet-paket-lock`, `dotnet-paket-references`, `buf`, `buf-lock`, `dart-pubspec`, `dart-pubspec-lock`, `erlang-rebar-config`, `erlang-rebar-lock`, and `elixir-mix` can also be used by custom rules. They reject analyzer fields other than `type`.
+The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `git-submodules`, `github-actions-action`, `maven-pom`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, `dotnet-packages-config`, `dotnet-packages-lock`, `dotnet-paket-dependencies`, `dotnet-paket-lock`, `dotnet-paket-references`, `buf`, `buf-lock`, `dart-pubspec`, `dart-pubspec-lock`, `erlang-rebar-config`, `erlang-rebar-lock`, and `elixir-mix` can also be used by custom rules. They reject analyzer fields other than `type`.
 
 The old rule shape is rejected. The migration is intentionally atomic:
 

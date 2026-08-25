@@ -71,8 +71,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "v.mod", want: DetectorID("vlang")},
 		{name: "Brewfile", want: DetectorID("homebrew-brewfile")},
 		{name: ".terraform.lock.hcl", want: DetectorID("terraform-lock")},
-		{name: "action.yml", want: DetectorID("github-actions-action")},
-		{name: "action.yaml", want: DetectorID("github-actions-action")},
 		// Group 1b: Build systems and monorepo tools
 		{name: "WORKSPACE", want: DetectorID("bazel-workspace")},
 		{name: "WORKSPACE.bazel", want: DetectorID("bazel-workspace")},
@@ -429,6 +427,8 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"fpm.toml",
 		"foundry.toml",
 		".gitmodules",
+		"action.yml",
+		"action.yaml",
 	}
 
 	for _, tc := range testCases {

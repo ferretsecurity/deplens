@@ -35,6 +35,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newINIQueryParser)
 	case "git-submodules":
 		return decodeAndCreate(raw.Analyzer, newGitSubmodulesParser)
+	case "github-actions-action":
+		return decodeAndCreate(raw.Analyzer, newGithubActionsActionParser)
 	case "typescript":
 		return decodeAndCreate(raw.Analyzer, newTypeScriptMatcher)
 	case "python":
