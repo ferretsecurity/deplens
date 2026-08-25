@@ -100,7 +100,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		// Group 1d: C/C++ ecosystem extensions
 		{name: "CMakeLists.txt", want: DetectorID("cpp-cmake")},
 		{name: "vcpkg-configuration.json", want: DetectorID("cpp-vcpkg-config")},
-		{name: "meson.build", want: DetectorID("cpp-meson")},
 		{name: "configure.ac", want: DetectorID("cpp-autotools")},
 		{name: "configure.in", want: DetectorID("cpp-autotools")},
 		// Group 1e: .NET ecosystem extensions
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"conanfile.txt",
 		"conanfile.py",
 		"conan.lock",
+		"meson.build",
 	}
 
 	for _, tc := range testCases {

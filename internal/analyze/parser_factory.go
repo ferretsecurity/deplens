@@ -105,6 +105,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newConanfilePyParser)
 	case "conan-lock":
 		return decodeAndCreate(raw.Analyzer, newConanLockParser)
+	case "meson":
+		return decodeAndCreate(raw.Analyzer, newMesonParser)
 	case "erlang-rebar-config":
 		return decodeAndCreate(raw.Analyzer, newErlangRebarConfigParser)
 	case "clojure-boot":

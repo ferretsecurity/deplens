@@ -596,9 +596,12 @@ rules:
     roles: [configuration]
     filename-regex: '^vcpkg-configuration\.json$'
   - id: cpp-meson
+    package-type: generic
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^meson\.build$'
+    analyzer:
+      type: meson
   - id: cpp-autotools
     form: build-definition
     roles: [declaration, constraint, configuration]

@@ -159,6 +159,7 @@ func TestRuleSchemaRejectsConfigurationForSemanticAnalyzers(t *testing.T) {
 		"dotnet-project",
 		"dotnet-central-packages",
 		"dotnet-packages-config",
+		"meson",
 	} {
 		t.Run(analyzerType, func(t *testing.T) {
 			_, err := loadRules("invalid.yaml", []byte(`

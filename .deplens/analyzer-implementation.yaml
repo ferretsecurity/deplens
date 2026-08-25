@@ -727,7 +727,27 @@ work_items:
         - candidate_id: candidate-649ea9295ef375309844724c47bb5a3b
           original_path: meson.build
           source_sha256: 1b0f0f199b09e5c9ec2f8a5a8019fb5a8acc199fd94a9e5d2ef7c17b9a3af82c
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/cpp/meson-find-library/meson.build
+            - testdata/cpp/meson-python-installation/meson.build
+            - testdata/cpp/meson-empty/meson.build
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/meson.go
+            - internal/analyze/meson_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rule_schema_test.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/cpp/meson-empty/meson.build
+            - testdata/cpp/meson-find-library/meson.build
+            - testdata/cpp/meson-python-installation/meson.build
     - number: 21
       id: cpp-meson-wrap
       detector:

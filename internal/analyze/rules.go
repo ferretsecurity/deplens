@@ -181,6 +181,7 @@ type bufLockMatcherConfig struct{}
 type conanfileMatcherConfig struct{}
 type conanfilePyMatcherConfig struct{}
 type conanLockMatcherConfig struct{}
+type mesonMatcherConfig struct{}
 
 type sourceAnalyzer interface {
 	Analyze(path string, content []byte) (sourceAnalyzerResult, error)
