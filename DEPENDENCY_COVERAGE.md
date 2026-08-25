@@ -69,7 +69,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `erlang-rebar-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `clojure-deps-edn` | `manifest` | `declaration, constraint` | — | select |
 | `clojure-project-clj` | `manifest` | `declaration, constraint` | — | select |
-| `clojure-boot` | `manifest` | `declaration, constraint` | — | select |
+| `clojure-boot` | `manifest` | `declaration, constraint` | `clojure-boot` | select, recognize, extract, normalize, relate |
 | `haskell-stack` | `manifest` | `declaration, constraint` | — | select |
 | `haskell-stack-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `haskell-cabal-project` | `manifest` | `declaration, constraint` | — | select |

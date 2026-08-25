@@ -101,6 +101,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newBufLockParser)
 	case "erlang-rebar-config":
 		return decodeAndCreate(raw.Analyzer, newErlangRebarConfigParser)
+	case "clojure-boot":
+		return decodeAndCreate(raw.Analyzer, newClojureBootParser)
 	case "yaml":
 		return decodeAndCreate(raw.Analyzer, newYAMLQueryParser)
 	case "toml":

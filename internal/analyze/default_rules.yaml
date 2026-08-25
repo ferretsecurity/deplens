@@ -393,9 +393,12 @@ rules:
     roles: [declaration, constraint]
     filename-regex: '^project\.clj$'
   - id: clojure-boot
+    package-type: maven
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^build\.boot$'
+    analyzer:
+      type: clojure-boot
   - id: haskell-stack
     form: manifest
     roles: [declaration, constraint]

@@ -131,7 +131,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "Cartfile.resolved", want: DetectorID("ios-cartfile-resolved")},
 		// Group 1j: Functional and niche languages
 		{name: "cabal.project.freeze", want: DetectorID("haskell-cabal-project-freeze")},
-		{name: "build.boot", want: DetectorID("clojure-boot")},
 		{name: "demo.rockspec", want: DetectorID("lua-rockspec")},
 		{name: "renv.lock", want: DetectorID("r-renv-lock")},
 		// DRAFT (Group 3): {name: "DESCRIPTION", want: DetectorID("r-description")},
@@ -425,6 +424,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"job.tf",
 		"app.js",
 		"rebar.config",
+		"build.boot",
 		"Berksfile",
 		"Berksfile.lock",
 		"metadata.rb",
