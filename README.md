@@ -122,6 +122,8 @@ Meson build definitions extract static `dependency()` declarations, compiler `fi
 
 Maven POMs, Cargo manifests, Composer manifests, Fortran fpm manifests, and .NET project or central-package files also preserve source groups, constraints, scopes, and relationships. Fortran fpm extracts registry, Git, and local-path dependencies from `dependencies` and test-scoped `dev-dependencies`. Consuming declarations are direct; non-consuming catalogs such as Maven `dependencyManagement`, Cargo `workspace.dependencies`, and .NET `PackageVersion` entries are inconclusive:
 
+Foundry configuration extracts Soldeer registry dependencies declared in its `[dependencies]` table. A configuration without that table has a complete empty result.
+
 ```text
 pom.xml [manifest · 2 dependencies]
   dependencies:

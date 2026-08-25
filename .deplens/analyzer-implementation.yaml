@@ -1620,7 +1620,26 @@ work_items:
         - candidate_id: candidate-f53c25eb3048923304e09c884e454ac3
           original_path: foundry.toml
           source_sha256: 30bc073985d78d635d3d403fb5c0fd981ef729a5ce64153ef7e11b7c8d5a1983
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/foundry/profile-configuration/foundry.toml
+            - testdata/foundry/legacy-remappings/foundry.toml
+            - testdata/foundry/soldeer-dependencies/foundry.toml
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/foundry_toml.go
+            - internal/analyze/foundry_toml_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/foundry/legacy-remappings/foundry.toml
+            - testdata/foundry/profile-configuration/foundry.toml
+            - testdata/foundry/soldeer-dependencies/foundry.toml
     - number: 43
       id: git-submodules
       detector:

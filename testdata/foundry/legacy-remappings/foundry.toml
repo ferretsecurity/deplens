@@ -1,0 +1,2 @@
+[default]
+remappings = ["test/=lib/test/"]

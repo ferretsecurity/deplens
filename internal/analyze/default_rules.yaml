@@ -1024,9 +1024,12 @@ rules:
     roles: [configuration]
     filename-regex: '^plugin\.cfg$'
   - id: foundry-toml
+    package-type: generic
     form: tool-config
     roles: [configuration]
     filename-regex: '^foundry\.toml$'
+    analyzer:
+      type: foundry-toml
   - id: foundry-remappings
     form: constraint-file
     roles: [constraint]

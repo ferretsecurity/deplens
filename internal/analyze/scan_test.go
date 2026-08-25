@@ -150,7 +150,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "MyPlugin.uplugin", want: DetectorID("unreal-uplugin")},
 		{name: "plugin.cfg", want: DetectorID("godot-plugin-cfg")},
 		// Group 1n: Blockchain / Solidity
-		{name: "foundry.toml", want: DetectorID("foundry-toml")},
 		{name: "remappings.txt", want: DetectorID("foundry-remappings")},
 		{name: "soldeer.lock", want: DetectorID("soldeer-lock")},
 	}
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"paket.references",
 		"Cask",
 		"fpm.toml",
+		"foundry.toml",
 	}
 
 	for _, tc := range testCases {
