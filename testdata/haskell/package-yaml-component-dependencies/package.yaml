@@ -1,0 +1,17 @@
+name: higher-rank
+library:
+  dependencies:
+    - base
+    - containers
+executables:
+  app:
+    dependencies:
+      - base
+      - higher-rank
+tests:
+  spec:
+    dependencies:
+      - base
+      - higher-rank
+      - hspec
+      - template-haskell

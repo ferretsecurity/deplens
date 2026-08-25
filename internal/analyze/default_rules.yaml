@@ -432,13 +432,12 @@ rules:
     analyzer:
       type: haskell-cabal
   - id: haskell-package-yaml
+    package-type: hackage
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^package\.yaml$'
     analyzer:
-      type: yaml
-      exists-any:
-        - dependencies
+      type: haskell-package-yaml
   - id: dotnet-packages-config
     package-type: nuget
     form: manifest

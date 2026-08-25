@@ -120,7 +120,7 @@ Dockerfile analysis extracts external images from `FROM` and external `COPY --fr
 
 Meson build definitions extract static `dependency()` declarations, compiler `find_library()` calls, and Python installation dependency objects. A Meson file without those references reports a complete empty result.
 
-Maven POMs, Cargo manifests, Composer manifests, Fortran fpm manifests, Cabal project freeze files, and .NET project or central-package files also preserve source groups, constraints, scopes, and relationships. Cabal project freeze files extract resolved Hackage package pins from `constraints`, including `any.`-qualified package names. Fortran fpm extracts registry, Git, and local-path dependencies from `dependencies` and test-scoped `dev-dependencies`. Consuming declarations are direct; non-consuming catalogs such as Maven `dependencyManagement`, Cargo `workspace.dependencies`, and .NET `PackageVersion` entries are inconclusive:
+Maven POMs, Cargo manifests, Composer manifests, Fortran fpm manifests, Cabal project freeze files, Hpack `package.yaml` manifests, and .NET project or central-package files also preserve source groups, constraints, scopes, and relationships. Cabal project freeze files extract resolved Hackage package pins from `constraints`, including `any.`-qualified package names. Hpack extracts Hackage dependencies from top-level and component-specific `dependencies`, with test dependencies marked test-scoped. Fortran fpm extracts registry, Git, and local-path dependencies from `dependencies` and test-scoped `dev-dependencies`. Consuming declarations are direct; non-consuming catalogs such as Maven `dependencyManagement`, Cargo `workspace.dependencies`, and .NET `PackageVersion` entries are inconclusive:
 
 Foundry configuration extracts Soldeer registry dependencies declared in its `[dependencies]` table. A configuration without that table has a complete empty result.
 
@@ -379,7 +379,7 @@ analyzer:
     - devDependencies
 ```
 
-The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `git-submodules`, `github-actions-action`, `maven-pom`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, `dotnet-packages-config`, `dotnet-packages-lock`, `dotnet-paket-dependencies`, `dotnet-paket-lock`, `dotnet-paket-references`, `buf`, `buf-lock`, `dart-pubspec`, `dart-pubspec-lock`, `erlang-rebar-config`, `erlang-rebar-lock`, `elixir-mix`, `gleam`, `go-glide-yaml`, `go-glide-lock`, `haskell-cabal`, and `haskell-cabal-project-freeze` can also be used by custom rules. They reject analyzer fields other than `type`.
+The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `git-submodules`, `github-actions-action`, `maven-pom`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, `dotnet-packages-config`, `dotnet-packages-lock`, `dotnet-paket-dependencies`, `dotnet-paket-lock`, `dotnet-paket-references`, `buf`, `buf-lock`, `dart-pubspec`, `dart-pubspec-lock`, `erlang-rebar-config`, `erlang-rebar-lock`, `elixir-mix`, `gleam`, `go-glide-yaml`, `go-glide-lock`, `haskell-cabal`, `haskell-package-yaml`, and `haskell-cabal-project-freeze` can also be used by custom rules. They reject analyzer fields other than `type`.
 
 The old rule shape is rejected. The migration is intentionally atomic:
 

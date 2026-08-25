@@ -2098,7 +2098,25 @@ work_items:
         - candidate_id: candidate-69f4658610d2e07bb88c99f832157002
           original_path: package.yaml
           source_sha256: 164b45c63e192d7b4dc21d0d6e833faba9e7371ab181212acdc8c51d9b280bcd
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/haskell/package-yaml-top-level-and-tests/package.yaml
+            - testdata/haskell/package-yaml-global-and-components/package.yaml
+            - testdata/haskell/package-yaml-component-dependencies/package.yaml
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/haskell_package_yaml.go
+            - internal/analyze/haskell_package_yaml_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/haskell/package-yaml-component-dependencies/package.yaml
+            - testdata/haskell/package-yaml-global-and-components/package.yaml
+            - testdata/haskell/package-yaml-top-level-and-tests/package.yaml
     - number: 55
       id: haskell-stack
       detector:

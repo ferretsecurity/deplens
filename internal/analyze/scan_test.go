@@ -4466,11 +4466,16 @@ func TestScanMatchesHaskellPackageYAMLWithDependencies(t *testing.T) {
 	if result.Sources[0].Detector != DetectorID("haskell-package-yaml") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresencePresent {
-		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
+	source := result.Sources[0]
+	if source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
+		t.Fatalf("expected complete extracted dependencies, got %+v", source.Analysis)
 	}
-	if result.Sources[0].Dependencies != nil {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
+	want := []DependencyReference{
+		haskellPackageYAMLTestDependency("aeson", ">= 2.0", "dependencies", ScopeRuntime),
+		haskellPackageYAMLTestDependency("base", ">= 4.14", "dependencies", ScopeRuntime),
+	}
+	if !equalDependencies(source.Dependencies, want) {
+		t.Fatalf("dependencies = %#v, want %#v", source.Dependencies, want)
 	}
 }
 
@@ -4487,8 +4492,11 @@ func TestScanMarksHaskellPackageYAMLWithoutDependenciesAsNoDependencies(t *testi
 	if result.Sources[0].Detector != DetectorID("haskell-package-yaml") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresenceAbsent {
-		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	if result.Sources[0].Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) {
+		t.Fatalf("expected complete empty result, got %+v", result.Sources[0].Analysis)
+	}
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 

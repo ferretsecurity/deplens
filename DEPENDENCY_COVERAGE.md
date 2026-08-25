@@ -1,6 +1,6 @@
 # Dependency coverage
 
-This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 76 have semantic analyzers and 111 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
+This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 77 have semantic analyzers and 111 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
@@ -75,7 +75,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `haskell-cabal-project` | `manifest` | `declaration, constraint` | — | select |
 | `haskell-cabal-project-freeze` | `lockfile` | `resolution, integrity` | `haskell-cabal-project-freeze` | select, recognize, extract, normalize, relate |
 | `haskell-cabal` | `manifest` | `declaration, constraint` | `haskell-cabal` | select, recognize, extract, normalize, relate |
-| `haskell-package-yaml` | `manifest` | `declaration, constraint` | `yaml` | select, recognize, assess-presence |
+| `haskell-package-yaml` | `manifest` | `declaration, constraint` | `haskell-package-yaml` | select, recognize, extract, normalize, relate |
 | `dotnet-packages-config` | `manifest` | `declaration, constraint` | `dotnet-packages-config` | select, recognize, extract, normalize, relate |
 | `dotnet-packages-lock` | `lockfile` | `resolution, integrity` | `dotnet-packages-lock` | select, recognize, extract, normalize, relate |
 | `dotnet-directory-packages-props` | `version-catalog` | `declaration, constraint` | `dotnet-central-packages` | select, recognize, extract, normalize, relate |
