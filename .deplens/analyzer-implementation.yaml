@@ -1425,7 +1425,7 @@ work_items:
         - candidate_id: candidate-923c65bb51655217866bff37a87ff473
           original_path: Cask
           source_sha256: 5b192c74b503a1ceb44bb1c7e6bdfe6b7142c9617a696ed98d0cc6a9480ebc28
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -1445,6 +1445,13 @@ work_items:
             - testdata/emacs/cask-files/Cask
             - testdata/emacs/cask-package/Cask
             - testdata/emacs/cask-versioned/Cask
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/emacs/cask-package/Cask
+            - testdata/emacs/cask-files/Cask
+            - testdata/emacs/cask-versioned/Cask
+          changed_paths: []
     - number: 38
       id: erlang-rebar-config
       detector:
