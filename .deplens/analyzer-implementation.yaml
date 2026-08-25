@@ -2054,7 +2054,25 @@ work_items:
         - candidate_id: candidate-b81b19fd71c4028881757f9263a583b2
           original_path: cabal.project.freeze
           source_sha256: aecb3d9977a653aec75969d4f288a5016ff536b06ec288284b65219b0b79aa7e
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/haskell/cabal-project-freeze-index-state/cabal.project.freeze
+            - testdata/haskell/cabal-project-freeze-any-constraints/cabal.project.freeze
+            - testdata/haskell/cabal-project-freeze-constraints/cabal.project.freeze
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/haskell_cabal_project_freeze.go
+            - internal/analyze/haskell_cabal_project_freeze_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/haskell/cabal-project-freeze-any-constraints/cabal.project.freeze
+            - testdata/haskell/cabal-project-freeze-constraints/cabal.project.freeze
+            - testdata/haskell/cabal-project-freeze-index-state/cabal.project.freeze
     - number: 54
       id: haskell-package-yaml
       detector:
