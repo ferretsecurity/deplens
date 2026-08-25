@@ -1840,7 +1840,24 @@ work_items:
         - candidate_id: candidate-7a1d2a4ca7237ea656849de5f79f9a6d
           original_path: glide.yaml
           source_sha256: e1e8245ad62002e012a4a5dcb64fbd2e2bd37463711df72646e5e3c3464297ce
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/go/glide-yaml-runtime-metadata/glide.yaml
+            - testdata/go/glide-yaml-version-constraints/glide.yaml
+            - testdata/go/glide-yaml-test-imports/glide.yaml
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/go_glide_yaml.go
+            - internal/analyze/go_glide_yaml_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/go/glide-yaml-runtime-metadata/glide.yaml
+            - testdata/go/glide-yaml-test-imports/glide.yaml
+            - testdata/go/glide-yaml-version-constraints/glide.yaml
     - number: 48
       id: go-gopkg-lock
       detector:

@@ -1427,10 +1427,11 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			extracted: true,
 		},
 		{
-			name: "glide yaml",
-			root: filepath.Join("..", "..", "testdata", "go", "glide-yaml-with-deps"),
-			path: "glide.yaml",
-			typ:  DetectorID("go-glide-yaml"),
+			name:      "glide yaml",
+			root:      filepath.Join("..", "..", "testdata", "go", "glide-yaml-with-deps"),
+			path:      "glide.yaml",
+			typ:       DetectorID("go-glide-yaml"),
+			extracted: true,
 		},
 		{
 			name: "gopkg lock",

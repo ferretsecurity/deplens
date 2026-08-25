@@ -514,14 +514,12 @@ rules:
     roles: [declaration, constraint]
     filename-regex: '^Gopkg\.toml$'
   - id: go-glide-yaml
+    package-type: golang
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^glide\.yaml$'
     analyzer:
-      type: yaml
-      exists-any:
-        - import
-        - testImport
+      type: go-glide-yaml
   - id: go-godep
     form: manifest
     roles: [declaration, constraint]

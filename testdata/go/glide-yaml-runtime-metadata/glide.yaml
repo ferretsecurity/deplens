@@ -1,0 +1,9 @@
+package: example.test/service
+ignore:
+  - internal/legacy
+import:
+  - package: example.test/setting
+  - package: example.test/router
+    version: 0123abcd
+    repo: https://code.example.test/platform/router
+    vcs: git
