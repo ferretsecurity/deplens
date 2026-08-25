@@ -178,6 +178,7 @@ type dotnetProjectMatcherConfig struct{}
 type dotnetCentralPackagesMatcherConfig struct{}
 type dotnetPackagesConfigMatcherConfig struct{}
 type bufLockMatcherConfig struct{}
+type conanLockMatcherConfig struct{}
 
 type sourceAnalyzer interface {
 	Analyze(path string, content []byte) (sourceAnalyzerResult, error)

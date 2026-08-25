@@ -592,7 +592,26 @@ work_items:
         - candidate_id: candidate-c5c44c614950bebbe58bfdd03cd0290b
           original_path: Exe/.conan/conan.lock
           source_sha256: 2efb1ef362d4b6efe5dd10c34589a5d6b41e2f5329002b8de3346845e899351f
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/cpp/conan/lock-v05-runtime-build/conan.lock
+            - testdata/cpp/conan/lock-v05-python-requires/conan.lock
+            - testdata/cpp/conan/lock-v04-graph/conan.lock
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/conan_lock.go
+            - internal/analyze/conan_lock_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/cpp/conan/lock-v04-graph/conan.lock
+            - testdata/cpp/conan/lock-v05-python-requires/conan.lock
+            - testdata/cpp/conan/lock-v05-runtime-build/conan.lock
     - number: 18
       id: cpp-conanfile
       detector:

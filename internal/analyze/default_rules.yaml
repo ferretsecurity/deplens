@@ -565,7 +565,10 @@ rules:
   - id: cpp-conan-lock
     form: lockfile
     roles: [resolution, integrity]
+    package-type: conan
     filename-regex: '^conan\.lock$'
+    analyzer:
+      type: conan-lock
   - id: cpp-vcpkg
     form: manifest
     roles: [declaration, constraint]

@@ -64,7 +64,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "go.work", want: DetectorID("go-work")},
 		{name: "Gopkg.toml", want: DetectorID("go-gopkg-toml")},
 		{name: "glide.lock", want: DetectorID("go-glide-lock")},
-		{name: "conan.lock", want: DetectorID("cpp-conan-lock")},
 		{name: "mix.exs", want: DetectorID("elixir-mix")},
 		{name: "mix.lock", want: DetectorID("elixir-mix-lock")},
 		{name: "demo.cabal", want: DetectorID("haskell-cabal")},
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"metadata.rb",
 		"Policyfile.rb",
 		"Policyfile.lock.json",
+		"conan.lock",
 	}
 
 	for _, tc := range testCases {

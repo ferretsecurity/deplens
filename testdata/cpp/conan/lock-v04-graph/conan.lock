@@ -1,0 +1,10 @@
+{
+  "version": "0.4",
+  "graph_lock": {
+    "nodes": {
+      "0": {"requires": ["1", "2"]},
+      "1": {"ref": "graphics-lib/1.0.0", "package_id": "0123456789abcdef", "context": "host"},
+      "2": {"ref": "math-lib/2.3.4", "package_id": "fedcba9876543210", "prev": "abc123", "context": "host"}
+    }
+  }
+}
