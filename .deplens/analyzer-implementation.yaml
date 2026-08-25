@@ -275,7 +275,8 @@ work_items:
         - candidate_id: candidate-bf672e2b1aeaa2a29ba0de4a0c176fd2
           original_path: configure.ac
           source_sha256: f2ad52a82945e5939de6727b381f3f02155dce905c1368aef486072a5115d947
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 15
       id: cpp-cmake
       detector:
@@ -295,7 +296,8 @@ work_items:
         - candidate_id: candidate-93ac0c1dec88ab8636bbd7934c932c91
           original_path: unicorn/all/test_package/CMakeLists.txt
           source_sha256: 64481a0c10d6d0c7d30266fdbf6015a2597c4da243c44d81a7fbf729ca6b972a
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 16
       id: cpp-cmake-modules
       detector:
@@ -315,7 +317,8 @@ work_items:
         - candidate_id: candidate-a3cbb7d2bfd08c13d6ef7f7375657cdc
           original_path: cmake/32.cmake
           source_sha256: 2ef4e27f9b0933b45927da9d54e0c006e45a325e1de1ed9f295f8edc2d98b25f
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 17
       id: cpp-conan-lock
       detector:
@@ -602,7 +605,8 @@ work_items:
         - candidate_id: candidate-bd8281f9c5550757297f7b0a9fae8928
           original_path: Directory.Build.props
           source_sha256: 42583f56e02334e9ed3e15edced09efb6f68f86071f63e930c666dff118469f5
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 32
       id: dotnet-packages-lock
       detector:
@@ -791,7 +795,8 @@ work_items:
         - candidate_id: candidate-6bc2d2ffdd1961880f6fdcc4520cc7ad
           original_path: remappings.txt
           source_sha256: 9324732e508592f27c9b9b7c38b0c1ea7e1dfc102df75f4b921861624c595fba
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 42
       id: foundry-toml
       detector:
@@ -961,7 +966,8 @@ work_items:
         - candidate_id: candidate-cb55b79c21f11d7bb01ac17426ae87bb
           original_path: go.work
           source_sha256: 64cc89f7401dabc6d1331d5f58630c8de0903321512e545ce5957dcab04c247e
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 51
       id: godot-plugin-cfg
       detector:
@@ -979,7 +985,8 @@ work_items:
         - candidate_id: candidate-2954ddcbc1e897ba7c4cd95edda7dc4b
           original_path: plugin.cfg
           source_sha256: 5bff055397a4d17e2ef062a3a327a3afebaba08306d491400b80a36b7c06e39c
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 52
       id: haskell-cabal
       detector:
@@ -1264,7 +1271,8 @@ work_items:
         - candidate_id: candidate-c0c460f7cca4b919dc035f7f8754b3b8
           original_path: settings.gradle
           source_sha256: e54aac6e53ea94f1e84a442754ca69c7fd09177428bc8e2537177b21076ef2db
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 67
       id: java-gradle-settings-kts
       detector:
@@ -1283,7 +1291,8 @@ work_items:
         - candidate_id: candidate-abf0733dd8dd1aa79d6f9c2dbb5e35ae
           original_path: settings.gradle.kts
           source_sha256: efe0d23e8372bbd7f41e02f328f75a7895bf2ed70732c83eb28510f35d546376
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 68
       id: java-ivy
       detector:
@@ -1377,7 +1386,8 @@ work_items:
         - candidate_id: candidate-f9a6a4d2c77589f5ff8a4fe133d492a9
           original_path: lerna.json
           source_sha256: 2e3c45972121c434570af6299f3e6f54516ae1eff0c0254ddb97a8a9fb1a1aa3
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 73
       id: js-npmrc
       detector:
@@ -1395,7 +1405,8 @@ work_items:
         - candidate_id: candidate-b1edf70b3b4efed3f5e6f94760a9d131
           original_path: src/packages/config-prettier/.npmrc
           source_sha256: 791619c3775b3f7b68c13aea67972c2a6cf70881b454cec872d71ed5d3c3d9a8
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 74
       id: js-nx
       detector:
@@ -1413,7 +1424,8 @@ work_items:
         - candidate_id: candidate-6a542b16428671d40cf9a3fca7159819
           original_path: nx.json
           source_sha256: 0c45992066ddd8ba396c8c28ae7e1f73c92f5df9acc9424a047326257fafbc6e
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 75
       id: js-pnpm-workspace
       detector:
@@ -1432,7 +1444,8 @@ work_items:
         - candidate_id: candidate-2c2f032c210bd8f4f6f6e104398e2b4f
           original_path: pnpm-workspace.yaml
           source_sha256: 9189851b4c0df6e430cd9ee26f9c8fadb7b028adf45ddcd29714b3ad2c7519c2
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 76
       id: js-rush
       detector:
@@ -1450,7 +1463,8 @@ work_items:
         - candidate_id: candidate-ba904cfe08a6c280f627b85f8edb877d
           original_path: rush.json
           source_sha256: 44947f9cc9fdc0227369523674dbfa2b5cba51ddff212e2193502ee508540805
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 77
       id: js-turbo
       detector:
@@ -1468,7 +1482,8 @@ work_items:
         - candidate_id: candidate-5ca7db24ebfac5a90c68a47798793610
           original_path: turbo.json
           source_sha256: 53d6e9613a035961d084a74d00663b56911d9af256f403fa0f6562ee8555fe57
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 78
       id: js-yarnrc
       detector:
@@ -1486,7 +1501,8 @@ work_items:
         - candidate_id: candidate-57fcf79ef1f9f71131991c7dad05a52e
           original_path: .yarnrc.yml
           source_sha256: e9033c7cc254d49fb96aa8bb9835d70e67ff44f236d9b6e3a00bbfed95fc1ce5
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 79
       id: jsonnet-bundler
       detector:
@@ -2058,7 +2074,8 @@ work_items:
         - candidate_id: candidate-debb949c5c88b150b35fea8d3bc96ce3
           original_path: DlgSystem.uplugin
           source_sha256: 925a5587e26cf5e5076eafffcef1c50b521c3b325d960bc99f2dee871f23a964
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 109
       id: unreal-uproject
       detector:
@@ -2077,7 +2094,8 @@ work_items:
         - candidate_id: candidate-5b6c95decf79253bd375eae9157e80d0
           original_path: Map4.uproject
           source_sha256: 9681b3f60d8c8ec4a68a1c348a024d8f668d483c539cfa958b4d286354c7f19c
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 110
       id: vlang
       detector:
@@ -2116,7 +2134,8 @@ work_items:
         - candidate_id: candidate-7ad538aa1f011ef7e9b81850fe1c50dc
           original_path: build.zig
           source_sha256: e12a8b7000fd1233c8c65b45d6d5209ba229d77d3d629825c6fc5bcf09d80920
-      state: pending
+      state: ignored
+      ignore_reason: "does not declare external dependencies"
     - number: 112
       id: zig-build-zon
       detector:
