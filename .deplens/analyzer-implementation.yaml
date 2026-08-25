@@ -1797,7 +1797,7 @@ work_items:
         - candidate_id: candidate-5b3333facfe1789382cb435d4b63f90e
           original_path: specs/g/golang-github-gorilla-sessions/glide.lock
           source_sha256: 0e11c0e11957bc28bcb9734d27523701622693b0a13f58f96b0368c7997d2f41
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -1815,6 +1815,13 @@ work_items:
             - testdata/go/glide-lock-compact/glide.lock
             - testdata/go/glide-lock-empty/glide.lock
             - testdata/go/glide-lock-imports/glide.lock
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/go/glide-lock-empty/glide.lock
+            - testdata/go/glide-lock-imports/glide.lock
+            - testdata/go/glide-lock-compact/glide.lock
+          changed_paths: []
     - number: 47
       id: go-glide-yaml
       detector:
