@@ -1,0 +1,8 @@
+source https://packages.example.test/v2
+clitool Acme.Cli
+nuget Acme.Library
+git https://git.example.test/acme/plugin.git main
+github example/editor-support src/Editor.fs
+
+group Build
+  nuget Acme.Build ~> 4

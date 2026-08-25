@@ -58,7 +58,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "stack.yaml", want: DetectorID("haskell-stack")},
 		{name: "stack.yaml.lock", want: DetectorID("haskell-stack-lock")},
 		{name: "cabal.project", want: DetectorID("haskell-cabal-project")},
-		{name: "paket.dependencies", want: DetectorID("dotnet-paket-dependencies")},
 		{name: "paket.lock", want: DetectorID("dotnet-paket-lock")},
 		{name: "go.sum", want: DetectorID("go-sum")},
 		{name: "go.work", want: DetectorID("go-work")},
@@ -430,6 +429,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"conan.lock",
 		"meson.build",
 		"shard.lock",
+		"paket.dependencies",
 	}
 
 	for _, tc := range testCases {

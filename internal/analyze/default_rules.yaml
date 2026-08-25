@@ -455,6 +455,8 @@ rules:
     form: requirements
     roles: [declaration, constraint]
     filename-regex: '^paket\.dependencies$'
+    analyzer:
+      type: dotnet-paket-dependencies
   - id: dotnet-paket-lock
     form: lockfile
     roles: [resolution, integrity]

@@ -1249,7 +1249,25 @@ work_items:
         - candidate_id: candidate-69709179f2778ba6ad91fbc2568f1629
           original_path: paket.dependencies
           source_sha256: ec4293e58408ddfe7b29aea4317011d113fa90e99f386f89f1d69b13a9827559
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/dotnet/paket-dependencies-registry-groups/paket.dependencies
+            - testdata/dotnet/paket-dependencies-mixed-sources/paket.dependencies
+            - testdata/dotnet/paket-dependencies-nuget-build/paket.dependencies
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/dotnet_paket_dependencies.go
+            - internal/analyze/dotnet_paket_dependencies_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rule_schema_test.go
+            - internal/analyze/scan_test.go
+            - testdata/dotnet/paket-dependencies-mixed-sources/paket.dependencies
+            - testdata/dotnet/paket-dependencies-nuget-build/paket.dependencies
+            - testdata/dotnet/paket-dependencies-registry-groups/paket.dependencies
     - number: 34
       id: dotnet-paket-lock
       detector:

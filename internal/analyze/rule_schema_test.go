@@ -160,6 +160,7 @@ func TestRuleSchemaRejectsConfigurationForSemanticAnalyzers(t *testing.T) {
 		"dotnet-central-packages",
 		"dotnet-packages-config",
 		"dotnet-packages-lock",
+		"dotnet-paket-dependencies",
 		"meson",
 	} {
 		t.Run(analyzerType, func(t *testing.T) {
