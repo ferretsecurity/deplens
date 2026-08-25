@@ -439,7 +439,7 @@ work_items:
         - candidate_id: candidate-fb8c155c9139fe3b3b613c797b17a1c7
           original_path: deps.edn
           source_sha256: 9c949482d15520e7c1a08ace867d3f8a9b2795237eccc7af7edeca46a31adcec
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -458,6 +458,15 @@ work_items:
             - testdata/clojure/deps-edn-alias-coordinate-kinds/deps.edn
             - testdata/clojure/deps-edn-main-and-aliases/deps.edn
             - testdata/clojure/deps-edn-paths-only/deps.edn
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/clojure/deps-edn-paths-only/deps.edn
+            - testdata/clojure/deps-edn-main-and-aliases/deps.edn
+            - testdata/clojure/deps-edn-alias-coordinate-kinds/deps.edn
+          changed_paths:
+            - internal/analyze/clojure_deps_edn.go
+            - internal/analyze/clojure_deps_edn_test.go
     - number: 13
       id: clojure-project-clj
       detector:

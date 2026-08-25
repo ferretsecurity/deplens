@@ -71,6 +71,24 @@ func TestClojureDepsEDNRejectsMalformedEDN(t *testing.T) {
 	}
 }
 
+func TestClojureDepsEDNExtractsLegacyGitSHA(t *testing.T) {
+	parser, err := newClojureDepsEDNParser(clojureDepsEDNMatcherConfig{})
+	if err != nil {
+		t.Fatalf("newClojureDepsEDNParser: %v", err)
+	}
+
+	result, err := parser.Analyze("deps.edn", []byte(`{:aliases {:test {:extra-deps {example/tool {:git/url "https://example.test/tool.git" :sha "abc123"}}}}}`))
+	if err != nil {
+		t.Fatalf("Analyze: %v", err)
+	}
+	want := []DependencyReference{
+		{Raw: "example/tool@https://example.test/tool.git", Name: "example/tool", SourceGroup: "aliases.test.extra-deps", OriginKind: OriginGit, Relationship: RelationshipDirect, Scope: ScopeTest, Attributes: map[string]string{"source_url": "https://example.test/tool.git", "source_ref": "abc123", "source_ref_kind": "revision"}},
+	}
+	if result.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) || !equalDependencies(result.Dependencies, want) {
+		t.Fatalf("result = %+v, want dependencies %#v", result, want)
+	}
+}
+
 func TestClojureDepsEDNAcceptsLiteralNewlinesInStrings(t *testing.T) {
 	forms, err := parseClojureForms([]byte("\"first\nsecond\""))
 	if err != nil {

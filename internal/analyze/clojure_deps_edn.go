@@ -159,6 +159,9 @@ func clojureDepsEDNDependency(name string, node clojureNode, group string, scope
 	gitURL := strings.TrimSpace(coordinates[":git/url"])
 	gitTag := strings.TrimSpace(coordinates[":git/tag"])
 	gitSHA := strings.TrimSpace(coordinates[":git/sha"])
+	if gitSHA == "" {
+		gitSHA = strings.TrimSpace(coordinates[":sha"])
+	}
 	if gitURL != "" || gitTag != "" || gitSHA != "" {
 		dependency.OriginKind = OriginGit
 		dependency.Attributes = make(map[string]string)
