@@ -911,9 +911,12 @@ rules:
     roles: [resolution, integrity]
     filename-regex: '^Brewfile\.lock\.json$'
   - id: buf-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^buf\.lock$'
+    analyzer:
+      type: buf-lock
   - id: puppet-puppetfile
     form: manifest
     roles: [declaration, constraint]

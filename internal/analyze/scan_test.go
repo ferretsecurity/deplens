@@ -158,7 +158,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		// Group 1l: Infrastructure and ops tooling
 		{name: "Chart.lock", want: DetectorID("helm-chart-lock")},
 		{name: "Brewfile.lock.json", want: DetectorID("homebrew-brewfile-lock")},
-		{name: "buf.lock", want: DetectorID("buf-lock")},
 		{name: "Puppetfile", want: DetectorID("puppet-puppetfile")},
 		{name: "jsonnetfile.lock.json", want: DetectorID("jsonnet-lock")},
 		{name: "Cask", want: DetectorID("emacs-cask")},
@@ -416,6 +415,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"requirements.yml",
 		"requirements.yaml",
 		"buf.yaml",
+		"buf.lock",
 		"jsonnetfile.json",
 		"package.yaml",
 		"vcpkg.json",

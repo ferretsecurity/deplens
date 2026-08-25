@@ -127,7 +127,26 @@ work_items:
         - candidate_id: candidate-ae351323d565cb34d423232a4aaca41c
           original_path: apiv2/buf.lock
           source_sha256: 3847a1487162ea0014a292460405ee719432a620b658c03092c9a10e059eb225
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/buf/lock-v1-deps/buf.lock
+            - testdata/buf/lock-v2-deps/buf.lock
+            - testdata/buf/lock-v1-empty/buf.lock
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/buf_lock.go
+            - internal/analyze/buf_lock_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/buf/lock-v1-deps/buf.lock
+            - testdata/buf/lock-v1-empty/buf.lock
+            - testdata/buf/lock-v2-deps/buf.lock
     - number: 6
       id: chef-berksfile
       detector:

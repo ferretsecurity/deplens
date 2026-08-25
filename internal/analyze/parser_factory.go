@@ -97,6 +97,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newDotnetPackagesConfigParser)
 	case "buf":
 		return decodeAndCreate(raw.Analyzer, newBufManifestParser)
+	case "buf-lock":
+		return decodeAndCreate(raw.Analyzer, newBufLockParser)
 	case "erlang-rebar-config":
 		return decodeAndCreate(raw.Analyzer, newErlangRebarConfigParser)
 	case "yaml":

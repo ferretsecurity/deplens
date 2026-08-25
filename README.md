@@ -55,7 +55,7 @@ Absent sources are counted by `Found N dependency sources` but hidden from the d
 
 ### Semantic coverage for common formats
 
-`package.json`, Maven POM, Cargo, Composer, .NET, Buf, Rebar3, Chef Berksfile manifests and lockfiles, Chef Policyfiles and Policyfile lockfiles, and Chef cookbook metadata; Gradle builds, lockfiles, and version catalogs; Gemfiles and Bundler lockfiles; Dockerfiles; and Docker Compose files have built-in semantic analyzers. Berksfiles extract Supermarket, GitHub, Git, and local cookbook declarations. Policyfiles extract static Git and local cookbook declarations, including version constraints and source tags. Berksfile lockfiles extract resolved cookbooks from legacy text and JSON formats, including Git and local sources. Policyfile lockfiles extract resolved cookbooks and their registry, Git, or local origins. Chef metadata extracts direct cookbook declarations and static cookbook lists. Rebar3 extracts regular, Git, Git-subdirectory, plugin, and profile dependency declarations. Static declarations are normalized into dependency records; executable or interpolated declarations that cannot be resolved without running external tools produce partial analysis warnings.
+`package.json`, Maven POM, Cargo, Composer, .NET, Buf manifests and lockfiles, Rebar3, Chef Berksfile manifests and lockfiles, Chef Policyfiles and Policyfile lockfiles, and Chef cookbook metadata; Gradle builds, lockfiles, and version catalogs; Gemfiles and Bundler lockfiles; Dockerfiles; and Docker Compose files have built-in semantic analyzers. Buf lockfiles extract resolved Buf Schema Registry module names and commits from both v1 and v2 formats. Berksfiles extract Supermarket, GitHub, Git, and local cookbook declarations. Policyfiles extract static Git and local cookbook declarations, including version constraints and source tags. Berksfile lockfiles extract resolved cookbooks from legacy text and JSON formats, including Git and local sources. Policyfile lockfiles extract resolved cookbooks and their registry, Git, or local origins. Chef metadata extracts direct cookbook declarations and static cookbook lists. Rebar3 extracts regular, Git, Git-subdirectory, plugin, and profile dependency declarations. Static declarations are normalized into dependency records; executable or interpolated declarations that cannot be resolved without running external tools produce partial analysis warnings.
 
 For example, `package.json` was previously limited to presence assessment:
 
@@ -375,7 +375,7 @@ analyzer:
     - devDependencies
 ```
 
-The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `maven-pom`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, `dotnet-packages-config`, `buf`, and `erlang-rebar-config` can also be used by custom rules. They reject analyzer fields other than `type`.
+The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `maven-pom`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, `dotnet-packages-config`, `buf`, `buf-lock`, and `erlang-rebar-config` can also be used by custom rules. They reject analyzer fields other than `type`.
 
 The old rule shape is rejected. The migration is intentionally atomic:
 
