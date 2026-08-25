@@ -377,7 +377,7 @@ analyzer:
     - devDependencies
 ```
 
-The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `maven-pom`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, `dotnet-packages-config`, `buf`, `buf-lock`, `dart-pubspec`, and `erlang-rebar-config` can also be used by custom rules. They reject analyzer fields other than `type`.
+The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `maven-pom`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, `dotnet-packages-config`, `buf`, `buf-lock`, `dart-pubspec`, `dart-pubspec-lock`, and `erlang-rebar-config` can also be used by custom rules. They reject analyzer fields other than `type`.
 
 The old rule shape is rejected. The migration is intentionally atomic:
 

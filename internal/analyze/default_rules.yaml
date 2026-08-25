@@ -363,13 +363,12 @@ rules:
     analyzer:
       type: dart-pubspec
   - id: dart-pubspec-lock
+    package-type: pub
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^pubspec\.lock$'
     analyzer:
-      type: yaml
-      exists-any:
-        - packages
+      type: dart-pubspec-lock
   - id: erlang-rebar-config
     package-type: hex
     form: manifest

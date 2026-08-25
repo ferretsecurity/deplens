@@ -1418,10 +1418,11 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			typ:  DetectorID("js-bower"),
 		},
 		{
-			name: "pubspec lock",
-			root: filepath.Join("..", "..", "testdata", "yaml", "pubspec-lock-with-deps"),
-			path: "pubspec.lock",
-			typ:  DetectorID("dart-pubspec-lock"),
+			name:      "pubspec lock",
+			root:      filepath.Join("..", "..", "testdata", "yaml", "pubspec-lock-with-deps"),
+			path:      "pubspec.lock",
+			typ:       DetectorID("dart-pubspec-lock"),
+			extracted: true,
 		},
 		{
 			name: "glide yaml",
