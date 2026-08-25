@@ -1,0 +1,4 @@
+resolver: lts-20.1
+extra-deps:
+  - git: https://github.com/example/python-bridge.git
+    commit: 0123456789abcdef

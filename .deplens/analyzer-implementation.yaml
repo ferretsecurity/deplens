@@ -2142,7 +2142,25 @@ work_items:
         - candidate_id: candidate-f0c77618a0c535c3fe247152213fbc54
           original_path: exercism/haskell/sum-of-multiples/stack.yaml
           source_sha256: d33660194e56c9399180199286cfdd1510f5e7ea809cd7c5af4bea98980149a6
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/haskell/stack-extra-deps/stack.yaml
+            - testdata/haskell/stack-git-extra-dep/stack.yaml
+            - testdata/haskell/stack-no-extra-deps/stack.yaml
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/haskell_stack.go
+            - internal/analyze/haskell_stack_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/haskell/stack-extra-deps/stack.yaml
+            - testdata/haskell/stack-git-extra-dep/stack.yaml
+            - testdata/haskell/stack-no-extra-deps/stack.yaml
     - number: 56
       id: haskell-stack-lock
       detector:

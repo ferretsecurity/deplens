@@ -70,7 +70,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `clojure-deps-edn` | `manifest` | `declaration, constraint` | — | select |
 | `clojure-project-clj` | `manifest` | `declaration, constraint` | `clojure-project-clj` | select, recognize, extract, normalize, relate |
 | `clojure-boot` | `manifest` | `declaration, constraint` | `clojure-boot` | select, recognize, extract, normalize, relate |
-| `haskell-stack` | `manifest` | `declaration, constraint` | — | select |
+| `haskell-stack` | `manifest` | `declaration, constraint` | `haskell-stack` | select, recognize, extract, normalize, relate |
 | `haskell-stack-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `haskell-cabal-project` | `manifest` | `declaration, constraint` | — | select |
 | `haskell-cabal-project-freeze` | `lockfile` | `resolution, integrity` | `haskell-cabal-project-freeze` | select, recognize, extract, normalize, relate |

@@ -155,6 +155,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newClojureBootParser)
 	case "haskell-cabal":
 		return decodeAndCreate(raw.Analyzer, newHaskellCabalParser)
+	case "haskell-stack":
+		return decodeAndCreate(raw.Analyzer, newHaskellStackParser)
 	case "haskell-package-yaml":
 		return decodeAndCreate(raw.Analyzer, newHaskellPackageYAMLParser)
 	case "haskell-cabal-project-freeze":

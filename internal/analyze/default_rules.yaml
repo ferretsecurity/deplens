@@ -406,9 +406,12 @@ rules:
     analyzer:
       type: clojure-boot
   - id: haskell-stack
+    package-type: hackage
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^stack\.yaml$'
+    analyzer:
+      type: haskell-stack
   - id: haskell-stack-lock
     form: lockfile
     roles: [resolution, integrity]
