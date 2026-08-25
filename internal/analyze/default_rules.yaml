@@ -591,9 +591,12 @@ rules:
     analyzer:
       type: conanfile-py
   - id: cpp-vcpkg-config
+    package-type: vcpkg
     form: tool-config
     roles: [configuration]
     filename-regex: '^vcpkg-configuration\.json$'
+    analyzer:
+      type: vcpkg-configuration
   - id: cpp-meson
     package-type: generic
     form: build-definition

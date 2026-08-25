@@ -837,7 +837,25 @@ work_items:
         - candidate_id: candidate-cbcf323d21263f370e42c981274e87e4
           original_path: vcpkg-configuration.json
           source_sha256: 79cd138250155ecee4d35f515201375ce7b4ccad8f6398e2781d0be8968390b9
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/cpp/vcpkg-config-artifact-registry/vcpkg-configuration.json
+            - testdata/cpp/vcpkg-config-package-registry/vcpkg-configuration.json
+            - testdata/cpp/vcpkg-config-overlays/vcpkg-configuration.json
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - internal/analyze/vcpkg_configuration.go
+            - internal/analyze/vcpkg_configuration_test.go
+            - testdata/cpp/vcpkg-config-artifact-registry/vcpkg-configuration.json
+            - testdata/cpp/vcpkg-config-overlays/vcpkg-configuration.json
+            - testdata/cpp/vcpkg-config-package-registry/vcpkg-configuration.json
     - number: 24
       id: crystal-shard
       detector:

@@ -99,7 +99,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "build.xml", want: DetectorID("java-ant-build")},
 		// Group 1d: C/C++ ecosystem extensions
 		{name: "CMakeLists.txt", want: DetectorID("cpp-cmake")},
-		{name: "vcpkg-configuration.json", want: DetectorID("cpp-vcpkg-config")},
 		{name: "configure.ac", want: DetectorID("cpp-autotools")},
 		{name: "configure.in", want: DetectorID("cpp-autotools")},
 		// Group 1e: .NET ecosystem extensions
@@ -412,6 +411,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"jsonnetfile.json",
 		"package.yaml",
 		"vcpkg.json",
+		"vcpkg-configuration.json",
 		"Manifest.toml",
 		"Package.resolved",
 		"index.html",

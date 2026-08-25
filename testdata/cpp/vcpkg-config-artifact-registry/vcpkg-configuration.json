@@ -1,0 +1,4 @@
+{
+  "default-registry": {"kind": "git", "repository": "https://example.test/default"},
+  "registries": [{"kind": "artifact", "location": "https://example.test/catalog.zip"}]
+}
