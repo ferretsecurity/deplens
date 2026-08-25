@@ -1,0 +1,6 @@
+packages:
+  - completed:
+      name: wire-format
+      version: 1.2.3
+    original:
+      url: https://example.test/wire-format.tar.gz

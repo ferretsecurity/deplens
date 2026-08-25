@@ -413,9 +413,12 @@ rules:
     analyzer:
       type: haskell-stack
   - id: haskell-stack-lock
+    package-type: hackage
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^stack\.yaml\.lock$'
+    analyzer:
+      type: haskell-stack-lock
   - id: haskell-cabal-project
     form: manifest
     roles: [declaration, constraint]
