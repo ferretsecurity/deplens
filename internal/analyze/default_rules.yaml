@@ -422,9 +422,12 @@ rules:
     roles: [resolution, integrity]
     filename-regex: '^cabal\.project\.freeze$'
   - id: haskell-cabal
+    package-type: hackage
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '.*\.cabal$'
+    analyzer:
+      type: haskell-cabal
   - id: haskell-package-yaml
     form: manifest
     roles: [declaration, constraint]

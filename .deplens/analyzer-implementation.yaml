@@ -2010,7 +2010,25 @@ work_items:
         - candidate_id: candidate-9473ba116d0979924db94933f81d832d
           original_path: Orchid.cabal
           source_sha256: 8cb96b7fd9ba02a7d10a32d99b009e7e6bcaab79daf939311d4e69ce21405e62
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/haskell/cabal/lambda-circus/LambdaCircus.cabal
+            - testdata/haskell/cabal/orchid/Orchid.cabal
+            - testdata/haskell/cabal/parallel-arrows/Parallel-Arrows-ParMonad.cabal
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/haskell_cabal.go
+            - internal/analyze/haskell_cabal_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/haskell/cabal/lambda-circus/LambdaCircus.cabal
+            - testdata/haskell/cabal/orchid/Orchid.cabal
+            - testdata/haskell/cabal/parallel-arrows/Parallel-Arrows-ParMonad.cabal
     - number: 53
       id: haskell-cabal-project-freeze
       detector:

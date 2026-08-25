@@ -1,0 +1,13 @@
+name: lambda-circus
+
+library
+  build-depends: base
+               , aeson
+  if !os(windows)
+    build-depends: unix
+
+executable lambda-circus
+  build-depends: base, LambdaCircus
+
+test-suite spec
+  build-depends: base, hspec

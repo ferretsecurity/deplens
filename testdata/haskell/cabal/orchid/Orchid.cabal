@@ -1,0 +1,14 @@
+name: orchid
+
+library
+  build-depends: base >= 4.8
+               , containers
+
+executable orchid
+  build-depends: base >= 4.8, optparse-applicative, Orchid
+
+test-suite orchid-test
+  build-depends: base >= 4.8, hspec, Orchid
+
+benchmark orchid-bench
+  build-depends: base >= 4.8, Orchid

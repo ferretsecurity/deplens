@@ -74,7 +74,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `haskell-stack-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `haskell-cabal-project` | `manifest` | `declaration, constraint` | — | select |
 | `haskell-cabal-project-freeze` | `lockfile` | `resolution, integrity` | — | select |
-| `haskell-cabal` | `manifest` | `declaration, constraint` | — | select |
+| `haskell-cabal` | `manifest` | `declaration, constraint` | `haskell-cabal` | select, recognize, extract, normalize, relate |
 | `haskell-package-yaml` | `manifest` | `declaration, constraint` | `yaml` | select, recognize, assess-presence |
 | `dotnet-packages-config` | `manifest` | `declaration, constraint` | `dotnet-packages-config` | select, recognize, extract, normalize, relate |
 | `dotnet-packages-lock` | `lockfile` | `resolution, integrity` | `dotnet-packages-lock` | select, recognize, extract, normalize, relate |
