@@ -41,6 +41,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newHelmChartParser)
 	case "helm-chart-lock":
 		return decodeAndCreate(raw.Analyzer, newHelmChartLockParser)
+	case "homebrew-brewfile":
+		return decodeAndCreate(raw.Analyzer, newHomebrewBrewfileParser)
 	case "typescript":
 		return decodeAndCreate(raw.Analyzer, newTypeScriptMatcher)
 	case "python":

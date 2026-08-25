@@ -2319,7 +2319,25 @@ work_items:
         - candidate_id: candidate-ee4e4a8ac08dff05954a6db9d835f5d5
           original_path: Brewfile
           source_sha256: 63592e9a4302845f3b660243e0aeacaf14a85dfbd30e51a16b285cf683922219
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/homebrew/brewfile-commented-formulas/Brewfile
+            - testdata/homebrew/brewfile-single-quoted/Brewfile
+            - testdata/homebrew/brewfile-mas/Brewfile
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/homebrew_brewfile.go
+            - internal/analyze/homebrew_brewfile_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/homebrew/brewfile-commented-formulas/Brewfile
+            - testdata/homebrew/brewfile-mas/Brewfile
+            - testdata/homebrew/brewfile-single-quoted/Brewfile
     - number: 60
       id: homebrew-brewfile-lock
       detector:

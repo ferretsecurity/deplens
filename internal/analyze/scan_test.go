@@ -64,7 +64,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "demo.nimble", want: DetectorID("nim-nimble")},
 		{name: "demo.opam", want: DetectorID("ocaml-opam")},
 		{name: "v.mod", want: DetectorID("vlang")},
-		{name: "Brewfile", want: DetectorID("homebrew-brewfile")},
 		{name: ".terraform.lock.hcl", want: DetectorID("terraform-lock")},
 		// Group 1b: Build systems and monorepo tools
 		{name: "WORKSPACE", want: DetectorID("bazel-workspace")},
@@ -430,6 +429,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"action.yml",
 		"action.yaml",
 		"Chart.lock",
+		"Brewfile",
 	}
 
 	for _, tc := range testCases {

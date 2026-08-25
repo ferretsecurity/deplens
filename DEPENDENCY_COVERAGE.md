@@ -140,7 +140,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `helm-chart` | `deployment-definition` | `declaration, configuration` | `helm-chart` | select, recognize, extract, normalize, relate |
 | `ansible-requirements` | `requirements` | `declaration, constraint` | `yaml` | select, recognize, assess-presence |
 | `buf` | `manifest` | `declaration, constraint` | `buf` | select, recognize, extract, normalize, relate |
-| `homebrew-brewfile` | `manifest` | `declaration, constraint` | — | select |
+| `homebrew-brewfile` | `manifest` | `declaration, constraint` | `homebrew-brewfile` | select, recognize, extract, normalize, relate |
 | `jsonnet-bundler` | `manifest` | `declaration, constraint` | `json` | select, recognize, assess-presence |
 | `terraform-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `unity-packages-manifest` | `manifest` | `declaration, constraint` | `json` | select, recognize, assess-presence |

@@ -825,9 +825,12 @@ rules:
     analyzer:
       type: buf
   - id: homebrew-brewfile
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Brewfile$'
+    analyzer:
+      type: homebrew-brewfile
   - id: jsonnet-bundler
     form: manifest
     roles: [declaration, constraint]
