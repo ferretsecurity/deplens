@@ -15,6 +15,9 @@ type ProgressReporter interface {
 	AgentFinished(Attempt, time.Duration)
 	ValidationStarted(Attempt)
 	ValidationAccepted(Attempt, []string)
+	FixtureOutputStarted(Attempt, string)
+	FixtureOutputSaved(Attempt, string, string, string)
+	FixtureOutputFinished(Attempt, int)
 	AttemptFinished(Attempt, AttemptResult, error, time.Duration)
 	WorkItemFinished(WorkItem, bool)
 }

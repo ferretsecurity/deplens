@@ -307,6 +307,11 @@ func (e DirectExecutor) Execute(ctx context.Context, attempt Attempt) (result At
 	if err := validateFixtures(ctx, e.RepositoryRoot, attempt, result.Fixtures); err != nil {
 		return AttemptResult{}, err
 	}
+	if attempt.Role == RoleVerifier {
+		if err := captureFixtureOutputs(ctx, e.RepositoryRoot, e.RuntimeRoot, attempt, result.Fixtures, engine.Progress); err != nil {
+			return AttemptResult{}, err
+		}
+	}
 	result.ChangedPaths = paths
 	report(engine.Progress, func(progress ProgressReporter) { progress.ValidationAccepted(attempt, paths) })
 	accepted = true
@@ -367,6 +372,11 @@ func (e GitWorktreeExecutor) Execute(ctx context.Context, attempt Attempt) (Atte
 	}
 	if err := validateFixtures(ctx, worktree, attempt, result.Fixtures); err != nil {
 		return AttemptResult{}, err
+	}
+	if attempt.Role == RoleVerifier {
+		if err := captureFixtureOutputs(ctx, worktree, e.RuntimeRoot, attempt, result.Fixtures, engine.Progress); err != nil {
+			return AttemptResult{}, err
+		}
 	}
 	patch, err := git(ctx, worktree, "diff", "--binary")
 	if err != nil {
@@ -430,6 +440,69 @@ func validateFixtures(ctx context.Context, worktree string, attempt Attempt, fix
 		}
 	}
 	return nil
+}
+
+type fixtureOutputCommand func(context.Context, string, string, bool) ([]byte, []byte, error)
+
+// captureFixtureOutputs records the exact CLI stdout for every accepted fixture.
+// It runs in the attempt worktree before that verifier checkpoint is applied.
+func captureFixtureOutputs(ctx context.Context, worktree, runtimeRoot string, attempt Attempt, fixtures []string, progress ProgressReporter) error {
+	return captureFixtureOutputsWithCommand(ctx, worktree, runtimeRoot, attempt, fixtures, progress, runFixtureOutputCommand)
+}
+
+func captureFixtureOutputsWithCommand(ctx context.Context, worktree, runtimeRoot string, attempt Attempt, fixtures []string, progress ProgressReporter, run fixtureOutputCommand) error {
+	directory := filepath.Join(runtimeRoot, "fixture-output", fmt.Sprintf("work-item-%03d", attempt.WorkItem.Number), fmt.Sprintf("verifier-attempt-%d", attempt.Number))
+	if err := os.MkdirAll(directory, 0o700); err != nil {
+		return fmt.Errorf("create fixture output directory: %w", err)
+	}
+	report(progress, func(progress ProgressReporter) { progress.FixtureOutputStarted(attempt, directory) })
+	for index, fixture := range fixtures {
+		fixtureDir := fixtureDirectory(worktree, fixture)
+		prefix := fmt.Sprintf("%03d-%s", index+1, fixtureOutputLabel(fixture))
+		humanPath := filepath.Join(directory, prefix+".txt")
+		jsonPath := filepath.Join(directory, prefix+".json")
+		for _, output := range []struct {
+			json bool
+			path string
+			kind string
+		}{
+			{path: humanPath, kind: "human-readable"},
+			{json: true, path: jsonPath, kind: "JSON"},
+		} {
+			stdout, stderr, err := run(ctx, worktree, fixtureDir, output.json)
+			if err != nil {
+				message := strings.TrimSpace(string(stderr))
+				if message != "" {
+					return fmt.Errorf("capture %s CLI output for fixture %q: %w: %s", output.kind, fixture, err, message)
+				}
+				return fmt.Errorf("capture %s CLI output for fixture %q: %w", output.kind, fixture, err)
+			}
+			if err := os.WriteFile(output.path, stdout, 0o600); err != nil {
+				return fmt.Errorf("write %s CLI output for fixture %q: %w", output.kind, fixture, err)
+			}
+		}
+		report(progress, func(progress ProgressReporter) { progress.FixtureOutputSaved(attempt, fixture, humanPath, jsonPath) })
+	}
+	report(progress, func(progress ProgressReporter) { progress.FixtureOutputFinished(attempt, len(fixtures)) })
+	return nil
+}
+
+func runFixtureOutputCommand(ctx context.Context, worktree, fixtureDir string, jsonOutput bool) ([]byte, []byte, error) {
+	args := []string{"run", "./cmd/deplens"}
+	if jsonOutput {
+		args = append(args, "--json")
+	}
+	args = append(args, fixtureDir)
+	command := exec.CommandContext(ctx, "go", args...)
+	var stdout, stderr bytes.Buffer
+	command.Dir, command.Stdout, command.Stderr = worktree, &stdout, &stderr
+	return stdout.Bytes(), stderr.Bytes(), command.Run()
+}
+
+func fixtureOutputLabel(fixture string) string {
+	label := filepath.ToSlash(fixture)
+	label = strings.NewReplacer("/", "-", "\\", "-", " ", "-").Replace(label)
+	return strings.Trim(label, "-.")
 }
 
 func fixtureDirectory(worktree, fixture string) string {

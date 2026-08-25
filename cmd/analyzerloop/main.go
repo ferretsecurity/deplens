@@ -410,6 +410,24 @@ func (p *progressRenderer) ValidationAccepted(_ analyzerloop.Attempt, paths []st
 	p.printf("  ✓ Checkpoint validation passed · %d changed file(s) accepted\n", len(paths))
 }
 
+func (p *progressRenderer) FixtureOutputStarted(_ analyzerloop.Attempt, directory string) {
+	p.printf("\n  ↓ Capture Deplens fixture output\n")
+	if p.follow {
+		p.printf("      Output         %s\n", directory)
+	}
+}
+
+func (p *progressRenderer) FixtureOutputSaved(_ analyzerloop.Attempt, fixture, humanPath, jsonPath string) {
+	if !p.follow {
+		return
+	}
+	p.printf("      %s\n        Human      %s\n        JSON       %s\n", fixture, humanPath, jsonPath)
+}
+
+func (p *progressRenderer) FixtureOutputFinished(_ analyzerloop.Attempt, fixtures int) {
+	p.printf("  ✓ Captured human-readable and JSON CLI output · %d fixture(s)\n", fixtures)
+}
+
 func (p *progressRenderer) AttemptFinished(attempt analyzerloop.Attempt, result analyzerloop.AttemptResult, err error, elapsed time.Duration) {
 	if err != nil {
 		p.printf("  ❌ %s attempt %d of %d failed · %s\n     Reason       %s\n     Diagnostics  %s\n     Inspect      tail -n 80 %q\n", title(string(attempt.Role)), attempt.Number, attempt.Limit, duration(elapsed), err, p.runtime, filepath.Join(p.runtime, "journal.jsonl"))

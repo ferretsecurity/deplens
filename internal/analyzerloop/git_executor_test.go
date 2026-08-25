@@ -2,9 +2,11 @@ package analyzerloop
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -71,6 +73,43 @@ func TestFixtureDirectoryUsesContainingDirectory(t *testing.T) {
 	want := filepath.Join(worktree, "testdata", "demo")
 	if got != want {
 		t.Fatalf("fixture directory = %q, want %q", got, want)
+	}
+}
+
+func TestCaptureFixtureOutputsWritesRawHumanAndJSONOutput(t *testing.T) {
+	runtimeRoot := t.TempDir()
+	attempt := Attempt{WorkItem: WorkItem{Number: 4}, Role: RoleVerifier, Number: 1}
+	fixtures := []string{
+		"testdata/buf/manifest-v1-deps/buf.yaml",
+		"testdata/buf/manifest-v2-module/buf.yaml",
+		"testdata/buf/manifest-v2-deps-modules/buf.yaml",
+	}
+	var calls []string
+	run := func(_ context.Context, worktree, fixtureDir string, jsonOutput bool) ([]byte, []byte, error) {
+		calls = append(calls, worktree+"|"+fixtureDir+"|"+strconv.FormatBool(jsonOutput))
+		if jsonOutput {
+			return []byte(`{"sources":[]}`), nil, nil
+		}
+		return []byte("Found 1 dependency source\n"), nil, nil
+	}
+	if err := captureFixtureOutputsWithCommand(context.Background(), "/repo", runtimeRoot, attempt, fixtures, nil, run); err != nil {
+		t.Fatal(err)
+	}
+
+	directory := filepath.Join(runtimeRoot, "fixture-output", "work-item-004", "verifier-attempt-1")
+	for index, fixture := range fixtures {
+		prefix := fmt.Sprintf("%03d-%s", index+1, fixtureOutputLabel(fixture))
+		human, err := os.ReadFile(filepath.Join(directory, prefix+".txt"))
+		if err != nil || string(human) != "Found 1 dependency source\n" {
+			t.Fatalf("human output for %q = %q, %v", fixture, human, err)
+		}
+		jsonOutput, err := os.ReadFile(filepath.Join(directory, prefix+".json"))
+		if err != nil || string(jsonOutput) != `{"sources":[]}` {
+			t.Fatalf("JSON output for %q = %q, %v", fixture, jsonOutput, err)
+		}
+	}
+	if len(calls) != 6 || !strings.HasSuffix(calls[0], "|false") || !strings.HasSuffix(calls[1], "|true") {
+		t.Fatalf("commands = %v", calls)
 	}
 }
 
