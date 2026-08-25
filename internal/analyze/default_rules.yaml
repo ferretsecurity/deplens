@@ -934,9 +934,12 @@ rules:
     analyzer:
       type: chef-berksfile
   - id: chef-berksfile-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Berksfile\.lock$'
+    analyzer:
+      type: chef-berksfile-lock
   - id: chef-metadata
     form: manifest
     roles: [declaration, constraint]

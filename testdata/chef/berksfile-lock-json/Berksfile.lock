@@ -1,0 +1,10 @@
+{
+  "sources": {
+    "apt": {"locked_version": "2.3.0"},
+    "docker": {
+      "locked_version": "0.20.0",
+      "git": "git://example.test/chef-docker.git",
+      "ref": "deadbeef"
+    }
+  }
+}
