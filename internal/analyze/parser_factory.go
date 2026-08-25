@@ -103,6 +103,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newErlangRebarConfigParser)
 	case "clojure-boot":
 		return decodeAndCreate(raw.Analyzer, newClojureBootParser)
+	case "clojure-deps-edn":
+		return decodeAndCreate(raw.Analyzer, newClojureDepsEDNParser)
 	case "yaml":
 		return decodeAndCreate(raw.Analyzer, newYAMLQueryParser)
 	case "toml":

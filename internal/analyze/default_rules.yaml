@@ -385,9 +385,12 @@ rules:
     roles: [resolution, integrity]
     filename-regex: '^rebar\.lock$'
   - id: clojure-deps-edn
+    package-type: maven
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^deps\.edn$'
+    analyzer:
+      type: clojure-deps-edn
   - id: clojure-project-clj
     form: manifest
     roles: [declaration, constraint]

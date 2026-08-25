@@ -55,7 +55,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "Podfile", want: DetectorID("ios-podfile")},
 		{name: "Cartfile", want: DetectorID("ios-cartfile")},
 		{name: "rebar.lock", want: DetectorID("erlang-rebar-lock")},
-		{name: "deps.edn", want: DetectorID("clojure-deps-edn")},
 		{name: "project.clj", want: DetectorID("clojure-project-clj")},
 		{name: "stack.yaml", want: DetectorID("haskell-stack")},
 		{name: "stack.yaml.lock", want: DetectorID("haskell-stack-lock")},
@@ -3892,6 +3891,14 @@ func TestMatchSelectorOnlySourceIgnoresGopkgLockParserRule(t *testing.T) {
 
 	if _, ok := ruleset.MatchSelectorOnlySource("Gopkg.lock"); ok {
 		t.Fatalf("expected selector-only detection to ignore Gopkg.lock parser rule")
+	}
+}
+
+func TestMatchSelectorOnlySourceIgnoresClojureDepsEDNAnalyzerRule(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	if _, ok := ruleset.MatchSelectorOnlySource("deps.edn"); ok {
+		t.Fatalf("expected selector-only detection to ignore deps.edn analyzer rule")
 	}
 }
 

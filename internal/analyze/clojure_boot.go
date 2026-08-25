@@ -277,7 +277,7 @@ func lexClojure(content string) ([]clojureToken, error) {
 					escaped = true
 				} else if content[index] == '"' {
 					index++
-					value, err := strconv.Unquote(content[start:index])
+					value, err := unquoteClojureString(content[start:index])
 					if err != nil {
 						return nil, fmt.Errorf("string at byte %d: %w", start, err)
 					}
@@ -319,6 +319,51 @@ func lexClojure(content string) ([]clojureToken, error) {
 		tokens = append(tokens, clojureToken{kind: clojureTokenScalar, value: content[start:index], pos: start})
 	}
 	return tokens, nil
+}
+
+func unquoteClojureString(value string) (string, error) {
+	if len(value) < 2 || value[0] != '"' || value[len(value)-1] != '"' {
+		return "", fmt.Errorf("expected a quoted string")
+	}
+
+	var decoded strings.Builder
+	for index := 1; index < len(value)-1; index++ {
+		if value[index] != '\\' {
+			decoded.WriteByte(value[index])
+			continue
+		}
+		index++
+		if index >= len(value)-1 {
+			return "", fmt.Errorf("unterminated escape sequence")
+		}
+		switch value[index] {
+		case 'b':
+			decoded.WriteByte('\b')
+		case 'f':
+			decoded.WriteByte('\f')
+		case 'n':
+			decoded.WriteByte('\n')
+		case 'r':
+			decoded.WriteByte('\r')
+		case 't':
+			decoded.WriteByte('\t')
+		case '"', '\\':
+			decoded.WriteByte(value[index])
+		case 'u':
+			if index+4 >= len(value)-1 {
+				return "", fmt.Errorf("incomplete Unicode escape")
+			}
+			codePoint, err := strconv.ParseUint(value[index+1:index+5], 16, 16)
+			if err != nil {
+				return "", fmt.Errorf("invalid Unicode escape: %w", err)
+			}
+			decoded.WriteRune(rune(codePoint))
+			index += 4
+		default:
+			return "", fmt.Errorf("unsupported escape sequence \\%c", value[index])
+		}
+	}
+	return decoded.String(), nil
 }
 
 func clojurePunctuationToken(value byte) (clojureTokenKind, bool) {

@@ -1,0 +1,6 @@
+{:aliases
+ {:build {:deps {tools/build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}}
+  :test {:extra-deps {test/runner {:git/url "https://example.test/runner.git" :git/sha "209b645"}
+                      logback/classic {:mvn/version "1.1.3"}}}
+  :dev {:extra-deps {org.clojure/clojure {:mvn/version "1.11.4"}}}
+  :deploy {:replace-deps {deploy/tool {:mvn/version "0.1.5"}}}}}
