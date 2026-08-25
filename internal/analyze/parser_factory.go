@@ -101,6 +101,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newDotnetCentralPackagesParser)
 	case "dotnet-packages-config":
 		return decodeAndCreate(raw.Analyzer, newDotnetPackagesConfigParser)
+	case "dotnet-packages-lock":
+		return decodeAndCreate(raw.Analyzer, newDotnetPackagesLockParser)
 	case "buf":
 		return decodeAndCreate(raw.Analyzer, newBufManifestParser)
 	case "buf-lock":

@@ -177,6 +177,7 @@ type composerManifestMatcherConfig struct{}
 type dotnetProjectMatcherConfig struct{}
 type dotnetCentralPackagesMatcherConfig struct{}
 type dotnetPackagesConfigMatcherConfig struct{}
+type dotnetPackagesLockMatcherConfig struct{}
 type bufLockMatcherConfig struct{}
 type denoLockParserConfig struct{}
 type conanfileMatcherConfig struct{}

@@ -1,6 +1,6 @@
 # Dependency coverage
 
-This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 73 have semantic analyzers and 113 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
+This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 74 have semantic analyzers and 113 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
@@ -77,7 +77,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `haskell-cabal` | `manifest` | `declaration, constraint` | — | select |
 | `haskell-package-yaml` | `manifest` | `declaration, constraint` | `yaml` | select, recognize, assess-presence |
 | `dotnet-packages-config` | `manifest` | `declaration, constraint` | `dotnet-packages-config` | select, recognize, extract, normalize, relate |
-| `dotnet-packages-lock` | `lockfile` | `resolution, integrity` | `json` | select, recognize, assess-presence |
+| `dotnet-packages-lock` | `lockfile` | `resolution, integrity` | `dotnet-packages-lock` | select, recognize, extract, normalize, relate |
 | `dotnet-directory-packages-props` | `version-catalog` | `declaration, constraint` | `dotnet-central-packages` | select, recognize, extract, normalize, relate |
 | `dotnet-paket-dependencies` | `requirements` | `declaration, constraint` | — | select |
 | `dotnet-paket-lock` | `lockfile` | `resolution, integrity` | — | select |

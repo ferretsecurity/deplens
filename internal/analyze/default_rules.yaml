@@ -438,13 +438,12 @@ rules:
     analyzer:
       type: dotnet-packages-config
   - id: dotnet-packages-lock
+    package-type: nuget
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^packages\.lock\.json$'
     analyzer:
-      type: json
-      exists-any:
-        - dependencies
+      type: dotnet-packages-lock
   - id: dotnet-directory-packages-props
     package-type: nuget
     form: version-catalog

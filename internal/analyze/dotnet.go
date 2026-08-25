@@ -2,6 +2,7 @@ package analyze
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -12,6 +13,19 @@ import (
 type dotnetProjectParser struct{}
 type dotnetCentralPackagesParser struct{}
 type dotnetPackagesConfigParser struct{}
+type dotnetPackagesLockParser struct{}
+
+type dotnetPackagesLockFile struct {
+	Version      *int                                       `json:"version"`
+	Dependencies map[string]map[string]dotnetLockDependency `json:"dependencies"`
+}
+
+type dotnetLockDependency struct {
+	Type        string `json:"type"`
+	Requested   string `json:"requested"`
+	Resolved    string `json:"resolved"`
+	ContentHash string `json:"contentHash"`
+}
 
 type dotnetXMLNode struct {
 	name       string
@@ -32,6 +46,10 @@ func newDotnetCentralPackagesParser(dotnetCentralPackagesMatcherConfig) (sourceA
 
 func newDotnetPackagesConfigParser(dotnetPackagesConfigMatcherConfig) (sourceAnalyzer, error) {
 	return dotnetPackagesConfigParser{}, nil
+}
+
+func newDotnetPackagesLockParser(dotnetPackagesLockMatcherConfig) (sourceAnalyzer, error) {
+	return dotnetPackagesLockParser{}, nil
 }
 
 func (dotnetProjectParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
@@ -101,6 +119,55 @@ func (dotnetPackagesConfigParser) Analyze(path string, content []byte) (sourceAn
 	}
 	sortDependencyReferences(dependencies)
 	return semanticAnalyzerResult(dependencies, incomplete), nil
+}
+
+func (dotnetPackagesLockParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
+	var file dotnetPackagesLockFile
+	if err := json.Unmarshal(content, &file); err != nil {
+		return sourceAnalyzerResult{}, fmt.Errorf("parse .NET packages lockfile %q: %w", path, err)
+	}
+	if file.Version == nil || (*file.Version != 1 && *file.Version != 2) {
+		return sourceAnalyzerResult{}, nil
+	}
+
+	dependencies := make([]DependencyReference, 0)
+	incomplete := make([]string, 0)
+	for _, targetFramework := range sortedStringKeys(file.Dependencies) {
+		for _, name := range sortedStringKeys(file.Dependencies[targetFramework]) {
+			entry := file.Dependencies[targetFramework][name]
+			if entry.Type == "Project" {
+				continue
+			}
+			if entry.Resolved == "" {
+				incomplete = append(incomplete, fmt.Sprintf("dependencies.%s.%s: resolved version is required", targetFramework, name))
+				continue
+			}
+
+			dependency := DependencyReference{
+				Raw:               name + "@" + entry.Resolved,
+				Name:              name,
+				Version:           entry.Resolved,
+				VersionConstraint: entry.Requested,
+				SourceGroup:       targetFramework,
+				OriginKind:        OriginRegistry,
+				Relationship:      dotnetLockRelationship(entry.Type),
+				Scope:             ScopeRuntime,
+			}
+			if entry.ContentHash != "" {
+				dependency.Attributes = map[string]string{"content_hash": entry.ContentHash}
+			}
+			dependencies = append(dependencies, dependency)
+		}
+	}
+	sortDependencyReferences(dependencies)
+	return semanticAnalyzerResult(dependencies, incomplete), nil
+}
+
+func dotnetLockRelationship(lockType string) Relationship {
+	if strings.EqualFold(lockType, "Direct") {
+		return RelationshipDirect
+	}
+	return RelationshipTransitive
 }
 
 func parseDotnetXML(path string, content []byte) (*dotnetXMLNode, error) {
