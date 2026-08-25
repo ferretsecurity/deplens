@@ -149,6 +149,7 @@ func TestRuleSchemaRejectsConfigurationForSemanticAnalyzers(t *testing.T) {
 		"gemfile",
 		"gemfile-lock",
 		"chef-berksfile",
+		"chef-metadata",
 		"dockerfile",
 		"docker-compose",
 		"maven-pom",

@@ -941,9 +941,12 @@ rules:
     analyzer:
       type: chef-berksfile-lock
   - id: chef-metadata
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^metadata\.rb$'
+    analyzer:
+      type: chef-metadata
   - id: chef-policyfile
     form: manifest
     roles: [declaration, constraint]

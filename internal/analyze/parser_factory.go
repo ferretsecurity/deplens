@@ -73,6 +73,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newChefBerksfileParser)
 	case "chef-berksfile-lock":
 		return decodeAndCreate(raw.Analyzer, newChefBerksfileLockParser)
+	case "chef-metadata":
+		return decodeAndCreate(raw.Analyzer, newChefMetadataParser)
 	case "dockerfile":
 		return decodeAndCreate(raw.Analyzer, newDockerfileParser)
 	case "docker-compose":

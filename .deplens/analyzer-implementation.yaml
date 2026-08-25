@@ -235,7 +235,26 @@ work_items:
         - candidate_id: candidate-66454bf53dd746470db26b8474794e29
           original_path: metadata.rb
           source_sha256: a62d0964b340a0802979ff54458fe2328264b64bae11559a2c153cad89f48855
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/chef/metadata-static-list/metadata.rb
+            - testdata/chef/metadata-static-list-monitoring/metadata.rb
+            - testdata/chef/metadata-quoted-constraint/metadata.rb
+          changed_paths:
+            - README.md
+            - internal/analyze/chef_metadata.go
+            - internal/analyze/chef_metadata_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rule_schema_test.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/chef/metadata-quoted-constraint/metadata.rb
+            - testdata/chef/metadata-static-list-monitoring/metadata.rb
+            - testdata/chef/metadata-static-list/metadata.rb
     - number: 9
       id: chef-policyfile
       detector:
