@@ -115,6 +115,64 @@ func TestDirectAttemptSnapshotRestoresRejectedChanges(t *testing.T) {
 	}
 }
 
+func TestDirectAttemptSnapshotReportsOnlyAttemptChanges(t *testing.T) {
+	ctx := context.Background()
+	worktree := t.TempDir()
+	runTestGit(t, worktree, "init")
+	runTestGit(t, worktree, "config", "user.name", "Test User")
+	runTestGit(t, worktree, "config", "user.email", "test@example.com")
+	writeTestFile(t, filepath.Join(worktree, ".gitignore"), "/.ralph/\n")
+	writeTestFile(t, filepath.Join(worktree, ".deplens", "analyzer-implementation.yaml"), "state: pending\n")
+	writeTestFile(t, filepath.Join(worktree, "internal", "analyze", "buf.go"), "package analyze\n")
+	runTestGit(t, worktree, "add", ".")
+	runTestGit(t, worktree, "commit", "-m", "base")
+
+	// These changes are the accepted implementer checkpoint and its ledger
+	// transition. A verifier must not be held responsible for either one.
+	writeTestFile(t, filepath.Join(worktree, ".deplens", "analyzer-implementation.yaml"), "state: in_progress\n")
+	writeTestFile(t, filepath.Join(worktree, "internal", "analyze", "buf.go"), "package analyze\n\nfunc Buf() {}\n")
+	snapshot, err := captureDirectAttempt(ctx, worktree, filepath.Join(worktree, ".ralph"))
+	if err != nil {
+		t.Fatalf("captureDirectAttempt: %v", err)
+	}
+	defer os.RemoveAll(snapshot.directory)
+
+	paths, err := snapshot.changedPaths(ctx)
+	if err != nil {
+		t.Fatalf("snapshot.changedPaths: %v", err)
+	}
+	if len(paths) != 0 {
+		t.Fatalf("attempt paths = %q, want none", paths)
+	}
+
+	writeTestFile(t, filepath.Join(worktree, ".deplens", "analyzer-implementation.yaml"), "state: completed\n")
+	paths, err = snapshot.changedPaths(ctx)
+	if err != nil {
+		t.Fatalf("snapshot.changedPaths after ledger edit: %v", err)
+	}
+	if got, want := strings.Join(paths, ","), ".deplens/analyzer-implementation.yaml"; got != want {
+		t.Fatalf("attempt paths = %q, want %q", got, want)
+	}
+	if err := allowedChangedPaths(paths); err == nil {
+		t.Fatal("verifier ledger edit was allowed")
+	}
+
+	if err := snapshot.restore(ctx); err != nil {
+		t.Fatalf("snapshot.restore: %v", err)
+	}
+	writeTestFile(t, filepath.Join(worktree, "internal", "analyze", "buf.go"), "package analyze\n\nfunc Buf() { _ = 1 }\n")
+	paths, err = snapshot.changedPaths(ctx)
+	if err != nil {
+		t.Fatalf("snapshot.changedPaths after analyzer edit: %v", err)
+	}
+	if got, want := strings.Join(paths, ","), "internal/analyze/buf.go"; got != want {
+		t.Fatalf("attempt paths = %q, want %q", got, want)
+	}
+	if err := allowedChangedPaths(paths); err != nil {
+		t.Fatalf("verifier analyzer edit was rejected: %v", err)
+	}
+}
+
 func runTestGit(t *testing.T, dir string, args ...string) string {
 	t.Helper()
 	command := exec.Command("git", args...)

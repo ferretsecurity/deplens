@@ -3,6 +3,7 @@ package analyzerloop
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -283,9 +285,9 @@ func (e DirectExecutor) Execute(ctx context.Context, attempt Attempt) (result At
 	if err != nil {
 		return AttemptResult{}, err
 	}
-	paths, err := changedPaths(ctx, e.RepositoryRoot)
+	paths, err := snapshot.changedPaths(ctx)
 	if err != nil {
-		return AttemptResult{}, fmt.Errorf("list direct attempt changes: %w", err)
+		return AttemptResult{}, fmt.Errorf("list direct attempt delta: %w", err)
 	}
 	report(engine.Progress, func(progress ProgressReporter) { progress.AgentEdited(attempt, paths) })
 	report(engine.Progress, func(progress ProgressReporter) { progress.ValidationStarted(attempt) })
@@ -575,11 +577,30 @@ func changedPaths(ctx context.Context, dir string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	cached, err := gitLines(ctx, dir, "diff", "--cached", "--name-only")
+	if err != nil {
+		return nil, err
+	}
 	untracked, err := gitLines(ctx, dir, "ls-files", "--others", "--exclude-standard")
 	if err != nil {
 		return nil, err
 	}
-	return append(paths, untracked...), nil
+	return uniquePaths(append(append(paths, cached...), untracked...)), nil
+}
+
+func uniquePaths(paths []string) []string {
+	seen := make(map[string]bool, len(paths))
+	unique := make([]string, 0, len(paths))
+	for _, path := range paths {
+		path = filepath.ToSlash(path)
+		if seen[path] {
+			continue
+		}
+		seen[path] = true
+		unique = append(unique, path)
+	}
+	sort.Strings(unique)
+	return unique
 }
 
 func addedTestdata(ctx context.Context, dir string) ([]string, error) {
@@ -621,6 +642,12 @@ type directAttemptSnapshot struct {
 	stagedPatch    []byte
 	unstagedPatch  []byte
 	untrackedPaths []string
+	pathStates     map[string]directPathState
+}
+
+type directPathState struct {
+	worktree string
+	index    string
 }
 
 func captureDirectAttempt(ctx context.Context, worktree, runtimeRoot string) (directAttemptSnapshot, error) {
@@ -645,6 +672,14 @@ func captureDirectAttempt(ctx context.Context, worktree, runtimeRoot string) (di
 	if snapshot.untrackedPaths, err = gitLines(ctx, worktree, "ls-files", "--others", "--exclude-standard"); err != nil {
 		return fail(fmt.Errorf("list untracked direct attempt files: %w", err))
 	}
+	paths, err := changedPaths(ctx, worktree)
+	if err != nil {
+		return fail(fmt.Errorf("list baseline direct attempt changes: %w", err))
+	}
+	snapshot.pathStates, err = directPathStates(ctx, worktree, paths)
+	if err != nil {
+		return fail(fmt.Errorf("capture baseline direct attempt changes: %w", err))
+	}
 	for _, path := range snapshot.untrackedPaths {
 		from, err := safeSnapshotPath(worktree, path)
 		if err != nil {
@@ -659,6 +694,84 @@ func captureDirectAttempt(ctx context.Context, worktree, runtimeRoot string) (di
 		}
 	}
 	return snapshot, nil
+}
+
+// changedPaths returns only the Git-visible changes made after the snapshot.
+// The target worktree may already contain an accepted checkpoint and a ledger
+// update when --no-commit starts the verifier.
+func (snapshot directAttemptSnapshot) changedPaths(ctx context.Context) ([]string, error) {
+	current, err := changedPaths(ctx, snapshot.worktree)
+	if err != nil {
+		return nil, err
+	}
+	paths := make([]string, 0, len(snapshot.pathStates)+len(current))
+	for path := range snapshot.pathStates {
+		paths = append(paths, path)
+	}
+	paths = append(paths, current...)
+	paths = uniquePaths(paths)
+
+	changed := make([]string, 0, len(paths))
+	for _, path := range paths {
+		before, existed := snapshot.pathStates[path]
+		after, err := directPathStateFor(ctx, snapshot.worktree, path)
+		if err != nil {
+			return nil, fmt.Errorf("inspect %q: %w", path, err)
+		}
+		if !existed || before != after {
+			changed = append(changed, path)
+		}
+	}
+	return changed, nil
+}
+
+func directPathStates(ctx context.Context, worktree string, paths []string) (map[string]directPathState, error) {
+	states := make(map[string]directPathState, len(paths))
+	for _, path := range paths {
+		state, err := directPathStateFor(ctx, worktree, path)
+		if err != nil {
+			return nil, fmt.Errorf("inspect %q: %w", path, err)
+		}
+		states[path] = state
+	}
+	return states, nil
+}
+
+func directPathStateFor(ctx context.Context, worktree, path string) (directPathState, error) {
+	file, err := directFileState(filepath.Join(worktree, filepath.FromSlash(path)))
+	if err != nil {
+		return directPathState{}, err
+	}
+	index, err := git(ctx, worktree, "ls-files", "--stage", "--", path)
+	if err != nil {
+		return directPathState{}, err
+	}
+	return directPathState{worktree: file, index: strings.TrimSpace(string(index))}, nil
+}
+
+func directFileState(path string) (string, error) {
+	info, err := os.Lstat(path)
+	if os.IsNotExist(err) {
+		return "absent", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	var content []byte
+	if info.Mode()&os.ModeSymlink != 0 {
+		target, err := os.Readlink(path)
+		if err != nil {
+			return "", err
+		}
+		content = []byte(target)
+	} else if info.Mode().IsRegular() {
+		content, err = os.ReadFile(path)
+		if err != nil {
+			return "", err
+		}
+	}
+	sum := sha256.Sum256(content)
+	return fmt.Sprintf("%s:%x", info.Mode(), sum), nil
 }
 
 func (snapshot directAttemptSnapshot) restore(ctx context.Context) error {
