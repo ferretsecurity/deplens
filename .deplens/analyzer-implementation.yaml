@@ -4150,7 +4150,7 @@ work_items:
         - candidate_id: candidate-7468f6fd16c4febfef92f1c3cae16706
           original_path: Package.resolved
           source_sha256: 4544799021c7ebd2f6ddbf47f9cf1a6e21a3a56b8559a83784fc17a0462131cc
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -4170,6 +4170,13 @@ work_items:
             - testdata/swift/package-resolved-v1/Package.resolved
             - testdata/swift/package-resolved-v2-branch/Package.resolved
             - testdata/swift/package-resolved-v2-version/Package.resolved
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/swift/package-resolved-v1/Package.resolved
+            - testdata/swift/package-resolved-v2-version/Package.resolved
+            - testdata/swift/package-resolved-v2-branch/Package.resolved
+          changed_paths: []
     - number: 107
       id: terraform-lock
       detector:
