@@ -95,7 +95,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "build.zig", want: DetectorID("zig-build")},
 		// Group 1i: Ruby/iOS ecosystem extensions
 		// Group 1j: Functional and niche languages
-		{name: "renv.lock", want: DetectorID("r-renv-lock")},
 		// DRAFT (Group 3): {name: "DESCRIPTION", want: DetectorID("r-description")},
 		{name: "META.json", want: DetectorID("perl-meta")},
 		{name: "META.yml", want: DetectorID("perl-meta")},
@@ -428,6 +427,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"pants.toml",
 		"cpanfile",
 		"cpanfile.snapshot",
+		"renv.lock",
 		"Makefile.PL",
 	}
 

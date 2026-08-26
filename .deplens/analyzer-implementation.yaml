@@ -3817,7 +3817,27 @@ work_items:
         - candidate_id: candidate-828a144bfb8ecd0afe7eb62e046466e7
           original_path: renv.lock
           source_sha256: e26a3aab785b80ab488011ac0b66fbae8b986c24a5d2ef819ff185bd5958e610
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/r/renv-lock-r-4-1/renv.lock
+            - testdata/r/renv-lock-r-4-3/renv.lock
+            - testdata/r/renv-lock-r-4-4/renv.lock
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/r_renv_lock.go
+            - internal/analyze/r_renv_lock_scan_test.go
+            - internal/analyze/r_renv_lock_test.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/r/renv-lock-r-4-1/renv.lock
+            - testdata/r/renv-lock-r-4-3/renv.lock
+            - testdata/r/renv-lock-r-4-4/renv.lock
     - number: 99
       id: raku-meta
       detector:

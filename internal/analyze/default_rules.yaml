@@ -745,9 +745,12 @@ rules:
     roles: [declaration, constraint]
     filename-regex: '^META6\.json$'
   - id: r-renv-lock
+    package-type: cran
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^renv\.lock$'
+    analyzer:
+      type: r-renv-lock
   - id: r-packrat-lock
     form: lockfile
     roles: [resolution, integrity]

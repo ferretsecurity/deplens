@@ -121,7 +121,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `perl-meta` | `manifest` | `declaration, constraint` | — | select |
 | `perl-dist-ini` | `tool-config` | `configuration` | — | select |
 | `raku-meta` | `manifest` | `declaration, constraint` | — | select |
-| `r-renv-lock` | `lockfile` | `resolution, integrity` | — | select |
+| `r-renv-lock` | `lockfile` | `resolution, integrity` | `r-renv-lock` | select, recognize, extract, normalize |
 | `r-packrat-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `lua-rockspec` | `manifest` | `declaration, constraint` | — | select |
 | `zig-build-zon` | `manifest` | `declaration, constraint` | — | select |

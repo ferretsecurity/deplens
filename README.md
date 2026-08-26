@@ -67,6 +67,8 @@ Python `constraints.txt` files extract pip package constraints, including PEP 50
 
 PDM `pdm.lock` files extract resolved Python package names and versions.
 
+R `renv.lock` files extract resolved CRAN package names and versions.
+
 Esy `esy.json` manifests extract direct runtime, development, and `override.dependencies` declarations. Pants `pants.toml` configurations extract the pinned Pants version and configured backend packages.
 
 Perl `Build.PL` files extract static Module::Build prerequisite maps, preserving runtime, optional, build/configure, and test scopes.

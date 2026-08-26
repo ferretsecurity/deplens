@@ -207,6 +207,7 @@ type iosCartfileResolvedMatcherConfig struct{}
 type luaRocksMatcherConfig struct{}
 type perlCpanfileMatcherConfig struct{}
 type perlCpanfileSnapshotMatcherConfig struct{}
+type rRenvLockParserConfig struct{}
 
 type sourceAnalyzer interface {
 	Analyze(path string, content []byte) (sourceAnalyzerResult, error)

@@ -223,6 +223,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newPerlCpanfileParser)
 	case "perl-cpanfile-snapshot":
 		return decodeAndCreate(raw.Analyzer, newPerlCpanfileSnapshotParser)
+	case "r-renv-lock":
+		return decodeAndCreate(raw.Analyzer, newRRenvLockParser)
 	case "perl-makefile-pl":
 		return decodeAndCreate(raw.Analyzer, newPerlMakefilePLParser)
 	case "clojure-deps-edn":

@@ -1,0 +1,11 @@
+{
+  "R": {"Version": "4.1.0"},
+  "Packages": {
+    "plainpkg": {
+      "Package": "plainpkg",
+      "Version": "1.2.3",
+      "Source": "Repository",
+      "Repository": "RSPM"
+    }
+  }
+}
