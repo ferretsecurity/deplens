@@ -57,6 +57,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newIOSCartfileParser)
 	case "ios-cartfile-resolved":
 		return decodeAndCreate(raw.Analyzer, newIOSCartfileResolvedParser)
+	case "swift-package":
+		return decodeAndCreate(raw.Analyzer, newSwiftPackageParser)
 	case "homebrew-brewfile":
 		return decodeAndCreate(raw.Analyzer, newHomebrewBrewfileParser)
 	case "homebrew-brewfile-lock":

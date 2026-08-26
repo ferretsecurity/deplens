@@ -206,6 +206,7 @@ type iosPodfileLockMatcherConfig struct{}
 type iosPodspecMatcherConfig struct{}
 type iosCartfileMatcherConfig struct{}
 type iosCartfileResolvedMatcherConfig struct{}
+type swiftPackageMatcherConfig struct{}
 type luaRocksMatcherConfig struct{}
 type perlCpanfileMatcherConfig struct{}
 type perlCpanfileSnapshotMatcherConfig struct{}

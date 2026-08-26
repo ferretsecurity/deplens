@@ -4105,7 +4105,26 @@ work_items:
         - candidate_id: candidate-78fc7ecb5b6535e97356e43293b9aad3
           original_path: Package.swift
           source_sha256: 1be45e52621fd24fd8ca1ea705f6670c0a544d6d5dc9dd29b239279f0fdce747
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/swift/package-manifest-with-dependency/Package.swift
+            - testdata/swift/package-manifest-empty-dependencies/Package.swift
+            - testdata/swift/package-manifest-without-dependencies/Package.swift
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - internal/analyze/swift_package.go
+            - internal/analyze/swift_package_test.go
+            - testdata/swift/package-manifest-empty-dependencies/Package.swift
+            - testdata/swift/package-manifest-with-dependency/Package.swift
+            - testdata/swift/package-manifest-without-dependencies/Package.swift
     - number: 106
       id: swift-package-resolved
       detector:

@@ -344,9 +344,12 @@ rules:
     roles: [declaration, constraint]
     path-glob: '**/gemfiles/*.gemfile'
   - id: swift-package
+    package-type: swift
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Package\.swift$'
+    analyzer:
+      type: swift-package
   - id: ios-podfile
     package-type: cocoapods
     form: manifest

@@ -56,7 +56,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `ruby-gemfile-lock` | `lockfile` | `resolution, integrity` | `gemfile-lock` | select, recognize, extract, normalize, relate |
 | `ruby-gemspec` | `manifest` | `declaration, constraint` | — | select |
 | `ruby-appraisal` | `manifest` | `declaration, constraint` | — | select |
-| `swift-package` | `manifest` | `declaration, constraint` | — | select |
+| `swift-package` | `manifest` | `declaration, constraint` | `swift-package` | select, recognize, assess-presence, extract, normalize, relate |
 | `ios-podfile` | `manifest` | `declaration, constraint` | — | select |
 | `ios-cartfile` | `manifest` | `declaration, constraint` | `ios-cartfile` | select, recognize, assess-presence, extract, normalize, relate |
 | `ios-podspec` | `manifest` | `declaration, constraint` | — | select |
