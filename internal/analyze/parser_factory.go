@@ -39,6 +39,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newNixDefaultShellParser)
 	case "nix-flake":
 		return decodeAndCreate(raw.Analyzer, newNixFlakeParser)
+	case "nix-flake-lock":
+		return decodeAndCreate(raw.Analyzer, newNixFlakeLockParser)
 	case "github-actions-action":
 		return decodeAndCreate(raw.Analyzer, newGithubActionsActionParser)
 	case "helm-chart":

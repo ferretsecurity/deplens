@@ -979,6 +979,8 @@ rules:
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^flake\.lock$'
+    analyzer:
+      type: nix-flake-lock
   - id: helm-chart-lock
     package-type: generic
     form: lockfile

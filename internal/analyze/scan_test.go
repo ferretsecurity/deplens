@@ -117,8 +117,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "esy.json", want: DetectorID("ocaml-esy")},
 		// DRAFT (Group 3): {name: "dune", want: DetectorID("ocaml-dune")},
 		{name: "manifest.toml", want: DetectorID("gleam-manifest")},
-		// Group 1k: Nix
-		{name: "flake.lock", want: DetectorID("nix-flake-lock")},
 		// Group 1l: Infrastructure and ops tooling
 		{name: "Puppetfile", want: DetectorID("puppet-puppetfile")},
 		// Group 1m: Game engines
@@ -430,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"default.nix",
 		"shell.nix",
 		"flake.nix",
+		"flake.lock",
 	}
 
 	for _, tc := range testCases {
