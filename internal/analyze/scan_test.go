@@ -91,8 +91,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "pnpm-workspace.yml", want: DetectorID("js-pnpm-workspace")},
 		{name: ".npmrc", want: DetectorID("js-npmrc")},
 		{name: ".yarnrc.yml", want: DetectorID("js-yarnrc")},
-		// Group 1g: Python ecosystem extensions
-		{name: "constraints.txt", want: DetectorID("python-constraints")},
 		// Group 1h: Systems languages extensions
 		{name: "build.zig", want: DetectorID("zig-build")},
 		// Group 1i: Ruby/iOS ecosystem extensions
@@ -330,6 +328,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	testCases := []string{
+		"constraints.txt",
 		"requirements.txt",
 		"requirements.in",
 		"my-requirements.txt",

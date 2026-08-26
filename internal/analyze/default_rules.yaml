@@ -128,9 +128,12 @@ rules:
         - section: options.extras_require
           key: '*'
   - id: python-constraints
+    package-type: pypi
     form: constraint-file
     roles: [constraint]
     filename-regex: '^constraints\.txt$'
+    analyzer:
+      type: py-requirements
   - id: js
     package-type: npm
     form: manifest

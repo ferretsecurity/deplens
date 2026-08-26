@@ -3730,7 +3730,22 @@ work_items:
         - candidate_id: candidate-e55140ac2b2be0b6955cdfd9f44cdb9f
           original_path: constraints.txt
           source_sha256: 8b3ce3a62b2f62b3691b95800dfcddce671386e68515ab4d8a90402a288bafa8
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/python/constraints-pinned/constraints.txt
+            - testdata/python/constraints-marker/constraints.txt
+            - testdata/python/constraints-index-local-version/constraints.txt
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/py_constraints_test.go
+            - internal/analyze/scan_test.go
+            - testdata/python/constraints-index-local-version/constraints.txt
+            - testdata/python/constraints-marker/constraints.txt
+            - testdata/python/constraints-pinned/constraints.txt
     - number: 97
       id: python-pdm-lock
       detector:

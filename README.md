@@ -63,6 +63,8 @@ Homebrew Brewfile lockfiles extract resolved formulas and casks, bottle checksum
 
 Conda `conda.yml`, `conda.yaml`, `environment.yml`, and `environment.yaml` environments extract direct Conda package specifications and nested `pip` package declarations, including pip requirements-file references.
 
+Python `constraints.txt` files extract pip package constraints, including PEP 508 markers and local-version pins; index configuration directives are ignored.
+
 Esy `esy.json` manifests extract direct runtime, development, and `override.dependencies` declarations. Pants `pants.toml` configurations extract the pinned Pants version and configured backend packages.
 
 Perl `Build.PL` files extract static Module::Build prerequisite maps, preserving runtime, optional, build/configure, and test scopes.
