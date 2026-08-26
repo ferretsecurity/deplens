@@ -4383,7 +4383,7 @@ func TestScanMarksAnsibleRequirementsWithoutKeysAsNoDependencies(t *testing.T) {
 	}
 }
 
-func TestScanMatchesJsonnetBundlerWithDependencies(t *testing.T) {
+func TestScanMarksJsonnetBundlerMissingSourceAsUnsupported(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	result, err := Scan(filepath.Join("..", "..", "testdata", "jsonnet", "bundler-deps"), nil, ruleset)
@@ -4396,8 +4396,11 @@ func TestScanMatchesJsonnetBundlerWithDependencies(t *testing.T) {
 	if result.Sources[0].Detector != DetectorID("jsonnet-bundler") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresencePresent {
-		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
+	if result.Sources[0].Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionUnsupported}) {
+		t.Fatalf("expected unsupported dependency declaration, got %+v", result.Sources[0].Analysis)
+	}
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %#v", result.Sources[0].Dependencies)
 	}
 }
 
@@ -4417,6 +4420,9 @@ func TestScanMarksJsonnetBundlerEmptyDependenciesAsNoDependencies(t *testing.T) 
 	if result.Sources[0].Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) {
 		t.Fatalf("expected complete empty dependency result, got %+v", result.Sources[0].Analysis)
 	}
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no dependencies, got %#v", result.Sources[0].Dependencies)
+	}
 }
 
 func TestScanMarksJsonnetBundlerWithoutDependenciesKeyAsNoDependencies(t *testing.T) {
@@ -4434,6 +4440,9 @@ func TestScanMarksJsonnetBundlerWithoutDependenciesKeyAsNoDependencies(t *testin
 	}
 	if result.Sources[0].Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) {
 		t.Fatalf("expected complete empty dependency result, got %+v", result.Sources[0].Analysis)
+	}
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no dependencies, got %#v", result.Sources[0].Dependencies)
 	}
 }
 

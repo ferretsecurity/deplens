@@ -2979,7 +2979,7 @@ work_items:
         - candidate_id: candidate-f4803ec9a6a0b7eeaf82bdc9f6b9b84a
           original_path: windows-mixin/jsonnetfile.json
           source_sha256: bdbb4276be869367809ce908d8146637a980c19642dfbf356c27c692262da9e0
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -2999,6 +2999,14 @@ work_items:
             - testdata/jsonnet/bundler-local-and-git/jsonnetfile.json
             - testdata/jsonnet/bundler-named-git/jsonnetfile.json
             - testdata/jsonnet/bundler-unnamed-git-pair/jsonnetfile.json
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/jsonnet/bundler-unnamed-git-pair/jsonnetfile.json
+            - testdata/jsonnet/bundler-named-git/jsonnetfile.json
+            - testdata/jsonnet/bundler-local-and-git/jsonnetfile.json
+          changed_paths:
+            - internal/analyze/scan_test.go
     - number: 80
       id: jsonnet-lock
       detector:
