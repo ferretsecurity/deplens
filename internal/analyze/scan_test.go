@@ -52,7 +52,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "settings.gradle", want: DetectorID("java-gradle-settings")},
 		{name: "settings.gradle.kts", want: DetectorID("java-gradle-settings-kts")},
 		{name: "Package.swift", want: DetectorID("swift-package")},
-		{name: "Podfile", want: DetectorID("ios-podfile")},
 		{name: "cabal.project", want: DetectorID("haskell-cabal-project")},
 		{name: "go.sum", want: DetectorID("go-sum")},
 		{name: "go.work", want: DetectorID("go-work")},
@@ -430,6 +429,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"Brewfile.lock.json",
 		"Cartfile",
 		"Cartfile.resolved",
+		"Podfile",
 	}
 
 	for _, tc := range testCases {

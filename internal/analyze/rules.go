@@ -193,6 +193,7 @@ type foundryTOMLMatcherConfig struct{}
 type githubActionsActionMatcherConfig struct{}
 type helmChartMatcherConfig struct{}
 type helmChartLockMatcherConfig struct{}
+type iosPodfileMatcherConfig struct{}
 type iosCartfileMatcherConfig struct{}
 type iosCartfileResolvedMatcherConfig struct{}
 

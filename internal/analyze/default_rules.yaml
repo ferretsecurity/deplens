@@ -327,9 +327,12 @@ rules:
     roles: [declaration, constraint]
     filename-regex: '^Package\.swift$'
   - id: ios-podfile
+    package-type: cocoapods
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Podfile$'
+    analyzer:
+      type: ios-podfile
   - id: ios-cartfile
     form: manifest
     roles: [declaration, constraint]
