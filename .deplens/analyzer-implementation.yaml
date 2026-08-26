@@ -3971,7 +3971,7 @@ work_items:
         - candidate_id: candidate-ed816c2c632bb5c435550e8d203db5eb
           original_path: build.sc
           source_sha256: e159916af01ad45b01a60543fb51343f2608857b57a590ba1e2fde906e3b49a9
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -3991,6 +3991,13 @@ work_items:
             - testdata/scala/mill-build-imports/build.sc
             - testdata/scala/mill-runtime-test/build.sc
             - testdata/scala/mill-version-constants/build.sc
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/scala/mill-build-imports/build.sc
+            - testdata/scala/mill-runtime-test/build.sc
+            - testdata/scala/mill-version-constants/build.sc
+          changed_paths: []
     - number: 103
       id: scala-sbt-build
       detector:
