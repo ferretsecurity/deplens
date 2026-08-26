@@ -3730,7 +3730,7 @@ work_items:
         - candidate_id: candidate-e55140ac2b2be0b6955cdfd9f44cdb9f
           original_path: constraints.txt
           source_sha256: 8b3ce3a62b2f62b3691b95800dfcddce671386e68515ab4d8a90402a288bafa8
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -3746,6 +3746,15 @@ work_items:
             - testdata/python/constraints-index-local-version/constraints.txt
             - testdata/python/constraints-marker/constraints.txt
             - testdata/python/constraints-pinned/constraints.txt
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/python/constraints-pinned/constraints.txt
+            - testdata/python/constraints-marker/constraints.txt
+            - testdata/python/constraints-index-local-version/constraints.txt
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - internal/analyze/py_constraints_test.go
     - number: 97
       id: python-pdm-lock
       detector:

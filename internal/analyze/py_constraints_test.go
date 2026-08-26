@@ -1,6 +1,7 @@
 package analyze
 
 import (
+	"os"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -66,5 +67,30 @@ func TestPythonConstraintsExtractDependenciesFromFixtures(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestPythonConstraintsReportsConclusiveEmptyForConfigurationOnlyFile(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	directory := t.TempDir()
+	path := filepath.Join(directory, "constraints.txt")
+	if err := os.WriteFile(path, []byte("--index-url https://pypi.example.test/simple\n--extra-index-url https://packages.example.test/simple\n"), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+
+	result, err := Scan(directory, nil, ruleset)
+	if err != nil {
+		t.Fatalf("Scan: %v", err)
+	}
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected one source, got %+v", result.Sources)
+	}
+
+	source := result.Sources[0]
+	if source.Detector != "python-constraints" || source.Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) {
+		t.Fatalf("unexpected source: %+v", source)
+	}
+	if len(source.Dependencies) != 0 {
+		t.Fatalf("dependencies: got %+v, want none", source.Dependencies)
 	}
 }
