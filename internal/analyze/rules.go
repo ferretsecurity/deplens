@@ -213,6 +213,7 @@ type perlCpanfileMatcherConfig struct{}
 type perlCpanfileSnapshotMatcherConfig struct{}
 type rRenvLockParserConfig struct{}
 type rakuMetaMatcherConfig struct{}
+type zigBuildZONMatcherConfig struct{}
 
 type sourceAnalyzer interface {
 	Analyze(path string, content []byte) (sourceAnalyzerResult, error)

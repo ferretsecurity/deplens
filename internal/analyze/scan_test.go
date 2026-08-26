@@ -54,7 +54,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "go.sum", want: DetectorID("go-sum")},
 		{name: "go.work", want: DetectorID("go-work")},
 		{name: "mix.lock", want: DetectorID("elixir-mix-lock")},
-		{name: "build.zig.zon", want: DetectorID("zig-build-zon")},
 		{name: "demo.nimble", want: DetectorID("nim-nimble")},
 		// Group 1b: Build systems and monorepo tools
 		{name: "WORKSPACE", want: DetectorID("bazel-workspace")},
@@ -388,6 +387,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"conanfile.txt",
 		"conanfile.py",
 		"conan.lock",
+		"build.zig.zon",
 		"meson.build",
 		"shard.lock",
 		"gleam.toml",

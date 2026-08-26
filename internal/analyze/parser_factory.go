@@ -243,6 +243,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newRRenvLockParser)
 	case "raku-meta":
 		return decodeAndCreate(raw.Analyzer, newRakuMetaParser)
+	case "zig-build-zon":
+		return decodeAndCreate(raw.Analyzer, newZigBuildZONParser)
 	case "perl-makefile-pl":
 		return decodeAndCreate(raw.Analyzer, newPerlMakefilePLParser)
 	case "clojure-deps-edn":

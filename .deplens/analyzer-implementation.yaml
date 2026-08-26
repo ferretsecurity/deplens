@@ -4342,4 +4342,22 @@ work_items:
         - candidate_id: candidate-6927419c29e972c2886a3eb91fd68d1a
           original_path: build.zig.zon
           source_sha256: 6693ab6ddc56a53de192069c6109d25f24d6c7b7b1d5cde69b765e2ec9153398
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/zig/build-zon-git/build.zig.zon
+            - testdata/zig/build-zon-empty/build.zig.zon
+            - testdata/zig/build-zon-path/build.zig.zon
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - internal/analyze/zig_build_zon.go
+            - internal/analyze/zig_build_zon_test.go
+            - testdata/zig/build-zon-empty/build.zig.zon
+            - testdata/zig/build-zon-git/build.zig.zon
+            - testdata/zig/build-zon-path/build.zig.zon
