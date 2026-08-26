@@ -52,3 +52,13 @@ func TestSoldeerLockFixturesExtractDependencies(t *testing.T) {
 		})
 	}
 }
+
+func TestSoldeerLockEmptyFileHasCompleteEmptyResult(t *testing.T) {
+	result, err := (soldeerLockParser{}).Analyze("soldeer.lock", []byte("# no locked dependencies\n"))
+	if err != nil {
+		t.Fatalf("Analyze: %v", err)
+	}
+	if !result.Recognized || result.Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) || len(result.Dependencies) != 0 {
+		t.Fatalf("result = %+v", result)
+	}
+}
