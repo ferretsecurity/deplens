@@ -72,7 +72,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "rush.json", want: DetectorID("js-rush")},
 		{name: "turbo.json", want: DetectorID("js-turbo")},
 		// Group 1c: JVM ecosystem extensions
-		{name: "build.sbt", want: DetectorID("scala-sbt-build")},
 		{name: "ivysettings.xml", want: DetectorID("java-ivy-settings")},
 		{name: "build.xml", want: DetectorID("java-ant-build")},
 		// Group 1d: C/C++ ecosystem extensions
@@ -428,6 +427,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"Makefile.PL",
 		"META6.json",
 		"demo.gemspec",
+		"build.sbt",
 		"build.sc",
 	}
 

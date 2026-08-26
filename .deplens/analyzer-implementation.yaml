@@ -4017,7 +4017,24 @@ work_items:
         - candidate_id: candidate-d75ba219d41268bb05b9ed64b4c0166e
           original_path: build.sbt
           source_sha256: 132bfb9229ee36ec8d7b7f3f1457f5e79bde331b8d9a0141b14b61da51b4bff9
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/scala/sbt-cross-version/build.sbt
+            - testdata/scala/sbt-runtime-and-test/build.sbt
+            - testdata/scala/sbt-scalajs/build.sbt
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scala_sbt.go
+            - internal/analyze/scala_sbt_test.go
+            - internal/analyze/scan_test.go
+            - testdata/scala/sbt-cross-version/build.sbt
+            - testdata/scala/sbt-runtime-and-test/build.sbt
+            - testdata/scala/sbt-scalajs/build.sbt
     - number: 104
       id: soldeer-lock
       detector:

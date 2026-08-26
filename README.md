@@ -63,6 +63,8 @@ Homebrew Brewfile lockfiles extract resolved formulas and casks, bottle checksum
 
 Scala Mill `build.sc` files extract `$ivy` build imports and `ivy` module declarations, resolving literal version constants declared in the same file.
 
+Scala SBT `build.sbt` files extract static `%`, `%%`, and `%%%` library dependencies, including test-scoped dependencies.
+
 Conda `conda.yml`, `conda.yaml`, `environment.yml`, and `environment.yaml` environments extract direct Conda package specifications and nested `pip` package declarations, including pip requirements-file references.
 
 Python `constraints.txt` files extract pip package constraints, including PEP 508 markers and local-version pins; index configuration directives are ignored.

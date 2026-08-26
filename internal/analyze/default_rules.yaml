@@ -278,9 +278,12 @@ rules:
     roles: [configuration]
     path-glob: '**/gradle/wrapper/gradle-wrapper.properties'
   - id: scala-sbt-build
+    package-type: maven
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^build\.sbt$'
+    analyzer:
+      type: scala-sbt-build
   - id: scala-sbt-plugins
     form: build-definition
     roles: [declaration, constraint, configuration]
