@@ -334,6 +334,8 @@ rules:
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Cartfile$'
+    analyzer:
+      type: ios-cartfile
   - id: ios-podspec
     form: manifest
     roles: [declaration, constraint]

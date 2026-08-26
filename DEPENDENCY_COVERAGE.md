@@ -1,6 +1,6 @@
 # Dependency coverage
 
-This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 78 have semantic analyzers and 110 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
+This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 79 have semantic analyzers and 109 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
@@ -58,7 +58,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `ruby-appraisal` | `manifest` | `declaration, constraint` | — | select |
 | `swift-package` | `manifest` | `declaration, constraint` | — | select |
 | `ios-podfile` | `manifest` | `declaration, constraint` | — | select |
-| `ios-cartfile` | `manifest` | `declaration, constraint` | — | select |
+| `ios-cartfile` | `manifest` | `declaration, constraint` | `ios-cartfile` | select, recognize, assess-presence, extract, normalize, relate |
 | `ios-podspec` | `manifest` | `declaration, constraint` | — | select |
 | `ios-cartfile-resolved` | `lockfile` | `resolution, integrity` | — | select |
 | `php-composer` | `manifest` | `declaration, constraint` | `composer-manifest` | select, recognize, extract, normalize, relate |

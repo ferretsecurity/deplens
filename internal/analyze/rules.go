@@ -193,6 +193,7 @@ type foundryTOMLMatcherConfig struct{}
 type githubActionsActionMatcherConfig struct{}
 type helmChartMatcherConfig struct{}
 type helmChartLockMatcherConfig struct{}
+type iosCartfileMatcherConfig struct{}
 
 type sourceAnalyzer interface {
 	Analyze(path string, content []byte) (sourceAnalyzerResult, error)
