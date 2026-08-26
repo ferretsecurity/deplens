@@ -155,6 +155,7 @@ func TestRuleSchemaRejectsConfigurationForSemanticAnalyzers(t *testing.T) {
 		"clojure-boot",
 		"emacs-cask",
 		"maven-pom",
+		"java-ivy",
 		"cargo-manifest",
 		"composer-manifest",
 		"dotnet-project",

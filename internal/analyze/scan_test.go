@@ -79,7 +79,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		// Group 1c: JVM ecosystem extensions
 		{name: "build.sbt", want: DetectorID("scala-sbt-build")},
 		{name: "build.sc", want: DetectorID("scala-mill")},
-		{name: "ivy.xml", want: DetectorID("java-ivy")},
 		{name: "ivysettings.xml", want: DetectorID("java-ivy-settings")},
 		{name: "build.xml", want: DetectorID("java-ant-build")},
 		// Group 1d: C/C++ ecosystem extensions
@@ -430,6 +429,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"Cartfile.resolved",
 		"Podfile",
 		"demo.podspec",
+		"ivy.xml",
 	}
 
 	for _, tc := range testCases {

@@ -121,6 +121,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newDockerComposeParser)
 	case "maven-pom":
 		return decodeAndCreate(raw.Analyzer, newMavenPOMParser)
+	case "java-ivy":
+		return decodeAndCreate(raw.Analyzer, newIvyParser)
 	case "cargo-manifest":
 		return decodeAndCreate(raw.Analyzer, newCargoManifestParser)
 	case "fortran-fpm":

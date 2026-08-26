@@ -293,9 +293,12 @@ rules:
     roles: [declaration, constraint, configuration]
     filename-regex: '^build\.xml$'
   - id: java-ivy
+    package-type: maven
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^ivy\.xml$'
+    analyzer:
+      type: java-ivy
   - id: java-ivy-settings
     form: tool-config
     roles: [configuration]

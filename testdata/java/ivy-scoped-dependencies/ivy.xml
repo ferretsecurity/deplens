@@ -1,0 +1,8 @@
+<ivy-module version="2.0">
+  <info organisation="example" module="tooling"/>
+  <dependencies defaultconf="compile">
+    <dependency org="example.logging" name="api" rev="4.0.0"/>
+    <dependency org="example.testing" name="runner" rev="6.3.0" conf="test"/>
+    <dependency org="example.build" name="reporting" rev="2.1" conf="reports"/>
+  </dependencies>
+</ivy-module>

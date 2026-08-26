@@ -2668,7 +2668,26 @@ work_items:
         - candidate_id: candidate-c7480e6149cde7fee458499ff68ce341
           original_path: ivy.xml
           source_sha256: 6ee4cff3410094078fcb32b1e1179ecfc1c7674e8f5bd1c346156004f2063169
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/java/ivy-exact-revisions/ivy.xml
+            - testdata/java/ivy-property-configurations/ivy.xml
+            - testdata/java/ivy-scoped-dependencies/ivy.xml
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/ivy.go
+            - internal/analyze/ivy_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rule_schema_test.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/java/ivy-exact-revisions/ivy.xml
+            - testdata/java/ivy-property-configurations/ivy.xml
+            - testdata/java/ivy-scoped-dependencies/ivy.xml
     - number: 69
       id: js-bower
       detector:

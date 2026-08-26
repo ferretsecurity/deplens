@@ -172,6 +172,7 @@ type chefPolicyfileLockMatcherConfig struct{}
 type dockerfileMatcherConfig struct{}
 type dockerComposeMatcherConfig struct{}
 type mavenPOMMatcherConfig struct{}
+type ivyMatcherConfig struct{}
 type cargoManifestMatcherConfig struct{}
 type composerManifestMatcherConfig struct{}
 type dotnetProjectMatcherConfig struct{}
