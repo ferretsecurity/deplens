@@ -2668,7 +2668,7 @@ work_items:
         - candidate_id: candidate-c7480e6149cde7fee458499ff68ce341
           original_path: ivy.xml
           source_sha256: 6ee4cff3410094078fcb32b1e1179ecfc1c7674e8f5bd1c346156004f2063169
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -2688,6 +2688,13 @@ work_items:
             - testdata/java/ivy-exact-revisions/ivy.xml
             - testdata/java/ivy-property-configurations/ivy.xml
             - testdata/java/ivy-scoped-dependencies/ivy.xml
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/java/ivy-exact-revisions/ivy.xml
+            - testdata/java/ivy-property-configurations/ivy.xml
+            - testdata/java/ivy-scoped-dependencies/ivy.xml
+          changed_paths: []
     - number: 69
       id: js-bower
       detector:
