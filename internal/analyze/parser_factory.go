@@ -163,6 +163,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newCargoManifestParser)
 	case "fortran-fpm":
 		return decodeAndCreate(raw.Analyzer, newFortranFPMParser)
+	case "vlang":
+		return decodeAndCreate(raw.Analyzer, newVLangParser)
 	case "foundry-toml":
 		return decodeAndCreate(raw.Analyzer, newFoundryTOMLParser)
 	case "soldeer-lock":
