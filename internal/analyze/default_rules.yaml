@@ -1041,9 +1041,12 @@ rules:
     analyzer:
       type: chef-policyfile-lock
   - id: jsonnet-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^jsonnetfile\.lock\.json$'
+    analyzer:
+      type: jsonnet-lock
   - id: emacs-cask
     package-type: generic
     form: manifest

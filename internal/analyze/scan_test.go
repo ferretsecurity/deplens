@@ -125,7 +125,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "flake.lock", want: DetectorID("nix-flake-lock")},
 		// Group 1l: Infrastructure and ops tooling
 		{name: "Puppetfile", want: DetectorID("puppet-puppetfile")},
-		{name: "jsonnetfile.lock.json", want: DetectorID("jsonnet-lock")},
 		// Group 1m: Game engines
 		{name: "MyGame.uproject", want: DetectorID("unreal-uproject")},
 		{name: "MyPlugin.uplugin", want: DetectorID("unreal-uplugin")},
@@ -386,6 +385,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"buf.yaml",
 		"buf.lock",
 		"jsonnetfile.json",
+		"jsonnetfile.lock.json",
 		"package.yaml",
 		"vcpkg.json",
 		"vcpkg-configuration.json",

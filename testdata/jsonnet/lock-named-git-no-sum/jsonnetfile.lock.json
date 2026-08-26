@@ -1,0 +1,7 @@
+{
+  "dependencies": [{
+    "name": "dashboards",
+    "source": {"git": {"remote": "https://example.test/observability/dashboards", "subdir": "jsonnet"}},
+    "version": "0123456789abcdef0123456789abcdef01234567"
+  }]
+}

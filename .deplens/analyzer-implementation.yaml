@@ -3025,7 +3025,26 @@ work_items:
         - candidate_id: candidate-fbc0737da4f78033b5ee7723e8cc7909
           original_path: jsonnetfile.lock.json
           source_sha256: 9ad7d80f6299569cfafe5d82b5b50a0d3731f2fbda7a211a53637e2a06554198
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/jsonnet/lock-named-git-no-sum/jsonnetfile.lock.json
+            - testdata/jsonnet/lock-unnamed-git-with-sums/jsonnetfile.lock.json
+            - testdata/jsonnet/lock-mixed-named-unnamed-git/jsonnetfile.lock.json
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/jsonnet_lock.go
+            - internal/analyze/jsonnet_lock_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rule_schema_test.go
+            - internal/analyze/scan_test.go
+            - testdata/jsonnet/lock-mixed-named-unnamed-git/jsonnetfile.lock.json
+            - testdata/jsonnet/lock-named-git-no-sum/jsonnetfile.lock.json
+            - testdata/jsonnet/lock-unnamed-git-with-sums/jsonnetfile.lock.json
     - number: 81
       id: julia-project
       detector:

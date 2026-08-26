@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "dependencies": [
+    {"name": "common", "source": {"git": {"remote": "https://example.test/team/common.git", "subdir": ""}}, "version": "3333333333333333333333333333333333333333", "sum": "sum-common"},
+    {"source": {"git": {"remote": "https://example.test/team/rendering.git", "subdir": "latest"}}, "version": "4444444444444444444444444444444444444444", "sum": "sum-latest"},
+    {"source": {"git": {"remote": "https://example.test/team/rendering.git", "subdir": "legacy"}}, "version": "5555555555555555555555555555555555555555", "sum": "sum-legacy"}
+  ]
+}

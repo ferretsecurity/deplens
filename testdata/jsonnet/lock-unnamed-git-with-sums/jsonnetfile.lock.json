@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "dependencies": [
+    {"source": {"git": {"remote": "https://example.test/observability/alerts.git", "subdir": "lib"}}, "version": "1111111111111111111111111111111111111111", "sum": "sum-alerts"},
+    {"source": {"git": {"remote": "https://example.test/observability/widgets.git", "subdir": "builder"}}, "version": "2222222222222222222222222222222222222222", "sum": "sum-widgets"}
+  ]
+}

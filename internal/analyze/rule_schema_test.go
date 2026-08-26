@@ -166,6 +166,7 @@ func TestRuleSchemaRejectsConfigurationForSemanticAnalyzers(t *testing.T) {
 		"dotnet-paket-lock",
 		"dotnet-paket-references",
 		"jsonnet-bundler",
+		"jsonnet-lock",
 		"meson",
 	} {
 		t.Run(analyzerType, func(t *testing.T) {
