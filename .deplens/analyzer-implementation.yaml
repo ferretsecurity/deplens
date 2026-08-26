@@ -3817,7 +3817,7 @@ work_items:
         - candidate_id: candidate-828a144bfb8ecd0afe7eb62e046466e7
           original_path: renv.lock
           source_sha256: e26a3aab785b80ab488011ac0b66fbae8b986c24a5d2ef819ff185bd5958e610
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -3838,6 +3838,13 @@ work_items:
             - testdata/r/renv-lock-r-4-1/renv.lock
             - testdata/r/renv-lock-r-4-3/renv.lock
             - testdata/r/renv-lock-r-4-4/renv.lock
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/r/renv-lock-r-4-1/renv.lock
+            - testdata/r/renv-lock-r-4-3/renv.lock
+            - testdata/r/renv-lock-r-4-4/renv.lock
+          changed_paths: []
     - number: 99
       id: raku-meta
       detector:
