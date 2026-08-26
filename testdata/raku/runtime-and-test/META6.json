@@ -1,0 +1,5 @@
+{
+  "name": "Example::Agent",
+  "depends": ["DateTime::Parse", "IO::Socket::SSL:ver:<0.0.4+>:auth<raku-community-modules>"],
+  "test-depends": ["JSON::Fast"]
+}

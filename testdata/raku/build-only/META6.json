@@ -1,0 +1,4 @@
+{
+  "name": "Native::Example",
+  "build-depends": ["LibraryMake"]
+}

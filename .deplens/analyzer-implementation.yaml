@@ -3863,7 +3863,25 @@ work_items:
         - candidate_id: candidate-e8944a72e1b8432c145b070cc91d333c
           original_path: META6.json
           source_sha256: 99dce2d13ab73829610d2416f42c4264a2070b2b47cacdf9d3dec55167e6e877
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/raku/runtime-and-test/META6.json
+            - testdata/raku/runtime-only/META6.json
+            - testdata/raku/build-only/META6.json
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/raku_meta.go
+            - internal/analyze/raku_meta_test.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/raku/build-only/META6.json
+            - testdata/raku/runtime-and-test/META6.json
+            - testdata/raku/runtime-only/META6.json
     - number: 100
       id: ruby-appraisal
       detector:

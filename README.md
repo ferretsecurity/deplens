@@ -79,6 +79,8 @@ Perl `cpanfile` manifests extract static required and recommended CPAN modules, 
 
 Perl `cpanfile.snapshot` lockfiles extract resolved CPAN distributions and their selected versions.
 
+Raku `META6.json` manifests extract direct runtime, build, and test dependency declarations, including `ver` and `auth` qualifiers.
+
 CocoaPods `Podfile.lock` files extract resolved pods and their selected versions.
 
 CocoaPods podspecs extract static direct pod declarations and version constraints.

@@ -208,6 +208,7 @@ type luaRocksMatcherConfig struct{}
 type perlCpanfileMatcherConfig struct{}
 type perlCpanfileSnapshotMatcherConfig struct{}
 type rRenvLockParserConfig struct{}
+type rakuMetaMatcherConfig struct{}
 
 type sourceAnalyzer interface {
 	Analyze(path string, content []byte) (sourceAnalyzerResult, error)
