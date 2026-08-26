@@ -3646,7 +3646,7 @@ work_items:
         - candidate_id: candidate-20c147eccb89be368b71529acdcfad65
           original_path: dev/conda.yaml
           source_sha256: 0ad2a4781ae717ea9841ffc7433f7946d6b66642bf4b64fdcd79eed695ffd050
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -3664,6 +3664,13 @@ work_items:
             - testdata/python/conda-env-alt-development/dev/conda.yaml
             - testdata/python/conda-env-alt-export/conda.yaml
             - testdata/python/conda-env-alt-pip/conda.yaml
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/python/conda-env-alt-pip/conda.yaml
+            - testdata/python/conda-env-alt-export/conda.yaml
+            - testdata/python/conda-env-alt-development/dev/conda.yaml
+          changed_paths: []
     - number: 95
       id: python-conda-environment
       detector:
