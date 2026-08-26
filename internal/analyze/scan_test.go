@@ -59,7 +59,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "cpanfile", want: DetectorID("perl-cpanfile")},
 		{name: "build.zig.zon", want: DetectorID("zig-build-zon")},
 		{name: "demo.nimble", want: DetectorID("nim-nimble")},
-		{name: "demo.opam", want: DetectorID("ocaml-opam")},
 		{name: "v.mod", want: DetectorID("vlang")},
 		{name: ".terraform.lock.hcl", want: DetectorID("terraform-lock")},
 		// Group 1b: Build systems and monorepo tools
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"flake.lock",
 		"dune-project",
 		"esy.json",
+		"demo.opam",
 	}
 
 	for _, tc := range testCases {

@@ -3379,7 +3379,25 @@ work_items:
         - candidate_id: candidate-f0b18bb2829a5718d6161f4187977ec3
           original_path: utf8.opam
           source_sha256: 869a5dfd38c08e0e7ae376fb811139d8d892206ae37d4f624f9e59119c447502
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/ocaml/opam-runtime-constraints/runtime.opam
+            - testdata/ocaml/opam-scoped-dependencies/scoped.opam
+            - testdata/ocaml/opam-upper-bound/upper-bound.opam
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/ocaml_opam.go
+            - internal/analyze/ocaml_opam_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/ocaml/opam-runtime-constraints/runtime.opam
+            - testdata/ocaml/opam-scoped-dependencies/scoped.opam
+            - testdata/ocaml/opam-upper-bound/upper-bound.opam
     - number: 89
       id: pants-config
       detector:

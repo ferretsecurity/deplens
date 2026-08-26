@@ -1,0 +1,6 @@
+opam-version: "2.0"
+depends: [
+  "build-tool"
+  "compatibility-layer" {< "4.0.0"}
+  "compiler" {>= "4.2.0"}
+]

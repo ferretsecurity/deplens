@@ -761,9 +761,12 @@ rules:
     roles: [declaration, constraint]
     filename-regex: '.*\.nimble$'
   - id: ocaml-opam
+    package-type: opam
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '.*\.opam$'
+    analyzer:
+      type: ocaml-opam
   - id: ocaml-opam-locked
     form: lockfile
     roles: [resolution]
