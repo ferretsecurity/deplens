@@ -65,6 +65,8 @@ CocoaPods `Podfile.lock` files extract resolved pods and their selected versions
 
 CocoaPods podspecs extract static direct pod declarations and version constraints.
 
+LuaRocks rockspecs extract direct runtime dependency declarations and their version constraints from the `dependencies` table.
+
 Bun `bun.lock` files extract every resolved npm package, including the selected version and root workspace dependency, development, optional, or peer source group when available.
 
 For example, `package.json` was previously limited to presence assessment:
@@ -389,7 +391,7 @@ analyzer:
     - devDependencies
 ```
 
-The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `git-submodules`, `github-actions-action`, `maven-pom`, `java-ivy`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, `dotnet-packages-config`, `dotnet-packages-lock`, `dotnet-paket-dependencies`, `dotnet-paket-lock`, `dotnet-paket-references`, `buf`, `buf-lock`, `dart-pubspec`, `dart-pubspec-lock`, `erlang-rebar-config`, `erlang-rebar-lock`, `elixir-mix`, `gleam`, `go-glide-yaml`, `go-glide-lock`, `haskell-cabal`, `haskell-stack`, `haskell-stack-lock`, `haskell-package-yaml`, `haskell-cabal-project-freeze`, `jsonnet-bundler`, and `jsonnet-lock` can also be used by custom rules. They reject analyzer fields other than `type`.
+The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `git-submodules`, `github-actions-action`, `maven-pom`, `java-ivy`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, `dotnet-packages-config`, `dotnet-packages-lock`, `dotnet-paket-dependencies`, `dotnet-paket-lock`, `dotnet-paket-references`, `buf`, `buf-lock`, `dart-pubspec`, `dart-pubspec-lock`, `erlang-rebar-config`, `erlang-rebar-lock`, `elixir-mix`, `gleam`, `go-glide-yaml`, `go-glide-lock`, `haskell-cabal`, `haskell-stack`, `haskell-stack-lock`, `haskell-package-yaml`, `haskell-cabal-project-freeze`, `jsonnet-bundler`, `jsonnet-lock`, and `lua-rockspec` can also be used by custom rules. They reject analyzer fields other than `type`.
 
 The old rule shape is rejected. The migration is intentionally atomic:
 

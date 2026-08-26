@@ -742,9 +742,12 @@ rules:
   #   roles: [declaration, constraint]
   #   filename-regex: '^DESCRIPTION$'
   - id: lua-rockspec
+    package-type: luarocks
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '.*\.rockspec$'
+    analyzer:
+      type: lua-rockspec
   - id: zig-build-zon
     form: manifest
     roles: [declaration, constraint]

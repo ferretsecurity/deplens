@@ -3113,7 +3113,25 @@ work_items:
         - candidate_id: candidate-f3f55a3e4ad10d440381c490db20ff80
           original_path: date-dev-1.rockspec
           source_sha256: 0d6b4beccc36c7dc534dcd6189d6a1cfe8ffc32568453ea2a71eb489db6a75e0
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/lua/rockspec/runtime-list-1.rockspec
+            - testdata/lua/rockspec/dynamic-identity-1.rockspec
+            - testdata/lua/rockspec/concatenated-version-1.rockspec
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/lua_rockspec.go
+            - internal/analyze/lua_rockspec_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/lua/rockspec/concatenated-version-1.rockspec
+            - testdata/lua/rockspec/dynamic-identity-1.rockspec
+            - testdata/lua/rockspec/runtime-list-1.rockspec
     - number: 83
       id: nix-default-shell
       detector:
