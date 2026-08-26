@@ -2407,7 +2407,7 @@ work_items:
         - candidate_id: candidate-f0c727c9360c4bf327eed5a7d7a7ef50
           original_path: Cartfile
           source_sha256: eefa89e64a5a577a44778cb438a44e85f498fd555f841e0be222fb439e3205b4
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -2427,6 +2427,13 @@ work_items:
             - testdata/ios/cartfile-binary-constraint/Cartfile
             - testdata/ios/cartfile-github-constraint/Cartfile
             - testdata/ios/cartfile-github-unpinned/Cartfile
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/ios/cartfile-github-unpinned/Cartfile
+            - testdata/ios/cartfile-github-constraint/Cartfile
+            - testdata/ios/cartfile-binary-constraint/Cartfile
+          changed_paths: []
     - number: 62
       id: ios-cartfile-resolved
       detector:
