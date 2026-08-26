@@ -4105,7 +4105,7 @@ work_items:
         - candidate_id: candidate-78fc7ecb5b6535e97356e43293b9aad3
           original_path: Package.swift
           source_sha256: 1be45e52621fd24fd8ca1ea705f6670c0a544d6d5dc9dd29b239279f0fdce747
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -4125,6 +4125,13 @@ work_items:
             - testdata/swift/package-manifest-empty-dependencies/Package.swift
             - testdata/swift/package-manifest-with-dependency/Package.swift
             - testdata/swift/package-manifest-without-dependencies/Package.swift
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/swift/package-manifest-with-dependency/Package.swift
+            - testdata/swift/package-manifest-empty-dependencies/Package.swift
+            - testdata/swift/package-manifest-without-dependencies/Package.swift
+          changed_paths: []
     - number: 106
       id: swift-package-resolved
       detector:
