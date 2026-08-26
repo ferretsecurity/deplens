@@ -51,9 +51,12 @@ rules:
       exists-any:
         - package
   - id: python-conda-env-alt
+    package-type: conda
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^conda\.ya?ml$'
+    analyzer:
+      type: conda-environment
   - id: python-pyproject
     form: manifest
     roles: [declaration, constraint]

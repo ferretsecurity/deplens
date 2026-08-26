@@ -67,6 +67,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newPythonMatcher)
 	case "py-requirements":
 		return decodeAndCreate(raw.Analyzer, newPyRequirementsMatcher)
+	case "conda-environment":
+		return decodeAndCreate(raw.Analyzer, newCondaEnvironmentParser)
 	case "pipfile-lock":
 		return decodeAndCreate(raw.Analyzer, newPipfileLockParser)
 	case "poetry-lock":

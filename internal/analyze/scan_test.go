@@ -93,8 +93,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: ".yarnrc.yml", want: DetectorID("js-yarnrc")},
 		// Group 1g: Python ecosystem extensions
 		{name: "constraints.txt", want: DetectorID("python-constraints")},
-		{name: "conda.yml", want: DetectorID("python-conda-env-alt")},
-		{name: "conda.yaml", want: DetectorID("python-conda-env-alt")},
 		// Group 1h: Systems languages extensions
 		{name: "build.zig", want: DetectorID("zig-build")},
 		// Group 1i: Ruby/iOS ecosystem extensions
@@ -353,6 +351,8 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"deno.jsonc",
 		"importmap.json",
 		"pyproject.toml",
+		"conda.yml",
+		"conda.yaml",
 		"environment.yml",
 		"environment.yaml",
 		"Pipfile",
