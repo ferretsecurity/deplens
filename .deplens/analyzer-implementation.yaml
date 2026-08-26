@@ -3468,7 +3468,25 @@ work_items:
         - candidate_id: candidate-8c41af57b57d1e8064dff4e256a514d9
           original_path: Build.PL
           source_sha256: 637d1acf0e771f00ad0a2fb9c90bd31d30ca3a95fdf0ca429a99d9b27ee103e2
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/perl/build-pl-prerequisite-groups/Build.PL
+            - testdata/perl/build-pl-named-arguments/Build.PL
+            - testdata/perl/build-pl-subclass-constructor/Build.PL
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/perl_build_pl.go
+            - internal/analyze/perl_build_pl_test.go
+            - internal/analyze/scan_test.go
+            - testdata/perl/build-pl-named-arguments/Build.PL
+            - testdata/perl/build-pl-prerequisite-groups/Build.PL
+            - testdata/perl/build-pl-subclass-constructor/Build.PL
     - number: 91
       id: perl-cpanfile
       detector:

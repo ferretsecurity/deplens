@@ -63,6 +63,8 @@ Homebrew Brewfile lockfiles extract resolved formulas and casks, bottle checksum
 
 Esy `esy.json` manifests extract direct runtime, development, and `override.dependencies` declarations. Pants `pants.toml` configurations extract the pinned Pants version and configured backend packages.
 
+Perl `Build.PL` files extract static Module::Build prerequisite maps, preserving runtime, optional, build/configure, and test scopes.
+
 CocoaPods `Podfile.lock` files extract resolved pods and their selected versions.
 
 CocoaPods podspecs extract static direct pod declarations and version constraints.

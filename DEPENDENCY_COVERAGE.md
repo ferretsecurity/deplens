@@ -117,7 +117,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `perl-cpanfile` | `manifest` | `declaration, constraint` | — | select |
 | `perl-cpanfile-snapshot` | `lockfile` | `resolution, integrity` | — | select |
 | `perl-makefile-pl` | `build-definition` | `declaration, constraint, configuration` | — | select |
-| `perl-build-pl` | `build-definition` | `declaration, constraint, configuration` | — | select |
+| `perl-build-pl` | `build-definition` | `declaration, constraint, configuration` | `perl-build-pl` | select, recognize, assess-presence, extract |
 | `perl-meta` | `manifest` | `declaration, constraint` | — | select |
 | `perl-dist-ini` | `tool-config` | `configuration` | — | select |
 | `raku-meta` | `manifest` | `declaration, constraint` | — | select |

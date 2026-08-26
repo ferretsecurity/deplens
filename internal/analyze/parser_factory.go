@@ -213,6 +213,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newLuaRocksParser)
 	case "emacs-cask":
 		return decodeAndCreate(raw.Analyzer, newEmacsCaskParser)
+	case "perl-build-pl":
+		return decodeAndCreate(raw.Analyzer, newPerlBuildPLParser)
 	case "clojure-deps-edn":
 		return decodeAndCreate(raw.Analyzer, newClojureDepsEDNParser)
 	case "clojure-project-clj":
