@@ -1491,10 +1491,11 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			extracted: true,
 		},
 		{
-			name: "swift package resolved",
-			root: filepath.Join("..", "..", "testdata", "swift", "package-resolved-with-deps"),
-			path: "Package.resolved",
-			typ:  DetectorID("swift-package-resolved"),
+			name:      "swift package resolved",
+			root:      filepath.Join("..", "..", "testdata", "swift", "package-resolved-with-deps"),
+			path:      "Package.resolved",
+			typ:       DetectorID("swift-package-resolved"),
+			extracted: true,
 		},
 	}
 

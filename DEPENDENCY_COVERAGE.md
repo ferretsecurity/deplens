@@ -108,7 +108,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `cpp-autotools` | `build-definition` | `declaration, constraint, configuration` | — | select |
 | `cpp-cmake-modules` | `build-definition` | `declaration, constraint, configuration` | — | select |
 | `cpp-meson-wrap` | `build-definition` | `declaration, constraint, configuration` | — | select |
-| `swift-package-resolved` | `lockfile` | `resolution, integrity` | `json` | select, recognize, assess-presence |
+| `swift-package-resolved` | `lockfile` | `resolution, integrity` | `swift-package-resolved` | select, recognize, assess-presence, extract, normalize, relate |
 | `ios-podfile-lock` | `lockfile` | `resolution, integrity` | `yaml` | select, recognize, assess-presence |
 | `elixir-mix` | `manifest` | `declaration, constraint` | — | select |
 | `elixir-mix-lock` | `lockfile` | `resolution, integrity` | — | select |

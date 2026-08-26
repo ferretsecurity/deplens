@@ -676,13 +676,12 @@ rules:
   #   roles: [declaration, constraint]
   #   path-glob: 'DEPS'
   - id: swift-package-resolved
+    package-type: swift
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Package\.resolved$'
     analyzer:
-      type: json
-      exists-any:
-        - pins
+      type: swift-package-resolved
   - id: ios-podfile-lock
     package-type: cocoapods
     form: lockfile

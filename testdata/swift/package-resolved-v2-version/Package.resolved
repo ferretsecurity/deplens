@@ -1,0 +1,12 @@
+{
+  "pins": [{
+    "identity": "alamofire",
+    "kind": "remoteSourceControl",
+    "location": "https://example.test/Alamofire.git",
+    "state": {
+      "revision": "2222222222222222222222222222222222222222",
+      "version": "5.5.0"
+    }
+  }],
+  "version": 2
+}
