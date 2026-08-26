@@ -3157,7 +3157,7 @@ work_items:
         - candidate_id: candidate-53918128bb5b733f5536e0c4ff89f1b4
           original_path: default.nix
           source_sha256: 3f5d5abf5af2db5dea3b4f17510f6f6dd47448925909795ef58480adc48da0d6
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -3176,6 +3176,13 @@ work_items:
             - testdata/nix/default-shell-fetch-tarball/default.nix
             - testdata/nix/default-shell-nixpkgs/default.nix
             - testdata/nix/default-shell-overlay/default.nix
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/nix/default-shell-fetch-tarball/default.nix
+            - testdata/nix/default-shell-nixpkgs/default.nix
+            - testdata/nix/default-shell-overlay/default.nix
+          changed_paths: []
     - number: 84
       id: nix-flake
       detector:
