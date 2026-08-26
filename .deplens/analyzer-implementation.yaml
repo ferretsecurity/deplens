@@ -3689,7 +3689,23 @@ work_items:
         - candidate_id: candidate-6d388794e59fab7059e551b13285b708
           original_path: wrappers/metaphlan/environment.yaml
           source_sha256: 76a20da7fe6a0ab6bfe11e0ede4b51e9db873db7536c28b9147c25840573fc26
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/python/conda-environment-pytorch/environment.yaml
+            - testdata/python/conda-environment-pip-requirements/environment.yaml
+            - testdata/python/conda-environment-metaphlan/environment.yaml
+          changed_paths:
+            - README.md
+            - internal/analyze/conda_env.go
+            - internal/analyze/conda_env_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/scan_test.go
+            - testdata/python/conda-environment-metaphlan/environment.yaml
+            - testdata/python/conda-environment-pip-requirements/environment.yaml
+            - testdata/python/conda-environment-pytorch/environment.yaml
     - number: 96
       id: python-constraints
       detector:

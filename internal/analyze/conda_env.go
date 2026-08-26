@@ -115,6 +115,10 @@ func condaEnvironmentPipDependencies(value map[string]any) ([]DependencyReferenc
 		if !ok || raw == "" {
 			return nil, fmt.Sprintf("pip[%d]: package declaration must be a non-empty string", index)
 		}
+		if target, included := parsePyRequirementsInclude(raw); included {
+			dependencies = append(dependencies, condaEnvironmentPipRequirementsInclude(raw, target))
+			continue
+		}
 		parsed := parsePEP508Dep(raw)
 		if parsed.name == "" {
 			return nil, fmt.Sprintf("pip[%d]: package name is required", index)
@@ -132,4 +136,18 @@ func condaEnvironmentPipDependencies(value map[string]any) ([]DependencyReferenc
 		})
 	}
 	return dependencies, ""
+}
+
+func condaEnvironmentPipRequirementsInclude(raw, target string) DependencyReference {
+	path := strings.TrimPrefix(target, "file:")
+	return DependencyReference{
+		PackageType:  "generic",
+		Raw:          raw,
+		Name:         path,
+		SourceGroup:  "dependencies.pip",
+		OriginKind:   OriginPath,
+		Relationship: RelationshipDirect,
+		Scope:        ScopeRuntime,
+		Attributes:   map[string]string{"path": path},
+	}
 }

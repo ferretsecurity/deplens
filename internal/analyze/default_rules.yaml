@@ -72,12 +72,12 @@ rules:
         - tool.poetry.dependencies
         - tool.poetry.group.*.dependencies
   - id: python-conda-environment
+    package-type: conda
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^environment\.ya?ml$'
     analyzer:
-      type: yaml
-      exists: dependencies
+      type: conda-environment
   - id: python-pipfile
     form: manifest
     roles: [declaration, constraint]

@@ -43,6 +43,37 @@ func TestCondaEnvironmentFixturesExtractDependencyReferences(t *testing.T) {
 				condaEnvironmentTestDependency("pyscipopt", "pyscipopt >= 3.0.1", ">= 3.0.1"),
 			},
 		},
+		{
+			name:    "environment file with Conda and pip package declarations",
+			fixture: "conda-environment-pytorch",
+			path:    "environment.yaml",
+			want: []DependencyReference{
+				condaEnvironmentTestDependency("cudatoolkit", "cudatoolkit=10.2", "=10.2"),
+				condaEnvironmentTestDependency("python", "python", ""),
+				condaEnvironmentTestDependency("pytorch", "pytorch", ""),
+				{PackageType: "pypi", Raw: "ipdb", Name: "ipdb", SourceGroup: "dependencies.pip", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime},
+				{PackageType: "pypi", Raw: "scikit-image", Name: "scikit-image", SourceGroup: "dependencies.pip", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime},
+			},
+		},
+		{
+			name:    "environment file with a pip requirements-file reference",
+			fixture: "conda-environment-pip-requirements",
+			path:    "environment.yaml",
+			want: []DependencyReference{
+				condaEnvironmentTestDependency("anaconda", "anaconda", ""),
+				condaEnvironmentTestDependency("pip", "pip", ""),
+				condaEnvironmentTestDependency("python", "python==3.9", "==3.9"),
+				{PackageType: "generic", Raw: "-r file:requirements.txt", Name: "requirements.txt", SourceGroup: "dependencies.pip", OriginKind: OriginPath, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"path": "requirements.txt"}},
+			},
+		},
+		{
+			name:    "environment file with spaced Conda pin",
+			fixture: "conda-environment-metaphlan",
+			path:    "environment.yaml",
+			want: []DependencyReference{
+				condaEnvironmentTestDependency("metaphlan", "metaphlan = 4.2.4", "= 4.2.4"),
+			},
+		},
 	}
 
 	ruleset := mustLoadDefaultRules(t)
@@ -53,8 +84,15 @@ func TestCondaEnvironmentFixturesExtractDependencyReferences(t *testing.T) {
 				t.Fatalf("Scan: %v", err)
 			}
 			source := sourceForPath(t, result, tc.path)
-			if source.Detector != "python-conda-env-alt" || source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
+			if source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
 				t.Fatalf("source = %+v", source)
+			}
+			if tc.fixture == "conda-environment-pytorch" || tc.fixture == "conda-environment-pip-requirements" || tc.fixture == "conda-environment-metaphlan" {
+				if source.Detector != "python-conda-environment" {
+					t.Fatalf("detector = %q, want python-conda-environment", source.Detector)
+				}
+			} else if source.Detector != "python-conda-env-alt" {
+				t.Fatalf("detector = %q, want python-conda-env-alt", source.Detector)
 			}
 			applyDependencyVERS(tc.want)
 			if !equalDependencies(source.Dependencies, tc.want) {

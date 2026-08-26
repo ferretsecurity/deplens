@@ -766,11 +766,11 @@ func TestScanFindsCondaEnvironmentInFixture(t *testing.T) {
 
 	for _, source := range result.Sources {
 		if source.Detector == DetectorID("python-conda-environment") && source.Path == "environment.yml" {
-			if source.Dependencies != nil {
-				t.Fatalf("expected no extracted dependencies, got %+v", source.Dependencies)
+			if source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
+				t.Fatalf("expected complete extracted dependencies, got %+v", source.Analysis)
 			}
-			if source.Analysis.Presence != PresenceUnknown {
-				t.Fatalf("expected presence to remain unknown, got %+v", source.Analysis)
+			if want := []string{"pip", "python=3.12"}; !slices.Equal(dependencyNames(source.Dependencies), want) {
+				t.Fatalf("dependencies = %+v, want %v", source.Dependencies, want)
 			}
 			return
 		}

@@ -1,0 +1,11 @@
+name: project
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - python
+  - pytorch
+  - cudatoolkit=10.2
+  - pip:
+    - ipdb
+    - scikit-image
