@@ -65,6 +65,8 @@ Esy `esy.json` manifests extract direct runtime, development, and `override.depe
 
 Perl `Build.PL` files extract static Module::Build prerequisite maps, preserving runtime, optional, build/configure, and test scopes.
 
+Perl `Makefile.PL` files extract static Module::Install and ExtUtils::MakeMaker prerequisite declarations, preserving runtime, optional, build/configure, and test scopes.
+
 Perl `cpanfile` manifests extract static required and recommended CPAN modules, including test, development, and feature-scoped dependencies.
 
 Perl `cpanfile.snapshot` lockfiles extract resolved CPAN distributions and their selected versions.

@@ -714,9 +714,12 @@ rules:
     analyzer:
       type: perl-cpanfile-snapshot
   - id: perl-makefile-pl
+    package-type: cpan
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^Makefile\.PL$'
+    analyzer:
+      type: perl-makefile-pl
   - id: perl-build-pl
     package-type: cpan
     form: build-definition

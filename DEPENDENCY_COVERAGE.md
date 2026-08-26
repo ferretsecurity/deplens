@@ -1,6 +1,6 @@
 # Dependency coverage
 
-This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 84 have semantic analyzers and 105 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
+This inventory is generated from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 85 have semantic analyzers and 104 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
@@ -116,7 +116,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `julia-manifest` | `lockfile` | `resolution, integrity` | `toml` | select, recognize, assess-presence |
 | `perl-cpanfile` | `manifest` | `declaration, constraint` | — | select |
 | `perl-cpanfile-snapshot` | `lockfile` | `resolution, integrity` | `perl-cpanfile-snapshot` | select, recognize, assess-presence, extract |
-| `perl-makefile-pl` | `build-definition` | `declaration, constraint, configuration` | — | select |
+| `perl-makefile-pl` | `build-definition` | `declaration, constraint, configuration` | `perl-makefile-pl` | select, recognize, assess-presence, extract |
 | `perl-build-pl` | `build-definition` | `declaration, constraint, configuration` | `perl-build-pl` | select, recognize, assess-presence, extract |
 | `perl-meta` | `manifest` | `declaration, constraint` | — | select |
 | `perl-dist-ini` | `tool-config` | `configuration` | — | select |
