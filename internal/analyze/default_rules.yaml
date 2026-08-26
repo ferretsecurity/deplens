@@ -687,11 +687,10 @@ rules:
   - id: julia-project
     form: manifest
     roles: [declaration, constraint]
+    package-type: julia
     filename-regex: '^Project\.toml$'
     analyzer:
-      type: toml
-      table-exists-any:
-        - deps
+      type: julia-project
   - id: julia-manifest
     form: lockfile
     roles: [resolution, integrity]

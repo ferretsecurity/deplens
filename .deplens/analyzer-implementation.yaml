@@ -3070,7 +3070,24 @@ work_items:
         - candidate_id: candidate-a7a5308030c1c1bc767bc72cf164dbe6
           original_path: Project.toml
           source_sha256: b5e6fce56146678a45d643a4edc018f712f0d2a4e93ff416c3bdc4338491ae91
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/julia/project-generated-deps/Project.toml
+            - testdata/julia/project-deps-only/Project.toml
+            - testdata/julia/project-compat-and-extras/Project.toml
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/julia_project.go
+            - internal/analyze/julia_project_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/julia/project-compat-and-extras/Project.toml
+            - testdata/julia/project-deps-only/Project.toml
+            - testdata/julia/project-generated-deps/Project.toml
     - number: 82
       id: lua-rockspec
       detector:

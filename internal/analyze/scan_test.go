@@ -1369,10 +1369,11 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			extracted: true,
 		},
 		{
-			name: "julia project",
-			root: filepath.Join("..", "..", "testdata", "julia", "project"),
-			path: "Project.toml",
-			typ:  DetectorID("julia-project"),
+			name:      "julia project",
+			root:      filepath.Join("..", "..", "testdata", "julia", "project"),
+			path:      "Project.toml",
+			typ:       DetectorID("julia-project"),
+			extracted: true,
 		},
 		{
 			name: "julia manifest",

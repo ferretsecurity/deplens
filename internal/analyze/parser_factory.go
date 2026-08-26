@@ -181,6 +181,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newErlangRebarLockParser)
 	case "elixir-mix":
 		return decodeAndCreate(raw.Analyzer, newElixirMixParser)
+	case "julia-project":
+		return decodeAndCreate(raw.Analyzer, newJuliaProjectParser)
 	case "clojure-boot":
 		return decodeAndCreate(raw.Analyzer, newClojureBootParser)
 	case "haskell-cabal":
