@@ -65,6 +65,8 @@ Conda `conda.yml`, `conda.yaml`, `environment.yml`, and `environment.yaml` envir
 
 Python `constraints.txt` files extract pip package constraints, including PEP 508 markers and local-version pins; index configuration directives are ignored.
 
+PDM `pdm.lock` files extract resolved Python package names and versions.
+
 Esy `esy.json` manifests extract direct runtime, development, and `override.dependencies` declarations. Pants `pants.toml` configurations extract the pinned Pants version and configured backend packages.
 
 Perl `Build.PL` files extract static Module::Build prerequisite maps, preserving runtime, optional, build/configure, and test scopes.

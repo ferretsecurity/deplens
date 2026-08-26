@@ -3773,7 +3773,25 @@ work_items:
         - candidate_id: candidate-eb648a2250e1f18845b7f1b0d382389e
           original_path: pdm.lock
           source_sha256: 80f4edf0b9f2d943932db4a7fb614563a8c7d0cd4e1bb949bff9e23c7e2e88bf
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/python/pdm-lock-groups/pdm.lock
+            - testdata/python/pdm-lock-targets/pdm.lock
+            - testdata/python/pdm-lock-ungrouped/pdm.lock
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/pdm_lock.go
+            - internal/analyze/pdm_lock_test.go
+            - internal/analyze/scan_test.go
+            - testdata/python/pdm-lock-groups/pdm.lock
+            - testdata/python/pdm-lock-targets/pdm.lock
+            - testdata/python/pdm-lock-ungrouped/pdm.lock
     - number: 98
       id: r-renv-lock
       detector:

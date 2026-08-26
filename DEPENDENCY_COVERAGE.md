@@ -11,7 +11,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `python-uv` | `lockfile` | `resolution, integrity` | `uv-lock` | select, recognize, extract, normalize |
 | `python-poetry-lock` | `lockfile` | `resolution, integrity` | `poetry-lock` | select, recognize, extract, normalize |
 | `python-pipfile-lock` | `lockfile` | `resolution, integrity` | `pipfile-lock` | select, recognize, extract, normalize |
-| `python-pdm-lock` | `lockfile` | `resolution, integrity` | `toml` | select, recognize, assess-presence |
+| `python-pdm-lock` | `lockfile` | `resolution, integrity` | `pdm-lock` | select, recognize, extract, normalize |
 | `python-conda-lock` | `lockfile` | `resolution, integrity` | `yaml` | select, recognize, assess-presence |
 | `python-conda-env-alt` | `manifest` | `declaration, constraint` | — | select |
 | `python-pyproject` | `manifest` | `declaration, constraint` | `toml` | select, recognize, extract, normalize |

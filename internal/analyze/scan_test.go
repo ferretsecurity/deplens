@@ -341,6 +341,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"npm-shrinkwrap.json",
 		"pnpm-lock.yaml",
 		"bun.lock",
+		"pdm.lock",
 		"conda-lock.yml",
 		"bower.json",
 		"composer.json",
@@ -1112,14 +1113,62 @@ func TestScanFindsPdmLockInFixture(t *testing.T) {
 			if source.Analysis.Presence != PresencePresent {
 				t.Fatalf("expected backend/pdm.lock fixture to have presence=present, got %+v", source.Analysis)
 			}
-			if source.Dependencies != nil {
-				t.Fatalf("expected backend/pdm.lock fixture to remain non-extracting, got %+v", source.Dependencies)
+			if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"requests==2.32.3"}) {
+				t.Fatalf("unexpected backend/pdm.lock dependencies: %+v", source.Dependencies)
 			}
 			return
 		}
 	}
 
 	t.Fatalf("expected backend/pdm.lock fixture to be detected, got %+v", result.Sources)
+}
+
+func TestDefaultRulesScanPDMLockCorpusPatternFixtures(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	testCases := []struct {
+		name string
+		root string
+		want []string
+	}{
+		{
+			name: "groups",
+			root: filepath.Join("..", "..", "testdata", "python", "pdm-lock-groups"),
+			want: []string{"format-tool==23.1.0", "format-core==1.0.0"},
+		},
+		{
+			name: "metadata targets",
+			root: filepath.Join("..", "..", "testdata", "python", "pdm-lock-targets"),
+			want: []string{"typed-api==2.4.0", "typed-core==1.3.0"},
+		},
+		{
+			name: "ungrouped packages",
+			root: filepath.Join("..", "..", "testdata", "python", "pdm-lock-ungrouped"),
+			want: []string{"http-client==3.2.1", "certificate-bundle==2024.2.0"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := Scan(tc.root, nil, ruleset)
+			if err != nil {
+				t.Fatalf("scan failed: %v", err)
+			}
+			if len(result.Sources) != 1 {
+				t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
+			}
+			source := result.Sources[0]
+			if source.Detector != DetectorID("python-pdm-lock") || source.Path != "pdm.lock" {
+				t.Fatalf("unexpected dependency source: %+v", source)
+			}
+			if got := dependencyNames(source.Dependencies); !slices.Equal(got, tc.want) {
+				t.Fatalf("unexpected dependencies: got %+v want %v", source.Dependencies, tc.want)
+			}
+			if source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
+				t.Fatalf("unexpected analysis: %+v", source.Analysis)
+			}
+		})
+	}
 }
 
 func TestScanFindsGopkgLockInFixture(t *testing.T) {

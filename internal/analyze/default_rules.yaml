@@ -37,11 +37,10 @@ rules:
   - id: python-pdm-lock
     form: lockfile
     roles: [resolution, integrity]
+    package-type: pypi
     filename-regex: '^pdm\.lock$'
     analyzer:
-      type: toml
-      exists-any:
-        - package
+      type: pdm-lock
   - id: python-conda-lock
     form: lockfile
     roles: [resolution, integrity]

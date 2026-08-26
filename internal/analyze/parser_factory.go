@@ -73,6 +73,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newPipfileLockParser)
 	case "poetry-lock":
 		return decodeAndCreate(raw.Analyzer, newPoetryLockParser)
+	case "pdm-lock":
+		return decodeAndCreate(raw.Analyzer, newPDMLockParser)
 	case "uv-lock":
 		return decodeAndCreate(raw.Analyzer, newUVLockParser)
 	case "go-mod":
