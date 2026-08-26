@@ -1,0 +1,14 @@
+{
+  "dependencies": [
+    {
+      "name": "utility",
+      "source": {
+        "git": {
+          "remote": "https://example.test/libraries.git",
+          "subdir": "utility"
+        }
+      },
+      "version": "main"
+    }
+  ]
+}

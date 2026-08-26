@@ -4414,8 +4414,8 @@ func TestScanMarksJsonnetBundlerEmptyDependenciesAsNoDependencies(t *testing.T) 
 	if result.Sources[0].Detector != DetectorID("jsonnet-bundler") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresenceAbsent {
-		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	if result.Sources[0].Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) {
+		t.Fatalf("expected complete empty dependency result, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4432,12 +4432,12 @@ func TestScanMarksJsonnetBundlerWithoutDependenciesKeyAsNoDependencies(t *testin
 	if result.Sources[0].Detector != DetectorID("jsonnet-bundler") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresenceAbsent {
-		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	if result.Sources[0].Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) {
+		t.Fatalf("expected complete empty dependency result, got %+v", result.Sources[0].Analysis)
 	}
 }
 
-func TestScanMarksJsonnetBundlerWrongTypeAsNoDependencies(t *testing.T) {
+func TestScanMarksJsonnetBundlerWrongTypeAsIncomplete(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	result, err := Scan(filepath.Join("..", "..", "testdata", "jsonnet", "bundler-wrong-type"), nil, ruleset)
@@ -4450,8 +4450,8 @@ func TestScanMarksJsonnetBundlerWrongTypeAsNoDependencies(t *testing.T) {
 	if result.Sources[0].Detector != DetectorID("jsonnet-bundler") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresenceAbsent {
-		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	if result.Sources[0].Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionUnsupported}) {
+		t.Fatalf("expected incomplete dependency declaration, got %+v", result.Sources[0].Analysis)
 	}
 }
 

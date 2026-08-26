@@ -847,13 +847,12 @@ rules:
     analyzer:
       type: homebrew-brewfile
   - id: jsonnet-bundler
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^jsonnetfile\.json$'
     analyzer:
-      type: json
-      exists-any:
-        - dependencies
+      type: jsonnet-bundler
   - id: terraform-lock
     form: lockfile
     roles: [resolution, integrity]

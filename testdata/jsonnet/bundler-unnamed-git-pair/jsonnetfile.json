@@ -1,0 +1,22 @@
+{
+  "dependencies": [
+    {
+      "source": {
+        "git": {
+          "remote": "https://example.test/alpha.git",
+          "subdir": "generated"
+        }
+      },
+      "version": "main"
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://example.test/beta.git",
+          "subdir": "library"
+        }
+      },
+      "version": "stable"
+    }
+  ]
+}
