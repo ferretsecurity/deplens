@@ -1,0 +1,3 @@
+[GLOBAL]
+pants_version = "2.99.3"
+backend_packages = ["example.pants.go", "example.pants.go.lint"]

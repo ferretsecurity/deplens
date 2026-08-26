@@ -3422,7 +3422,26 @@ work_items:
         - candidate_id: candidate-79daa6c99d46d645a534131245765799
           original_path: examples/build_recipes/pants/basic_pants/pants.toml
           source_sha256: abf0b481d95e3aafd9717d3cd14016471e8a9eba0dc93d94b504e422789cc125
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/pants/python-backends/pants.toml
+            - testdata/pants/jvm-backends/pants.toml
+            - testdata/pants/go-backends/pants.toml
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/pants_config.go
+            - internal/analyze/pants_config_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/pants/go-backends/pants.toml
+            - testdata/pants/jvm-backends/pants.toml
+            - testdata/pants/python-backends/pants.toml
     - number: 90
       id: perl-build-pl
       detector:

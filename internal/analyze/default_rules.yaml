@@ -951,9 +951,12 @@ rules:
     roles: [configuration]
     filename-regex: '^turbo\.json$'
   - id: pants-config
+    package-type: pypi
     form: tool-config
     roles: [configuration]
     filename-regex: '^pants\.toml$'
+    analyzer:
+      type: pants-config
   - id: pants-jvm-build
     form: build-definition
     roles: [declaration, constraint, configuration]
