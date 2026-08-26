@@ -3602,7 +3602,7 @@ work_items:
         - candidate_id: candidate-bfd390f6a3aded273e804e01ebdeaac3
           original_path: Makefile.PL
           source_sha256: 7466910c55f0367724aff406e9eb4083f26e4e4c5f0a8deee086fb2ceedf58e3
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -3621,6 +3621,13 @@ work_items:
             - testdata/perl/makefile-pl-empty-prereq/Makefile.PL
             - testdata/perl/makefile-pl-module-install/Makefile.PL
             - testdata/perl/makefile-pl-no-prereq/Makefile.PL
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/perl/makefile-pl-module-install/Makefile.PL
+            - testdata/perl/makefile-pl-empty-prereq/Makefile.PL
+            - testdata/perl/makefile-pl-no-prereq/Makefile.PL
+          changed_paths: []
     - number: 94
       id: python-conda-env-alt
       detector:
