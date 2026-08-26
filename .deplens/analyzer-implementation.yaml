@@ -3248,7 +3248,7 @@ work_items:
         - candidate_id: candidate-cdb95170b43c321834555636062c703f
           original_path: flake.lock
           source_sha256: 73af65c3b1c64797ee8f5ebd6cbb10e64a7be936453431a8374e7ace6f058a42
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -3266,6 +3266,13 @@ work_items:
             - testdata/nix/flake-lock-aliased-nodes/flake.lock
             - testdata/nix/flake-lock-input-follow/flake.lock
             - testdata/nix/flake-lock-root-and-transitive/flake.lock
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/nix/flake-lock-root-and-transitive/flake.lock
+            - testdata/nix/flake-lock-input-follow/flake.lock
+            - testdata/nix/flake-lock-aliased-nodes/flake.lock
+          changed_paths: []
     - number: 86
       id: ocaml-dune-project
       detector:
