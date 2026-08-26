@@ -707,9 +707,12 @@ rules:
     analyzer:
       type: perl-cpanfile
   - id: perl-cpanfile-snapshot
+    package-type: cpan
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^cpanfile\.snapshot$'
+    analyzer:
+      type: perl-cpanfile-snapshot
   - id: perl-makefile-pl
     form: build-definition
     roles: [declaration, constraint, configuration]

@@ -67,6 +67,8 @@ Perl `Build.PL` files extract static Module::Build prerequisite maps, preserving
 
 Perl `cpanfile` manifests extract static required and recommended CPAN modules, including test, development, and feature-scoped dependencies.
 
+Perl `cpanfile.snapshot` lockfiles extract resolved CPAN distributions and their selected versions.
+
 CocoaPods `Podfile.lock` files extract resolved pods and their selected versions.
 
 CocoaPods podspecs extract static direct pod declarations and version constraints.

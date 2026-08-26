@@ -3556,7 +3556,26 @@ work_items:
         - candidate_id: candidate-653a15727e1a28bd987d1edb35d80538
           original_path: cpanfile.snapshot
           source_sha256: 27c95ccd89237678ea20d592797a359522a0cce8083d943574d43e886d43fc21
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/perl/cpanfile-snapshot-dbd-mysql/cpanfile.snapshot
+            - testdata/perl/cpanfile-snapshot-file-slurp/cpanfile.snapshot
+            - testdata/perl/cpanfile-snapshot-config-tiny/cpanfile.snapshot
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/perl_cpanfile_snapshot.go
+            - internal/analyze/perl_cpanfile_snapshot_test.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/perl/cpanfile-snapshot-config-tiny/cpanfile.snapshot
+            - testdata/perl/cpanfile-snapshot-dbd-mysql/cpanfile.snapshot
+            - testdata/perl/cpanfile-snapshot-file-slurp/cpanfile.snapshot
     - number: 93
       id: perl-makefile-pl
       detector:

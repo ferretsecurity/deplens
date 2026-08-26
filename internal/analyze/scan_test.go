@@ -101,7 +101,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		// Group 1j: Functional and niche languages
 		{name: "renv.lock", want: DetectorID("r-renv-lock")},
 		// DRAFT (Group 3): {name: "DESCRIPTION", want: DetectorID("r-description")},
-		{name: "cpanfile.snapshot", want: DetectorID("perl-cpanfile-snapshot")},
 		{name: "Makefile.PL", want: DetectorID("perl-makefile-pl")},
 		{name: "META.json", want: DetectorID("perl-meta")},
 		{name: "META.yml", want: DetectorID("perl-meta")},
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"demo.opam",
 		"pants.toml",
 		"cpanfile",
+		"cpanfile.snapshot",
 	}
 
 	for _, tc := range testCases {
