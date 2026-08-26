@@ -63,6 +63,8 @@ Homebrew Brewfile lockfiles extract resolved formulas and casks, bottle checksum
 
 CocoaPods `Podfile.lock` files extract resolved pods and their selected versions.
 
+CocoaPods podspecs extract static direct pod declarations and version constraints.
+
 For example, `package.json` was previously limited to presence assessment:
 
 ```text

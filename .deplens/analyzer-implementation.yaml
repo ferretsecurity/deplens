@@ -2584,7 +2584,25 @@ work_items:
         - candidate_id: candidate-b3fe22e2cc53c5650728af5581211ff5
           original_path: Drops.podspec
           source_sha256: 9b8e18fa9e1640a033b9d5be637a582ef8f1e91218bea290bfc394dc44df620d
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/ios/podspec-source-version/Fixture.podspec
+            - testdata/ios/podspec-direct-dependencies/Fixture.podspec
+            - testdata/ios/podspec-swift-versions/Fixture.podspec
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/ios_podspec.go
+            - internal/analyze/ios_podspec_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/ios/podspec-direct-dependencies/Fixture.podspec
+            - testdata/ios/podspec-source-version/Fixture.podspec
+            - testdata/ios/podspec-swift-versions/Fixture.podspec
     - number: 66
       id: java-gradle-settings
       detector:

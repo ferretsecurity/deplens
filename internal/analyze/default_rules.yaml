@@ -340,9 +340,12 @@ rules:
     analyzer:
       type: ios-cartfile
   - id: ios-podspec
+    package-type: cocoapods
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '.*\.podspec$'
+    analyzer:
+      type: ios-podspec
   - id: ios-cartfile-resolved
     form: lockfile
     roles: [resolution, integrity]
