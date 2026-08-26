@@ -1,0 +1,10 @@
+PODS:
+  - Alamofire (5.7.1)
+  - Moya (15.0.0):
+    - Moya/Core (= 15.0.0)
+  - Moya/Core (15.0.0):
+    - Alamofire (~> 5.0)
+
+PODFILE CHECKSUM: abcdef0123456789
+
+COCOAPODS: 1.11.2

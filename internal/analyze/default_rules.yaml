@@ -657,14 +657,12 @@ rules:
       exists-any:
         - pins
   - id: ios-podfile-lock
+    package-type: cocoapods
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Podfile\.lock$'
     analyzer:
-      type: yaml
-      exists-any:
-        - PODS
-        - DEPENDENCIES
+      type: ios-podfile-lock
   - id: elixir-mix
     package-type: hex
     form: manifest

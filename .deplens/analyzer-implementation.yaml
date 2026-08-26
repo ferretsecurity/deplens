@@ -2541,7 +2541,24 @@ work_items:
         - candidate_id: candidate-8422183ced229c713e3371ea1ef0ea16
           original_path: Podfile.lock
           source_sha256: 81c2e51cfa882375d5e3fa448f3b24a3edaca4e70de2ec8b585cb84c501ff8c5
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/ios/podfile-lock-metadata-only/Podfile.lock
+            - testdata/ios/podfile-lock-resolved-pods/Podfile.lock
+            - testdata/ios/podfile-lock-quoted-subspec/Podfile.lock
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/ios_podfile_lock.go
+            - internal/analyze/ios_podfile_lock_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - testdata/ios/podfile-lock-metadata-only/Podfile.lock
+            - testdata/ios/podfile-lock-quoted-subspec/Podfile.lock
+            - testdata/ios/podfile-lock-resolved-pods/Podfile.lock
     - number: 65
       id: ios-podspec
       detector:

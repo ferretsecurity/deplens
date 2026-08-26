@@ -43,6 +43,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newHelmChartLockParser)
 	case "ios-podfile":
 		return decodeAndCreate(raw.Analyzer, newIOSPodfileParser)
+	case "ios-podfile-lock":
+		return decodeAndCreate(raw.Analyzer, newIOSPodfileLockParser)
 	case "ios-cartfile":
 		return decodeAndCreate(raw.Analyzer, newIOSCartfileParser)
 	case "ios-cartfile-resolved":

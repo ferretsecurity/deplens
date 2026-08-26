@@ -194,6 +194,7 @@ type githubActionsActionMatcherConfig struct{}
 type helmChartMatcherConfig struct{}
 type helmChartLockMatcherConfig struct{}
 type iosPodfileMatcherConfig struct{}
+type iosPodfileLockMatcherConfig struct{}
 type iosCartfileMatcherConfig struct{}
 type iosCartfileResolvedMatcherConfig struct{}
 
