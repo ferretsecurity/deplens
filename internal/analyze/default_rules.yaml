@@ -769,9 +769,12 @@ rules:
     roles: [resolution]
     filename-regex: '.*\.opam\.locked$'
   - id: ocaml-dune-project
+    package-type: opam
     form: workspace-definition
     roles: [workspace, configuration]
     filename-regex: '^dune-project$'
+    analyzer:
+      type: ocaml-dune-project
   - id: ocaml-esy
     form: manifest
     roles: [declaration, constraint]

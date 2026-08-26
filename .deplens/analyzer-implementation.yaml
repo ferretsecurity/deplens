@@ -3291,7 +3291,24 @@ work_items:
         - candidate_id: candidate-2f51a6118c11ae64772b89a229204d7a
           original_path: dune-project
           source_sha256: cd0715678d051cdbfb13d4752ea2e1dc0669a4bd859c894b4b27351214986b7f
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/ocaml/dune-project-petrol/dune-project
+            - testdata/ocaml/dune-project-jscoq/dune-project
+            - testdata/ocaml/dune-project-nightmare/dune-project
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/ocaml_dune_project.go
+            - internal/analyze/ocaml_dune_project_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/ocaml/dune-project-jscoq/dune-project
+            - testdata/ocaml/dune-project-nightmare/dune-project
+            - testdata/ocaml/dune-project-petrol/dune-project
     - number: 87
       id: ocaml-esy
       detector:

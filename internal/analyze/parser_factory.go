@@ -201,6 +201,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newHaskellPackageYAMLParser)
 	case "haskell-cabal-project-freeze":
 		return decodeAndCreate(raw.Analyzer, newHaskellCabalProjectFreezeParser)
+	case "ocaml-dune-project":
+		return decodeAndCreate(raw.Analyzer, newOCamlDuneProjectParser)
 	case "lua-rockspec":
 		return decodeAndCreate(raw.Analyzer, newLuaRocksParser)
 	case "emacs-cask":

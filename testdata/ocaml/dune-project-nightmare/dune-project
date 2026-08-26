@@ -1,0 +1,12 @@
+(lang dune 3.0)
+(package
+ (name core)
+ (depends
+  (ocaml (>= 5.0))
+  helper
+  (test-helper (and (= :version) :with-test))))
+(package
+ (name addon)
+ (depends
+  (core (= :version))
+  (web (>= 1.0))))
