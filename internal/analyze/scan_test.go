@@ -94,7 +94,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "pnpm-workspace.yml", want: DetectorID("js-pnpm-workspace")},
 		{name: ".npmrc", want: DetectorID("js-npmrc")},
 		{name: ".yarnrc.yml", want: DetectorID("js-yarnrc")},
-		{name: "importmap.json", want: DetectorID("js-importmap")},
 		// Group 1g: Python ecosystem extensions
 		{name: "constraints.txt", want: DetectorID("python-constraints")},
 		{name: "conda.yml", want: DetectorID("python-conda-env-alt")},
@@ -367,6 +366,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"deno.lock",
 		"deno.json",
 		"deno.jsonc",
+		"importmap.json",
 		"pyproject.toml",
 		"environment.yml",
 		"environment.yaml",

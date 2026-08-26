@@ -219,9 +219,12 @@ rules:
     roles: [configuration]
     filename-regex: '^\.yarnrc\.yml$'
   - id: js-importmap
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^importmap\.json$'
+    analyzer:
+      type: importmap
   - id: java
     package-type: maven
     form: manifest

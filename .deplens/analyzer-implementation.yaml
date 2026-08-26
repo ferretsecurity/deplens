@@ -2802,7 +2802,24 @@ work_items:
         - candidate_id: candidate-751356d2508f8e41ce12dd8b881e0871
           original_path: bustime/static/importmap.json
           source_sha256: 45015b4b555e6064b9be8d3c20e2e91bf0aa81444ec0f6f0c0d1cc93e326be21
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/js/importmap-npm-and-url/importmap.json
+            - testdata/js/importmap-cdn-aliases/importmap.json
+            - testdata/js/importmap-local-paths/importmap.json
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/importmap.go
+            - internal/analyze/importmap_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/js/importmap-cdn-aliases/importmap.json
+            - testdata/js/importmap-local-paths/importmap.json
+            - testdata/js/importmap-npm-and-url/importmap.json
     - number: 72
       id: js-lerna
       detector:

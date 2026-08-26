@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "audio": "/assets/audio.js",
+    "map": "/assets/map.js?v1"
+  }
+}
