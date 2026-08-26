@@ -3201,7 +3201,25 @@ work_items:
         - candidate_id: candidate-3f96af2fc73c06f5ac3dcf19465ca54b
           original_path: flake.nix
           source_sha256: 79ce8bc9c42b6a623f098eeb5b16075b00a9b53d654f040c16a6bec7f69f1e25
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/nix/flake-dotted-inputs/flake.nix
+            - testdata/nix/flake-git-url-input/flake.nix
+            - testdata/nix/flake-nested-inputs/flake.nix
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/nix_flake.go
+            - internal/analyze/nix_flake_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/nix/flake-dotted-inputs/flake.nix
+            - testdata/nix/flake-git-url-input/flake.nix
+            - testdata/nix/flake-nested-inputs/flake.nix
     - number: 85
       id: nix-flake-lock
       detector:

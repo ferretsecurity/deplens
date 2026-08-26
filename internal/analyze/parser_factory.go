@@ -37,6 +37,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newGitSubmodulesParser)
 	case "nix-default-shell":
 		return decodeAndCreate(raw.Analyzer, newNixDefaultShellParser)
+	case "nix-flake":
+		return decodeAndCreate(raw.Analyzer, newNixFlakeParser)
 	case "github-actions-action":
 		return decodeAndCreate(raw.Analyzer, newGithubActionsActionParser)
 	case "helm-chart":

@@ -973,6 +973,8 @@ rules:
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^flake\.nix$'
+    analyzer:
+      type: nix-flake
   - id: nix-flake-lock
     form: lockfile
     roles: [resolution, integrity]
