@@ -79,6 +79,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newGlideYAMLParser)
 	case "package-lock":
 		return decodeAndCreate(raw.Analyzer, newPackageLockParser)
+	case "bun-lock":
+		return decodeAndCreate(raw.Analyzer, newBunLockParser)
 	case "package-json":
 		return decodeAndCreate(raw.Analyzer, newPackageJSONParser)
 	case "bower":

@@ -65,6 +65,8 @@ CocoaPods `Podfile.lock` files extract resolved pods and their selected versions
 
 CocoaPods podspecs extract static direct pod declarations and version constraints.
 
+Bun `bun.lock` files extract every resolved npm package, including the selected version and root workspace dependency, development, optional, or peer source group when available.
+
 For example, `package.json` was previously limited to presence assessment:
 
 ```text

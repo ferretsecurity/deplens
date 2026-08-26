@@ -154,6 +154,7 @@ type uvLockMatcherConfig struct{}
 type poetryLockMatcherConfig struct{}
 type pipfileLockMatcherConfig struct{}
 type packageLockMatcherConfig struct{}
+type bunLockMatcherConfig struct{}
 type packageJSONMatcherConfig struct{}
 type bowerMatcherConfig struct{}
 type pnpmLockMatcherConfig struct{}

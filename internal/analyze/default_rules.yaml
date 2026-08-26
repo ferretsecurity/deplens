@@ -171,9 +171,12 @@ rules:
     analyzer:
       type: pnpm-lock
   - id: js-bun-lock
+    package-type: npm
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^bun\.lock$'
+    analyzer:
+      type: bun-lock
   - id: js-bun-lockb
     form: lockfile
     roles: [resolution, integrity]

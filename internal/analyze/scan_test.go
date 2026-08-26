@@ -47,7 +47,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		name string
 		want DetectorID
 	}{
-		{name: "bun.lock", want: DetectorID("js-bun-lock")},
 		{name: "bun.lockb", want: DetectorID("js-bun-lockb")},
 		{name: "settings.gradle", want: DetectorID("java-gradle-settings")},
 		{name: "settings.gradle.kts", want: DetectorID("java-gradle-settings-kts")},
@@ -360,6 +359,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"package.json",
 		"npm-shrinkwrap.json",
 		"pnpm-lock.yaml",
+		"bun.lock",
 		"conda-lock.yml",
 		"bower.json",
 		"composer.json",
@@ -533,14 +533,14 @@ func TestAnalyzeDependencySourceDoesNotMatchPathGlobWithoutRelativePath(t *testi
 func TestAnalyzeDependencySourceMatchesSelectorOnlyFilenameRuleWithEmptyPath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, "", "bun.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, "", "bun.lockb")
 	if err != nil {
 		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected filename-only rule to match with empty path")
 	}
-	if got != DetectorID("js-bun-lock") {
+	if got != DetectorID("js-bun-lockb") {
 		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if diagnosticMessages != nil {

@@ -2758,7 +2758,25 @@ work_items:
         - candidate_id: candidate-3f494c538ef9bdc2bcb48f903228a2bd
           original_path: bun.lock
           source_sha256: d25fe5c70a09983210b42fa42bef5d272a027374eb9a6f02ba3026f04ed4578e
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/javascript/bun-lock-config-version/bun.lock
+            - testdata/javascript/bun-lock-dev-and-peer/bun.lock
+            - testdata/javascript/bun-lock-runtime-and-dev/bun.lock
+          changed_paths:
+            - README.md
+            - internal/analyze/bun_lock.go
+            - internal/analyze/bun_lock_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/javascript/bun-lock-config-version/bun.lock
+            - testdata/javascript/bun-lock-dev-and-peer/bun.lock
+            - testdata/javascript/bun-lock-runtime-and-dev/bun.lock
     - number: 71
       id: js-importmap
       detector:
