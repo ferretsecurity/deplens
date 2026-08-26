@@ -4278,7 +4278,7 @@ work_items:
         - candidate_id: candidate-975f97ed63c62b2fef1028d1e8b8c317
           original_path: examples/microchip/pic16f87x/uart_tx/v.mod
           source_sha256: f6a797a3a3f69e732506a57810795ceb2c47ee07d19979429280b6b4456645fc
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -4296,6 +4296,13 @@ work_items:
             - testdata/vlang/empty-project-metadata/v.mod
             - testdata/vlang/empty-target-configuration/v.mod
             - testdata/vlang/runtime-dependency/v.mod
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/vlang/runtime-dependency/v.mod
+            - testdata/vlang/empty-project-metadata/v.mod
+            - testdata/vlang/empty-target-configuration/v.mod
+          changed_paths: []
     - number: 111
       id: zig-build
       detector:
