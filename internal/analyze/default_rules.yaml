@@ -344,6 +344,8 @@ rules:
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Cartfile\.resolved$'
+    analyzer:
+      type: ios-cartfile-resolved
   - id: php-composer
     package-type: composer
     form: manifest

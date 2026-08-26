@@ -60,7 +60,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `ios-podfile` | `manifest` | `declaration, constraint` | — | select |
 | `ios-cartfile` | `manifest` | `declaration, constraint` | `ios-cartfile` | select, recognize, assess-presence, extract, normalize, relate |
 | `ios-podspec` | `manifest` | `declaration, constraint` | — | select |
-| `ios-cartfile-resolved` | `lockfile` | `resolution, integrity` | — | select |
+| `ios-cartfile-resolved` | `lockfile` | `resolution, integrity` | `ios-cartfile-resolved` | select, recognize, assess-presence, extract, normalize, relate |
 | `php-composer` | `manifest` | `declaration, constraint` | `composer-manifest` | select, recognize, extract, normalize, relate |
 | `php-composer-lock` | `lockfile` | `resolution, integrity` | `composer-lock` | select, recognize, extract, normalize |
 | `dart-pubspec` | `manifest` | `declaration, constraint` | `yaml` | select, recognize, assess-presence |

@@ -106,7 +106,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "build.zig", want: DetectorID("zig-build")},
 		// Group 1i: Ruby/iOS ecosystem extensions
 		{name: "demo.podspec", want: DetectorID("ios-podspec")},
-		{name: "Cartfile.resolved", want: DetectorID("ios-cartfile-resolved")},
 		// Group 1j: Functional and niche languages
 		{name: "demo.rockspec", want: DetectorID("lua-rockspec")},
 		{name: "renv.lock", want: DetectorID("r-renv-lock")},
@@ -430,6 +429,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"Brewfile",
 		"Brewfile.lock.json",
 		"Cartfile",
+		"Cartfile.resolved",
 	}
 
 	for _, tc := range testCases {
