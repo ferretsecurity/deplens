@@ -2452,7 +2452,7 @@ work_items:
         - candidate_id: candidate-a742292f1f08405799d1703190e3e024
           original_path: Cartfile.resolved
           source_sha256: 13a2182f64a0b2189b68ced2cdfce1d38c31358878bb0a61dc13404bffff37f7
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -2472,6 +2472,13 @@ work_items:
             - testdata/ios/cartfile-resolved-binary-and-github/Cartfile.resolved
             - testdata/ios/cartfile-resolved-github-commit/Cartfile.resolved
             - testdata/ios/cartfile-resolved-github-release/Cartfile.resolved
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/ios/cartfile-resolved-github-commit/Cartfile.resolved
+            - testdata/ios/cartfile-resolved-github-release/Cartfile.resolved
+            - testdata/ios/cartfile-resolved-binary-and-github/Cartfile.resolved
+          changed_paths: []
     - number: 63
       id: ios-podfile
       detector:
