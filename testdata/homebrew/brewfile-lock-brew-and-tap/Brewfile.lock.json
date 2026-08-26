@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "brew": {
+      "assertion-tools": {"version": "2.0.0", "bottle": false},
+      "file-tools": {"version": "0.3.0", "bottle": false},
+      "test-runner": {
+        "version": "1.8.2",
+        "bottle": {
+          "root_url": "https://registry.example.test/homebrew/core",
+          "files": {"all": {"sha256": "runner-checksum"}}
+        }
+      }
+    },
+    "tap": {
+      "example/tools": {"revision": "a967f8f3542021c13afc0c61d9a9f548c5ed05e7"}
+    }
+  }
+}

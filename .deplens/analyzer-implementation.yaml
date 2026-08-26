@@ -2363,7 +2363,25 @@ work_items:
         - candidate_id: candidate-bb2494dd2a5ebe9b388bde17807a7755
           original_path: Brewfile.lock.json
           source_sha256: 576aa15220a08371fd924a4adaa37ebfaa299a8ddfe2b3bec9354ab9dc1e82a5
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/homebrew/brewfile-lock-bottled-formulas/Brewfile.lock.json
+            - testdata/homebrew/brewfile-lock-brew-and-tap/Brewfile.lock.json
+            - testdata/homebrew/brewfile-lock-versioned-formula/Brewfile.lock.json
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/homebrew_brewfile_lock.go
+            - internal/analyze/homebrew_brewfile_lock_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - testdata/homebrew/brewfile-lock-bottled-formulas/Brewfile.lock.json
+            - testdata/homebrew/brewfile-lock-brew-and-tap/Brewfile.lock.json
+            - testdata/homebrew/brewfile-lock-versioned-formula/Brewfile.lock.json
     - number: 61
       id: ios-cartfile
       detector:

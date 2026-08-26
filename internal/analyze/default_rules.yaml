@@ -970,6 +970,8 @@ rules:
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Brewfile\.lock\.json$'
+    analyzer:
+      type: homebrew-brewfile-lock
   - id: buf-lock
     package-type: generic
     form: lockfile
