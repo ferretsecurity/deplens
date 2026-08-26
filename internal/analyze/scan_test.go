@@ -118,8 +118,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		// DRAFT (Group 3): {name: "dune", want: DetectorID("ocaml-dune")},
 		{name: "manifest.toml", want: DetectorID("gleam-manifest")},
 		// Group 1k: Nix
-		{name: "default.nix", want: DetectorID("nix-default-shell")},
-		{name: "shell.nix", want: DetectorID("nix-default-shell")},
 		{name: "flake.nix", want: DetectorID("nix-flake")},
 		{name: "flake.lock", want: DetectorID("nix-flake-lock")},
 		// Group 1l: Infrastructure and ops tooling
@@ -430,6 +428,8 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"demo.podspec",
 		"ivy.xml",
 		"demo.rockspec",
+		"default.nix",
+		"shell.nix",
 	}
 
 	for _, tc := range testCases {

@@ -162,7 +162,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `pants-config` | `tool-config` | `configuration` | — | select |
 | `pants-jvm-build` | `build-definition` | `declaration, constraint, configuration` | — | select |
 | `git-submodules` | `manifest` | `declaration, constraint` | — | select |
-| `nix-default-shell` | `manifest` | `declaration, constraint` | — | select |
+| `nix-default-shell` | `manifest` | `declaration, constraint` | `nix-default-shell` | select, recognize, extract, normalize, relate |
 | `nix-flake` | `manifest` | `declaration, constraint` | — | select |
 | `nix-flake-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `helm-chart-lock` | `lockfile` | `resolution, integrity` | `helm-chart-lock` | select, recognize, extract, normalize, relate |

@@ -35,6 +35,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newINIQueryParser)
 	case "git-submodules":
 		return decodeAndCreate(raw.Analyzer, newGitSubmodulesParser)
+	case "nix-default-shell":
+		return decodeAndCreate(raw.Analyzer, newNixDefaultShellParser)
 	case "github-actions-action":
 		return decodeAndCreate(raw.Analyzer, newGithubActionsActionParser)
 	case "helm-chart":

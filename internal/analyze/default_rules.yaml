@@ -967,6 +967,8 @@ rules:
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^(default|shell)\.nix$'
+    analyzer:
+      type: nix-default-shell
   - id: nix-flake
     form: manifest
     roles: [declaration, constraint]
