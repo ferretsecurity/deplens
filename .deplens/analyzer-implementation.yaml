@@ -3512,7 +3512,7 @@ work_items:
         - candidate_id: candidate-61e0414309e34584c88ce83cf18a6edd
           original_path: cpanfile
           source_sha256: 590170e54759e2dd510c8e81d6f5ff998122b4488ce3d663c35d0d2b4db5ba45
-      state: in_progress
+      state: completed
       checkpoints:
         - role: implementer
           attempt: 1
@@ -3531,6 +3531,13 @@ work_items:
             - testdata/perl/cpanfile-features/cpanfile
             - testdata/perl/cpanfile-recommends/cpanfile
             - testdata/perl/cpanfile-scopes/cpanfile
+        - role: verifier
+          attempt: 2
+          fixtures:
+            - testdata/perl/cpanfile-recommends/cpanfile
+            - testdata/perl/cpanfile-scopes/cpanfile
+            - testdata/perl/cpanfile-features/cpanfile
+          changed_paths: []
     - number: 92
       id: perl-cpanfile-snapshot
       detector:
