@@ -113,7 +113,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "dist.ini", want: DetectorID("perl-dist-ini")},
 		{name: "META6.json", want: DetectorID("raku-meta")},
 		{name: "demo.opam.locked", want: DetectorID("ocaml-opam-locked")},
-		{name: "esy.json", want: DetectorID("ocaml-esy")},
 		// DRAFT (Group 3): {name: "dune", want: DetectorID("ocaml-dune")},
 		{name: "manifest.toml", want: DetectorID("gleam-manifest")},
 		// Group 1l: Infrastructure and ops tooling
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"flake.nix",
 		"flake.lock",
 		"dune-project",
+		"esy.json",
 	}
 
 	for _, tc := range testCases {

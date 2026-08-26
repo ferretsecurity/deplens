@@ -130,7 +130,7 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `ocaml-opam` | `manifest` | `declaration, constraint` | — | select |
 | `ocaml-opam-locked` | `lockfile` | `resolution` | — | select |
 | `ocaml-dune-project` | `workspace-definition` | `workspace, configuration` | — | select |
-| `ocaml-esy` | `manifest` | `declaration, constraint` | — | select |
+| `ocaml-esy` | `manifest` | `declaration, constraint` | `ocaml-esy` | select, recognize, extract, normalize, relate |
 | `crystal-shard` | `manifest` | `declaration, constraint` | `yaml` | select, recognize, assess-presence |
 | `crystal-shard-lock` | `lockfile` | `resolution, integrity` | — | select |
 | `gleam` | `manifest` | `declaration, constraint` | `toml` | select, recognize, assess-presence |

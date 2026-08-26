@@ -156,6 +156,7 @@ type pipfileLockMatcherConfig struct{}
 type packageLockMatcherConfig struct{}
 type bunLockMatcherConfig struct{}
 type packageJSONMatcherConfig struct{}
+type ocamlEsyParserConfig struct{}
 type bowerMatcherConfig struct{}
 type pnpmLockMatcherConfig struct{}
 type composerLockMatcherConfig struct{}

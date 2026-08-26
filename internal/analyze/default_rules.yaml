@@ -779,6 +779,8 @@ rules:
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^esy\.json$'
+    analyzer:
+      type: ocaml-esy
   # DRAFT: ocaml-dune — filename-regex for OCaml Dune per-directory build files (noisy)
   # TODO: add content-aware recognition (s-expression content check for 'library'/'executable' stanzas) to reduce false positives
   # - id: ocaml-dune
