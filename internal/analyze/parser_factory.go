@@ -81,6 +81,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newPackageLockParser)
 	case "package-json":
 		return decodeAndCreate(raw.Analyzer, newPackageJSONParser)
+	case "bower":
+		return decodeAndCreate(raw.Analyzer, newBowerParser)
 	case "deno-json":
 		return decodeAndCreate(raw.Analyzer, newDenoJSONParser)
 	case "deno-jsonc":

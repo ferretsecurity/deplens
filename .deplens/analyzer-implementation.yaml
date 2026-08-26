@@ -2713,7 +2713,26 @@ work_items:
         - candidate_id: candidate-ceadbc3241c80b17526bc2d179d517c0
           original_path: bower.json
           source_sha256: e27dabdd47577eea3825f4a76ad8fb86e68959eeca58c01ca2df46938f4fec8d
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/js/bower-dev-git-and-range/bower.json
+            - testdata/js/bower-runtime-range/bower.json
+            - testdata/js/bower-runtime-pins/bower.json
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/bower.go
+            - internal/analyze/bower_test.go
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - testdata/js/bower-dev-git-and-range/bower.json
+            - testdata/js/bower-runtime-pins/bower.json
+            - testdata/js/bower-runtime-range/bower.json
     - number: 70
       id: js-bun-lock
       detector:

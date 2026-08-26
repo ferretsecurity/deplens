@@ -136,14 +136,12 @@ rules:
     analyzer:
       type: package-json
   - id: js-bower
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^bower\.json$'
     analyzer:
-      type: json
-      exists-any:
-        - dependencies
-        - devDependencies
+      type: bower
   - id: js-npm-shrinkwrap
     form: lockfile
     roles: [resolution, integrity]

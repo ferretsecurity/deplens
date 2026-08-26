@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "test-helper": "~2.1.x",
+    "ui-kit": "acme/ui-kit#v2.0.0"
+  }
+}

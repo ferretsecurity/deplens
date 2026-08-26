@@ -1415,10 +1415,11 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			typ:  DetectorID("unity-packages-manifest"),
 		},
 		{
-			name: "bower manifest",
-			root: filepath.Join("..", "..", "testdata", "js", "bower-with-deps"),
-			path: "bower.json",
-			typ:  DetectorID("js-bower"),
+			name:      "bower manifest",
+			root:      filepath.Join("..", "..", "testdata", "js", "bower-with-deps"),
+			path:      "bower.json",
+			typ:       DetectorID("js-bower"),
+			extracted: true,
 		},
 		{
 			name:      "pubspec lock",
