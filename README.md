@@ -65,6 +65,8 @@ Esy `esy.json` manifests extract direct runtime, development, and `override.depe
 
 Perl `Build.PL` files extract static Module::Build prerequisite maps, preserving runtime, optional, build/configure, and test scopes.
 
+Perl `cpanfile` manifests extract static required and recommended CPAN modules, including test, development, and feature-scoped dependencies.
+
 CocoaPods `Podfile.lock` files extract resolved pods and their selected versions.
 
 CocoaPods podspecs extract static direct pod declarations and version constraints.

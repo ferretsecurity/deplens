@@ -215,6 +215,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newEmacsCaskParser)
 	case "perl-build-pl":
 		return decodeAndCreate(raw.Analyzer, newPerlBuildPLParser)
+	case "perl-cpanfile":
+		return decodeAndCreate(raw.Analyzer, newPerlCpanfileParser)
 	case "clojure-deps-edn":
 		return decodeAndCreate(raw.Analyzer, newClojureDepsEDNParser)
 	case "clojure-project-clj":

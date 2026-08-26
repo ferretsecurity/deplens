@@ -1,0 +1,5 @@
+requires 'Service::Core';
+
+feature 'sqlite', 'SQLite support' => sub {
+    requires 'Store::SQLite', '>= 3.0';
+};

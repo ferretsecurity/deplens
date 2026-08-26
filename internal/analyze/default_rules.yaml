@@ -700,9 +700,12 @@ rules:
       table-exists-any:
         - deps
   - id: perl-cpanfile
+    package-type: cpan
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^cpanfile$'
+    analyzer:
+      type: perl-cpanfile
   - id: perl-cpanfile-snapshot
     form: lockfile
     roles: [resolution, integrity]

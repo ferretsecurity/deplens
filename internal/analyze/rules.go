@@ -205,6 +205,7 @@ type iosPodspecMatcherConfig struct{}
 type iosCartfileMatcherConfig struct{}
 type iosCartfileResolvedMatcherConfig struct{}
 type luaRocksMatcherConfig struct{}
+type perlCpanfileMatcherConfig struct{}
 
 type sourceAnalyzer interface {
 	Analyze(path string, content []byte) (sourceAnalyzerResult, error)
