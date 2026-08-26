@@ -29,30 +29,39 @@ func (nixFlakeParser) Analyze(_ string, content []byte) (sourceAnalyzerResult, e
 }
 
 func nixFlakeInputURLs(tokens []nixToken) []string {
+	urls := make([]string, 0)
 	for index := 0; index+2 < len(tokens); index++ {
-		if tokens[index].kind != nixTokenIdentifier || tokens[index].value != "inputs" ||
-			tokens[index+1].kind != nixTokenEquals || tokens[index+2].kind != nixTokenOpenBrace {
-			continue
-		}
+		if tokens[index].kind == nixTokenIdentifier && tokens[index].value == "inputs" {
+			if tokens[index+1].kind == nixTokenEquals && tokens[index+2].kind == nixTokenOpenBrace {
+				depth := 1
+				for index += 3; index < len(tokens) && depth > 0; index++ {
+					switch tokens[index].kind {
+					case nixTokenOpenBrace:
+						depth++
+					case nixTokenCloseBrace:
+						depth--
+					case nixTokenIdentifier:
+						if tokens[index].value == "url" && index+2 < len(tokens) &&
+							tokens[index+1].kind == nixTokenEquals && tokens[index+2].kind == nixTokenString {
+							urls = append(urls, tokens[index+2].value)
+						}
+					}
+				}
+				continue
+			}
 
-		urls := make([]string, 0)
-		depth := 1
-		for index += 3; index < len(tokens) && depth > 0; index++ {
-			switch tokens[index].kind {
-			case nixTokenOpenBrace:
-				depth++
-			case nixTokenCloseBrace:
-				depth--
-			case nixTokenIdentifier:
-				if tokens[index].value == "url" && index+2 < len(tokens) &&
-					tokens[index+1].kind == nixTokenEquals && tokens[index+2].kind == nixTokenString {
-					urls = append(urls, tokens[index+2].value)
+			for pathIndex := index + 1; pathIndex+3 < len(tokens); pathIndex += 2 {
+				if tokens[pathIndex].kind != nixTokenDot || tokens[pathIndex+1].kind != nixTokenIdentifier {
+					break
+				}
+				if tokens[pathIndex+1].value == "url" && tokens[pathIndex+2].kind == nixTokenEquals && tokens[pathIndex+3].kind == nixTokenString {
+					urls = append(urls, tokens[pathIndex+3].value)
+					break
 				}
 			}
 		}
-		return urls
 	}
-	return nil
+	return urls
 }
 
 func nixFlakeURLDependency(source string) (DependencyReference, bool) {

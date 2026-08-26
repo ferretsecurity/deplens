@@ -13,6 +13,13 @@ func TestNixFlakeFixturesExtractDependencyReferences(t *testing.T) {
 		want       []DependencyReference
 	}{
 		{
+			name:       "top-level dotted input",
+			fixtureDir: "flake",
+			want: []DependencyReference{
+				{PackageType: "github", Raw: "github:NixOS/nixpkgs", Name: "NixOS/nixpkgs", SourceGroup: "inputs", OriginKind: OriginGit, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"source_url": "https://github.com/NixOS/nixpkgs"}},
+			},
+		},
+		{
 			name:       "dotted GitHub inputs",
 			fixtureDir: "flake-dotted-inputs",
 			want: []DependencyReference{

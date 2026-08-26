@@ -18,6 +18,7 @@ const (
 	nixTokenSearchPath
 	nixTokenOpenBrace
 	nixTokenCloseBrace
+	nixTokenDot
 	nixTokenEquals
 	nixTokenSemicolon
 )
@@ -149,6 +150,9 @@ func lexNix(content []byte) []nixToken {
 			index++
 		case '}':
 			tokens = append(tokens, nixToken{kind: nixTokenCloseBrace})
+			index++
+		case '.':
+			tokens = append(tokens, nixToken{kind: nixTokenDot})
 			index++
 		case '=':
 			tokens = append(tokens, nixToken{kind: nixTokenEquals})
