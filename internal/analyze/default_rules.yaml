@@ -294,9 +294,12 @@ rules:
     roles: [configuration]
     path-glob: '**/project/build.properties'
   - id: scala-mill
+    package-type: maven
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^build\.sc$'
+    analyzer:
+      type: scala-mill
   - id: java-ant-build
     form: build-definition
     roles: [declaration, constraint, configuration]

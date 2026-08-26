@@ -166,6 +166,7 @@ type yarnLockMatcherConfig struct{}
 type gradleBuildMatcherConfig struct{}
 type gradleLockMatcherConfig struct{}
 type gradleVersionCatalogMatcherConfig struct{}
+type scalaMillMatcherConfig struct{}
 type gemfileMatcherConfig struct{}
 type gemfileLockMatcherConfig struct{}
 type chefBerksfileMatcherConfig struct{}

@@ -3971,7 +3971,26 @@ work_items:
         - candidate_id: candidate-ed816c2c632bb5c435550e8d203db5eb
           original_path: build.sc
           source_sha256: e159916af01ad45b01a60543fb51343f2608857b57a590ba1e2fde906e3b49a9
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/scala/mill-runtime-test/build.sc
+            - testdata/scala/mill-version-constants/build.sc
+            - testdata/scala/mill-build-imports/build.sc
+          changed_paths:
+            - DEPENDENCY_COVERAGE.md
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scala_mill.go
+            - internal/analyze/scala_mill_test.go
+            - internal/analyze/scan_test.go
+            - testdata/scala/mill-build-imports/build.sc
+            - testdata/scala/mill-runtime-test/build.sc
+            - testdata/scala/mill-version-constants/build.sc
     - number: 103
       id: scala-sbt-build
       detector:

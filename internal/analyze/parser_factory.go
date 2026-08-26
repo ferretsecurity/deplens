@@ -125,6 +125,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newGradleLockParser)
 	case "gradle-version-catalog":
 		return decodeAndCreate(raw.Analyzer, newGradleVersionCatalogParser)
+	case "scala-mill":
+		return decodeAndCreate(raw.Analyzer, newScalaMillParser)
 	case "gemfile":
 		return decodeAndCreate(raw.Analyzer, newGemfileParser)
 	case "gemfile-lock":
