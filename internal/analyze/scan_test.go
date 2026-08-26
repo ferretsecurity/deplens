@@ -55,7 +55,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "go.sum", want: DetectorID("go-sum")},
 		{name: "go.work", want: DetectorID("go-work")},
 		{name: "mix.lock", want: DetectorID("elixir-mix-lock")},
-		{name: "demo.gemspec", want: DetectorID("ruby-gemspec")},
 		{name: "build.zig.zon", want: DetectorID("zig-build-zon")},
 		{name: "demo.nimble", want: DetectorID("nim-nimble")},
 		{name: "v.mod", want: DetectorID("vlang")},
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"renv.lock",
 		"Makefile.PL",
 		"META6.json",
+		"demo.gemspec",
 	}
 
 	for _, tc := range testCases {

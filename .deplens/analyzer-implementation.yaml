@@ -3926,7 +3926,25 @@ work_items:
         - candidate_id: candidate-f75ed3f3af5e88c3f6eaebfb4fe4e0da
           original_path: lang.gemspec
           source_sha256: 85b16e613cdab7d939a1b54514272003577b78c3ae7a3f350ae9275b94958c59
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/ruby/gemspec-yaml-driven/lang.gemspec
+            - testdata/ruby/gemspec-metadata-only/flags2env.gemspec
+            - testdata/ruby/gemspec-runtime-and-development/solana-pay-kit.gemspec
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/gemspec.go
+            - internal/analyze/gemspec_test.go
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rule_schema_test.go
+            - internal/analyze/scan_test.go
+            - testdata/ruby/gemspec-metadata-only/flags2env.gemspec
+            - testdata/ruby/gemspec-runtime-and-development/solana-pay-kit.gemspec
+            - testdata/ruby/gemspec-yaml-driven/lang.gemspec
     - number: 102
       id: scala-mill
       detector:

@@ -327,9 +327,12 @@ rules:
     analyzer:
       type: gemfile-lock
   - id: ruby-gemspec
+    package-type: gem
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '.*\.gemspec$'
+    analyzer:
+      type: gemspec
   - id: ruby-appraisal
     form: manifest
     roles: [declaration, constraint]

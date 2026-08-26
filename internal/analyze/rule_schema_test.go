@@ -148,6 +148,7 @@ func TestRuleSchemaRejectsConfigurationForSemanticAnalyzers(t *testing.T) {
 		"gradle-version-catalog",
 		"gemfile",
 		"gemfile-lock",
+		"gemspec",
 		"chef-berksfile",
 		"chef-metadata",
 		"dockerfile",

@@ -129,6 +129,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newGemfileParser)
 	case "gemfile-lock":
 		return decodeAndCreate(raw.Analyzer, newGemfileLockParser)
+	case "gemspec":
+		return decodeAndCreate(raw.Analyzer, newGemspecParser)
 	case "chef-berksfile":
 		return decodeAndCreate(raw.Analyzer, newChefBerksfileParser)
 	case "chef-berksfile-lock":
