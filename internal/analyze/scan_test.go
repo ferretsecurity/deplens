@@ -108,7 +108,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "plugin.cfg", want: DetectorID("godot-plugin-cfg")},
 		// Group 1n: Blockchain / Solidity
 		{name: "remappings.txt", want: DetectorID("foundry-remappings")},
-		{name: "soldeer.lock", want: DetectorID("soldeer-lock")},
 	}
 
 	for _, tc := range testCases {
@@ -401,6 +400,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"Build.PL",
 		"fpm.toml",
 		"foundry.toml",
+		"soldeer.lock",
 		".gitmodules",
 		"action.yml",
 		"action.yaml",

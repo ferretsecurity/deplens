@@ -196,6 +196,7 @@ type vcpkgConfigurationMatcherConfig struct{}
 type dartPubspecMatcherConfig struct{}
 type dartPubspecLockMatcherConfig struct{}
 type foundryTOMLMatcherConfig struct{}
+type soldeerLockMatcherConfig struct{}
 type pantsConfigMatcherConfig struct{}
 type githubActionsActionMatcherConfig struct{}
 type helmChartMatcherConfig struct{}

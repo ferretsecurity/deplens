@@ -1129,9 +1129,12 @@ rules:
     roles: [constraint]
     filename-regex: '^remappings\.txt$'
   - id: soldeer-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^soldeer\.lock$'
+    analyzer:
+      type: soldeer-lock
   - id: js-banner-block-start
     form: source-code
     roles: [usage, inventory]

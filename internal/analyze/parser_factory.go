@@ -159,6 +159,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newFortranFPMParser)
 	case "foundry-toml":
 		return decodeAndCreate(raw.Analyzer, newFoundryTOMLParser)
+	case "soldeer-lock":
+		return decodeAndCreate(raw.Analyzer, newSoldeerLockParser)
 	case "pants-config":
 		return decodeAndCreate(raw.Analyzer, newPantsConfigParser)
 	case "composer-manifest":

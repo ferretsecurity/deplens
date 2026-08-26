@@ -4060,7 +4060,25 @@ work_items:
         - candidate_id: candidate-5a62b62f3dd29f1c5d0654a0dd61f652
           original_path: contracts/soldeer.lock
           source_sha256: 5cf2a1ece71a2ffb89fd37b30651f560ace50622ff848b5732989cfbbfccb85f
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/soldeer/lock-source/soldeer.lock
+            - testdata/soldeer/lock-git/soldeer.lock
+            - testdata/soldeer/lock-url/soldeer.lock
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/rules.go
+            - internal/analyze/scan_test.go
+            - internal/analyze/soldeer_lock.go
+            - internal/analyze/soldeer_lock_test.go
+            - testdata/soldeer/lock-git/soldeer.lock
+            - testdata/soldeer/lock-source/soldeer.lock
+            - testdata/soldeer/lock-url/soldeer.lock
     - number: 105
       id: swift-package
       detector:
