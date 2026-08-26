@@ -20,6 +20,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 	}
 
 	switch raw.Analyzer.Type {
+	case "terraform-lock":
+		return decodeAndCreate(raw.Analyzer, newTerraformLockParser)
 	case "banner-regex":
 		var config bannerRegexAnalyzerConfig
 		if err := raw.Analyzer.decodeStrict(&config); err != nil {

@@ -4195,7 +4195,24 @@ work_items:
         - candidate_id: candidate-eb054a296c397c54c031ffca05bc6bde
           original_path: .terraform.lock.hcl
           source_sha256: 6a337a54934fa6ad4afda70ea3550e292dfd34f79a6d41f20f8ebff0ecd863e0
-      state: pending
+      state: in_progress
+      checkpoints:
+        - role: implementer
+          attempt: 1
+          fixtures:
+            - testdata/terraform/lock-terraform-registry-pessimistic/.terraform.lock.hcl
+            - testdata/terraform/lock-opentofu-registry-ranges/.terraform.lock.hcl
+            - testdata/terraform/lock-terraform-registry-no-constraint/.terraform.lock.hcl
+          changed_paths:
+            - README.md
+            - internal/analyze/default_rules.yaml
+            - internal/analyze/parser_factory.go
+            - internal/analyze/scan_test.go
+            - internal/analyze/terraform_lock.go
+            - internal/analyze/terraform_lock_test.go
+            - testdata/terraform/lock-opentofu-registry-ranges/.terraform.lock.hcl
+            - testdata/terraform/lock-terraform-registry-no-constraint/.terraform.lock.hcl
+            - testdata/terraform/lock-terraform-registry-pessimistic/.terraform.lock.hcl
     - number: 108
       id: unreal-uplugin
       detector:

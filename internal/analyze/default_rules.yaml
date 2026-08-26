@@ -901,6 +901,8 @@ rules:
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^\.terraform\.lock\.hcl$'
+    analyzer:
+      type: terraform-lock
   - id: unity-packages-manifest
     form: manifest
     roles: [declaration, constraint]

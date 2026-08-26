@@ -57,7 +57,6 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "build.zig.zon", want: DetectorID("zig-build-zon")},
 		{name: "demo.nimble", want: DetectorID("nim-nimble")},
 		{name: "v.mod", want: DetectorID("vlang")},
-		{name: ".terraform.lock.hcl", want: DetectorID("terraform-lock")},
 		// Group 1b: Build systems and monorepo tools
 		{name: "WORKSPACE", want: DetectorID("bazel-workspace")},
 		{name: "WORKSPACE.bazel", want: DetectorID("bazel-workspace")},
@@ -429,6 +428,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"build.sbt",
 		"build.sc",
 		"Package.swift",
+		".terraform.lock.hcl",
 	}
 
 	for _, tc := range testCases {
