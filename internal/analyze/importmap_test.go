@@ -36,6 +36,14 @@ func TestImportMapFixturesExtractDependencies(t *testing.T) {
 				{PackageType: "generic", Raw: "map@/assets/map.js?v1", Name: "map", SourceGroup: "imports", OriginKind: OriginPath, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"path": "/assets/map.js?v1"}},
 			},
 		},
+		{
+			name:       "scoped mappings",
+			fixtureDir: "importmap-scopes",
+			want: []DependencyReference{
+				{PackageType: "generic", Raw: "render-engine@https://packages.example.test/render-engine@1.4.0/index.js", Name: "render-engine", SourceGroup: "scopes", OriginKind: OriginURL, Relationship: RelationshipInconclusive, Scope: ScopeRuntime, Attributes: map[string]string{"scope_prefix": "/applications/legacy/", "source_url": "https://packages.example.test/render-engine@1.4.0/index.js"}},
+				{PackageType: "generic", Raw: "render-engine-next@https://packages.example.test/render-engine@2.1.0/index.js", Name: "render-engine-next", SourceGroup: "scopes", OriginKind: OriginURL, Relationship: RelationshipInconclusive, Scope: ScopeRuntime, Attributes: map[string]string{"scope_prefix": "/applications/modern/", "source_url": "https://packages.example.test/render-engine@2.1.0/index.js"}},
+			},
+		},
 	}
 
 	ruleset := mustLoadDefaultRules(t)

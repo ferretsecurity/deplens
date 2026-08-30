@@ -21,7 +21,41 @@ func (importMapParser) Analyze(path string, content []byte) (sourceAnalyzerResul
 	}
 
 	dependencies, incomplete := importMapGroupDependencies(root["imports"], "imports")
+	scopedDependencies, scopedIncomplete := importMapScopeDependencies(root["scopes"])
+	dependencies = append(dependencies, scopedDependencies...)
+	incomplete = append(incomplete, scopedIncomplete...)
+	sortDependencyReferences(dependencies)
 	return semanticAnalyzerResult(dependencies, incomplete), nil
+}
+
+func importMapScopeDependencies(raw json.RawMessage) ([]DependencyReference, []string) {
+	if len(raw) == 0 || isJSONNull(raw) {
+		return nil, nil
+	}
+
+	var scopes map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &scopes); err != nil {
+		return nil, []string{"scopes: expected an object of scoped import mappings"}
+	}
+
+	dependencies := make([]DependencyReference, 0)
+	incomplete := make([]string, 0)
+	for _, scopePrefix := range sortedStringKeys(scopes) {
+		group := "scopes." + scopePrefix
+		scopeDependencies, scopeIncomplete := importMapGroupDependencies(scopes[scopePrefix], group)
+		for i := range scopeDependencies {
+			scopeDependencies[i].SourceGroup = "scopes"
+			scopeDependencies[i].Relationship = RelationshipInconclusive
+			if scopeDependencies[i].Attributes == nil {
+				scopeDependencies[i].Attributes = make(map[string]string)
+			}
+			scopeDependencies[i].Attributes["scope_prefix"] = scopePrefix
+		}
+		dependencies = append(dependencies, scopeDependencies...)
+		incomplete = append(incomplete, scopeIncomplete...)
+	}
+
+	return dependencies, incomplete
 }
 
 func importMapGroupDependencies(raw json.RawMessage, group string) ([]DependencyReference, []string) {
