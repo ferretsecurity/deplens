@@ -1,0 +1,10 @@
+name: Composite action with a dynamic Docker image
+inputs:
+  tag:
+    description: Docker image tag to run
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Run selected image
+      uses: 'docker://registry.example.test/acme/scanner:${{inputs.tag}}'

@@ -1,0 +1,6 @@
+name: Composite action with a Docker image
+runs:
+  using: composite
+  steps:
+    - name: Run scanner
+      uses: docker://snyk/snyk:scala

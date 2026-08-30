@@ -33,8 +33,9 @@ func (githubActionsActionParser) Analyze(path string, content []byte) (sourceAna
 	}
 
 	dependencies := make([]DependencyReference, 0)
+	incomplete := make([]string, 0)
 	steps, _ := runs["steps"].([]any)
-	for _, rawStep := range steps {
+	for index, rawStep := range steps {
 		step, ok := asStringMap(rawStep)
 		if !ok {
 			continue
@@ -46,17 +47,34 @@ func (githubActionsActionParser) Analyze(path string, content []byte) (sourceAna
 		dependency, ok := githubActionsActionDependency(uses)
 		if ok {
 			dependencies = append(dependencies, dependency)
+		} else if strings.HasPrefix(strings.TrimSpace(uses), "docker://") {
+			incomplete = append(incomplete, fmt.Sprintf("runs.steps[%d].uses could not be parsed as a Docker image: %s", index, strings.TrimSpace(uses)))
 		}
 	}
 
 	sortDependencyReferences(dependencies)
-	return semanticAnalyzerResult(dependencies, nil), nil
+	return semanticAnalyzerResult(dependencies, incomplete), nil
 }
 
 func githubActionsActionDependency(raw string) (DependencyReference, bool) {
 	raw = strings.TrimSpace(raw)
+	if image, ok := strings.CutPrefix(raw, "docker://"); ok {
+		if strings.Contains(image, "$") {
+			return DependencyReference{}, false
+		}
+		dependency, ok := dockerImageDependency(image)
+		if !ok {
+			return DependencyReference{}, false
+		}
+		dependency.Raw = raw
+		dependency.SourceGroup = "runs.steps"
+		dependency.Relationship = RelationshipDirect
+		dependency.Scope = ScopeRuntime
+		return dependency, true
+	}
+
 	name, ref, hasRef := strings.Cut(raw, "@")
-	if !hasRef || name == "" || ref == "" || strings.HasPrefix(name, "./") || strings.HasPrefix(name, "docker://") {
+	if !hasRef || name == "" || ref == "" || strings.HasPrefix(name, "./") {
 		return DependencyReference{}, false
 	}
 
