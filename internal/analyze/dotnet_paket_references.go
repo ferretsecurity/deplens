@@ -14,7 +14,7 @@ func (dotnetPaketReferencesParser) Analyze(_ string, content []byte) (sourceAnal
 	dependencies := make([]DependencyReference, 0)
 	group := "default"
 
-	for _, line := range strings.Split(strings.ReplaceAll(string(content), "\r\n", "\n"), "\n") {
+	for _, line := range strings.Split(strings.TrimPrefix(string(content), "\ufeff"), "\n") {
 		fields := strings.Fields(line)
 		if len(fields) == 0 || strings.HasPrefix(fields[0], "//") || strings.HasPrefix(fields[0], "#") {
 			continue
@@ -24,11 +24,19 @@ func (dotnetPaketReferencesParser) Analyze(_ string, content []byte) (sourceAnal
 			group = fields[1]
 			continue
 		}
-		if len(fields) != 1 || strings.EqualFold(fields[0], "file:") {
+
+		first := fields[0]
+		if strings.HasPrefix(strings.ToLower(first), "file:") || strings.EqualFold(first, "exclude") || strings.EqualFold(first, "alias") {
 			continue
 		}
+		if strings.EqualFold(first, "nuget") {
+			if len(fields) < 2 {
+				continue
+			}
+			first = fields[1]
+		}
 
-		name := fields[0]
+		name := first
 		dependencies = append(dependencies, DependencyReference{
 			PackageType:  "nuget",
 			Raw:          name,

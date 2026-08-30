@@ -7,9 +7,11 @@ import (
 
 func TestDotnetPaketDependenciesSemanticFixtures(t *testing.T) {
 	tests := []struct {
-		name       string
-		fixtureDir string
-		want       []DependencyReference
+		name            string
+		fixtureDir      string
+		want            []DependencyReference
+		wantAnalysis    SourceAnalysis
+		wantDiagnostics int
 	}{
 		{
 			name:       "registry dependencies and groups",
@@ -20,6 +22,7 @@ func TestDotnetPaketDependenciesSemanticFixtures(t *testing.T) {
 				{PackageType: "nuget", Raw: "Acme.Formatter@= 2.0.0", Name: "Acme.Formatter", VersionConstraint: "= 2.0.0", SourceGroup: "Formatting", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeDevelopment},
 				{PackageType: "nuget", Raw: "Acme.Runtime@>= 1.2.0", Name: "Acme.Runtime", VersionConstraint: ">= 1.2.0", SourceGroup: "default", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"source_url": "https://packages.example.test/v3/index.json"}},
 			},
+			wantAnalysis: SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 		},
 		{
 			name:       "CLI, Git, and GitHub dependencies",
@@ -31,6 +34,7 @@ func TestDotnetPaketDependenciesSemanticFixtures(t *testing.T) {
 				{PackageType: "generic", Raw: "example/editor-support@https://github.com/example/editor-support.git/src/Editor.fs", Name: "example/editor-support", SourceGroup: "default", OriginKind: OriginGit, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"source_url": "https://github.com/example/editor-support.git", "source_path": "src/Editor.fs"}},
 				{PackageType: "generic", Raw: "plugin@https://git.example.test/acme/plugin.git", Name: "plugin", SourceGroup: "default", OriginKind: OriginGit, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"source_url": "https://git.example.test/acme/plugin.git", "source_ref": "main", "source_ref_kind": "ref"}},
 			},
+			wantAnalysis: SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 		},
 		{
 			name:       "NuGet dependencies with build group",
@@ -40,6 +44,23 @@ func TestDotnetPaketDependenciesSemanticFixtures(t *testing.T) {
 				{PackageType: "nuget", Raw: "Acme.Data", Name: "Acme.Data", SourceGroup: "default", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"source_url": "https://packages.example.test/v3/index.json"}},
 				{PackageType: "nuget", Raw: "Acme.Sql@= 8.0.31", Name: "Acme.Sql", VersionConstraint: "= 8.0.31", SourceGroup: "default", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"source_url": "https://packages.example.test/v3/index.json"}},
 			},
+			wantAnalysis: SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+		},
+		{
+			name:            "unsupported HTTP dependency",
+			fixtureDir:      "paket-dependencies-unsupported-remote",
+			want:            []DependencyReference{},
+			wantAnalysis:    SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionUnsupported},
+			wantDiagnostics: 1,
+		},
+		{
+			name:       "partial extraction with an unsupported Gist dependency",
+			fixtureDir: "paket-dependencies-partial-remote",
+			want: []DependencyReference{
+				{PackageType: "nuget", Raw: "Contoso.Runtime", Name: "Contoso.Runtime", SourceGroup: "default", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime},
+			},
+			wantAnalysis:    SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionPartial},
+			wantDiagnostics: 1,
 		},
 	}
 
@@ -51,8 +72,11 @@ func TestDotnetPaketDependenciesSemanticFixtures(t *testing.T) {
 				t.Fatalf("Scan: %v", err)
 			}
 			source := sourceForPath(t, result, "paket.dependencies")
-			if source.Detector != "dotnet-paket-dependencies" || source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
+			if source.Detector != "dotnet-paket-dependencies" || source.Analysis != tc.wantAnalysis {
 				t.Fatalf("source = %+v", source)
+			}
+			if len(source.Diagnostics) != tc.wantDiagnostics {
+				t.Fatalf("diagnostics = %+v, want %d diagnostics", source.Diagnostics, tc.wantDiagnostics)
 			}
 			if !equalDependencies(source.Dependencies, tc.want) {
 				t.Fatalf("dependencies = %+v, want %+v", source.Dependencies, tc.want)

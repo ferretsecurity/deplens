@@ -1,6 +1,7 @@
 package analyze
 
 import (
+	"fmt"
 	"path"
 	"strings"
 )
@@ -17,8 +18,10 @@ func (dotnetPaketDependenciesParser) Analyze(_ string, content []byte) (sourceAn
 	dependencies := make([]DependencyReference, 0)
 	group := "default"
 	groupSource := ""
+	incomplete := make([]string, 0)
+	incompleteSeen := make(map[string]struct{})
 
-	for _, line := range strings.Split(string(content), "\n") {
+	for _, line := range strings.Split(strings.TrimPrefix(string(content), "\ufeff"), "\n") {
 		fields := strings.Fields(line)
 		if len(fields) == 0 || strings.HasPrefix(fields[0], "//") || strings.HasPrefix(fields[0], "#") {
 			continue
@@ -46,11 +49,14 @@ func (dotnetPaketDependenciesParser) Analyze(_ string, content []byte) (sourceAn
 			if dependency, ok := paketGitHubDependency(fields, group); ok {
 				dependencies = append(dependencies, dependency)
 			}
+		case "gist", "http":
+			message := fmt.Sprintf("Paket %s dependency declaration could not be extracted", strings.ToLower(fields[0]))
+			incomplete = appendUniqueMessage(incomplete, incompleteSeen, message)
 		}
 	}
 
 	sortDependencyReferences(dependencies)
-	return semanticAnalyzerResult(dependencies, nil), nil
+	return semanticAnalyzerResult(dependencies, incomplete), nil
 }
 
 func paketRegistryDependency(fields []string, group, sourceURL string) (DependencyReference, bool) {

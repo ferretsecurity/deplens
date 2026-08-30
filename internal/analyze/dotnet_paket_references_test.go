@@ -37,6 +37,15 @@ func TestDotnetPaketReferencesSemanticFixtures(t *testing.T) {
 				paketReferenceDependency("Microsoft.CodeAnalysis.CSharp", "default"),
 			},
 		},
+		{
+			name:       "package settings and optional prefix",
+			fixtureDir: "paket-references-package-settings",
+			want: []DependencyReference{
+				paketReferenceDependency("Contoso.Test", "Tests"),
+				paketReferenceDependency("Contoso.Runtime", "default"),
+				paketReferenceDependency("Contoso.Build", "fcs"),
+			},
+		},
 	}
 
 	ruleset := mustLoadDefaultRules(t)
@@ -79,6 +88,6 @@ func paketReferenceDependency(name, group string) DependencyReference {
 		SourceGroup:  group,
 		OriginKind:   OriginRegistry,
 		Relationship: RelationshipDirect,
-		Scope:        ScopeRuntime,
+		Scope:        paketGroupScope(group),
 	}
 }
