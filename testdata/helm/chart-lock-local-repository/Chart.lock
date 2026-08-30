@@ -1,0 +1,6 @@
+dependencies:
+- name: chart-backend
+  repository: file://./chart-backend
+  version: 0.1.0
+digest: sha256:example
+generated: "2023-12-21T14:48:52Z"

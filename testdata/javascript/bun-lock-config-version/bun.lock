@@ -1,0 +1,16 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "dependencies": {
+        "mongoose": "^9.1.5",
+      },
+    },
+  },
+  "packages": {
+    "bson": ["bson@7.2.0", "", {}],
+    "mongodb": ["mongodb@7.0.0", "", {}],
+    "mongoose": ["mongoose@9.2.1", "", {}],
+  },
+}

@@ -1,0 +1,8 @@
+<ivy-module version="2.0">
+  <info organisation="example" module="service"/>
+  <dependencies>
+    <dependency org="example.net" name="socket" rev="3.2.1"/>
+    <dependency org="example.metrics" name="counter" rev="1.4.0"/>
+    <dependency org="example.test" name="assertions" rev="5.0"/>
+  </dependencies>
+</ivy-module>

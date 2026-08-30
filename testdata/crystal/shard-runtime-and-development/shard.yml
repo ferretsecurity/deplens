@@ -1,0 +1,9 @@
+name: development-demo
+dependencies:
+  database:
+    github: example/database
+    version: 1.2.3
+development_dependencies:
+  environment:
+    github: example/environment
+    version: 2.0.0

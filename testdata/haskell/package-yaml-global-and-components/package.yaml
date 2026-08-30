@@ -1,0 +1,11 @@
+name: web-haskell
+dependencies:
+  - transformers
+executables:
+  web:
+    dependencies:
+      - web-haskell
+tests:
+  integration:
+    dependencies:
+      - web-haskell

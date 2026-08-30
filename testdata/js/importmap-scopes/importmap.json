@@ -1,0 +1,10 @@
+{
+  "scopes": {
+    "/applications/legacy/": {
+      "render-engine": "https://packages.example.test/render-engine@1.4.0/index.js"
+    },
+    "/applications/modern/": {
+      "render-engine-next": "https://packages.example.test/render-engine@2.1.0/index.js"
+    }
+  }
+}

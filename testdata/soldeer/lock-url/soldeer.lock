@@ -1,0 +1,6 @@
+[[dependencies]]
+name = "modern-archive"
+version = "3.4.5"
+url = "https://packages.example.test/modern-archive-3.4.5.zip"
+checksum = "modern-checksum"
+integrity = "modern-integrity"

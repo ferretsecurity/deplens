@@ -1,0 +1,15 @@
+STORAGE: NONE
+RESTRICTION: == net9.0
+NUGET
+  remote: https://packages.example.test/v3/index.json
+    Acme.Runtime (2.0.0)
+
+GROUP fake
+NUGET
+  remote: https://packages.example.test/v3/index.json
+    Acme.Automation (3.1.4)
+
+GROUP test
+NUGET
+  remote: https://packages.example.test/v3/index.json
+    Acme.Tests (5.0.0)

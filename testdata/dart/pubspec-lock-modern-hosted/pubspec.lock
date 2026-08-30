@@ -1,0 +1,16 @@
+packages:
+  direct_dev:
+    dependency: "direct dev"
+    description:
+      name: direct_dev
+      sha256: deadbeef
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
+  transitive:
+    dependency: transitive
+    description:
+      name: transitive
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"

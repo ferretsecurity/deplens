@@ -1,0 +1,12 @@
+[[dependencies]]
+name = "git-package"
+version = "2.0.0"
+git = "https://git.example.test/acme/git-package.git"
+rev = "0123456789abcdef"
+
+[[dependencies]]
+name = "registry-package"
+version = "4.5.6"
+url = "https://packages.example.test/registry-package-4.5.6.zip"
+checksum = "registry-checksum"
+integrity = "registry-integrity"

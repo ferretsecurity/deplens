@@ -1,0 +1,12 @@
+name: parallel-arrows-parmonad
+
+library
+  build-depends:
+      Parallel-Arrows-Definition ==0.1.1.0
+    , base >=4.7 && <5.0
+    , monad-par
+
+test-suite spec
+  build-depends:
+      Parallel-Arrows-BaseSpec ==0.1.1.0
+    , hspec ==2.*

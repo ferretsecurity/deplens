@@ -1,0 +1,6 @@
+source "https://supermarket.chef.io"
+
+group :test do
+  cookbook "influxdb-test", path: "test/fixtures/cookbooks/influxdb-test"
+  cookbook "netstat"
+end

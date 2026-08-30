@@ -1,0 +1,6 @@
+{
+  "version": "0.5",
+  "requires": ["utility/2.0.0"],
+  "build_requires": ["build-system/3.4.5"],
+  "python_requires": ["recipe-helper/0.4.0#1234567890abcdef"]
+}

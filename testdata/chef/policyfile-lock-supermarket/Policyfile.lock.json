@@ -1,0 +1,13 @@
+{
+  "run_list": ["recipe[sudo::default]", "recipe[users::default]"],
+  "cookbook_locks": {
+    "sudo": {
+      "version": "3.5.0",
+      "source_options": {"artifactserver": "https://supermarket.example.test/sudo/3.5.0/download"}
+    },
+    "users": {
+      "version": "4.0.0",
+      "origin": "https://supermarket.example.test/users/4.0.0/download"
+    }
+  }
+}

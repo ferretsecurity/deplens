@@ -1,0 +1,6 @@
+.{
+    .name = "sample",
+    .dependencies = .{
+        .generator = .{ .path = "tools/generator" },
+    },
+}

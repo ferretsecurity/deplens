@@ -1,0 +1,19 @@
+{
+  "R": {"Version": "4.3.0"},
+  "Packages": {
+    "spatialpkg": {
+      "Package": "spatialpkg",
+      "Version": "3.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": ["R", "utilitypkg", "methods", "stats"]
+    },
+    "utilitypkg": {
+      "Package": "utilitypkg",
+      "Version": "0.4.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": ["R"]
+    }
+  }
+}

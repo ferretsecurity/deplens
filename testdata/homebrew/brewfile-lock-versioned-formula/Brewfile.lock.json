@@ -1,0 +1,13 @@
+{
+  "entries": {
+    "brew": {
+      "runtime@20": {
+        "version": "20.17.0",
+        "bottle": {
+          "root_url": "https://registry.example.test/homebrew/core",
+          "files": {"arm64_test": {"sha256": "runtime-checksum"}}
+        }
+      }
+    }
+  }
+}

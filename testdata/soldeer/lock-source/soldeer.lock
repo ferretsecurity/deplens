@@ -1,0 +1,6 @@
+[[dependencies]]
+name = "legacy-archive"
+version = "1.2.3"
+source = "https://packages.example.test/legacy-archive-1.2.3.zip"
+checksum = "legacy-checksum"
+integrity = "legacy-integrity"

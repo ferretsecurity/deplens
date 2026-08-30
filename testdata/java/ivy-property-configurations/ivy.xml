@@ -1,0 +1,9 @@
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
+  <info organisation="example" module="renderer"/>
+  <dependencies>
+    <dependency org="example.graphics" name="render" rev="${render.version}">
+      <artifact name="render" type="jar" m:classifier="${native.platform}"/>
+    </dependency>
+    <dependency org="example.graphics" name="render" rev="${render.version}" conf="docs;sources"/>
+  </dependencies>
+</ivy-module>

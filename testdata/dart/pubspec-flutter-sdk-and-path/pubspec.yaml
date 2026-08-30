@@ -1,0 +1,8 @@
+dependencies:
+  flutter:
+    sdk: flutter
+  local_plugin:
+    path: ../plugin
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

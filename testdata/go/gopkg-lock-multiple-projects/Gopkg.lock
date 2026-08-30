@@ -1,0 +1,14 @@
+[[projects]]
+  name = "example.test/jwt"
+  revision = "2222222222222222"
+  version = "v3.2.0"
+
+[[projects]]
+  branch = "master"
+  name = "example.test/sse"
+  revision = "3333333333333333"
+
+[[projects]]
+  name = "example.test/web"
+  revision = "4444444444444444"
+  version = "v1.2"

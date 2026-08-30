@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "net-client": "npm:request-client",
+    "file-api": "https://modules.example.test/node/fs.js"
+  }
+}

@@ -1,0 +1,12 @@
+hash: synthetic-import-lock
+updated: 2018-08-22T17:14:54Z
+imports:
+  - name: example.com/http
+    version: 0123456789abcdef
+  - name: golang.example/network
+    version: fedcba9876543210
+    repo: https://example.com/network
+    vcs: git
+    subpackages:
+      - publicsuffix
+testImports: []

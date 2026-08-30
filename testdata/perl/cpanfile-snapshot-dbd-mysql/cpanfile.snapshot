@@ -1,0 +1,6 @@
+# carton snapshot format: version 1.0
+DISTRIBUTIONS
+  DBD-mysql-4.043
+    pathname: M/MI/EXAMPLE/DBD-mysql-4.043.tar.gz
+    provides:
+      DBD::mysql 4.043

@@ -21,6 +21,18 @@ Useful flags:
 
 The removed `--show-empty` flag is not accepted.
 
+### Analyzer implementation loop
+
+`analyzerloop` turns the separately verified fixture corpus into a reviewed work ledger for semantic analyzer work. It never contacts a package registry or GitHub itself.
+
+```bash
+go run ./cmd/analyzerloop plan --corpus ../deplens-fixture-corpus
+# Review and commit .deplens/analyzer-implementation.yaml.
+go run ./cmd/analyzerloop run --select 1...3
+```
+
+Planning accepts only corpus work items whose result is `OK` and whose three candidates are all valid and hash-verified. A run uses fresh implementer and verifier sessions, creates three synthesized test fixtures per item, and commits every accepted checkpoint. Runtime logs are private local data under `.ralph/` and are ignored. See [the operator guide](docs/agents/analyzer-loop.md).
+
 Human output is path-first and includes the source form plus its analysis state:
 
 ```text
@@ -43,7 +55,47 @@ Absent sources are counted by `Found N dependency sources` but hidden from the d
 
 ### Semantic coverage for common formats
 
-`package.json`, Maven POM, Cargo, Composer, and .NET manifests; Gradle builds, lockfiles, and version catalogs; Gemfiles and Bundler lockfiles; Dockerfiles; and Docker Compose files have built-in semantic analyzers. Static declarations are normalized into dependency records; executable or interpolated declarations that cannot be resolved without running external tools produce partial analysis warnings.
+Helm Chart lockfiles extract resolved direct chart versions, preserving HTTP, OCI, and local-path repositories.
+
+Homebrew Brewfile lockfiles extract resolved formulas and casks, bottle checksums, pinned taps, and Mac App Store application IDs.
+
+Terraform and OpenTofu provider lockfiles extract resolved provider addresses and versions, including declared version constraints.
+
+`package.json`, Bower `bower.json`, Deno `deno.json`, `deno.jsonc`, and `deno.lock`, JavaScript `importmap.json`, Jsonnet Bundler `jsonnetfile.json` and `jsonnetfile.lock.json`, Maven POM and Ivy manifests, Cargo, Composer, .NET, Buf manifests and lockfiles, Conan manifests and lockfiles, vcpkg manifests and configurations, Python Conan recipes, Crystal Shard manifests and lockfiles, Gleam manifests, Julia `Project.toml` manifests, Rebar3, Clojure `deps.edn`, Leiningen `project.clj`, Clojure Boot, Emacs Cask, OCaml Dune projects, Git `.gitmodules`, Homebrew Brewfiles, CocoaPods Podfiles, Carthage Cartfiles and resolved lockfiles, Swift `Package.swift` manifests and `Package.resolved` lockfiles, Chef Berksfile manifests and lockfiles, Chef Policyfiles and Policyfile lockfiles, Chef cookbook metadata, Dep `Gopkg.toml` manifests and `Gopkg.lock` files, Glide manifests and lockfiles, and Helm charts; Gradle builds, lockfiles, and version catalogs; Gemfiles, gemspecs, and Bundler lockfiles; Dockerfiles; Docker Compose files; and Meson build definitions have built-in semantic analyzers. Bower manifests extract direct runtime and development dependencies, including registry constraints and Git source refs. Deno manifests extract direct import-map declarations, including npm and JSR package targets and URL or local-path targets. JavaScript import maps extract direct import declarations, preserving npm package targets and URL or local-path targets. Jsonnet Bundler manifests extract direct Git and local-directory dependencies, preserving declared Git subdirectories and version refs; when a name is omitted, it is derived from the source location. Jsonnet Bundler lockfiles extract resolved direct Git dependencies, including the selected revision, subdirectory, and checksum; unnamed dependencies derive their names from the Git remote. Deno lockfiles extract resolved JSR and npm packages plus remote URL modules across lockfile versions 1 through 5. CocoaPods Podfiles extract direct pod declarations, including version constraints and static local paths. Carthage Cartfiles extract direct GitHub, Git, and binary URL declarations with their version constraints. Carthage resolved lockfiles extract pinned GitHub, Git, and binary URL dependencies, including release versions and commit pins. Swift manifests extract static URL, local-path, and registry package declarations, including version, branch, or revision constraints. Swift Package.resolved lockfiles extract resolved source-control packages from lockfile versions 1 through 3, preserving selected versions or revisions, source URLs, commits, and branches. Dep manifests extract constraint and override declarations, preserving version constraints and alternate sources, branches, or revisions. Dep lockfiles extract resolved Go project revisions, preserving selected tags and branches. Glide manifests extract direct runtime and test imports, their version constraints, and explicit repository and VCS metadata. Glide lockfiles extract resolved runtime and test import versions, preserving explicit repository and VCS metadata. Helm charts extract direct chart dependencies, preserving version constraints and registry or local-path repositories. Homebrew Brewfiles extract direct formulas, casks, and Mac App Store applications; App Store IDs are preserved when declared. Git `.gitmodules` files extract direct Git submodule declarations, preserving each declared name, local path, source URL, and optional branch. .NET `packages.lock.json` files extract resolved NuGet packages from lockfile versions 1 and 2, preserving target frameworks, direct or transitive relationships, requested constraints, and content hashes. Paket `paket.dependencies` files extract direct NuGet, CLI tool, Git, and GitHub declarations, preserving dependency groups, version constraints and source locations. Paket `paket.lock` files extract resolved NuGet packages and GitHub modules, preserving dependency groups, source locations, and selected versions or commits. Paket `paket.references` files extract direct NuGet package references, preserving dependency groups. Conan manifests extract direct requirements, including build and test requirements, version ranges, and user/channel qualifiers. vcpkg manifests extract top-level and feature-specific registry dependencies; declarations with `host: true` are build-scoped. vcpkg configurations extract package assignments from custom registries. Python Conan recipes extract static `requires`, `build_requires`, `tool_requires`, `test_requires`, and `python_requires` calls and attributes. Crystal Shard manifests extract runtime and development dependencies from GitHub, Git, and local-path sources, including version constraints and source revisions. Gleam manifests extract runtime and development dependencies from `[dependencies]` and `[dev-dependencies]`. Julia projects extract direct package UUID declarations, compatibility constraints, and test-scoped extras. Crystal Shard lockfiles extract resolved GitHub, Git, and local-path shard pins from v1 and v2 lockfiles. Conan lockfiles extract resolved Conan references from 0.5 dependency groups and 0.4 graph nodes. Conan lockfiles extract resolved Conan references from 0.5 dependency groups and 0.4 graph nodes. Buf lockfiles extract resolved Buf Schema Registry module names and commits from both v1 and v2 formats. Berksfiles extract Supermarket, GitHub, Git, and local cookbook declarations. Policyfiles extract static Git and local cookbook declarations, including version constraints and source tags. Berksfile lockfiles extract resolved cookbooks from legacy text and JSON formats, including Git and local sources. Policyfile lockfiles extract resolved cookbooks and their registry, Git and local origins. Chef metadata extracts direct cookbook declarations and static cookbook lists. Rebar3 extracts regular, Git, Git-subdirectory, plugin, and profile dependency declarations. Clojure `deps.edn` extracts root and alias Maven, Git, and local dependency coordinates. Leiningen `project.clj` extracts static `set-env! :dependencies` declarations, including test-scoped dependencies. Cask extracts direct runtime and development `depends-on` declarations, including version constraints. Dune projects extract direct package dependencies, including version constraints and `:with-test` filters. Gem specifications extract static runtime and development dependency declarations with version constraints. Ivy manifests extract direct `org`, `name`, and `rev` dependency coordinates, preserving `conf` mappings. Static declarations are normalized into dependency records; executable or interpolated declarations that cannot be resolved without running external tools produce partial analysis warnings.
+
+Scala Mill `build.sc` files extract `$ivy` build imports and `ivy` module declarations, resolving literal version constants declared in the same file.
+
+Scala SBT `build.sbt` files extract static `%`, `%%`, and `%%%` library dependencies, including test-scoped dependencies.
+
+Conda `conda.yml`, `conda.yaml`, `environment.yml`, and `environment.yaml` environments extract direct Conda package specifications and nested `pip` package declarations, including pip requirements-file references.
+
+Python `constraints.txt` files extract pip package constraints, including PEP 508 markers and local-version pins; index configuration directives are ignored.
+
+PDM `pdm.lock` files extract resolved Python package names and versions.
+
+R `renv.lock` files extract resolved CRAN package names and versions.
+
+Esy `esy.json` manifests extract direct runtime, development, and `override.dependencies` declarations. Pants `pants.toml` configurations extract the pinned Pants version and configured backend packages.
+
+Perl `Build.PL` files extract static Module::Build prerequisite maps, preserving runtime, optional, build/configure, and test scopes.
+
+Perl `Makefile.PL` files extract static Module::Install and ExtUtils::MakeMaker prerequisite declarations, preserving runtime, optional, build/configure, and test scopes.
+
+Perl `cpanfile` manifests extract static required and recommended CPAN modules, including test, development, and feature-scoped dependencies.
+
+Perl `cpanfile.snapshot` lockfiles extract resolved CPAN distributions and their selected versions.
+
+Raku `META6.json` manifests extract direct runtime, build, and test dependency declarations, including `ver` and `auth` qualifiers.
+
+CocoaPods `Podfile.lock` files extract resolved pods and their selected versions.
+
+CocoaPods podspecs extract static direct pod declarations and version constraints.
+
+LuaRocks rockspecs extract direct runtime, build, and test dependency declarations and their version constraints from the `dependencies`, `build_dependencies`, and `test_dependencies` tables.
+
+Zig `build.zig.zon` manifests extract direct Git, URL, and local-path dependencies from their `.dependencies` declarations.
+
+Bun `bun.lock` files extract every resolved npm package, including the selected version and root workspace dependency, development, optional, or peer source group when available.
 
 For example, `package.json` was previously limited to presence assessment:
 
@@ -104,9 +156,13 @@ build.gradle.kts [build-definition · 1 dependency · partial]
   warning [dependency-extraction-incomplete]: version-catalog alias libs.jackson.databind could not be resolved from this build file
 ```
 
-Dockerfile analysis extracts external images from `FROM` and external `COPY --from` instructions, while excluding `scratch` and previously declared stage aliases. Compose analysis extracts `services.*.image`. It does not treat packages installed by `RUN` or local build contexts as package dependencies.
+Dockerfile analysis extracts external images from `FROM` and external `COPY --from` instructions, while excluding `scratch` and previously declared stage aliases. Compose analysis extracts `services.*.image`. It does not treat packages installed by `RUN` or local build contexts as package dependencies. GitHub Action metadata extracts direct external action references from composite `runs.steps[].uses` declarations. Node and Docker action definitions without such references report a complete empty result.
 
-Maven POMs, Cargo manifests, Composer manifests, and .NET project or central-package files also preserve source groups, constraints, scopes, and relationships. Consuming declarations are direct; non-consuming catalogs such as Maven `dependencyManagement`, Cargo `workspace.dependencies`, and .NET `PackageVersion` entries are inconclusive:
+Meson build definitions extract static `dependency()` declarations, compiler `find_library()` calls, and Python installation dependency objects. A Meson file without those references reports a complete empty result. Nix `default.nix` and `shell.nix` files extract Nix search-path imports and static `fetchTarball` URLs; expressions with only local imports report a complete empty result. Nix `flake.nix` files extract static GitHub flake inputs, including `github:` references and Git URLs with `ref` constraints. Nix `flake.lock` files extract resolved GitHub inputs pinned to commits, marking root inputs as direct and other locked nodes as transitive.
+
+Maven POMs, Cargo manifests, Composer manifests, Fortran fpm manifests, V `v.mod` manifests, Cabal project freeze files, Hpack `package.yaml` manifests, and .NET project or central-package files also preserve source groups, constraints, scopes, and relationships. Cabal project freeze files extract resolved Hackage package pins from `constraints`, including `any.`-qualified package names. Hpack extracts Hackage dependencies from top-level and component-specific `dependencies`, with test dependencies marked test-scoped. Fortran fpm extracts registry, Git, and local-path dependencies from `dependencies` and test-scoped `dev-dependencies`. V manifests extract direct runtime registry dependencies from their `dependencies` list. Consuming declarations are direct; non-consuming catalogs such as Maven `dependencyManagement`, Cargo `workspace.dependencies`, and .NET `PackageVersion` entries are inconclusive:
+
+Foundry configuration extracts Soldeer registry dependencies declared in its `[dependencies]` table. A configuration without that table has a complete empty result. Soldeer lockfiles extract resolved dependency versions, archive checksums, and Git revisions.
 
 ```text
 pom.xml [manifest · 2 dependencies]
@@ -363,7 +419,7 @@ analyzer:
     - devDependencies
 ```
 
-The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `dockerfile`, `docker-compose`, `maven-pom`, `cargo-manifest`, `composer-manifest`, `dotnet-project`, `dotnet-central-packages`, and `dotnet-packages-config` can also be used by custom rules. They reject analyzer fields other than `type`.
+The configuration-free semantic analyzer types `package-json`, `gradle-build`, `gradle-lock`, `gradle-version-catalog`, `gemfile`, `gemfile-lock`, `gemspec`, `dockerfile`, `docker-compose`, `git-submodules`, `github-actions-action`, `maven-pom`, `java-ivy`, `cargo-manifest`, `composer-manifest`, `conda-environment`, `dotnet-project`, `dotnet-central-packages`, `dotnet-packages-config`, `dotnet-packages-lock`, `dotnet-paket-dependencies`, `dotnet-paket-lock`, `dotnet-paket-references`, `buf`, `buf-lock`, `dart-pubspec`, `dart-pubspec-lock`, `erlang-rebar-config`, `erlang-rebar-lock`, `elixir-mix`, `gleam`, `go-glide-yaml`, `go-glide-lock`, `haskell-cabal`, `haskell-stack`, `haskell-stack-lock`, `haskell-package-yaml`, `haskell-cabal-project-freeze`, `jsonnet-bundler`, `jsonnet-lock`, `ocaml-esy`, `ocaml-opam`, `terraform-lock`, `lua-rockspec`, and `zig-build-zon` can also be used by custom rules. They reject analyzer fields other than `type`.
 
 The old rule shape is rejected. The migration is intentionally atomic:
 

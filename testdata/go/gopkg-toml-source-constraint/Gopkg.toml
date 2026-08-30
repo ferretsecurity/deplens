@@ -1,0 +1,8 @@
+[[constraint]]
+  name = "example.test/environment"
+  version = "1.17.0"
+
+[[constraint]]
+  name = "example.test/queue"
+  source = "example.test/forks/queue"
+  branch = "fixshutdown"

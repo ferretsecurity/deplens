@@ -1,0 +1,8 @@
+version: 1.0
+shards:
+  jwt:
+    github: example/jwt
+    commit: f0bf2608
+  kilt:
+    github: example/kilt
+    version: 0.3.3

@@ -1,0 +1,8 @@
+dependencies:
+  flutter:
+    sdk: flutter
+  route_helper: ^1.2.3
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lint_rules: ^2.0.0

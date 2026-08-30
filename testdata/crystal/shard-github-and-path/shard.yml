@@ -1,0 +1,6 @@
+name: path-demo
+dependencies:
+  web:
+    github: example/web
+  assets:
+    path: ../assets

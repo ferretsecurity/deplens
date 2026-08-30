@@ -1,0 +1,21 @@
+{
+  "dependencies": [
+    {
+      "source": {
+        "local": {
+          "directory": "../local-library"
+        }
+      },
+      "version": ""
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://example.test/metrics.git",
+          "subdir": "generated"
+        }
+      },
+      "version": "main"
+    }
+  ]
+}

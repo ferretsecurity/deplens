@@ -1,0 +1,9 @@
+requires 'Runtime::Tool';
+
+on test => sub {
+    requires 'Test::Tool' => 0.01;
+};
+
+on develop => sub {
+    requires 'Build::Tool' => 0;
+};

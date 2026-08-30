@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "dependencies": {
+    ".NETStandard,Version=v2.1": {
+      "Example.Central": {
+        "type": "CentralTransitive",
+        "requested": "[3.3.1, )",
+        "resolved": "3.3.1",
+        "contentHash": "central-hash"
+      },
+      "Example.Direct": {
+        "type": "Direct",
+        "requested": "[4.0.0, )",
+        "resolved": "4.0.0",
+        "contentHash": "direct-hash"
+      },
+      "Example.Transitive": {
+        "type": "Transitive",
+        "resolved": "1.0.0-rc.3",
+        "contentHash": "transitive-hash"
+      },
+      "example.project": {
+        "type": "Project",
+        "dependencies": {
+          "Example.Direct": "[4.0.0, )"
+        }
+      }
+    }
+  }
+}

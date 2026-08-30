@@ -1,0 +1,6 @@
+# carton snapshot format: version 1.0
+DISTRIBUTIONS
+  Config-Tiny-2.26
+    pathname: R/RS/EXAMPLE/Config-Tiny-2.26.tgz
+    provides:
+      Config::Tiny 2.26

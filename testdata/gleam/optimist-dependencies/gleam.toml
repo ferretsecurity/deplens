@@ -1,0 +1,8 @@
+name = "sample_ui"
+version = "0.1.0"
+
+[dependencies]
+ui_runtime = ">= 0.35.0 and < 2.0.0"
+
+[dev-dependencies]
+ui_tests = ">= 1.1.0 and < 2.0.0"

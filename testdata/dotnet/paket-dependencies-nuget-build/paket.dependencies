@@ -1,0 +1,8 @@
+version 1.0.0
+source https://packages.example.test/v3/index.json
+nuget Acme.Data
+nuget Acme.Sql = 8.0.31
+
+group Build
+  source https://packages.example.test/v3/index.json
+  nuget Acme.Build.Target

@@ -1,0 +1,12 @@
+{
+  "pins": [{
+    "identity": "llama.cpp",
+    "kind": "remoteSourceControl",
+    "location": "https://example.test/llama.cpp",
+    "state": {
+      "branch": "master",
+      "revision": "3333333333333333333333333333333333333333"
+    }
+  }],
+  "version": 2
+}

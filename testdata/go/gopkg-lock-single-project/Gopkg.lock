@@ -1,0 +1,4 @@
+[[projects]]
+  name = "example.test/sqlmock"
+  revision = "1111111111111111"
+  version = "v1.3.0"

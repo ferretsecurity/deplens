@@ -1,0 +1,6 @@
+package: "example.test/tool"
+import:
+  - package: "example.test/command"
+    version: "v1.3.0"
+testImports:
+  - package: "example.test/assert"

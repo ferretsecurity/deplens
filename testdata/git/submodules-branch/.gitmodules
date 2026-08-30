@@ -1,0 +1,4 @@
+[submodule "tools/telemetry"]
+	path = tools/telemetry
+	url = ssh://git@example.test/platform/telemetry.git
+	branch = stable

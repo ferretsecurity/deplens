@@ -1,0 +1,8 @@
+# carton snapshot format: version 1.0
+CARTON: 1.0.34
+
+DISTRIBUTIONS
+  File-Slurp-9999.32
+    pathname: C/CA/EXAMPLE/File-Slurp-9999.32.tar.gz
+    requirements:
+      Exporter 5.57

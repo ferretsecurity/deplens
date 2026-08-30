@@ -1,0 +1,6 @@
+(lang dune 3.3)
+(package
+ (name api)
+ (depends
+  (runtime-lib (>= 1.0))
+  (test-driver (and :with-test (>= 2.0)))))
