@@ -21,6 +21,22 @@ func TestLuaRocksFixturesExtractDependencies(t *testing.T) {
 			},
 		},
 		{
+			name:    "build dependency list",
+			fixture: "build-dependencies-3.0-1.rockspec",
+			want: []DependencyReference{
+				luaRocksTestDependencyInGroup("luarocks-build-hooks", ">= 0.8.0", "build_dependencies", ScopeBuild),
+				luaRocksTestDependencyInGroup("luarocks-build-rust-mlua", ">= 0.2.6", "build_dependencies", ScopeBuild),
+			},
+		},
+		{
+			name:    "test dependency list",
+			fixture: "test-dependencies-3.0-1.rockspec",
+			want: []DependencyReference{
+				luaRocksTestDependencyInGroup("busted", ">= 2.2", "test_dependencies", ScopeTest),
+				luaRocksTestDependencyInGroup("luacov", ">= 0.15.0", "test_dependencies", ScopeTest),
+			},
+		},
+		{
 			name:    "dynamic identity",
 			fixture: "dynamic-identity-1.rockspec",
 			want:    []DependencyReference{luaRocksTestDependency("lua", ">= 5.0, < 5.6")},
@@ -65,14 +81,18 @@ func TestLuaRocksManifestWithoutDependenciesIsCompleteAndAbsent(t *testing.T) {
 }
 
 func luaRocksTestDependency(name, constraint string) DependencyReference {
+	return luaRocksTestDependencyInGroup(name, constraint, "dependencies", ScopeRuntime)
+}
+
+func luaRocksTestDependencyInGroup(name, constraint, sourceGroup string, scope DependencyScope) DependencyReference {
 	dependency := DependencyReference{
 		PackageType:  "luarocks",
 		Raw:          name,
 		Name:         name,
-		SourceGroup:  "dependencies",
+		SourceGroup:  sourceGroup,
 		OriginKind:   OriginRegistry,
 		Relationship: RelationshipDirect,
-		Scope:        ScopeRuntime,
+		Scope:        scope,
 	}
 	if constraint != "" {
 		dependency.Raw += "@" + constraint

@@ -91,7 +91,7 @@ CocoaPods `Podfile.lock` files extract resolved pods and their selected versions
 
 CocoaPods podspecs extract static direct pod declarations and version constraints.
 
-LuaRocks rockspecs extract direct runtime dependency declarations and their version constraints from the `dependencies` table.
+LuaRocks rockspecs extract direct runtime, build, and test dependency declarations and their version constraints from the `dependencies`, `build_dependencies`, and `test_dependencies` tables.
 
 Zig `build.zig.zon` manifests extract direct Git, URL, and local-path dependencies from their `.dependencies` declarations.
 

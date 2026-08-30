@@ -54,16 +54,22 @@ func (luaRocksParser) Analyze(path string, content []byte) (sourceAnalyzerResult
 			packageDeclared = true
 		case "version":
 			versionDeclared = true
-		case "dependencies":
+		case "dependencies", "build_dependencies", "test_dependencies":
 			if index+2 >= len(tokens) || tokens[index+2].kind != luaRocksTokenOpenTable {
 				continue
+			}
+			sourceGroup, scope := "dependencies", ScopeRuntime
+			if tokens[index].value == "build_dependencies" {
+				sourceGroup, scope = "build_dependencies", ScopeBuild
+			} else if tokens[index].value == "test_dependencies" {
+				sourceGroup, scope = "test_dependencies", ScopeTest
 			}
 			values, next, ok := luaRocksTableStrings(tokens, index+2)
 			if !ok {
 				return sourceAnalyzerResult{}, fmt.Errorf("parse LuaRocks rockspec %q: unterminated dependencies table", path)
 			}
 			for _, value := range values {
-				if dependency, ok := luaRocksDependency(value); ok {
+				if dependency, ok := luaRocksDependency(value, sourceGroup, scope); ok {
 					dependencies = append(dependencies, dependency)
 				}
 			}
@@ -99,7 +105,7 @@ func luaRocksTableStrings(tokens []luaRocksToken, start int) ([]string, int, boo
 	return nil, 0, false
 }
 
-func luaRocksDependency(value string) (DependencyReference, bool) {
+func luaRocksDependency(value, sourceGroup string, scope DependencyScope) (DependencyReference, bool) {
 	fields := strings.Fields(value)
 	if len(fields) == 0 {
 		return DependencyReference{}, false
@@ -107,10 +113,10 @@ func luaRocksDependency(value string) (DependencyReference, bool) {
 	dependency := DependencyReference{
 		Raw:          fields[0],
 		Name:         fields[0],
-		SourceGroup:  "dependencies",
+		SourceGroup:  sourceGroup,
 		OriginKind:   OriginRegistry,
 		Relationship: RelationshipDirect,
-		Scope:        ScopeRuntime,
+		Scope:        scope,
 	}
 	if constraint := strings.TrimSpace(strings.TrimPrefix(value, fields[0])); constraint != "" {
 		dependency.Raw += "@" + constraint
