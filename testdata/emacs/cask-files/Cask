@@ -1,0 +1,7 @@
+(package-file "client.el")
+(files "client.el" "extras.el")
+
+(depends-on "client-core")
+(development
+ (depends-on "completion-ui")
+ (depends-on "syntax-checker"))

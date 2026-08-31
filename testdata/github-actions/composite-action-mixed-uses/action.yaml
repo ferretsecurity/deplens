@@ -1,0 +1,8 @@
+name: Composite action with GitHub and Docker dependencies
+runs:
+  using: composite
+  steps:
+    - name: Upload results
+      uses: actions/upload-artifact@0123456789abcdef0123456789abcdef01234567
+    - name: Scan image
+      uses: docker://registry.example.test/acme/scanner@sha256:0123456789abcdef

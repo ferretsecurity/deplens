@@ -1,0 +1,9 @@
+{
+  "name": "sample-library",
+  "dependencies": ["core"],
+  "features": {
+    "tools": {
+      "dependencies": ["lint-tool", "test-kit"]
+    }
+  }
+}

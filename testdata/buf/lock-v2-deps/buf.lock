@@ -1,0 +1,5 @@
+version: v2
+deps:
+  - name: buf.build/acme/validate
+    commit: d4e5f6
+    digest: b5:012345

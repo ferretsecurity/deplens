@@ -1,0 +1,7 @@
+{
+  "registries": [{
+    "kind": "git",
+    "repository": "https://example.test/registry",
+    "packages": ["example-ui", "example-codec"]
+  }]
+}

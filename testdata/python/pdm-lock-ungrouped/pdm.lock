@@ -1,0 +1,11 @@
+[metadata]
+lock_version = "4.4.1"
+strategy = ["cross_platform"]
+
+[[package]]
+name = "http-client"
+version = "3.2.1"
+
+[[package]]
+name = "certificate-bundle"
+version = "2024.2.0"

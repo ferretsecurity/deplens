@@ -1,0 +1,1 @@
+{"1.2.0", [{<<"cowlib">>, {pkg, <<"cowlib">>, <<"2.13.0">>}, 2}, {<<"ehttpc">>, {git, "https://github.com/emqx/ehttpc", {ref, "c18e5efacde5556bb8bf86b1bc1e35a85a67928d"}}, 0}]}.

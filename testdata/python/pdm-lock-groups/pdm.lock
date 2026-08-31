@@ -1,0 +1,14 @@
+[metadata]
+lock_version = "4.4.1"
+groups = ["default", "dev"]
+
+[[package]]
+name = "format-tool"
+version = "23.1.0"
+groups = ["dev"]
+dependencies = ["format-core>=1.0"]
+
+[[package]]
+name = "format-core"
+version = "1.0.0"
+groups = ["dev"]

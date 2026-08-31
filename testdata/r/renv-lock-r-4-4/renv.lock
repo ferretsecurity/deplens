@@ -1,0 +1,18 @@
+{
+  "R": {"Version": "4.4.0"},
+  "Packages": {
+    "graphpkg": {
+      "Package": "graphpkg",
+      "Version": "2.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": ["R", "helperpkg"]
+    },
+    "helperpkg": {
+      "Package": "helperpkg",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN"
+    }
+  }
+}

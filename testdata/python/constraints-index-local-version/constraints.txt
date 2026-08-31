@@ -1,0 +1,3 @@
+--extra-index-url https://packages.example.test/simple
+torch==2.9.1+cu128
+torchaudio==2.9.1+cu128

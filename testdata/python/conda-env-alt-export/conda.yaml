@@ -1,0 +1,10 @@
+name: torch
+channels:
+  - defaults
+  - pytorch
+dependencies:
+  - Pillow=9.2.0
+  - pytorch=1.12.1
+  - pip:
+      - pyyaml==6.0
+      - Augmentor==0.2.10

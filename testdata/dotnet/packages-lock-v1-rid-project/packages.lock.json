@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "Example.Command": {
+        "type": "Direct",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "command-hash"
+      },
+      "Example.Library": {
+        "type": "Transitive",
+        "resolved": "5.6.7",
+        "contentHash": "library-hash"
+      },
+      "example.project": {
+        "type": "Project",
+        "dependencies": {
+          "Example.Library": "[5.6.7, )"
+        }
+      }
+    },
+    "net10.0/linux-arm64": {
+      "Example.Command": {
+        "type": "Direct",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "command-hash"
+      },
+      "runtime.linux-arm64.Example.Command": {
+        "type": "Transitive",
+        "resolved": "10.0.9",
+        "contentHash": "runtime-hash"
+      }
+    }
+  }
+}

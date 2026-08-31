@@ -1,0 +1,6 @@
+{
+  "version": "0.5",
+  "requires": ["runtime-lib/1.2.3#abcdef0123456789%1700000000.000"],
+  "build_requires": ["build-tool/4.5.6#0123456789abcdef"],
+  "overrides": {"runtime-lib/[>=1 <2]": ["runtime-lib/1.2.3"]}
+}

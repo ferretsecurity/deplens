@@ -1,0 +1,2 @@
+binary "https://downloads.example.test/Telemetry.json" "10.21.0"
+github "sample/Categories" "6.13.0"

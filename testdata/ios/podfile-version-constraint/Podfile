@@ -1,0 +1,3 @@
+target 'JSONRequestTests' do
+  pod 'DVR', '~> 1.0'
+end

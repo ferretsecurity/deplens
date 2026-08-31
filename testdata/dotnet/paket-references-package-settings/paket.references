@@ -1,0 +1,10 @@
+﻿Contoso.Runtime copy_local: false
+  exclude Contoso.Runtime.Design.dll
+  alias Contoso.Runtime.dll RuntimeAlias
+File:Generated.fs
+
+group fcs
+  nuget Contoso.Build framework: >= net8.0
+
+group Tests
+  Contoso.Test restriction: == net8.0

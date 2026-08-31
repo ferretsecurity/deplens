@@ -1,0 +1,6 @@
+(package "board-demo" "0.1.0" "A sample package.")
+
+(depends-on "runtime-board")
+(development
+ (depends-on "board-test")
+ (depends-on "test-support"))

@@ -1,0 +1,10 @@
+source https://packages.example.test/v3/index.json
+nuget Acme.Runtime >= 1.2.0 lowest_matching:true
+
+group Build
+  source https://packages.example.test/v3/index.json
+  nuget Acme.Build.Tool
+  github example/assets icons/build.svg
+
+group Formatting
+  nuget Acme.Formatter = 2.0.0

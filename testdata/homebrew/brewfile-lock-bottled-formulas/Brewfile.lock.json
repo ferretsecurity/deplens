@@ -1,0 +1,24 @@
+{
+  "entries": {
+    "brew": {
+      "formatter": {
+        "version": "1.2.3",
+        "bottle": {
+          "root_url": "https://registry.example.test/homebrew/core",
+          "files": {
+            "arm64_test": {"sha256": "formatter-arm64-checksum"}
+          }
+        }
+      },
+      "toolkit": {
+        "version": "0.17.5",
+        "bottle": {
+          "root_url": "https://registry.example.test/homebrew/core",
+          "files": {
+            "x86_64_test": {"sha256": "toolkit-x86-checksum"}
+          }
+        }
+      }
+    }
+  }
+}

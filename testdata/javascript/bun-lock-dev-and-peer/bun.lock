@@ -1,0 +1,20 @@
+{
+  "lockfileVersion": 1,
+  "workspaces": {
+    "": {
+      "devDependencies": {
+        "@types/bun": "^1.2.18",
+        "bun-plugin-dts": "^0.3.0",
+      },
+      "peerDependencies": {
+        "typescript": "^5.6.2",
+      },
+    },
+  },
+  "packages": {
+    "@types/bun": ["@types/bun@1.2.21", "", {}],
+    "bun-plugin-dts": ["bun-plugin-dts@0.3.0", "", {}],
+    "bun-types": ["bun-types@1.2.21", "", {}],
+    "typescript": ["typescript@5.9.2", "", {}],
+  },
+}

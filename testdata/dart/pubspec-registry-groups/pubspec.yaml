@@ -1,0 +1,5 @@
+dependencies:
+  runtime_alpha: ^1.0.0
+  runtime_beta: ^2.0.0
+dev_dependencies:
+  test_helper: ^3.0.0

@@ -1,0 +1,4 @@
+resolver: lts-20.1
+extra-deps:
+  - api-toolkit-1.4.2
+  - json-golden-0.8.0.1

@@ -1,0 +1,9 @@
+[[projects]]
+  name = "example.test/tagged"
+  revision = "fedcba9876543210"
+  version = "v1.2.3"
+
+[[projects]]
+  branch = "main"
+  name = "example.test/branch"
+  revision = "0123456789abcdef"

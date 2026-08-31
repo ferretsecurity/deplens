@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net8.0": {
+      "Example.Direct": {
+        "type": "Direct",
+        "requested": "[1.2.3, )",
+        "resolved": "1.2.3",
+        "contentHash": "direct-hash"
+      },
+      "Example.Transitive": {
+        "type": "Transitive",
+        "resolved": "2.0.0",
+        "contentHash": "transitive-hash"
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "compat": "https://cdn.example.test/compat-kit@0.1.x/entry.js",
+    "compat/": "https://cdn.example.test/compat-kit@0.1.x/"
+  }
+}

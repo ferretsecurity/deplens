@@ -1,0 +1,8 @@
+name: custom-set
+dependencies:
+  - base
+tests:
+  spec:
+    dependencies:
+      - custom-set
+      - hspec

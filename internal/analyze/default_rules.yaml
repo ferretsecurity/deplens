@@ -37,11 +37,10 @@ rules:
   - id: python-pdm-lock
     form: lockfile
     roles: [resolution, integrity]
+    package-type: pypi
     filename-regex: '^pdm\.lock$'
     analyzer:
-      type: toml
-      exists-any:
-        - package
+      type: pdm-lock
   - id: python-conda-lock
     form: lockfile
     roles: [resolution, integrity]
@@ -51,9 +50,12 @@ rules:
       exists-any:
         - package
   - id: python-conda-env-alt
+    package-type: conda
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^conda\.ya?ml$'
+    analyzer:
+      type: conda-environment
   - id: python-pyproject
     form: manifest
     roles: [declaration, constraint]
@@ -69,12 +71,12 @@ rules:
         - tool.poetry.dependencies
         - tool.poetry.group.*.dependencies
   - id: python-conda-environment
+    package-type: conda
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^environment\.ya?ml$'
     analyzer:
-      type: yaml
-      exists: dependencies
+      type: conda-environment
   - id: python-pipfile
     form: manifest
     roles: [declaration, constraint]
@@ -125,9 +127,12 @@ rules:
         - section: options.extras_require
           key: '*'
   - id: python-constraints
+    package-type: pypi
     form: constraint-file
     roles: [constraint]
     filename-regex: '^constraints\.txt$'
+    analyzer:
+      type: py-requirements
   - id: js
     package-type: npm
     form: manifest
@@ -136,14 +141,12 @@ rules:
     analyzer:
       type: package-json
   - id: js-bower
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^bower\.json$'
     analyzer:
-      type: json
-      exists-any:
-        - dependencies
-        - devDependencies
+      type: bower
   - id: js-npm-shrinkwrap
     form: lockfile
     roles: [resolution, integrity]
@@ -173,33 +176,37 @@ rules:
     analyzer:
       type: pnpm-lock
   - id: js-bun-lock
+    package-type: npm
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^bun\.lock$'
+    analyzer:
+      type: bun-lock
   - id: js-bun-lockb
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^bun\.lockb$'
   - id: deno-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^deno\.lock$'
+    analyzer:
+      type: deno-lock
   - id: deno-json
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^deno\.json$'
     analyzer:
-      type: json
-      exists-any:
-        - imports
+      type: deno-json
   - id: deno-jsonc
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^deno\.jsonc$'
     analyzer:
-      type: json
-      exists-any:
-        - imports
+      type: deno-jsonc
   - id: js-pnp
     form: vendored-file
     roles: [inventory, resolution]
@@ -217,9 +224,12 @@ rules:
     roles: [configuration]
     filename-regex: '^\.yarnrc\.yml$'
   - id: js-importmap
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^importmap\.json$'
+    analyzer:
+      type: importmap
   - id: java
     package-type: maven
     form: manifest
@@ -268,9 +278,12 @@ rules:
     roles: [configuration]
     path-glob: '**/gradle/wrapper/gradle-wrapper.properties'
   - id: scala-sbt-build
+    package-type: maven
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^build\.sbt$'
+    analyzer:
+      type: scala-sbt-build
   - id: scala-sbt-plugins
     form: build-definition
     roles: [declaration, constraint, configuration]
@@ -284,17 +297,23 @@ rules:
     roles: [configuration]
     path-glob: '**/project/build.properties'
   - id: scala-mill
+    package-type: maven
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^build\.sc$'
+    analyzer:
+      type: scala-mill
   - id: java-ant-build
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^build\.xml$'
   - id: java-ivy
+    package-type: maven
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^ivy\.xml$'
+    analyzer:
+      type: java-ivy
   - id: java-ivy-settings
     form: tool-config
     roles: [configuration]
@@ -314,33 +333,49 @@ rules:
     analyzer:
       type: gemfile-lock
   - id: ruby-gemspec
+    package-type: gem
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '.*\.gemspec$'
+    analyzer:
+      type: gemspec
   - id: ruby-appraisal
     form: manifest
     roles: [declaration, constraint]
     path-glob: '**/gemfiles/*.gemfile'
   - id: swift-package
+    package-type: swift
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Package\.swift$'
+    analyzer:
+      type: swift-package
   - id: ios-podfile
+    package-type: cocoapods
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Podfile$'
+    analyzer:
+      type: ios-podfile
   - id: ios-cartfile
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Cartfile$'
+    analyzer:
+      type: ios-cartfile
   - id: ios-podspec
+    package-type: cocoapods
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '.*\.podspec$'
+    analyzer:
+      type: ios-podspec
   - id: ios-cartfile-resolved
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Cartfile\.resolved$'
+    analyzer:
+      type: ios-cartfile-resolved
   - id: php-composer
     package-type: composer
     form: manifest
@@ -356,71 +391,93 @@ rules:
     analyzer:
       type: composer-lock
   - id: dart-pubspec
+    package-type: pub
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^pubspec\.yaml$'
     analyzer:
-      type: yaml
-      exists-any:
-        - dependencies
-        - dev_dependencies
-        - dependency_overrides
+      type: dart-pubspec
   - id: dart-pubspec-lock
+    package-type: pub
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^pubspec\.lock$'
     analyzer:
-      type: yaml
-      exists-any:
-        - packages
+      type: dart-pubspec-lock
   - id: erlang-rebar-config
+    package-type: hex
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^rebar\.config$'
+    analyzer:
+      type: erlang-rebar-config
   - id: erlang-rebar-lock
+    package-type: hex
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^rebar\.lock$'
+    analyzer:
+      type: erlang-rebar-lock
   - id: clojure-deps-edn
+    package-type: maven
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^deps\.edn$'
+    analyzer:
+      type: clojure-deps-edn
   - id: clojure-project-clj
+    package-type: maven
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^project\.clj$'
+    analyzer:
+      type: clojure-project-clj
   - id: clojure-boot
+    package-type: maven
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^build\.boot$'
+    analyzer:
+      type: clojure-boot
   - id: haskell-stack
+    package-type: hackage
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^stack\.yaml$'
+    analyzer:
+      type: haskell-stack
   - id: haskell-stack-lock
+    package-type: hackage
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^stack\.yaml\.lock$'
+    analyzer:
+      type: haskell-stack-lock
   - id: haskell-cabal-project
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^cabal\.project$'
   - id: haskell-cabal-project-freeze
+    package-type: hackage
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^cabal\.project\.freeze$'
+    analyzer:
+      type: haskell-cabal-project-freeze
   - id: haskell-cabal
+    package-type: hackage
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '.*\.cabal$'
+    analyzer:
+      type: haskell-cabal
   - id: haskell-package-yaml
+    package-type: hackage
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^package\.yaml$'
     analyzer:
-      type: yaml
-      exists-any:
-        - dependencies
+      type: haskell-package-yaml
   - id: dotnet-packages-config
     package-type: nuget
     form: manifest
@@ -429,13 +486,12 @@ rules:
     analyzer:
       type: dotnet-packages-config
   - id: dotnet-packages-lock
+    package-type: nuget
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^packages\.lock\.json$'
     analyzer:
-      type: json
-      exists-any:
-        - dependencies
+      type: dotnet-packages-lock
   - id: dotnet-directory-packages-props
     package-type: nuget
     form: version-catalog
@@ -447,10 +503,14 @@ rules:
     form: requirements
     roles: [declaration, constraint]
     filename-regex: '^paket\.dependencies$'
+    analyzer:
+      type: dotnet-paket-dependencies
   - id: dotnet-paket-lock
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^paket\.lock$'
+    analyzer:
+      type: dotnet-paket-lock
   - id: dotnet-fsproj
     package-type: nuget
     form: build-definition
@@ -473,6 +533,8 @@ rules:
     form: requirements
     roles: [declaration, constraint]
     filename-regex: '^paket\.references$'
+    analyzer:
+      type: dotnet-paket-references
   - id: dotnet-tools-manifest
     form: manifest
     roles: [declaration, constraint]
@@ -493,18 +555,19 @@ rules:
     roles: [workspace, configuration]
     filename-regex: '^go\.work$'
   - id: go-gopkg-toml
+    package-type: golang
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Gopkg\.toml$'
+    analyzer:
+      type: go-gopkg-toml
   - id: go-glide-yaml
+    package-type: golang
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^glide\.yaml$'
     analyzer:
-      type: yaml
-      exists-any:
-        - import
-        - testImport
+      type: go-glide-yaml
   - id: go-godep
     form: manifest
     roles: [declaration, constraint]
@@ -528,17 +591,19 @@ rules:
     roles: [configuration]
     path-glob: '**/.cargo/config.toml'
   - id: go-gopkg-lock
+    package-type: golang
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Gopkg\.lock$'
     analyzer:
-      type: toml
-      exists-any:
-        - projects
+      type: go-gopkg-lock
   - id: go-glide-lock
+    package-type: golang
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^glide\.lock$'
+    analyzer:
+      type: go-glide-lock
   - id: dotnet-csproj
     package-type: nuget
     form: build-definition
@@ -547,37 +612,51 @@ rules:
     analyzer:
       type: dotnet-project
   - id: cpp-conanfile
+    package-type: conan
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^conanfile\.txt$'
+    analyzer:
+      type: conanfile
   - id: cpp-conan-lock
     form: lockfile
     roles: [resolution, integrity]
+    package-type: conan
     filename-regex: '^conan\.lock$'
+    analyzer:
+      type: conan-lock
   - id: cpp-vcpkg
+    package-type: vcpkg
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^vcpkg\.json$'
     analyzer:
-      type: json
-      exists-any:
-        - dependencies
+      type: vcpkg
   - id: cpp-cmake
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^CMakeLists\.txt$'
   - id: cpp-conanfile-py
+    package-type: conan
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^conanfile\.py$'
+    analyzer:
+      type: conanfile-py
   - id: cpp-vcpkg-config
+    package-type: vcpkg
     form: tool-config
     roles: [configuration]
     filename-regex: '^vcpkg-configuration\.json$'
+    analyzer:
+      type: vcpkg-configuration
   - id: cpp-meson
+    package-type: generic
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^meson\.build$'
+    analyzer:
+      type: meson
   - id: cpp-autotools
     form: build-definition
     roles: [declaration, constraint, configuration]
@@ -597,26 +676,26 @@ rules:
   #   roles: [declaration, constraint]
   #   path-glob: 'DEPS'
   - id: swift-package-resolved
+    package-type: swift
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Package\.resolved$'
     analyzer:
-      type: json
-      exists-any:
-        - pins
+      type: swift-package-resolved
   - id: ios-podfile-lock
+    package-type: cocoapods
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Podfile\.lock$'
     analyzer:
-      type: yaml
-      exists-any:
-        - PODS
-        - DEPENDENCIES
+      type: ios-podfile-lock
   - id: elixir-mix
+    package-type: hex
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^mix\.exs$'
+    analyzer:
+      type: elixir-mix
   - id: elixir-mix-lock
     form: lockfile
     roles: [resolution, integrity]
@@ -624,11 +703,10 @@ rules:
   - id: julia-project
     form: manifest
     roles: [declaration, constraint]
+    package-type: julia
     filename-regex: '^Project\.toml$'
     analyzer:
-      type: toml
-      table-exists-any:
-        - deps
+      type: julia-project
   - id: julia-manifest
     form: lockfile
     roles: [resolution, integrity]
@@ -638,21 +716,33 @@ rules:
       table-exists-any:
         - deps
   - id: perl-cpanfile
+    package-type: cpan
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^cpanfile$'
+    analyzer:
+      type: perl-cpanfile
   - id: perl-cpanfile-snapshot
+    package-type: cpan
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^cpanfile\.snapshot$'
+    analyzer:
+      type: perl-cpanfile-snapshot
   - id: perl-makefile-pl
+    package-type: cpan
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^Makefile\.PL$'
+    analyzer:
+      type: perl-makefile-pl
   - id: perl-build-pl
+    package-type: cpan
     form: build-definition
     roles: [declaration, constraint, configuration]
     filename-regex: '^Build\.PL$'
+    analyzer:
+      type: perl-build-pl
   - id: perl-meta
     form: manifest
     roles: [declaration, constraint]
@@ -662,13 +752,19 @@ rules:
     roles: [configuration]
     filename-regex: '^dist\.ini$'
   - id: raku-meta
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^META6\.json$'
+    analyzer:
+      type: raku-meta
   - id: r-renv-lock
+    package-type: cran
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^renv\.lock$'
+    analyzer:
+      type: r-renv-lock
   - id: r-packrat-lock
     form: lockfile
     roles: [resolution, integrity]
@@ -680,13 +776,19 @@ rules:
   #   roles: [declaration, constraint]
   #   filename-regex: '^DESCRIPTION$'
   - id: lua-rockspec
+    package-type: luarocks
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '.*\.rockspec$'
+    analyzer:
+      type: lua-rockspec
   - id: zig-build-zon
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^build\.zig\.zon$'
+    analyzer:
+      type: zig-build-zon
   - id: zig-build
     form: build-definition
     roles: [declaration, constraint, configuration]
@@ -696,21 +798,29 @@ rules:
     roles: [declaration, constraint]
     filename-regex: '.*\.nimble$'
   - id: ocaml-opam
+    package-type: opam
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '.*\.opam$'
+    analyzer:
+      type: ocaml-opam
   - id: ocaml-opam-locked
     form: lockfile
     roles: [resolution]
     filename-regex: '.*\.opam\.locked$'
   - id: ocaml-dune-project
+    package-type: opam
     form: workspace-definition
     roles: [workspace, configuration]
     filename-regex: '^dune-project$'
+    analyzer:
+      type: ocaml-dune-project
   - id: ocaml-esy
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^esy\.json$'
+    analyzer:
+      type: ocaml-esy
   # DRAFT: ocaml-dune — filename-regex for OCaml Dune per-directory build files (noisy)
   # TODO: add content-aware recognition (s-expression content check for 'library'/'executable' stanzas) to reduce false positives
   # - id: ocaml-dune
@@ -718,45 +828,51 @@ rules:
   #   roles: [declaration, configuration]
   #   filename-regex: '^dune$'
   - id: crystal-shard
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^shard\.yml$'
     analyzer:
-      type: yaml
-      exists-any:
-        - dependencies
+      type: crystal-shard
   - id: crystal-shard-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^shard\.lock$'
+    analyzer:
+      type: crystal-shard-lock
   - id: gleam
+    package-type: hex
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^gleam\.toml$'
     analyzer:
-      type: toml
-      table-exists-any:
-        - dependencies
+      type: gleam
   - id: gleam-manifest
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^manifest\.toml$'
   - id: fortran-fpm
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^fpm\.toml$'
+    analyzer:
+      type: fortran-fpm
   - id: vlang
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^v\.mod$'
+    analyzer:
+      type: vlang
   - id: helm-chart
+    package-type: generic
     form: deployment-definition
     roles: [declaration, configuration]
     filename-regex: '^Chart\.yaml$'
     analyzer:
-      type: yaml
-      exists-any:
-        - dependencies
+      type: helm-chart
   - id: ansible-requirements
     form: requirements
     roles: [declaration, constraint]
@@ -767,29 +883,32 @@ rules:
         - roles
         - collections
   - id: buf
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^buf\.yaml$'
     analyzer:
-      type: yaml
-      exists-any:
-        - deps
+      type: buf
   - id: homebrew-brewfile
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Brewfile$'
+    analyzer:
+      type: homebrew-brewfile
   - id: jsonnet-bundler
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^jsonnetfile\.json$'
     analyzer:
-      type: json
-      exists-any:
-        - dependencies
+      type: jsonnet-bundler
   - id: terraform-lock
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^\.terraform\.lock\.hcl$'
+    analyzer:
+      type: terraform-lock
   - id: unity-packages-manifest
     form: manifest
     roles: [declaration, constraint]
@@ -817,9 +936,12 @@ rules:
     analyzer:
       type: docker-compose
   - id: github-actions-action
+    package-type: github
     form: automation-definition
     roles: [configuration, usage]
     filename-regex: '^action\.ya?ml$'
+    analyzer:
+      type: github-actions-action
   - id: github-actions-workflow
     form: automation-definition
     roles: [configuration, usage]
@@ -871,9 +993,12 @@ rules:
     roles: [configuration]
     filename-regex: '^turbo\.json$'
   - id: pants-config
+    package-type: pypi
     form: tool-config
     roles: [configuration]
     filename-regex: '^pants\.toml$'
+    analyzer:
+      type: pants-config
   - id: pants-jvm-build
     form: build-definition
     roles: [declaration, constraint, configuration]
@@ -885,33 +1010,50 @@ rules:
   #   roles: [declaration, constraint, configuration]
   #   filename-regex: '^BUILD$'
   - id: git-submodules
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^\.gitmodules$'
+    analyzer:
+      type: git-submodules
   - id: nix-default-shell
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^(default|shell)\.nix$'
+    analyzer:
+      type: nix-default-shell
   - id: nix-flake
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^flake\.nix$'
+    analyzer:
+      type: nix-flake
   - id: nix-flake-lock
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^flake\.lock$'
+    analyzer:
+      type: nix-flake-lock
   - id: helm-chart-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Chart\.lock$'
+    analyzer:
+      type: helm-chart-lock
   - id: homebrew-brewfile-lock
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Brewfile\.lock\.json$'
+    analyzer:
+      type: homebrew-brewfile-lock
   - id: buf-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^buf\.lock$'
+    analyzer:
+      type: buf-lock
   - id: puppet-puppetfile
     form: manifest
     roles: [declaration, constraint]
@@ -925,33 +1067,54 @@ rules:
   #   roles: [declaration, constraint]
   #   path-glob: '**/cookbooks/*/metadata.json'
   - id: chef-berksfile
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Berksfile$'
+    analyzer:
+      type: chef-berksfile
   - id: chef-berksfile-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Berksfile\.lock$'
+    analyzer:
+      type: chef-berksfile-lock
   - id: chef-metadata
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^metadata\.rb$'
+    analyzer:
+      type: chef-metadata
   - id: chef-policyfile
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Policyfile\.rb$'
+    analyzer:
+      type: chef-policyfile
   - id: chef-policyfile-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^Policyfile\.lock\.json$'
+    analyzer:
+      type: chef-policyfile-lock
   - id: jsonnet-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^jsonnetfile\.lock\.json$'
+    analyzer:
+      type: jsonnet-lock
   - id: emacs-cask
+    package-type: generic
     form: manifest
     roles: [declaration, constraint]
     filename-regex: '^Cask$'
+    analyzer:
+      type: emacs-cask
   - id: unreal-uproject
     form: manifest
     roles: [declaration, constraint]
@@ -965,17 +1128,23 @@ rules:
     roles: [configuration]
     filename-regex: '^plugin\.cfg$'
   - id: foundry-toml
+    package-type: generic
     form: tool-config
     roles: [configuration]
     filename-regex: '^foundry\.toml$'
+    analyzer:
+      type: foundry-toml
   - id: foundry-remappings
     form: constraint-file
     roles: [constraint]
     filename-regex: '^remappings\.txt$'
   - id: soldeer-lock
+    package-type: generic
     form: lockfile
     roles: [resolution, integrity]
     filename-regex: '^soldeer\.lock$'
+    analyzer:
+      type: soldeer-lock
   - id: js-banner-block-start
     form: source-code
     roles: [usage, inventory]

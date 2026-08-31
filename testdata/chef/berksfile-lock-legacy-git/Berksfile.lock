@@ -1,0 +1,11 @@
+DEPENDENCIES
+  base (~> 1.0)
+  remote
+    git: https://example.test/remote.git
+    revision: abc123
+    tag: v2.0.0
+
+GRAPH
+  base (1.2.0)
+  remote (2.0.0)
+  shared (3.0.0)

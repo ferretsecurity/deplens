@@ -1,0 +1,6 @@
+.{
+    .name = .sample,
+    .dependencies = .{
+        .parser = .{ .url = "git+https://example.test/parser#abc123" },
+    },
+}

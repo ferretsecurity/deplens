@@ -1,0 +1,13 @@
+{
+  "object": {
+    "pins": [{
+      "package": "TreeSitter",
+      "repositoryURL": "https://example.test/tree-sitter",
+      "state": {
+        "revision": "1111111111111111111111111111111111111111",
+        "version": "0.23.2"
+      }
+    }]
+  },
+  "version": 1
+}

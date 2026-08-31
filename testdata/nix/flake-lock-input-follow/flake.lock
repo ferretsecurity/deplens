@@ -1,0 +1,34 @@
+{
+  "nodes": {
+    "base": {
+      "locked": {
+        "type": "github",
+        "owner": "acme",
+        "repo": "base",
+        "rev": "4444444444444444444444444444444444444444"
+      }
+    },
+    "library": {
+      "locked": {
+        "type": "github",
+        "owner": "acme",
+        "repo": "library",
+        "rev": "5555555555555555555555555555555555555555"
+      }
+    },
+    "parts": {
+      "inputs": { "base": ["base"], "library": "library" },
+      "locked": {
+        "type": "github",
+        "owner": "acme",
+        "repo": "parts",
+        "rev": "6666666666666666666666666666666666666666"
+      }
+    },
+    "root": {
+      "inputs": { "base": "base", "parts": "parts" }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

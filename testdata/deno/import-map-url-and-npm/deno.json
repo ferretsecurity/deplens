@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "fresh": "https://deno.land/x/fresh@1.7.3/mod.ts",
+    "tailwindcss": "npm:tailwindcss@3.3.5",
+    "tailwindcss/": "npm:tailwindcss@3.3.5/"
+  }
+}

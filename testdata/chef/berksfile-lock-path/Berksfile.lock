@@ -1,0 +1,7 @@
+DEPENDENCIES
+  local
+    path: spec/fixtures/local
+    metadata: true
+
+GRAPH
+  local (0.1.0)

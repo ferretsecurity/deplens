@@ -47,41 +47,14 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		name string
 		want DetectorID
 	}{
-		{name: "bun.lock", want: DetectorID("js-bun-lock")},
 		{name: "bun.lockb", want: DetectorID("js-bun-lockb")},
 		{name: "settings.gradle", want: DetectorID("java-gradle-settings")},
 		{name: "settings.gradle.kts", want: DetectorID("java-gradle-settings-kts")},
-		{name: "Package.swift", want: DetectorID("swift-package")},
-		{name: "Podfile", want: DetectorID("ios-podfile")},
-		{name: "Cartfile", want: DetectorID("ios-cartfile")},
-		{name: "rebar.config", want: DetectorID("erlang-rebar-config")},
-		{name: "rebar.lock", want: DetectorID("erlang-rebar-lock")},
-		{name: "deps.edn", want: DetectorID("clojure-deps-edn")},
-		{name: "project.clj", want: DetectorID("clojure-project-clj")},
-		{name: "stack.yaml", want: DetectorID("haskell-stack")},
-		{name: "stack.yaml.lock", want: DetectorID("haskell-stack-lock")},
 		{name: "cabal.project", want: DetectorID("haskell-cabal-project")},
-		{name: "paket.dependencies", want: DetectorID("dotnet-paket-dependencies")},
-		{name: "paket.lock", want: DetectorID("dotnet-paket-lock")},
 		{name: "go.sum", want: DetectorID("go-sum")},
 		{name: "go.work", want: DetectorID("go-work")},
-		{name: "Gopkg.toml", want: DetectorID("go-gopkg-toml")},
-		{name: "glide.lock", want: DetectorID("go-glide-lock")},
-		{name: "conan.lock", want: DetectorID("cpp-conan-lock")},
-		{name: "mix.exs", want: DetectorID("elixir-mix")},
 		{name: "mix.lock", want: DetectorID("elixir-mix-lock")},
-		{name: "demo.cabal", want: DetectorID("haskell-cabal")},
-		{name: "demo.gemspec", want: DetectorID("ruby-gemspec")},
-		{name: "conanfile.txt", want: DetectorID("cpp-conanfile")},
-		{name: "cpanfile", want: DetectorID("perl-cpanfile")},
-		{name: "build.zig.zon", want: DetectorID("zig-build-zon")},
 		{name: "demo.nimble", want: DetectorID("nim-nimble")},
-		{name: "demo.opam", want: DetectorID("ocaml-opam")},
-		{name: "v.mod", want: DetectorID("vlang")},
-		{name: "Brewfile", want: DetectorID("homebrew-brewfile")},
-		{name: ".terraform.lock.hcl", want: DetectorID("terraform-lock")},
-		{name: "action.yml", want: DetectorID("github-actions-action")},
-		{name: "action.yaml", want: DetectorID("github-actions-action")},
 		// Group 1b: Build systems and monorepo tools
 		{name: "WORKSPACE", want: DetectorID("bazel-workspace")},
 		{name: "WORKSPACE.bazel", want: DetectorID("bazel-workspace")},
@@ -94,25 +67,16 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "lerna.json", want: DetectorID("js-lerna")},
 		{name: "rush.json", want: DetectorID("js-rush")},
 		{name: "turbo.json", want: DetectorID("js-turbo")},
-		{name: "pants.toml", want: DetectorID("pants-config")},
-		{name: ".gitmodules", want: DetectorID("git-submodules")},
 		// Group 1c: JVM ecosystem extensions
-		{name: "build.sbt", want: DetectorID("scala-sbt-build")},
-		{name: "build.sc", want: DetectorID("scala-mill")},
-		{name: "ivy.xml", want: DetectorID("java-ivy")},
 		{name: "ivysettings.xml", want: DetectorID("java-ivy-settings")},
 		{name: "build.xml", want: DetectorID("java-ant-build")},
 		// Group 1d: C/C++ ecosystem extensions
 		{name: "CMakeLists.txt", want: DetectorID("cpp-cmake")},
-		{name: "conanfile.py", want: DetectorID("cpp-conanfile-py")},
-		{name: "vcpkg-configuration.json", want: DetectorID("cpp-vcpkg-config")},
-		{name: "meson.build", want: DetectorID("cpp-meson")},
 		{name: "configure.ac", want: DetectorID("cpp-autotools")},
 		{name: "configure.in", want: DetectorID("cpp-autotools")},
 		// Group 1e: .NET ecosystem extensions
 		{name: "Directory.Build.props", want: DetectorID("dotnet-directory-build")},
 		{name: "Directory.Build.targets", want: DetectorID("dotnet-directory-build")},
-		{name: "paket.references", want: DetectorID("dotnet-paket-references")},
 		// Group 1f: JavaScript/Node ecosystem extensions
 		{name: ".pnp.cjs", want: DetectorID("js-pnp")},
 		{name: ".pnp.loader.mjs", want: DetectorID("js-pnp")},
@@ -120,62 +84,26 @@ func TestMatchSelectorOnlySourceMatchesSupportedFiles(t *testing.T) {
 		{name: "pnpm-workspace.yml", want: DetectorID("js-pnpm-workspace")},
 		{name: ".npmrc", want: DetectorID("js-npmrc")},
 		{name: ".yarnrc.yml", want: DetectorID("js-yarnrc")},
-		{name: "importmap.json", want: DetectorID("js-importmap")},
-		// Group 1g: Python ecosystem extensions
-		{name: "constraints.txt", want: DetectorID("python-constraints")},
-		{name: "conda.yml", want: DetectorID("python-conda-env-alt")},
-		{name: "conda.yaml", want: DetectorID("python-conda-env-alt")},
 		// Group 1h: Systems languages extensions
 		{name: "build.zig", want: DetectorID("zig-build")},
 		// Group 1i: Ruby/iOS ecosystem extensions
-		{name: "demo.podspec", want: DetectorID("ios-podspec")},
-		{name: "Cartfile.resolved", want: DetectorID("ios-cartfile-resolved")},
 		// Group 1j: Functional and niche languages
-		{name: "cabal.project.freeze", want: DetectorID("haskell-cabal-project-freeze")},
-		{name: "build.boot", want: DetectorID("clojure-boot")},
-		{name: "demo.rockspec", want: DetectorID("lua-rockspec")},
-		{name: "renv.lock", want: DetectorID("r-renv-lock")},
 		// DRAFT (Group 3): {name: "DESCRIPTION", want: DetectorID("r-description")},
-		{name: "cpanfile.snapshot", want: DetectorID("perl-cpanfile-snapshot")},
-		{name: "Makefile.PL", want: DetectorID("perl-makefile-pl")},
-		{name: "Build.PL", want: DetectorID("perl-build-pl")},
 		{name: "META.json", want: DetectorID("perl-meta")},
 		{name: "META.yml", want: DetectorID("perl-meta")},
 		{name: "META.yaml", want: DetectorID("perl-meta")},
 		{name: "dist.ini", want: DetectorID("perl-dist-ini")},
-		{name: "META6.json", want: DetectorID("raku-meta")},
 		{name: "demo.opam.locked", want: DetectorID("ocaml-opam-locked")},
-		{name: "dune-project", want: DetectorID("ocaml-dune-project")},
-		{name: "esy.json", want: DetectorID("ocaml-esy")},
 		// DRAFT (Group 3): {name: "dune", want: DetectorID("ocaml-dune")},
-		{name: "shard.lock", want: DetectorID("crystal-shard-lock")},
 		{name: "manifest.toml", want: DetectorID("gleam-manifest")},
-		{name: "fpm.toml", want: DetectorID("fortran-fpm")},
-		// Group 1k: Nix
-		{name: "default.nix", want: DetectorID("nix-default-shell")},
-		{name: "shell.nix", want: DetectorID("nix-default-shell")},
-		{name: "flake.nix", want: DetectorID("nix-flake")},
-		{name: "flake.lock", want: DetectorID("nix-flake-lock")},
 		// Group 1l: Infrastructure and ops tooling
-		{name: "Chart.lock", want: DetectorID("helm-chart-lock")},
-		{name: "Brewfile.lock.json", want: DetectorID("homebrew-brewfile-lock")},
-		{name: "buf.lock", want: DetectorID("buf-lock")},
 		{name: "Puppetfile", want: DetectorID("puppet-puppetfile")},
-		{name: "Berksfile", want: DetectorID("chef-berksfile")},
-		{name: "Berksfile.lock", want: DetectorID("chef-berksfile-lock")},
-		{name: "metadata.rb", want: DetectorID("chef-metadata")},
-		{name: "Policyfile.rb", want: DetectorID("chef-policyfile")},
-		{name: "Policyfile.lock.json", want: DetectorID("chef-policyfile-lock")},
-		{name: "jsonnetfile.lock.json", want: DetectorID("jsonnet-lock")},
-		{name: "Cask", want: DetectorID("emacs-cask")},
 		// Group 1m: Game engines
 		{name: "MyGame.uproject", want: DetectorID("unreal-uproject")},
 		{name: "MyPlugin.uplugin", want: DetectorID("unreal-uplugin")},
 		{name: "plugin.cfg", want: DetectorID("godot-plugin-cfg")},
 		// Group 1n: Blockchain / Solidity
-		{name: "foundry.toml", want: DetectorID("foundry-toml")},
 		{name: "remappings.txt", want: DetectorID("foundry-remappings")},
-		{name: "soldeer.lock", want: DetectorID("soldeer-lock")},
 	}
 
 	for _, tc := range testCases {
@@ -390,6 +318,7 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	testCases := []string{
+		"constraints.txt",
 		"requirements.txt",
 		"requirements.in",
 		"my-requirements.txt",
@@ -401,18 +330,26 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"package.json",
 		"npm-shrinkwrap.json",
 		"pnpm-lock.yaml",
+		"bun.lock",
+		"pdm.lock",
 		"conda-lock.yml",
 		"bower.json",
 		"composer.json",
 		"composer.lock",
+		"deno.lock",
 		"deno.json",
 		"deno.jsonc",
+		"importmap.json",
 		"pyproject.toml",
+		"conda.yml",
+		"conda.yaml",
 		"environment.yml",
 		"environment.yaml",
 		"Pipfile",
 		"go.mod",
+		"Gopkg.toml",
 		"glide.yaml",
+		"glide.lock",
 		"pubspec.yaml",
 		"pubspec.lock",
 		"Cargo.toml",
@@ -422,14 +359,76 @@ func TestMatchSelectorOnlySourceIgnoresAnalyzerBackedSources(t *testing.T) {
 		"requirements.yml",
 		"requirements.yaml",
 		"buf.yaml",
+		"buf.lock",
 		"jsonnetfile.json",
+		"jsonnetfile.lock.json",
 		"package.yaml",
 		"vcpkg.json",
+		"vcpkg-configuration.json",
 		"Manifest.toml",
 		"Package.resolved",
 		"index.html",
 		"job.tf",
 		"app.js",
+		"rebar.config",
+		"rebar.lock",
+		"mix.exs",
+		"build.boot",
+		"demo.cabal",
+		"stack.yaml",
+		"stack.yaml.lock",
+		"cabal.project.freeze",
+		"project.clj",
+		"Berksfile",
+		"Berksfile.lock",
+		"metadata.rb",
+		"Policyfile.rb",
+		"Policyfile.lock.json",
+		"conanfile.txt",
+		"conanfile.py",
+		"conan.lock",
+		"build.zig.zon",
+		"meson.build",
+		"shard.lock",
+		"gleam.toml",
+		"paket.dependencies",
+		"paket.references",
+		"Cask",
+		"Build.PL",
+		"fpm.toml",
+		"foundry.toml",
+		"soldeer.lock",
+		".gitmodules",
+		"action.yml",
+		"action.yaml",
+		"Chart.lock",
+		"Brewfile",
+		"Brewfile.lock.json",
+		"Cartfile",
+		"Cartfile.resolved",
+		"Podfile",
+		"demo.podspec",
+		"ivy.xml",
+		"demo.rockspec",
+		"default.nix",
+		"shell.nix",
+		"flake.nix",
+		"flake.lock",
+		"dune-project",
+		"esy.json",
+		"demo.opam",
+		"pants.toml",
+		"cpanfile",
+		"cpanfile.snapshot",
+		"renv.lock",
+		"Makefile.PL",
+		"META6.json",
+		"demo.gemspec",
+		"build.sbt",
+		"build.sc",
+		"Package.swift",
+		".terraform.lock.hcl",
+		"v.mod",
 	}
 
 	for _, tc := range testCases {
@@ -533,14 +532,14 @@ func TestAnalyzeDependencySourceDoesNotMatchPathGlobWithoutRelativePath(t *testi
 func TestAnalyzeDependencySourceMatchesSelectorOnlyFilenameRuleWithEmptyPath(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
-	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, "", "bun.lock")
+	got, deps, present, diagnosticMessages, ok, err := analyzeSourceParts(ruleset, "", "bun.lockb")
 	if err != nil {
 		t.Fatalf("AnalyzeDependencySource failed: %v", err)
 	}
 	if !ok {
 		t.Fatalf("expected filename-only rule to match with empty path")
 	}
-	if got != DetectorID("js-bun-lock") {
+	if got != DetectorID("js-bun-lockb") {
 		t.Fatalf("unexpected dependency source type: got %q", got)
 	}
 	if diagnosticMessages != nil {
@@ -767,11 +766,11 @@ func TestScanFindsCondaEnvironmentInFixture(t *testing.T) {
 
 	for _, source := range result.Sources {
 		if source.Detector == DetectorID("python-conda-environment") && source.Path == "environment.yml" {
-			if source.Dependencies != nil {
-				t.Fatalf("expected no extracted dependencies, got %+v", source.Dependencies)
+			if source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
+				t.Fatalf("expected complete extracted dependencies, got %+v", source.Analysis)
 			}
-			if source.Analysis.Presence != PresenceUnknown {
-				t.Fatalf("expected presence to remain unknown, got %+v", source.Analysis)
+			if want := []string{"pip", "python=3.12"}; !slices.Equal(dependencyNames(source.Dependencies), want) {
+				t.Fatalf("dependencies = %+v, want %v", source.Dependencies, want)
 			}
 			return
 		}
@@ -971,6 +970,11 @@ func TestScanMatchesPubspecYAMLWithDependencies(t *testing.T) {
 	if result.Sources[0].Analysis.Presence != PresencePresent {
 		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
+	dependencies := result.Sources[0].Dependencies
+	if len(dependencies) != 1 || dependencies[0].Name != "http" || dependencies[0].VersionConstraint != "^1.2.0" ||
+		dependencies[0].OriginKind != OriginRegistry || dependencies[0].Scope != ScopeRuntime {
+		t.Fatalf("expected extracted Pub dependency, got %+v", dependencies)
+	}
 }
 
 func TestScanMatchesPubspecYAMLWithoutDependencies(t *testing.T) {
@@ -985,6 +989,9 @@ func TestScanMatchesPubspecYAMLWithoutDependencies(t *testing.T) {
 	}
 	if result.Sources[0].Analysis.Presence != PresenceAbsent {
 		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	}
+	if len(result.Sources[0].Dependencies) != 0 || result.Sources[0].Analysis.Extraction != ExtractionComplete {
+		t.Fatalf("expected complete empty extraction, got %+v", result.Sources[0])
 	}
 }
 
@@ -1106,14 +1113,62 @@ func TestScanFindsPdmLockInFixture(t *testing.T) {
 			if source.Analysis.Presence != PresencePresent {
 				t.Fatalf("expected backend/pdm.lock fixture to have presence=present, got %+v", source.Analysis)
 			}
-			if source.Dependencies != nil {
-				t.Fatalf("expected backend/pdm.lock fixture to remain non-extracting, got %+v", source.Dependencies)
+			if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"requests==2.32.3"}) {
+				t.Fatalf("unexpected backend/pdm.lock dependencies: %+v", source.Dependencies)
 			}
 			return
 		}
 	}
 
 	t.Fatalf("expected backend/pdm.lock fixture to be detected, got %+v", result.Sources)
+}
+
+func TestDefaultRulesScanPDMLockCorpusPatternFixtures(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	testCases := []struct {
+		name string
+		root string
+		want []string
+	}{
+		{
+			name: "groups",
+			root: filepath.Join("..", "..", "testdata", "python", "pdm-lock-groups"),
+			want: []string{"format-tool==23.1.0", "format-core==1.0.0"},
+		},
+		{
+			name: "metadata targets",
+			root: filepath.Join("..", "..", "testdata", "python", "pdm-lock-targets"),
+			want: []string{"typed-api==2.4.0", "typed-core==1.3.0"},
+		},
+		{
+			name: "ungrouped packages",
+			root: filepath.Join("..", "..", "testdata", "python", "pdm-lock-ungrouped"),
+			want: []string{"http-client==3.2.1", "certificate-bundle==2024.2.0"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := Scan(tc.root, nil, ruleset)
+			if err != nil {
+				t.Fatalf("scan failed: %v", err)
+			}
+			if len(result.Sources) != 1 {
+				t.Fatalf("expected 1 dependency source, got %+v", result.Sources)
+			}
+			source := result.Sources[0]
+			if source.Detector != DetectorID("python-pdm-lock") || source.Path != "pdm.lock" {
+				t.Fatalf("unexpected dependency source: %+v", source)
+			}
+			if got := dependencyNames(source.Dependencies); !slices.Equal(got, tc.want) {
+				t.Fatalf("unexpected dependencies: got %+v want %v", source.Dependencies, tc.want)
+			}
+			if source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
+				t.Fatalf("unexpected analysis: %+v", source.Analysis)
+			}
+		})
+	}
 }
 
 func TestScanFindsGopkgLockInFixture(t *testing.T) {
@@ -1126,11 +1181,11 @@ func TestScanFindsGopkgLockInFixture(t *testing.T) {
 
 	for _, source := range result.Sources {
 		if source.Detector == DetectorID("go-gopkg-lock") && source.Path == "go-service/Gopkg.lock" {
-			if source.Analysis.Presence != PresencePresent {
-				t.Fatalf("expected go-service/Gopkg.lock fixture to have presence=present, got %+v", source.Analysis)
+			if source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
+				t.Fatalf("expected go-service/Gopkg.lock fixture to be fully extracted, got %+v", source.Analysis)
 			}
-			if source.Dependencies != nil {
-				t.Fatalf("expected go-service/Gopkg.lock fixture to remain non-extracting, got %+v", source.Dependencies)
+			if len(source.Dependencies) != 1 || source.Dependencies[0].Name != "github.com/example/dep" {
+				t.Fatalf("expected extracted go-service/Gopkg.lock dependency, got %+v", source.Dependencies)
 			}
 			return
 		}
@@ -1347,22 +1402,25 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 		extracted bool
 	}{
 		{
-			name: "helm chart",
-			root: filepath.Join("..", "..", "testdata", "helm", "chart"),
-			path: "Chart.yaml",
-			typ:  DetectorID("helm-chart"),
+			name:      "helm chart",
+			root:      filepath.Join("..", "..", "testdata", "helm", "chart"),
+			path:      "Chart.yaml",
+			typ:       DetectorID("helm-chart"),
+			extracted: true,
 		},
 		{
-			name: "crystal shard",
-			root: filepath.Join("..", "..", "testdata", "crystal", "shard"),
-			path: "shard.yml",
-			typ:  DetectorID("crystal-shard"),
+			name:      "crystal shard",
+			root:      filepath.Join("..", "..", "testdata", "crystal", "shard"),
+			path:      "shard.yml",
+			typ:       DetectorID("crystal-shard"),
+			extracted: true,
 		},
 		{
-			name: "julia project",
-			root: filepath.Join("..", "..", "testdata", "julia", "project"),
-			path: "Project.toml",
-			typ:  DetectorID("julia-project"),
+			name:      "julia project",
+			root:      filepath.Join("..", "..", "testdata", "julia", "project"),
+			path:      "Project.toml",
+			typ:       DetectorID("julia-project"),
+			extracted: true,
 		},
 		{
 			name: "julia manifest",
@@ -1371,10 +1429,11 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			typ:  DetectorID("julia-manifest"),
 		},
 		{
-			name: "gleam project",
-			root: filepath.Join("..", "..", "testdata", "gleam", "project"),
-			path: "gleam.toml",
-			typ:  DetectorID("gleam"),
+			name:      "gleam project",
+			root:      filepath.Join("..", "..", "testdata", "gleam", "project"),
+			path:      "gleam.toml",
+			typ:       DetectorID("gleam"),
+			extracted: true,
 		},
 		{
 			name:      "dotnet csproj",
@@ -1404,34 +1463,39 @@ func TestScanDefaultRulesMarkStructuredPriorityOneFixturesWithDependencies(t *te
 			typ:  DetectorID("unity-packages-manifest"),
 		},
 		{
-			name: "bower manifest",
-			root: filepath.Join("..", "..", "testdata", "js", "bower-with-deps"),
-			path: "bower.json",
-			typ:  DetectorID("js-bower"),
+			name:      "bower manifest",
+			root:      filepath.Join("..", "..", "testdata", "js", "bower-with-deps"),
+			path:      "bower.json",
+			typ:       DetectorID("js-bower"),
+			extracted: true,
 		},
 		{
-			name: "pubspec lock",
-			root: filepath.Join("..", "..", "testdata", "yaml", "pubspec-lock-with-deps"),
-			path: "pubspec.lock",
-			typ:  DetectorID("dart-pubspec-lock"),
+			name:      "pubspec lock",
+			root:      filepath.Join("..", "..", "testdata", "yaml", "pubspec-lock-with-deps"),
+			path:      "pubspec.lock",
+			typ:       DetectorID("dart-pubspec-lock"),
+			extracted: true,
 		},
 		{
-			name: "glide yaml",
-			root: filepath.Join("..", "..", "testdata", "go", "glide-yaml-with-deps"),
-			path: "glide.yaml",
-			typ:  DetectorID("go-glide-yaml"),
+			name:      "glide yaml",
+			root:      filepath.Join("..", "..", "testdata", "go", "glide-yaml-with-deps"),
+			path:      "glide.yaml",
+			typ:       DetectorID("go-glide-yaml"),
+			extracted: true,
 		},
 		{
-			name: "gopkg lock",
-			root: filepath.Join("..", "..", "testdata", "go", "gopkg-lock-with-deps"),
-			path: "Gopkg.lock",
-			typ:  DetectorID("go-gopkg-lock"),
+			name:      "gopkg lock",
+			root:      filepath.Join("..", "..", "testdata", "go", "gopkg-lock-with-deps"),
+			path:      "Gopkg.lock",
+			typ:       DetectorID("go-gopkg-lock"),
+			extracted: true,
 		},
 		{
-			name: "swift package resolved",
-			root: filepath.Join("..", "..", "testdata", "swift", "package-resolved-with-deps"),
-			path: "Package.resolved",
-			typ:  DetectorID("swift-package-resolved"),
+			name:      "swift package resolved",
+			root:      filepath.Join("..", "..", "testdata", "swift", "package-resolved-with-deps"),
+			path:      "Package.resolved",
+			typ:       DetectorID("swift-package-resolved"),
+			extracted: true,
 		},
 	}
 
@@ -3895,6 +3959,22 @@ func TestMatchSelectorOnlySourceIgnoresGopkgLockParserRule(t *testing.T) {
 	}
 }
 
+func TestMatchSelectorOnlySourceIgnoresDotnetPaketLockParserRule(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	if _, ok := ruleset.MatchSelectorOnlySource("paket.lock"); ok {
+		t.Fatalf("expected selector-only detection to ignore paket.lock parser rule")
+	}
+}
+
+func TestMatchSelectorOnlySourceIgnoresClojureDepsEDNAnalyzerRule(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+
+	if _, ok := ruleset.MatchSelectorOnlySource("deps.edn"); ok {
+		t.Fatalf("expected selector-only detection to ignore deps.edn analyzer rule")
+	}
+}
+
 func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	want := []DetectorID{
@@ -4352,7 +4432,7 @@ func TestScanMarksAnsibleRequirementsWithoutKeysAsNoDependencies(t *testing.T) {
 	}
 }
 
-func TestScanMatchesJsonnetBundlerWithDependencies(t *testing.T) {
+func TestScanMarksJsonnetBundlerMissingSourceAsUnsupported(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	result, err := Scan(filepath.Join("..", "..", "testdata", "jsonnet", "bundler-deps"), nil, ruleset)
@@ -4365,8 +4445,11 @@ func TestScanMatchesJsonnetBundlerWithDependencies(t *testing.T) {
 	if result.Sources[0].Detector != DetectorID("jsonnet-bundler") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresencePresent {
-		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
+	if result.Sources[0].Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionUnsupported}) {
+		t.Fatalf("expected unsupported dependency declaration, got %+v", result.Sources[0].Analysis)
+	}
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %#v", result.Sources[0].Dependencies)
 	}
 }
 
@@ -4383,8 +4466,11 @@ func TestScanMarksJsonnetBundlerEmptyDependenciesAsNoDependencies(t *testing.T) 
 	if result.Sources[0].Detector != DetectorID("jsonnet-bundler") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresenceAbsent {
-		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	if result.Sources[0].Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) {
+		t.Fatalf("expected complete empty dependency result, got %+v", result.Sources[0].Analysis)
+	}
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no dependencies, got %#v", result.Sources[0].Dependencies)
 	}
 }
 
@@ -4401,12 +4487,15 @@ func TestScanMarksJsonnetBundlerWithoutDependenciesKeyAsNoDependencies(t *testin
 	if result.Sources[0].Detector != DetectorID("jsonnet-bundler") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresenceAbsent {
-		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	if result.Sources[0].Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) {
+		t.Fatalf("expected complete empty dependency result, got %+v", result.Sources[0].Analysis)
+	}
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no dependencies, got %#v", result.Sources[0].Dependencies)
 	}
 }
 
-func TestScanMarksJsonnetBundlerWrongTypeAsNoDependencies(t *testing.T) {
+func TestScanMarksJsonnetBundlerWrongTypeAsIncomplete(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
 	result, err := Scan(filepath.Join("..", "..", "testdata", "jsonnet", "bundler-wrong-type"), nil, ruleset)
@@ -4419,8 +4508,8 @@ func TestScanMarksJsonnetBundlerWrongTypeAsNoDependencies(t *testing.T) {
 	if result.Sources[0].Detector != DetectorID("jsonnet-bundler") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresenceAbsent {
-		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	if result.Sources[0].Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionUnsupported}) {
+		t.Fatalf("expected incomplete dependency declaration, got %+v", result.Sources[0].Analysis)
 	}
 }
 
@@ -4437,11 +4526,16 @@ func TestScanMatchesHaskellPackageYAMLWithDependencies(t *testing.T) {
 	if result.Sources[0].Detector != DetectorID("haskell-package-yaml") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresencePresent {
-		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
+	source := result.Sources[0]
+	if source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
+		t.Fatalf("expected complete extracted dependencies, got %+v", source.Analysis)
 	}
-	if result.Sources[0].Dependencies != nil {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
+	want := []DependencyReference{
+		haskellPackageYAMLTestDependency("aeson", ">= 2.0", "dependencies", ScopeRuntime),
+		haskellPackageYAMLTestDependency("base", ">= 4.14", "dependencies", ScopeRuntime),
+	}
+	if !equalDependencies(source.Dependencies, want) {
+		t.Fatalf("dependencies = %#v, want %#v", source.Dependencies, want)
 	}
 }
 
@@ -4458,8 +4552,11 @@ func TestScanMarksHaskellPackageYAMLWithoutDependenciesAsNoDependencies(t *testi
 	if result.Sources[0].Detector != DetectorID("haskell-package-yaml") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresenceAbsent {
-		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	if result.Sources[0].Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) {
+		t.Fatalf("expected complete empty result, got %+v", result.Sources[0].Analysis)
+	}
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 
@@ -4479,8 +4576,12 @@ func TestScanMatchesVcpkgWithDependencies(t *testing.T) {
 	if result.Sources[0].Analysis.Presence != PresencePresent {
 		t.Fatalf("expected presence=present, got %+v", result.Sources[0].Analysis)
 	}
-	if result.Sources[0].Dependencies != nil {
-		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
+	want := []DependencyReference{
+		{PackageType: "vcpkg", Raw: "fmt", Name: "fmt", SourceGroup: "dependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime},
+		{PackageType: "vcpkg", Raw: "openssl", Name: "openssl", SourceGroup: "dependencies", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime},
+	}
+	if !reflect.DeepEqual(result.Sources[0].Dependencies, want) {
+		t.Fatalf("dependencies = %#v, want %#v", result.Sources[0].Dependencies, want)
 	}
 }
 
@@ -4497,8 +4598,11 @@ func TestScanMarksVcpkgWithoutDependenciesAsNoDependencies(t *testing.T) {
 	if result.Sources[0].Detector != DetectorID("cpp-vcpkg") {
 		t.Fatalf("unexpected dependency source type: got %q", result.Sources[0].Detector)
 	}
-	if result.Sources[0].Analysis.Presence != PresenceAbsent {
-		t.Fatalf("expected presence=absent, got %+v", result.Sources[0].Analysis)
+	if want := (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}); result.Sources[0].Analysis != want {
+		t.Fatalf("analysis = %+v, want %+v", result.Sources[0].Analysis, want)
+	}
+	if len(result.Sources[0].Dependencies) != 0 {
+		t.Fatalf("expected no extracted dependencies, got %+v", result.Sources[0].Dependencies)
 	}
 }
 

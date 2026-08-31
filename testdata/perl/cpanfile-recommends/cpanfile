@@ -1,0 +1,2 @@
+requires 'Web::Client', '1.2';
+recommends 'Registry::Codec', '2.4';

@@ -1,0 +1,4 @@
+tap "homebrew/autoupdate"
+brew "bash"
+cask "ghostty"
+mas "Bitwarden", id: 1352778147

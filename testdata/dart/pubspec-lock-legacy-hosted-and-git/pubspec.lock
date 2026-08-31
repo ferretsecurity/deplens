@@ -1,0 +1,11 @@
+packages:
+  legacy_hosted:
+    description: legacy_hosted
+    source: hosted
+    version: "0.8.10+3"
+  legacy_git:
+    description:
+      resolved-ref: abc123
+      url: "https://example.test/legacy.git"
+    source: git
+    version: "0.6.2"

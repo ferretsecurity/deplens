@@ -1,0 +1,34 @@
+{
+  "nodes": {
+    "app": {
+      "inputs": { "systems": "systems" },
+      "locked": {
+        "type": "github",
+        "owner": "acme",
+        "repo": "app",
+        "rev": "1111111111111111111111111111111111111111"
+      }
+    },
+    "base": {
+      "locked": {
+        "type": "github",
+        "owner": "acme",
+        "repo": "base",
+        "rev": "2222222222222222222222222222222222222222"
+      }
+    },
+    "root": {
+      "inputs": { "app": "app", "base": "base" }
+    },
+    "systems": {
+      "locked": {
+        "type": "github",
+        "owner": "acme",
+        "repo": "systems",
+        "rev": "3333333333333333333333333333333333333333"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

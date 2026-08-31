@@ -1,0 +1,6 @@
+[submodule "vendor/codec"]
+	path = vendor/codec
+	url = https://git.example.test/platform/codec.git
+[submodule "vendor/widgets"]
+	path = vendor/widgets
+	url = https://github.com/example/widgets

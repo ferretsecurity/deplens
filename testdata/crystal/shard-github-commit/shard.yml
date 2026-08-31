@@ -1,0 +1,8 @@
+name: commit-demo
+dependencies:
+  repl:
+    github: example/repl
+    version: 0.4.0
+  markup:
+    github: example/markup
+    commit: 0123456789abcdef

@@ -1,0 +1,7 @@
+name = "features_default_profile"
+
+[features]
+baseline.preprocess.cpp.macros = "BASELINE"
+
+[profiles]
+default = ["baseline"]

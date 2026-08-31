@@ -1,0 +1,7 @@
+[[constraint]]
+  name = "example.test/logger"
+  version = "1.0.0"
+
+[[constraint]]
+  name = "example.test/table"
+  branch = "master"
