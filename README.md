@@ -66,7 +66,7 @@ package.json [medium] npm project has dependencies but no npm lockfile
   remediation: Run `npm install` and commit the generated lockfile.
 ```
 
-Use `--json` for machine-readable format. JSON output includes the detected sources, extracted dependency references, check runs, findings, and diagnostics. Findings do not change the successful exit status.
+Use `--json` for machine-readable format. JSON output includes the detected sources, extracted dependency references, check runs, findings, and diagnostics. Findings do not change the successful exit status. See the [dependency reference specification](docs/dependency-reference.md) for the dependency object fields, values, and omission rules.
 
 ## Rules
 
