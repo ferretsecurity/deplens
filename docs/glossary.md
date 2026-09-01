@@ -22,7 +22,9 @@ Content-aware logic that may recognize a source, assess dependency presence, ext
 
 ### Dependency reference
 
-One dependency value obtained from a source. `raw` preserves the source value. Shared fields include `package_type`, `name`, `version`, `version_constraint`, `vers`, `source_group`, `origin_kind`, `relationship`, `scope`, and `attributes`.
+One dependency value obtained from a source. `raw` retains a source-facing representation for display and traceability. Shared fields include `package_type`, `name`, `version`, `version_constraint`, `vers`, `source_group`, `origin_kind`, `relationship`, `scope`, and `attributes`.
+
+See the [dependency reference specification](dependency-reference.md) for the JSON shape, field semantics, values, examples, and omission rules.
 
 ### Diagnostic
 
@@ -123,6 +125,8 @@ Form and role are independent. For example, `go.mod` is a `manifest` with declar
 Valid pairs are: unknown/unsupported, unknown/failed, absent/unsupported, absent/complete, present/unsupported, present/complete, and present/partial.
 
 ## Dependency fields
+
+This section defines the core vocabulary. The [dependency reference specification](dependency-reference.md) is the complete consumer reference.
 
 ### `version`
 
