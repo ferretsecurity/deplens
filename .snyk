@@ -1,5 +1,4 @@
 # Excludes parser fixtures from Snyk Code, not managed Open Source scans.
-# See docs/security-scanning.md for the required SCA import exclusion.
 version: v1.25.0
 exclude:
   global:

@@ -101,4 +101,4 @@ See [Dependency coverage](DEPENDENCY_COVERAGE.md) for the complete list of detec
 
 ## Security scanning
 
-We use [Snyk](https://snyk.io/) and [Socket](https://socket.dev/) to scan this repository's dependencies for security risks. See [Security scan scope](docs/security-scanning.md) for configuration and test fixture exclusions.
+We use [Snyk](https://snyk.io/) and [Socket](https://socket.dev/) to scan this repository's dependencies for security risks.
