@@ -14,7 +14,7 @@ require (
 	github.com/tree-sitter/tree-sitter-typescript v0.23.2
 	github.com/zclconf/go-cty v1.17.0
 	golang.org/x/mod v0.17.0
-	gopkg.in/ini.v1 v1.67.1
+	gopkg.in/ini.v1 v1.67.3
 )
 
 require (
