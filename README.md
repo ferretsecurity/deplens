@@ -98,3 +98,7 @@ Pass a ruleset with `deplens --rules rules.yaml .`. A custom file replaces all b
 The 185 built-in detectors cover common package managers and languages as well as containers, CI systems, deployment tools, build systems, and infrastructure configuration. Some sources support full dependency extraction, while others can only be identified or checked for the presence of dependency references.
 
 See [Dependency coverage](DEPENDENCY_COVERAGE.md) for the complete list of detectors and the capabilities available for each source.
+
+## Security scanning
+
+We use [Snyk](https://snyk.io/) and [Socket](https://socket.dev/) to scan this repository's dependencies for security risks. See [Security scan scope](docs/security-scanning.md) for configuration and test fixture exclusions.
