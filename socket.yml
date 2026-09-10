@@ -1,0 +1,5 @@
+version: 2
+
+# Parser fixtures are not dependencies of deplens.
+projectIgnorePaths:
+  - "/testdata/"

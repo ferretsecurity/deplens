@@ -1,0 +1,5 @@
+# Excludes parser fixtures from Snyk Code, not managed Open Source scans.
+version: v1.25.0
+exclude:
+  global:
+    - testdata/**
