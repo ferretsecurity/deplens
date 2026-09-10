@@ -1,13 +1,13 @@
 module github.com/ferretsecurity/deplens
 
-go 1.25.6
+go 1.26
 
 require gopkg.in/yaml.v3 v3.0.1
 
 require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/bmatcuk/doublestar/v4 v4.10.0
-	github.com/git-pkgs/vers v0.3.0
+	github.com/git-pkgs/vers v0.7.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/hmarr/codeowners v1.2.1
 	github.com/tree-sitter/go-tree-sitter v0.25.0

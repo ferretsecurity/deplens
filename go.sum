@@ -9,8 +9,8 @@ github.com/bmatcuk/doublestar/v4 v4.10.0/go.mod h1:xBQ8jztBU6kakFMg+8WGxn0c6z1fT
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/git-pkgs/vers v0.3.0 h1:xM4LLUCRmqzdDfe+/pVQUx4SRyFXRVth6tOsJ14wMKU=
-github.com/git-pkgs/vers v0.3.0/go.mod h1:biTbSQK1qdbrsxDEKnqe3Jzclxz8vW6uDcwKjfUGcOo=
+github.com/git-pkgs/vers v0.7.0 h1:7PD2DKFB8jTDIfiyWXbqYW54iVuNkFCBgXHgxOTdr8A=
+github.com/git-pkgs/vers v0.7.0/go.mod h1:ofLiBpPNkQmC0LB1k0zmN1gCv7Hi3MiZx8WtmWZ4A9A=
 github.com/go-test/deep v1.0.3 h1:ZrJSEWsXzPOxaZnFteGEfooLba+ju3FYIbOrS+rQd68=
 github.com/go-test/deep v1.0.3/go.mod h1:wGDj63lr65AM2AQyKZd/NYHGb0R+1RLqB8NKt3aSFNA=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
