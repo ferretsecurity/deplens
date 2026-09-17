@@ -35,6 +35,7 @@ The path is optional and defaults to the current directory. Common options are:
 ```text
 --json                         Emit machine-readable JSON
 --rules rules.yaml             Replace the built-in ruleset
+--extend-rules company.yaml    Append detectors and checks, repeatable
 --ignore dist,build,vendor     Replace the default ignored directories
 --show-without-dependencies    Include sources confirmed to contain no dependencies
 ```
@@ -92,6 +93,20 @@ checks:
 ```
 
 Pass a ruleset with `deplens --rules rules.yaml .`. A custom file replaces all built-in detectors and checks; it does not extend them. Rules use strict validation, so unknown fields and unsupported analyzer or evaluator types are rejected. See the [built-in rules](internal/analyze/default_rules.yaml) for complete examples and the [glossary](docs/glossary.md) for terms such as forms, roles, presence, and extraction.
+
+Use `--extend-rules` to keep the built-ins and append company or team definitions:
+
+```bash
+deplens --extend-rules company.yaml --extend-rules team.yaml .
+deplens --rules company-base.yaml --extend-rules team.yaml .
+```
+
+Each occurrence takes one path relative to the current working directory. Put flags before the scan path. Commas are part of filenames, not separators.
+
+An extension uses the same strict YAML schema and contains one document with `rules`, `checks`, or both. A check-only extension is valid; an empty extension is not. A replacement base still requires at least one detector. The base's detectors run first, followed by extensions in flag order and detectors in document order. The first detector that recognizes a file wins. Checks run in stable ID order.
+
+Detector IDs must be unique across the base and all extensions. Check IDs must also be unique, but a detector and a check may share an ID. Definitions never silently override one another. Invalid definitions and ID collisions fail before scanning, with the file origin and definition ID in the error.
+
 
 ## Supported dependency sources
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -120,6 +121,35 @@ type ruleConfig struct {
 	FilenameRegex string          `yaml:"filename-regex"`
 	PathGlob      string          `yaml:"path-glob"`
 	Analyzer      *analyzerConfig `yaml:"analyzer"`
+}
+
+func (c *ruleConfig) UnmarshalYAML(node *yaml.Node) error {
+	type plain ruleConfig
+	return decodeDefinition(node, (*plain)(c), "detector")
+}
+
+func (c *checkConfig) UnmarshalYAML(node *yaml.Node) error {
+	type plain checkConfig
+	return decodeDefinition(node, (*plain)(c), "check")
+}
+
+func decodeDefinition(node *yaml.Node, target any, kind string) error {
+	var identity struct {
+		ID string `yaml:"id"`
+	}
+	if err := node.Decode(&identity); err != nil {
+		return err
+	}
+	data, err := yaml.Marshal(node)
+	if err != nil {
+		return err
+	}
+	decoder := yaml.NewDecoder(bytes.NewReader(data))
+	decoder.KnownFields(true)
+	if err := decoder.Decode(target); err != nil {
+		return fmt.Errorf("%s %q: %w", kind, identity.ID, err)
+	}
+	return nil
 }
 
 type analyzerConfig struct {
@@ -239,13 +269,29 @@ func LoadRulesFile(path string) (Ruleset, error) {
 }
 
 func loadRules(source string, data []byte) (Ruleset, error) {
+	return loadRulesDocument(source, data, false)
+}
+
+func loadRulesDocument(source string, data []byte, extension bool) (Ruleset, error) {
 	var raw rulesFile
 	decoder := yaml.NewDecoder(bytes.NewReader(data))
 	decoder.KnownFields(true)
 	if err := decoder.Decode(&raw); err != nil {
 		return Ruleset{}, fmt.Errorf("parse rules from %s: %w", source, err)
 	}
-	if len(raw.Rules) == 0 {
+	if extension {
+		var extra yaml.Node
+		if err := decoder.Decode(&extra); err != io.EOF {
+			if err != nil {
+				return Ruleset{}, fmt.Errorf("parse rules from %s: %w", source, err)
+			}
+			return Ruleset{}, fmt.Errorf("%s: extension must contain exactly one YAML document", source)
+		}
+	}
+	if extension && len(raw.Rules) == 0 && len(raw.Checks) == 0 {
+		return Ruleset{}, fmt.Errorf("%s: extension must contain at least one rule or check", source)
+	}
+	if !extension && len(raw.Rules) == 0 {
 		return Ruleset{}, fmt.Errorf("%s: rules: must contain at least one rule", source)
 	}
 
@@ -253,6 +299,10 @@ func loadRules(source string, data []byte) (Ruleset, error) {
 	seenIDs := make(map[DetectorID]struct{}, len(raw.Rules))
 	for ruleIdx, rawRule := range raw.Rules {
 		fieldPath := fmt.Sprintf("rules[%d]", ruleIdx)
+		if rawRule.ID != "" {
+			fieldPath = fmt.Sprintf("detector %q: %s", rawRule.ID, fieldPath)
+		}
+
 		if strings.TrimSpace(rawRule.ID) == "" {
 			return Ruleset{}, fmt.Errorf("%s: %s.id: required", source, fieldPath)
 		}
@@ -317,6 +367,9 @@ func compileChecks(source string, configs []checkConfig) ([]check, error) {
 	seenIDs := make(map[CheckID]struct{}, len(configs))
 	for idx, raw := range configs {
 		fieldPath := fmt.Sprintf("checks[%d]", idx)
+		if raw.ID != "" {
+			fieldPath = fmt.Sprintf("check %q: %s", raw.ID, fieldPath)
+		}
 		if strings.TrimSpace(raw.ID) == "" {
 			return nil, fmt.Errorf("%s: %s.id: required", source, fieldPath)
 		}
