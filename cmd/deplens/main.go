@@ -54,6 +54,17 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 1
 	}
 
+	ruleset, err = ruleset.Exclude(cfg.disableRules, cfg.disableChecks)
+	if err != nil {
+		base := cfg.rulesPath
+		if base == "" {
+			base = "built-in rules"
+		}
+		origins := append([]string{base}, cfg.extendRulesPaths...)
+		fmt.Fprintf(stderr, "error: %v (rules from %s)\n", err, strings.Join(origins, ", "))
+		return 1
+	}
+
 	result, err := analyze.Scan(cfg.path, cfg.ignoreDirs, ruleset)
 	if err != nil {
 		fmt.Fprintf(stderr, "error: %v\n", err)
@@ -85,6 +96,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 }
 
 type config struct {
+	disableRules            []string
+	disableChecks           []string
 	path                    string
 	json                    bool
 	showWithoutDependencies bool
@@ -123,6 +136,15 @@ func parseArgs(args []string) (config, string, error) {
 	fs.StringVar(&cfg.rulesPath, "rules", "", "path to a YAML file replacing built-in detectors and checks")
 	fs.Func("extend-rules", "append detectors and checks from a YAML file (repeatable)", func(path string) error {
 		cfg.extendRulesPaths = append(cfg.extendRulesPaths, path)
+		return nil
+	})
+
+	fs.Func("disable-rule", "exclude one exact detector ID after composition (repeatable)", func(id string) error {
+		cfg.disableRules = append(cfg.disableRules, id)
+		return nil
+	})
+	fs.Func("disable-check", "exclude one exact policy check ID after composition (repeatable)", func(id string) error {
+		cfg.disableChecks = append(cfg.disableChecks, id)
 		return nil
 	})
 

@@ -36,6 +36,8 @@ The path is optional and defaults to the current directory. Common options are:
 --json                         Emit machine-readable JSON
 --rules rules.yaml             Replace the built-in ruleset
 --extend-rules company.yaml    Append detectors and checks, repeatable
+--disable-rule ID              Exclude one detector ID, repeatable
+--disable-check ID             Exclude one policy check ID, repeatable
 --ignore dist,build,vendor     Replace the default ignored directories
 --show-without-dependencies    Include sources confirmed to contain no dependencies
 ```
@@ -106,6 +108,21 @@ Each occurrence takes one path relative to the current working directory. Put fl
 An extension uses the same strict YAML schema and contains one document with `rules`, `checks`, or both. A check-only extension is valid; an empty extension is not. A replacement base still requires at least one detector. The base's detectors run first, followed by extensions in flag order and detectors in document order. The first detector that recognizes a file wins. Checks run in stable ID order.
 
 Detector IDs must be unique across the base and all extensions. Check IDs must also be unique, but a detector and a check may share an ID. Definitions never silently override one another. Invalid definitions and ID collisions fail before scanning, with the file origin and definition ID in the error.
+
+Use exact, case-sensitive IDs to remove detectors or checks after composition:
+
+```bash
+deplens --disable-rule go-sum --disable-check dependency-source-codeowners-missing .
+deplens --disable-rule js --extend-rules company-replacement.yaml .
+```
+
+Each exclusion takes one ID. Wildcards, comma lists, and analyzer names are not selectors. Repeated exclusions are harmless. IDs must exist in the combined base and extensions; a built-in ID omitted from a custom base is unknown. Exclusions apply last regardless of flag order. Invalid definitions and duplicate IDs still fail even if excluded. A replacement detector must use a different ID; surviving detectors keep their order and first-recognized behavior.
+
+Disabled checks produce no runs or findings and do not change detection. Explicit detector exclusions can remove evidence required by a policy evaluator. Affected checks report a `detector-disabled` skip in human and JSON output, naming the removed prerequisite IDs and an identifiable project root, or the scan root when discovery is unavailable. This also applies to custom checks using the same evaluator.
+
+Prerequisites include manifest discovery, accepted lockfile alternatives, package-manager evidence, and workspace ownership. Skips are conservative: removing an accepted alternative or competing manager detector skips the affected evaluator even if another lockfile or custom replacement survives. Unrelated evaluators continue. CODEOWNERS still checks surviving sources; when explicit exclusions leave no sources, it reports a skip. Missing detectors in a custom base alone do not cause exclusion skips.
+
+Removing every detector or check is valid. JSON retains empty arrays and the existing schema. Findings and skips keep a successful exit status; configuration errors fail before scanning.
 
 
 ## Supported dependency sources
