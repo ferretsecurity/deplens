@@ -56,9 +56,10 @@ type detector struct {
 }
 
 type Ruleset struct {
-	detectors   []detector
-	detectorIDs []DetectorID
-	checks      []check
+	disabledDetectors []DetectorID
+	detectors         []detector
+	detectorIDs       []DetectorID
+	checks            []check
 }
 
 type rulesFile struct {

@@ -32,7 +32,7 @@ type HumanOptions struct {
 
 func Human(result analyze.ScanResult, opts HumanOptions) string {
 	if len(result.Sources) == 0 && len(result.Findings) == 0 {
-		return fmt.Sprintf("Root: %s\nNo dependency sources found.\n%s", result.Root, renderFailedChecks(result.CheckRuns))
+		return fmt.Sprintf("Root: %s\nNo dependency sources found.\n%s", result.Root, renderFailedChecks(result.CheckRuns)+renderDisabledChecks(result.CheckRuns))
 	}
 
 	sources := slices.Clone(result.Sources)
@@ -63,7 +63,7 @@ func Human(result analyze.ScanResult, opts HumanOptions) string {
 		b.WriteString(renderDependencies(source.Dependencies))
 		b.WriteString(renderDiagnostics(source.Diagnostics))
 	}
-	b.WriteString(renderFailedChecks(result.CheckRuns))
+	b.WriteString(renderFailedChecks(result.CheckRuns) + renderDisabledChecks(result.CheckRuns))
 	b.WriteString(renderFindings(result.Findings))
 	return b.String()
 }
@@ -253,4 +253,20 @@ func pluralize(count int, singular, plural string) string {
 		return singular
 	}
 	return plural
+}
+
+// Other skip reasons retain their existing JSON-only presentation.
+func renderDisabledChecks(runs []analyze.CheckRun) string {
+	var b strings.Builder
+	for _, run := range runs {
+		if run.Status != analyze.CheckSkipped || run.ReasonCode != "detector-disabled" {
+			continue
+		}
+		subject := run.Subject.ProjectRoot
+		if subject == "" {
+			subject = "."
+		}
+		fmt.Fprintf(&b, "\n%s [skipped] %s\n  reason: %s\n  detail: %s\n", subject, run.CheckID, run.ReasonCode, run.Detail)
+	}
+	return b.String()
 }
