@@ -260,4 +260,3 @@ socket:
 Before implementation, capture the authenticated supported-files response for a representative Socket organization if credentials are available. It exposes actual accepted filename patterns and can settle the requirements-selector question. This research used public sources and did not call an authenticated customer API. [Supported-files API](https://docs.socket.dev/reference/getsupportedfiles).
 
 </details>
-
