@@ -36,6 +36,7 @@ The path is optional and defaults to the current directory. Common options are:
 --json                         Emit machine-readable JSON
 --rules rules.yaml             Replace the built-in ruleset
 --extend-rules company.yaml    Append detectors and checks, repeatable
+--exclude-preset NAME         Exclude snyk or socket source coverage, repeatable
 --disable-rule ID              Exclude one detector ID, repeatable
 --disable-check ID             Exclude one policy check ID, repeatable
 --ignore dist,build,vendor     Replace the default ignored directories
@@ -123,6 +124,12 @@ Disabled checks produce no runs or findings and do not change detection. Explici
 Prerequisites include manifest discovery, accepted lockfile alternatives, package-manager evidence, and workspace ownership. Skips are conservative: removing an accepted alternative or competing manager detector skips the affected evaluator even if another lockfile or custom replacement survives. Unrelated evaluators continue. CODEOWNERS still checks surviving sources; when explicit exclusions leave no sources, it reports a skip. Missing detectors in a custom base alone do not cause exclusion skips.
 
 Removing every detector or check is valid. JSON retains empty arrays and the existing schema. Findings and skips keep a successful exit status; configuration errors fail before scanning.
+
+### Vendor coverage presets
+
+Use `deplens --extend-rules company.yaml --exclude-preset socket --disable-rule python-poetry-lock --disable-check javascript-npm-lockfile-missing .` to focus on source coverage gaps. Combine `--exclude-preset snyk --exclude-preset socket` for their union. Presets match IDs after composition; use new IDs for custom replacements. They skip affected checks and leave unrelated checks running.
+
+The offline lists are the 2026-09-17 research snapshot, with 43 Snyk Open Source IDs and 41 Socket SCA IDs. Coverage may require vendor flags, restoration, builds, or documented adapters. A preset does not validate your actual vendor scan or its dependency reference coverage. See [membership, required setup, and full research evidence](docs/coverage-presets.md).
 
 
 ## Supported dependency sources

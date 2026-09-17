@@ -9,7 +9,12 @@ import (
 
 // Exclude filters a fully validated, composed ruleset, preserving detector order.
 // Only explicit exclusions affect policy prerequisites; custom-base absence does not.
-func (r Ruleset) Exclude(detectorIDs, checkIDs []string) (Ruleset, error) {
+func (r Ruleset) Exclude(detectorIDs, checkIDs []string, presets ...string) (Ruleset, error) {
+	presetIDs, err := presetExclusions(presets, r)
+	if err != nil {
+		return Ruleset{}, err
+	}
+	detectorIDs = append(slices.Clone(detectorIDs), presetIDs...)
 	removed := make(map[DetectorID]bool)
 	for _, id := range detectorIDs {
 		if !slices.ContainsFunc(r.detectors, func(d detector) bool { return string(d.ID) == id }) {
