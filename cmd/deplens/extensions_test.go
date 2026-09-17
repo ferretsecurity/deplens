@@ -175,3 +175,83 @@ func TestRunExtensionHelpAndArguments(t *testing.T) {
 		}
 	}
 }
+
+func TestRunRulesPreserveSharedYAMLAnchors(t *testing.T) {
+	const document = `rules:
+  - &first
+    id: first
+    form: manifest
+    roles: &roles [declaration]
+    filename-regex: '^first$'
+  - <<: *first
+    id: second
+    roles: *roles
+    filename-regex: '^second$'
+checks:
+  - &policy
+    id: first-policy
+    summary: &summary Go checksum missing
+    severity: medium
+    evaluator: &evaluator {type: dependency-source-codeowners}
+    remediation: Run go mod tidy.
+  - <<: *policy
+    id: second-policy
+    summary: *summary
+    evaluator: *evaluator
+`
+	for _, flag := range []string{"--rules", "--extend-rules"} {
+		t.Run(flag, func(t *testing.T) {
+			dir := t.TempDir()
+			project := filepath.Join(dir, "project")
+			writeFile(t, filepath.Join(project, "first"), "content")
+			writeFile(t, filepath.Join(project, "second"), "content")
+			path := filepath.Join(dir, "rules.yaml")
+			writeFile(t, path, document)
+			result := runComposedJSON(t, flag, path, project)
+			if len(result.Sources) != 2 || result.Sources[0].Detector != "first" || result.Sources[1].Detector != "second" {
+				t.Fatalf("sources: %+v", result.Sources)
+			}
+			var checks []string
+			for _, check := range result.CheckRuns {
+				checks = append(checks, string(check.CheckID))
+			}
+			for _, id := range []string{"first-policy", "second-policy"} {
+				if !slices.Contains(checks, id) {
+					t.Fatalf("missing %s in checks: %+v", id, result.CheckRuns)
+				}
+			}
+		})
+	}
+}
+
+func TestRunRulesRejectUnknownFieldsFromYAMLAliases(t *testing.T) {
+	for _, tc := range []struct {
+		name, document, id, field string
+	}{
+		{
+			"detector", "checks:\n" + strings.Replace(extensionCheck("policy"), "  - id:", "  - &policy\n    id:", 1) + "rules:\n  - <<: *policy\n    id: bad-detector\n    form: manifest\n    roles: [declaration]\n    filename-regex: '^input$'\n",
+			"bad-detector", "not found",
+		},
+		{
+			"check", "rules:\n" + strings.Replace(extensionDetector("detector", "^input$"), "  - id:", "  - &detector\n    id:", 1) + "checks:\n  - <<: *detector\n    id: bad-check\n    summary: Missing checksum\n    severity: medium\n    evaluator: {type: go-sum-missing}\n    remediation: Run go mod tidy.\n",
+			"bad-check", "not found",
+		},
+	} {
+		for _, flag := range []string{"--rules", "--extend-rules"} {
+			t.Run(tc.name+flag, func(t *testing.T) {
+				dir := t.TempDir()
+				path := filepath.Join(dir, "rules.yaml")
+				writeFile(t, path, tc.document)
+				var out, stderr bytes.Buffer
+				if code := run([]string{flag, path, filepath.Join(dir, "missing")}, &out, &stderr); code == 0 || out.Len() != 0 {
+					t.Fatalf("exit=%d output=%s", code, &out)
+				}
+				for _, part := range []string{path, tc.id, tc.field} {
+					if !strings.Contains(stderr.String(), part) {
+						t.Fatalf("missing %q in %s", part, &stderr)
+					}
+				}
+			})
+		}
+	}
+}

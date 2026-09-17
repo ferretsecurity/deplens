@@ -126,29 +126,35 @@ type ruleConfig struct {
 
 func (c *ruleConfig) UnmarshalYAML(node *yaml.Node) error {
 	type plain ruleConfig
-	return decodeDefinition(node, (*plain)(c), "detector")
+	return decodeDefinition(node, (*plain)(c), "detector", "id", "package-type", "form", "roles", "filename-regex", "path-glob", "analyzer")
 }
 
 func (c *checkConfig) UnmarshalYAML(node *yaml.Node) error {
 	type plain checkConfig
-	return decodeDefinition(node, (*plain)(c), "check")
+	return decodeDefinition(node, (*plain)(c), "check", "id", "summary", "severity", "evaluator", "remediation")
 }
 
-func decodeDefinition(node *yaml.Node, target any, kind string) error {
+func decodeDefinition(node *yaml.Node, target any, kind string, fields ...string) error {
 	var identity struct {
 		ID string `yaml:"id"`
 	}
 	if err := node.Decode(&identity); err != nil {
 		return err
 	}
-	data, err := yaml.Marshal(node)
-	if err != nil {
-		return err
-	}
-	decoder := yaml.NewDecoder(bytes.NewReader(data))
-	decoder.KnownFields(true)
-	if err := decoder.Decode(target); err != nil {
+	// Decode the original node so aliases can refer to earlier definitions.
+	if err := node.Decode(target); err != nil {
 		return fmt.Errorf("%s %q: %w", kind, identity.ID, err)
+	}
+	// Node.Decode has no KnownFields option. Decode a mapping to let YAML
+	// resolve aliases and merge keys before checking the definition's fields.
+	var mapping map[string]yaml.Node
+	if err := node.Decode(&mapping); err != nil {
+		return fmt.Errorf("%s %q: %w", kind, identity.ID, err)
+	}
+	for field := range mapping {
+		if !slices.Contains(fields, field) {
+			return fmt.Errorf("%s %q: field %s not found", kind, identity.ID, field)
+		}
 	}
 	return nil
 }
