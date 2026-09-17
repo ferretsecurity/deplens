@@ -54,7 +54,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	ruleset, err = ruleset.Exclude(cfg.disableRules, cfg.disableChecks)
+	ruleset, err = ruleset.Exclude(cfg.disableRules, cfg.disableChecks, cfg.excludePresets...)
 	if err != nil {
 		base := cfg.rulesPath
 		if base == "" {
@@ -96,6 +96,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 }
 
 type config struct {
+	excludePresets          []string
 	disableRules            []string
 	disableChecks           []string
 	path                    string
@@ -136,6 +137,11 @@ func parseArgs(args []string) (config, string, error) {
 	fs.StringVar(&cfg.rulesPath, "rules", "", "path to a YAML file replacing built-in detectors and checks")
 	fs.Func("extend-rules", "append detectors and checks from a YAML file (repeatable)", func(path string) error {
 		cfg.extendRulesPaths = append(cfg.extendRulesPaths, path)
+		return nil
+	})
+
+	fs.Func("exclude-preset", "exclude covered detectors: snyk or socket (exact name, repeatable)", func(name string) error {
+		cfg.excludePresets = append(cfg.excludePresets, name)
 		return nil
 	})
 
