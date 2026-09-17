@@ -48,7 +48,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	ruleset, err := loadRuleset(cfg.rulesPath)
+	ruleset, err := analyze.ComposeRules(cfg.rulesPath, cfg.extendRulesPaths)
 	if err != nil {
 		fmt.Fprintf(stderr, "error: %v\n", err)
 		return 1
@@ -90,6 +90,7 @@ type config struct {
 	showWithoutDependencies bool
 	ignoreDirs              []string
 	rulesPath               string
+	extendRulesPaths        []string
 }
 
 func parseArgs(args []string) (config, string, error) {
@@ -119,7 +120,11 @@ func parseArgs(args []string) (config, string, error) {
 
 	var ignore string
 	fs.StringVar(&ignore, "ignore", "", "comma-separated directory names to skip")
-	fs.StringVar(&cfg.rulesPath, "rules", "", "path to a YAML file with dependency source detection rules")
+	fs.StringVar(&cfg.rulesPath, "rules", "", "path to a YAML file replacing built-in detectors and checks")
+	fs.Func("extend-rules", "append detectors and checks from a YAML file (repeatable)", func(path string) error {
+		cfg.extendRulesPaths = append(cfg.extendRulesPaths, path)
+		return nil
+	})
 
 	if err := fs.Parse(args); err != nil {
 		return config{}, renderUsage(), err
@@ -150,11 +155,4 @@ func parseIgnoreList(value string) []string {
 		ignoreDirs = append(ignoreDirs, part)
 	}
 	return ignoreDirs
-}
-
-func loadRuleset(path string) (analyze.Ruleset, error) {
-	if path == "" {
-		return analyze.LoadDefaultRules()
-	}
-	return analyze.LoadRulesFile(path)
 }
