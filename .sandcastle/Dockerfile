@@ -1,6 +1,6 @@
 FROM golang:1.25.6-bookworm AS go-toolchain
 
-FROM node:22-bookworm
+FROM node:26-bookworm
 
 # Match the Go toolchain declared by go.mod while retaining the Node base used
 # by Sandcastle and the Codex CLI.
