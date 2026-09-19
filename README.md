@@ -35,6 +35,10 @@ The path is optional and defaults to the current directory. Common options are:
 ```text
 --json                         Emit machine-readable JSON
 --rules rules.yaml             Replace the built-in ruleset
+--extend-rules company.yaml    Append detectors and checks, repeatable
+--exclude-preset NAME         Exclude snyk or socket source coverage, repeatable
+--disable-rule ID              Exclude one detector ID, repeatable
+--disable-check ID             Exclude one policy check ID, repeatable
 --ignore dist,build,vendor     Replace the default ignored directories
 --show-without-dependencies    Include sources confirmed to contain no dependencies
 ```
@@ -92,6 +96,41 @@ checks:
 ```
 
 Pass a ruleset with `deplens --rules rules.yaml .`. A custom file replaces all built-in detectors and checks; it does not extend them. Rules use strict validation, so unknown fields and unsupported analyzer or evaluator types are rejected. See the [built-in rules](internal/analyze/default_rules.yaml) for complete examples and the [glossary](docs/glossary.md) for terms such as forms, roles, presence, and extraction.
+
+Use `--extend-rules` to keep the built-ins and append company or team definitions:
+
+```bash
+deplens --extend-rules company.yaml --extend-rules team.yaml .
+deplens --rules company-base.yaml --extend-rules team.yaml .
+```
+
+Each occurrence takes one path relative to the current working directory. Put flags before the scan path. Commas are part of filenames, not separators.
+
+An extension uses the same strict YAML schema and contains one document with `rules`, `checks`, or both. A check-only extension is valid; an empty extension is not. A replacement base still requires at least one detector. The base's detectors run first, followed by extensions in flag order and detectors in document order. The first detector that recognizes a file wins. Checks run in stable ID order.
+
+Detector IDs must be unique across the base and all extensions. Check IDs must also be unique, but a detector and a check may share an ID. Definitions never silently override one another. Invalid definitions and ID collisions fail before scanning, with the file origin and definition ID in the error.
+
+Use exact, case-sensitive IDs to remove detectors or checks after composition:
+
+```bash
+deplens --disable-rule go-sum --disable-check dependency-source-codeowners-missing .
+deplens --disable-rule js --extend-rules company-replacement.yaml .
+```
+
+Each exclusion takes one ID. Wildcards, comma lists, and analyzer names are not selectors. Repeated exclusions are harmless. IDs must exist in the combined base and extensions; a built-in ID omitted from a custom base is unknown. Exclusions apply last regardless of flag order. Invalid definitions and duplicate IDs still fail even if excluded. A replacement detector must use a different ID; surviving detectors keep their order and first-recognized behavior.
+
+Disabled checks produce no runs or findings and do not change detection. Explicit detector exclusions can remove evidence required by a policy evaluator. Affected checks report a `detector-disabled` skip in human and JSON output, naming the removed prerequisite IDs and an identifiable project root, or the scan root when discovery is unavailable. This also applies to custom checks using the same evaluator.
+
+Prerequisites include manifest discovery, accepted lockfile alternatives, package-manager evidence, and workspace ownership. Skips are conservative: removing an accepted alternative or competing manager detector skips the affected evaluator even if another lockfile or custom replacement survives. Unrelated evaluators continue. CODEOWNERS still checks surviving sources; when explicit exclusions leave no sources, it reports a skip. Missing detectors in a custom base alone do not cause exclusion skips.
+
+Removing every detector or check is valid. JSON retains empty arrays and the existing schema. Findings and skips keep a successful exit status; configuration errors fail before scanning.
+
+### Vendor coverage presets
+
+Use `deplens --extend-rules company.yaml --exclude-preset socket --disable-rule python-poetry-lock --disable-check javascript-npm-lockfile-missing .` to focus on source coverage gaps. Combine `--exclude-preset snyk --exclude-preset socket` for their union. Presets match IDs after composition; use new IDs for custom replacements. They skip affected checks and leave unrelated checks running.
+
+The offline lists are the 2026-09-17 research snapshot, with 43 Snyk Open Source IDs and 41 Socket SCA IDs. Coverage may require vendor flags, restoration, builds, or documented adapters. A preset does not validate your actual vendor scan or its dependency reference coverage. See [membership, required setup, and full research evidence](docs/coverage-presets.md).
+
 
 ## Supported dependency sources
 

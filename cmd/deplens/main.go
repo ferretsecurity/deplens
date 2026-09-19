@@ -48,9 +48,20 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	ruleset, err := loadRuleset(cfg.rulesPath)
+	ruleset, err := analyze.ComposeRules(cfg.rulesPath, cfg.extendRulesPaths)
 	if err != nil {
 		fmt.Fprintf(stderr, "error: %v\n", err)
+		return 1
+	}
+
+	ruleset, err = ruleset.Exclude(cfg.disableRules, cfg.disableChecks, cfg.excludePresets...)
+	if err != nil {
+		base := cfg.rulesPath
+		if base == "" {
+			base = "built-in rules"
+		}
+		origins := append([]string{base}, cfg.extendRulesPaths...)
+		fmt.Fprintf(stderr, "error: %v (rules from %s)\n", err, strings.Join(origins, ", "))
 		return 1
 	}
 
@@ -85,11 +96,15 @@ func run(args []string, stdout, stderr io.Writer) int {
 }
 
 type config struct {
+	excludePresets          []string
+	disableRules            []string
+	disableChecks           []string
 	path                    string
 	json                    bool
 	showWithoutDependencies bool
 	ignoreDirs              []string
 	rulesPath               string
+	extendRulesPaths        []string
 }
 
 func parseArgs(args []string) (config, string, error) {
@@ -119,7 +134,25 @@ func parseArgs(args []string) (config, string, error) {
 
 	var ignore string
 	fs.StringVar(&ignore, "ignore", "", "comma-separated directory names to skip")
-	fs.StringVar(&cfg.rulesPath, "rules", "", "path to a YAML file with dependency source detection rules")
+	fs.StringVar(&cfg.rulesPath, "rules", "", "path to a YAML file replacing built-in detectors and checks")
+	fs.Func("extend-rules", "append detectors and checks from a YAML file (repeatable)", func(path string) error {
+		cfg.extendRulesPaths = append(cfg.extendRulesPaths, path)
+		return nil
+	})
+
+	fs.Func("exclude-preset", "exclude covered detectors: snyk or socket (exact name, repeatable)", func(name string) error {
+		cfg.excludePresets = append(cfg.excludePresets, name)
+		return nil
+	})
+
+	fs.Func("disable-rule", "exclude one exact detector ID after composition (repeatable)", func(id string) error {
+		cfg.disableRules = append(cfg.disableRules, id)
+		return nil
+	})
+	fs.Func("disable-check", "exclude one exact policy check ID after composition (repeatable)", func(id string) error {
+		cfg.disableChecks = append(cfg.disableChecks, id)
+		return nil
+	})
 
 	if err := fs.Parse(args); err != nil {
 		return config{}, renderUsage(), err
@@ -150,11 +183,4 @@ func parseIgnoreList(value string) []string {
 		ignoreDirs = append(ignoreDirs, part)
 	}
 	return ignoreDirs
-}
-
-func loadRuleset(path string) (analyze.Ruleset, error) {
-	if path == "" {
-		return analyze.LoadDefaultRules()
-	}
-	return analyze.LoadRulesFile(path)
 }

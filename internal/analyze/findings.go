@@ -94,7 +94,7 @@ type evaluationContext struct {
 	parseErrors      []policyParseError
 }
 
-func evaluateChecks(sources []DependencySourceResult, policyInputs []policyInput, codeownersInputs map[string]policyInput, discoveredPaths map[string]struct{}, checks []check) ([]CheckRun, []Finding) {
+func evaluateChecks(sources []DependencySourceResult, policyInputs []policyInput, codeownersInputs map[string]policyInput, discoveredPaths map[string]struct{}, checks []check, disabled ...DetectorID) ([]CheckRun, []Finding) {
 	if len(checks) == 0 {
 		return []CheckRun{}, []Finding{}
 	}
@@ -102,6 +102,10 @@ func evaluateChecks(sources []DependencySourceResult, policyInputs []policyInput
 	runs := make([]CheckRun, 0)
 	findings := make([]Finding, 0)
 	for _, configured := range checks {
+		if skipped := detectorDisabledRuns(ctx, sources, configured, disabled); len(skipped) > 0 {
+			runs = append(runs, skipped...)
+			continue
+		}
 		var checkRuns []CheckRun
 		var checkFindings []Finding
 		switch configured.EvaluatorType {
