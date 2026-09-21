@@ -182,6 +182,22 @@ Without `--generate`, the same command only scans. With generation enabled, a `d
 
 Generation validates every selected source and destination before it writes. Missing dependency fields and empty lists are reported as separate successful skips. Existing destinations cause an error and remain unchanged unless `--overwrite-generated` is set. Overwrite replaces only the files planned by the current run. It does not follow destination symlinks, delete stale outputs, or provide a cross-file transaction if a filesystem write fails after writing starts. Generated paths in JSON are relative to the absolute scan `root`, so CI can resolve them with `root + path`. Poetry, uv, built-in detectors without explicit eligibility, disabled rules, and previously generated requirements files do not generate output.
 
+The built-in `typescript.cdk.aws_glue_job.python` detector is also eligible. Every statically readable Glue `CfnJob` is exported separately, using its construct ID when available. Duplicate or unreadable IDs use the same location-based disambiguation as YAML groups. If a selected job's properties or Python module declaration cannot be evaluated statically, generation fails before writing any planned file; deplens never executes CDK code.
+
+For example, an ordinary scan of two TypeScript Glue jobs reports one source:
+
+```text
+jobs.ts [source-code · 3 dependencies]
+```
+
+Explicit generation adds one file per job without a vendor preset:
+
+```text
+Generated 2 requirements files:
+  jobs.ts (daily) -> jobs.ts-daily.generated-requirements.txt
+  jobs.ts (legacy) -> jobs.ts-legacy.generated-requirements.txt
+```
+
 Example output changes from an ordinary scan:
 
 ```text

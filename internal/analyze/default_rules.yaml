@@ -1210,6 +1210,7 @@ rules:
     roles: [usage, inventory]
     package-type: pypi
     filename-regex: '.*\.ts$'
+    generate: python-requirements
     analyzer:
       type: typescript
       cdk_construct:

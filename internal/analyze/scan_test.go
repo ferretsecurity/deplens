@@ -2870,6 +2870,26 @@ func TestScanMatchesTypeScriptFixtureFromTestdata(t *testing.T) {
 	}
 }
 
+func TestScanExtractsEveryTypeScriptGlueJobFromFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := filepath.Join("..", "..", "testdata", "typescript", "glue-cfnjob-multiple")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
+	}
+	source := result.Sources[0]
+	if got, want := dependencyNames(source.Dependencies), []string{"pandas==1.4.4", "paramiko", "pandas==0.25.3"}; !slices.Equal(got, want) {
+		t.Fatalf("dependencies: got %v want %v", got, want)
+	}
+	if len(source.Groups) != 2 || source.Groups[0].Name != "daily" || source.Groups[1].Name != "legacy" {
+		t.Fatalf("groups: %+v", source.Groups)
+	}
+}
+
 func TestScanDoesNotMatchTypeScriptNegativeFixturesFromTestdata(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	fixtures := []string{

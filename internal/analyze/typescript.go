@@ -60,6 +60,15 @@ type typescriptCDKConstructMatcher struct {
 	extract            *typescriptExtract
 }
 
+type typescriptConstructMatch struct {
+	matched      bool
+	name         string
+	location     string
+	dependencies []DependencyReference
+	state        string
+	incomplete   string
+}
+
 func newTypeScriptMatcher(raw typescriptMatcherConfig) (sourceAnalyzer, error) {
 	if raw.CDKConstruct == nil {
 		return nil, fmt.Errorf("typescript.cdk_construct: required")
@@ -146,68 +155,92 @@ func (m typescriptCDKConstructMatcher) Analyze(path string, content []byte) (sou
 		return sourceAnalyzerResult{}, nil
 	}
 
-	var (
-		dependencies []string
-		matched      bool
-	)
+	var groups []DependencyGroup
+	var dependencies []DependencyReference
+	var incomplete []string
 
 	walkNamedNodes(root, func(node *sitter.Node) bool {
 		if node.Kind() != "new_expression" {
 			return true
 		}
 
-		deps, ok := m.matchNewExpression(root, node, content, imports)
-		if !ok {
+		match := m.matchNewExpression(root, node, content, imports)
+		if !match.matched {
 			return true
 		}
-
-		dependencies = deps
-		matched = true
-		return false
+		if match.incomplete != "" {
+			incomplete = append(incomplete, fmt.Sprintf("job %q at %s in %q: %s", match.name, match.location, path, match.incomplete))
+			return true
+		}
+		groups = append(groups, DependencyGroup{Name: match.name, Location: match.location, Dependencies: match.dependencies, State: match.state})
+		dependencies = append(dependencies, match.dependencies...)
+		return true
 	})
 
-	if !matched {
+	if len(groups) == 0 && len(incomplete) == 0 {
 		return sourceAnalyzerResult{}, nil
 	}
-	if len(dependencies) == 0 {
+	if len(incomplete) > 0 {
+		analysis := failedAnalysis()
+		severity := DiagnosticError
+		if len(dependencies) > 0 {
+			analysis = SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionPartial}
+			severity = DiagnosticWarning
+		}
 		return sourceAnalyzerResult{
-			Dependencies: dependenciesFromStrings(dependencies),
-			Analysis:     identifiedAnalysis(),
+			Dependencies: dependencies,
+			Groups:       groups,
+			Analysis:     analysis,
+			Diagnostics:  diagnosticsFromMessages(severity, "typescript-cdk-incomplete", incomplete),
 			Recognized:   true,
 		}, nil
 	}
 	return sourceAnalyzerResult{
-		Dependencies: dependenciesFromStrings(dependencies),
-		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
+		Dependencies: dependencies,
+		Groups:       groups,
+		Analysis:     completeAnalysis(dependencies),
 		Recognized:   true,
 	}, nil
 }
 
-func (m typescriptCDKConstructMatcher) matchNewExpression(root *sitter.Node, node *sitter.Node, content []byte, imports typeScriptImportTable) ([]string, bool) {
+func (m typescriptCDKConstructMatcher) matchNewExpression(root *sitter.Node, node *sitter.Node, content []byte, imports typeScriptImportTable) typescriptConstructMatch {
+	location := fmt.Sprintf("line-%d-column-%d", node.StartPosition().Row+1, node.StartPosition().Column+1)
+	result := typescriptConstructMatch{location: location}
 	constructor := node.ChildByFieldName("constructor")
 	if !m.matchesConstructor(constructor, content, imports) {
-		return nil, false
+		return result
 	}
 
 	argsNode := node.ChildByFieldName("arguments")
 	if argsNode == nil {
-		return nil, false
+		result.matched, result.incomplete = true, "constructor arguments cannot be read"
+		return result
 	}
 
 	args := namedChildren(argsNode)
+	result.matched = true
+	if len(args) > 1 {
+		result.name, _ = resolveTypeScriptStringValue(root, args[1], content)
+	}
 	if m.propsArgumentIndex >= len(args) {
-		return nil, false
+		result.incomplete = "properties argument is missing"
+		return result
 	}
 
 	objectNode, ok := resolveTypeScriptObjectNode(root, args[m.propsArgumentIndex], content)
 	if !ok {
-		return nil, false
+		result.incomplete = "properties cannot be evaluated statically"
+		return result
 	}
 
 	for _, segment := range m.within {
 		next, ok := objectPropertyValue(objectNode, content, segment)
-		if !ok || next.Kind() != "object" {
-			return nil, false
+		if !ok {
+			return typescriptConstructMatch{}
+		}
+		if next.Kind() != "object" {
+			result.incomplete = fmt.Sprintf("property %q cannot be evaluated statically", segment)
+			return result
 		}
 		objectNode = next
 	}
@@ -215,38 +248,55 @@ func (m typescriptCDKConstructMatcher) matchNewExpression(root *sitter.Node, nod
 	for _, cond := range m.conditions {
 		valueNode, ok := objectPropertyValue(objectNode, content, cond.key)
 		if !ok {
-			return nil, false
+			return typescriptConstructMatch{}
 		}
 		if cond.present {
 			continue
 		}
 
 		value, ok := resolveTypeScriptStringValue(root, valueNode, content)
-		if !ok || value != *cond.equals {
-			return nil, false
+		if !ok {
+			result.incomplete = fmt.Sprintf("condition %q cannot be evaluated statically", cond.key)
+			return result
+		}
+		if value != *cond.equals {
+			return typescriptConstructMatch{}
 		}
 	}
 
 	if m.extract == nil {
-		return nil, true
+		result.state = "empty"
+		return result
 	}
 
 	valueNode, ok := objectPropertyValue(objectNode, content, m.extract.key)
 	if !ok {
-		return nil, false
+		return typescriptConstructMatch{}
 	}
 
 	value, ok := resolveTypeScriptStringValue(root, valueNode, content)
 	if !ok {
-		return nil, true
+		result.incomplete = fmt.Sprintf("dependency declaration %q cannot be evaluated statically", m.extract.key)
+		return result
 	}
 
 	dependencies := splitExtractedValue(value, m.extract.split)
 	if len(dependencies) == 0 {
-		return nil, true
+		result.state = "empty"
+		return result
 	}
-
-	return dependencies, true
+	result.state = "ready"
+	for _, spec := range dependencies {
+		dependency, err := parsePythonRequirement(spec)
+		if err != nil {
+			result.dependencies = nil
+			result.incomplete = fmt.Sprintf("dependency %q: %v", spec, err)
+			return result
+		}
+		dependency.SourceGroup = result.name
+		result.dependencies = append(result.dependencies, dependency)
+	}
+	return result
 }
 
 func resolveTypeScriptObjectNode(root *sitter.Node, node *sitter.Node, content []byte) (*sitter.Node, bool) {

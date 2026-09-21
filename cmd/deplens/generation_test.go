@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -54,6 +55,85 @@ func TestGeneratePythonRequirementsFromYAMLGroups(t *testing.T) {
 	}
 	if !strings.Contains(out.String(), "Generated 2 requirements files") || !strings.Contains(out.String(), "skipped: empty dependencies") || !strings.Contains(out.String(), "skipped: missing dependencies") {
 		t.Fatalf("output: %s", &out)
+	}
+}
+
+func TestGeneratePythonRequirementsFromEveryTypeScriptGlueJob(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "jobs.ts"), `import { CfnJob } from "aws-cdk-lib/aws-glue";
+new CfnJob(this, "daily", { defaultArguments: {"--job-language": "python", "--additional-python-modules": "pandas==1.4.4,paramiko"} });
+new CfnJob(this, "legacy", { defaultArguments: {"--job-language": "python", "--additional-python-modules": "pandas==0.25.3"} });
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--json", "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("run failed: code=%d stderr=%s", code, stderr.String())
+	}
+	for name, want := range map[string]string{"daily": "pandas==1.4.4\nparamiko\n", "legacy": "pandas==0.25.3\n"} {
+		data, err := os.ReadFile(filepath.Join(project, "jobs.ts-"+name+".generated-requirements.txt"))
+		if err != nil || string(data) != want {
+			t.Fatalf("%s generated content: %q, %v", name, data, err)
+		}
+	}
+	var result analyze.ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatalf("decode json: %v", err)
+	}
+	wantPaths := []string{"jobs.ts-daily.generated-requirements.txt", "jobs.ts-legacy.generated-requirements.txt"}
+	if !slices.Equal(result.Generation.Paths, wantPaths) {
+		t.Fatalf("generated paths: %v", result.Generation.Paths)
+	}
+}
+
+func TestTypeScriptGlueGenerationUsesLocationForDuplicateAndMissingIDs(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "jobs.ts"), `import * as glue from "aws-cdk-lib/aws-glue";
+new glue.CfnJob(this, "same", { defaultArguments: {"--job-language": "python", "--additional-python-modules": "one"} });
+new glue.CfnJob(this, "same", { defaultArguments: {"--job-language": "python", "--additional-python-modules": "two"} });
+new glue.CfnJob(this, jobID(), { defaultArguments: {"--job-language": "python", "--additional-python-modules": "three"} });
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--json", "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("run failed: code=%d stderr=%s", code, stderr.String())
+	}
+	var result analyze.ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"jobs.ts-group-at-line-4-column-1.generated-requirements.txt", "jobs.ts-same-at-line-2-column-1.generated-requirements.txt", "jobs.ts-same-at-line-3-column-1.generated-requirements.txt"}
+	if !slices.Equal(result.Generation.Paths, want) {
+		t.Fatalf("paths: %v, want %v", result.Generation.Paths, want)
+	}
+}
+
+func TestTypeScriptGlueIncompleteLaterJobPreventsAllWrites(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "jobs.ts"), `import { CfnJob } from "aws-cdk-lib/aws-glue";
+new CfnJob(this, "readable", { defaultArguments: {"--job-language": "python", "--additional-python-modules": "pandas==1.4.4"} });
+new CfnJob(this, "unreadable", { defaultArguments: {"--job-language": "python", "--additional-python-modules": buildModules()} });
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--generate", "python-requirements", project}, &out, &stderr); code == 0 {
+		t.Fatalf("expected failure: stdout=%s", out.String())
+	}
+	if !strings.Contains(stderr.String(), `job "unreadable"`) || !strings.Contains(stderr.String(), "cannot be evaluated statically") {
+		t.Fatalf("missing contextual diagnostic: %s", stderr.String())
+	}
+	if _, err := os.Stat(filepath.Join(project, "jobs.ts-readable.generated-requirements.txt")); !os.IsNotExist(err) {
+		t.Fatalf("valid earlier job was written: %v", err)
+	}
+}
+
+func TestTypeScriptGlueGenerationCanBeDisabled(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "job.ts"), `import { CfnJob } from "aws-cdk-lib/aws-glue";
+new CfnJob(this, "daily", { defaultArguments: {"--job-language": "python", "--additional-python-modules": "pandas"} });
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--disable-rule", "typescript.cdk.aws_glue_job.python", "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("run failed: %s", stderr.String())
+	}
+	if _, err := os.Stat(filepath.Join(project, "job.ts-daily.generated-requirements.txt")); !os.IsNotExist(err) {
+		t.Fatalf("disabled detector generated a file: %v", err)
 	}
 }
 
