@@ -1197,14 +1197,9 @@ rules:
     roles: [usage, inventory]
     package-type: pypi
     filename-regex: '.*\.tf$'
+    generate: python-requirements
     analyzer:
-      type: terraform
-      resource_type: aws_glue_job
-      conditions:
-        - path: default_arguments.--job-language
-          equals: python
-        - path: default_arguments.--additional-python-modules
-          present: true
+      type: terraform-glue-python
   - id: databricks.bundle.task.python
     form: manifest
     roles: [declaration, usage, inventory]

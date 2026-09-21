@@ -33,6 +33,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return newBannerRegexParser(config.Pattern)
 	case "terraform":
 		return decodeAndCreate(raw.Analyzer, newTerraformResourceParser)
+	case "terraform-glue-python":
+		return decodeAndCreate(raw.Analyzer, newTerraformGluePythonParser)
 	case "ini":
 		return decodeAndCreate(raw.Analyzer, newINIQueryParser)
 	case "git-submodules":

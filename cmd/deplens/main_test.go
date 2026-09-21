@@ -285,7 +285,7 @@ resource "aws_glue_job" "python_shell_example" {
 		t.Fatalf("expected exit code 0, got %d, stderr=%q", exitCode, stderr.String())
 	}
 	if !strings.Contains(stdout.String(), "Found 1 dependency source:") ||
-		!strings.Contains(stdout.String(), "job.tf [source-code · identified only]") {
+		!strings.Contains(stdout.String(), "job.tf [source-code · 2 dependencies]") {
 		t.Fatalf("expected output to include terraform glue source, got %q", stdout.String())
 	}
 }

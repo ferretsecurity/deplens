@@ -141,6 +141,88 @@ targets:
 	}
 }
 
+func TestGeneratePythonRequirementsFromTerraformGlueJobs(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "jobs.tf"), `
+resource "aws_glue_job" "daily" {
+  default_arguments = {
+    "--additional-python-modules" = "pandas==2.2.1,paramiko"
+    "--enable-continuous-cloudwatch-log" = var.logging
+  }
+}
+resource "aws_glue_job" "override" {
+  default_arguments = {
+    "--job-language" = "python"
+    "--additional-python-modules" = "old==1"
+  }
+  non_overridable_arguments = {
+    "--additional-python-modules" = "new==2"
+  }
+}
+resource "aws_glue_job" "scala" {
+  default_arguments = {
+    "--job-language" = "scala"
+    "--additional-python-modules" = "ignored"
+  }
+}
+resource "aws_glue_job" "empty" {
+  default_arguments = { "--additional-python-modules" = "" }
+}
+resource "aws_glue_job" "missing" {}
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--json", "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("run failed: code=%d stderr=%s", code, stderr.String())
+	}
+	for name, want := range map[string]string{
+		"daily":    "pandas==2.2.1\nparamiko\n",
+		"override": "new==2\n",
+	} {
+		data, err := os.ReadFile(filepath.Join(project, "jobs.tf-"+name+".generated-requirements.txt"))
+		if err != nil || string(data) != want {
+			t.Fatalf("%s generated content: %q, %v", name, data, err)
+		}
+	}
+	var result analyze.ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	statuses := map[string]string{}
+	for _, outcome := range result.Generation.Outcomes {
+		statuses[outcome.Group] = string(outcome.Status)
+	}
+	if statuses["empty"] != "empty" || statuses["missing"] != "missing" {
+		t.Fatalf("outcomes: %+v", result.Generation.Outcomes)
+	}
+	if _, found := statuses["scala"]; found {
+		t.Fatalf("Scala job produced an outcome: %+v", result.Generation.Outcomes)
+	}
+}
+
+func TestTerraformGlueIncompleteLaterJobPreventsAllWrites(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "jobs.tf"), `
+resource "aws_glue_job" "readable" {
+  default_arguments = { "--additional-python-modules" = "pandas==2.2.1" }
+}
+resource "aws_glue_job" "unreadable" {
+  default_arguments = { "--additional-python-modules" = var.modules }
+}
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--generate", "python-requirements", project}, &out, &stderr); code == 0 {
+		t.Fatalf("generation succeeded: %s", out.String())
+	}
+	for _, part := range []string{`Glue job "unreadable"`, "line-5-column-1", "cannot be evaluated statically"} {
+		if !strings.Contains(stderr.String(), part) {
+			t.Fatalf("stderr does not contain %q: %s", part, stderr.String())
+		}
+	}
+	if _, err := os.Stat(filepath.Join(project, "jobs.tf-readable.generated-requirements.txt")); !os.IsNotExist(err) {
+		t.Fatalf("valid earlier job was written: %v", err)
+	}
+}
+
 func TestVendorCIExampleKeepsDocumentedPathsAndZeroOutput(t *testing.T) {
 	project := t.TempDir()
 	example := filepath.Join("..", "..", "examples", "vendor-ci")

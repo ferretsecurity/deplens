@@ -129,7 +129,7 @@ Removing every detector or check is valid. JSON retains empty arrays and the exi
 
 ### Generate Python requirements
 
-Generation is opt-in and works without a vendor preset. The built-in Python and TypeScript CDK Glue detectors are eligible. Custom YAML rules can opt in with `generate: python-requirements` and grouped extraction:
+Generation is opt-in and works without a vendor preset. The built-in native Terraform, Python CDK, and TypeScript CDK Glue detectors are eligible. Custom YAML rules can opt in with `generate: python-requirements` and grouped extraction:
 
 ```yaml
 rules:
@@ -183,6 +183,24 @@ Without `--generate`, the same command only scans. With generation enabled, a `d
 Generation validates every selected source and destination before it writes. Missing dependency fields and empty lists are reported as separate successful skips. Existing destinations cause an error and remain unchanged unless `--overwrite-generated` is set. Overwrite replaces only the files planned by the current run. It does not follow destination symlinks, delete stale outputs, or provide a cross-file transaction if a filesystem write fails after writing starts. Generated paths in JSON are relative to the absolute scan `root`, so CI can resolve them with `root + path`. Poetry, uv, built-in detectors without explicit eligibility, disabled rules, and previously generated requirements files do not generate output.
 
 For per-group Socket and Snyk jobs driven by those JSON paths, including zero-output handling and separate Python environments, see [Scan generated Python requirements in CI](docs/generated-requirements-vendor-ci.md). Live vendor acceptance status and exact fixtures are recorded there too.
+
+The built-in `terraform.aws_glue_job.python` detector reads native `.tf` files and creates one group per `aws_glue_job` resource. It reads `--additional-python-modules` from `default_arguments` and `non_overridable_arguments`; a non-overridable value wins when both maps declare it. An omitted `--job-language` means Python, while a literal `scala` value excludes the job. Variables and other expressions are not evaluated. A dynamic language, modules value, relevant argument map, or installer option blocks generation before any files are written. Dynamic unrelated arguments do not block literal module extraction.
+
+Git, URL, wheel, path, requirements-file, and custom-repository declarations are unsupported. Missing and empty module lists remain successful skips. Generated files describe the Terraform declarations, not the complete packages installed in a deployed Glue runtime.
+
+For example, an ordinary scan of two Terraform Glue jobs reports their dependencies without writing files:
+
+```text
+jobs.tf [source-code · 3 dependencies]
+```
+
+Explicit generation writes each job separately:
+
+```text
+Generated 2 requirements files:
+  jobs.tf (daily) -> jobs.tf-daily.generated-requirements.txt
+  jobs.tf (legacy) -> jobs.tf-legacy.generated-requirements.txt
+```
 
 The built-in `typescript.cdk.aws_glue_job.python` detector is also eligible. Every statically readable Glue `CfnJob` is exported separately, using its construct ID when available. Duplicate or unreadable IDs use the same location-based disambiguation as YAML groups. If a selected job's properties or Python module declaration cannot be evaluated statically, generation fails before writing any planned file; deplens never executes CDK code.
 
