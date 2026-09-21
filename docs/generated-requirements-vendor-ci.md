@@ -123,9 +123,10 @@ An unpinned declaration can install a version different from production. This wo
 
 On 2026-09-21, generation was exercised locally from a fresh temporary copy with Go 1.25.6. It produced the six paths above and two structured zero-output outcomes. Normal Go tests and vet remained offline.
 
-Live ingestion remains incomplete:
+Live ingestion passed with Snyk CLI 1.1300.0 and Socket CLI 1.1.176:
 
-- Snyk CLI 1.1300.0 was present, but no `SNYK_TOKEN` was available. No authenticated scan ran, so package reporting is not claimed.
-- Socket CLI and credentials were unavailable. Exact filename discovery, package reporting, the organization supported-files response, and `.gitignore` behavior were not verified live.
+- Each generated path was installed in its own temporary virtual environment and passed to `snyk test --file=<path> --package-manager=pip --json`. All six JSON results identified pip, reported two dependencies, and contained both `idna` and `urllib3`. Snyk exited 1 because it found vulnerabilities, not because ingestion failed.
+- `socket scan create --report --json` discovered all six exact generated filenames from the fixture directory without explicit file arguments. Raw scan `7d881196-6436-4460-bd44-ecc25221b88c` contained all six source-to-output paths and both package names.
+- A second Socket scan placed `workflow.yaml-legacy.generated-requirements.txt` in `.gitignore`. Socket collected five files, and raw scan `d6ac3e91-b005-4ae9-9112-2ca84734a9d2` omitted only that path.
 
-Public vendor documentation is not evidence for these exact names. Run the jobs above with authorized test-organization credentials and attach the recorded evidence before marking live vendor acceptance complete.
+The scans used temporary workspaces and test-organization credentials. No credential or installed environment is part of the repository or normal test suite.
