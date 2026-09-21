@@ -53,6 +53,7 @@ const (
 	GroupReady   DependencyGroupState = "ready"
 
 	GenerationPythonRequirements GenerationFormat = "python-requirements"
+	GenerationMavenPOM           GenerationFormat = "maven-pom"
 
 	RelationshipDirect       Relationship = "direct"
 	RelationshipTransitive   Relationship = "transitive"
@@ -83,6 +84,12 @@ type DependencyReference struct {
 	Relationship      Relationship      `json:"relationship,omitempty"`
 	Scope             DependencyScope   `json:"scope,omitempty"`
 	Attributes        map[string]string `json:"attributes,omitempty"`
+	MavenExclusions   []MavenExclusion  `json:"maven_exclusions,omitempty"`
+}
+
+type MavenExclusion struct {
+	GroupID    string `json:"group_id" xml:"groupId"`
+	ArtifactID string `json:"artifact_id" xml:"artifactId"`
 }
 
 type DependencyGroup struct {
@@ -90,6 +97,8 @@ type DependencyGroup struct {
 	Location     string                `json:"location"`
 	Dependencies []DependencyReference `json:"dependencies,omitempty"`
 	State        DependencyGroupState  `json:"state"`
+	Format       GenerationFormat      `json:"-"`
+	Diagnostics  []Diagnostic          `json:"-"`
 }
 
 type SourceAnalysis struct {

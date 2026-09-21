@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"os"
 	"path/filepath"
 	"slices"
@@ -138,6 +139,81 @@ targets:
 		if err != nil || string(body) != want {
 			t.Fatalf("generated %s: %q, %v", wantPaths[index], body, err)
 		}
+	}
+}
+
+func TestGenerateMavenPOMFromMixedDatabricksBundle(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "bundle.yml"), `resources:
+  jobs:
+    main:
+      tasks:
+        - task_key: mixed/task
+          libraries:
+            - pypi: {package: "${var.invalid_python}"}
+            - maven:
+                coordinates: "org.example:app:1.2.3"
+                exclusions: ["org.example:legacy"]
+        - task_key: empty
+          libraries: []
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--json", "--generate", "maven-pom", project}, &out, &stderr); code != 0 {
+		t.Fatalf("exit=%d stderr=%s", code, &stderr)
+	}
+	path := filepath.Join(project, "bundle.yml-mixed-task.generated-maven", "pom.xml")
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var document struct{ XMLName xml.Name }
+	if err := xml.Unmarshal(body, &document); err != nil || document.XMLName.Local != "project" {
+		t.Fatalf("invalid generated POM: root=%s err=%v", document.XMLName.Local, err)
+	}
+	for _, want := range []string{`xmlns="http://maven.apache.org/POM/4.0.0"`, "<groupId>org.example</groupId>", "<artifactId>app</artifactId>", "<version>1.2.3</version>", "<artifactId>legacy</artifactId>"} {
+		if !strings.Contains(string(body), want) {
+			t.Errorf("pom missing %q:\n%s", want, body)
+		}
+	}
+	var result analyze.ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if result.Generation.Format != analyze.GenerationMavenPOM || len(result.Generation.Paths) != 1 {
+		t.Fatalf("generation = %+v", result.Generation)
+	}
+}
+
+func TestGenerateMavenFailureLeavesNoDirectories(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "bundle.yaml"), `resources:
+  jobs:
+    main:
+      tasks:
+        - task_key: good
+          libraries: [{maven: {coordinates: "org.example:good:1.0"}}]
+        - task_key: bad
+          libraries: [{maven: {coordinates: "not-a-coordinate"}}]
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--generate", "maven-pom", project}, &out, &stderr); code == 0 {
+		t.Fatal("expected failure")
+	}
+	matches, err := filepath.Glob(filepath.Join(project, "*.generated-maven"))
+	if err != nil || len(matches) != 0 {
+		t.Fatalf("generated directories after failed preflight: %v, %v", matches, err)
+	}
+}
+
+func TestGeneratePythonIgnoresInvalidDatabricksMaven(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "bundle.yaml"), `resources: {jobs: {main: {tasks: [{task_key: mixed, libraries: [{pypi: {package: "requests==2.32.3"}}, {maven: {coordinates: bad}}]}]}}}`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("exit=%d stderr=%s", code, &stderr)
+	}
+	if _, err := os.Stat(filepath.Join(project, "bundle.yaml-mixed.generated-requirements.txt")); err != nil {
+		t.Fatal(err)
 	}
 }
 

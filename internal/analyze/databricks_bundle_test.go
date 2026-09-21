@@ -36,10 +36,10 @@ targets:
 	if !result.Recognized || result.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
 		t.Fatalf("analysis = %+v, recognized = %v", result.Analysis, result.Recognized)
 	}
-	if len(result.Dependencies) != 2 || result.Dependencies[0].Raw != "requests>=2.32" || result.Dependencies[1].Raw != "urllib3<3" {
+	if len(result.Dependencies) != 3 || result.Dependencies[0].Raw != "requests>=2.32" || result.Dependencies[1].Raw != "org.example:tool:1.0" || result.Dependencies[2].Raw != "urllib3<3" {
 		t.Fatalf("dependencies = %+v", result.Dependencies)
 	}
-	if len(result.Groups) != 4 {
+	if len(result.Groups) != 8 {
 		t.Fatalf("groups = %+v", result.Groups)
 	}
 	states := map[string]DependencyGroupState{}
@@ -85,7 +85,7 @@ targets: []
 	}
 }
 
-func TestDatabricksBundleAnalyzerReportsUnsupportedPythonWithoutMavenInterference(t *testing.T) {
+func TestDatabricksBundleAnalyzerReportsUnsupportedDeclarations(t *testing.T) {
 	content := []byte(`resources:
   jobs:
     job:
@@ -115,8 +115,8 @@ func TestDatabricksBundleAnalyzerReportsUnsupportedPythonWithoutMavenInterferenc
 			t.Errorf("diagnostic %q does not contain %q", message, want)
 		}
 	}
-	if strings.Contains(message, "maven") {
-		t.Fatalf("Maven declaration affected Python diagnostics: %s", message)
+	if !strings.Contains(message, "maven.coordinates") {
+		t.Fatalf("Maven diagnostic missing: %s", message)
 	}
 }
 
@@ -185,5 +185,54 @@ func TestDatabricksBundleGenerationDoesNotWriteOnIncompleteSource(t *testing.T) 
 	matches, err := filepath.Glob(filepath.Join(root, "*.generated-requirements.txt"))
 	if err != nil || len(matches) != 0 {
 		t.Fatalf("generated files after failed preflight: %v, %v", matches, err)
+	}
+}
+
+func TestDatabricksBundleMavenCoordinatesAndExclusions(t *testing.T) {
+	result, err := (databricksBundleAnalyzer{}).Analyze("bundle.yaml", []byte(`resources:
+  jobs:
+    ingest:
+      tasks:
+        - task_key: load
+          libraries:
+            - maven:
+                coordinates: org.apache.spark:spark-sql_2.12:3.5.1
+                exclusions: [org.slf4j:slf4j-api, "commons-logging:commons-logging"]
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Analysis.Extraction != ExtractionComplete || len(result.Dependencies) != 1 {
+		t.Fatalf("result = %+v", result)
+	}
+	dep := result.Dependencies[0]
+	if dep.PackageType != "maven" || dep.Name != "org.apache.spark:spark-sql_2.12" || dep.VersionConstraint != "3.5.1" || len(dep.MavenExclusions) != 2 {
+		t.Fatalf("dependency = %+v", dep)
+	}
+}
+
+func TestDatabricksBundleFormatDiagnosticsAreIsolated(t *testing.T) {
+	result, err := (databricksBundleAnalyzer{}).Analyze("bundle.yaml", []byte(`resources:
+  jobs:
+    mixed:
+      tasks:
+        - task_key: task
+          libraries:
+            - pypi: {package: "${var.python}"}
+            - maven: {coordinates: "org.example:valid:1.0"}
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var python, maven DependencyGroup
+	for _, group := range result.Groups {
+		if group.Format == GenerationPythonRequirements {
+			python = group
+		} else if group.Format == GenerationMavenPOM {
+			maven = group
+		}
+	}
+	if len(python.Diagnostics) != 1 || len(maven.Diagnostics) != 0 || len(maven.Dependencies) != 1 {
+		t.Fatalf("python=%+v maven=%+v", python, maven)
 	}
 }
