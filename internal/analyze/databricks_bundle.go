@@ -30,6 +30,9 @@ func (databricksBundleAnalyzer) Analyze(path string, content []byte) (sourceAnal
 	inspect := func(scope any, segments []any) {
 		scopeMap, ok := asStringMap(scope)
 		if !ok {
+			location := jqPath(segments)
+			structural = append(structural, location+": target must be a mapping")
+			recognized = true
 			return
 		}
 		resources, exists := scopeMap["resources"]
@@ -53,6 +56,9 @@ func (databricksBundleAnalyzer) Analyze(path string, content []byte) (sourceAnal
 		for _, jobName := range sortedStringKeys(jobsMap) {
 			job, ok := asStringMap(jobsMap[jobName])
 			if !ok {
+				location := jqPath(appendCopy(segments, "resources", "jobs", jobName))
+				structural = append(structural, location+": job must be a mapping")
+				recognized = true
 				continue
 			}
 			rawTasks, exists := job["tasks"]
@@ -77,10 +83,11 @@ func (databricksBundleAnalyzer) Analyze(path string, content []byte) (sourceAnal
 					groups = append(groups, malformedDatabricksGroups(location, message)...)
 					continue
 				}
-				name, ok := task["task_key"].(string)
-				if !ok || name == "" {
+				taskName, ok := task["task_key"].(string)
+				if !ok || taskName == "" {
 					structural = append(structural, location+".task_key: must be a non-empty string")
 				}
+				name := databricksGroupName(segments, jobName, taskName)
 				py := DependencyGroup{Name: name, Location: location, Format: GenerationPythonRequirements, State: GroupMissing}
 				mv := DependencyGroup{Name: name, Location: location, Format: GenerationMavenPOM, State: GroupMissing}
 				rawLibraries, exists := task["libraries"]
@@ -152,11 +159,7 @@ func (databricksBundleAnalyzer) Analyze(path string, content []byte) (sourceAnal
 	if !recognized {
 		return sourceAnalyzerResult{}, nil
 	}
-	presence := PresenceAbsent
-	if len(dependencies) > 0 {
-		presence = PresencePresent
-	}
-	analysis := SourceAnalysis{Presence: presence, Extraction: ExtractionComplete}
+	analysis := completeAnalysis(dependencies)
 	var diagnostics []Diagnostic
 	var declarationMessages []string
 	for _, group := range groups {
@@ -165,17 +168,35 @@ func (databricksBundleAnalyzer) Analyze(path string, content []byte) (sourceAnal
 		}
 	}
 	if len(declarationMessages) > 0 {
-		analysis.Extraction = ExtractionPartial
-		diagnostics = []Diagnostic{{Severity: DiagnosticWarning, Code: "databricks-bundle-incomplete", Message: strings.Join(declarationMessages, "; ")}}
+		analysis = failedAnalysis()
+		severity := DiagnosticError
+		if len(dependencies) > 0 {
+			analysis = SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionPartial}
+			severity = DiagnosticWarning
+		}
+		diagnostics = []Diagnostic{{Severity: severity, Code: "databricks-bundle-incomplete", Message: strings.Join(declarationMessages, "; ")}}
 	}
 	if len(structural) > 0 {
-		analysis.Extraction = ExtractionFailed
-		diagnostics = []Diagnostic{{Severity: DiagnosticError, Code: "databricks-bundle-incomplete", Message: strings.Join(structural, "; ")}}
+		analysis = failedAnalysis()
+		severity := DiagnosticError
+		if len(dependencies) > 0 {
+			analysis = SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionPartial}
+			severity = DiagnosticWarning
+		}
+		diagnostics = []Diagnostic{{Severity: severity, Code: "databricks-bundle-incomplete", Message: strings.Join(structural, "; ")}}
 		for i := range groups {
 			groups[i].Diagnostics = append(groups[i].Diagnostics, diagnostics[0])
 		}
 	}
 	return sourceAnalyzerResult{Recognized: true, Analysis: analysis, Dependencies: dependencies, Groups: groups, Diagnostics: diagnostics}, nil
+}
+
+func databricksGroupName(segments []any, jobName, taskName string) string {
+	parts := []string{"base", jobName, taskName}
+	if len(segments) == 2 {
+		parts = []string{"target", fmt.Sprint(segments[1]), jobName, taskName}
+	}
+	return strings.Join(parts, "-")
 }
 
 func appendCopy(base []any, values ...any) []any {

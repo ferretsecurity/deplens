@@ -124,9 +124,9 @@ targets:
 		t.Fatal(err)
 	}
 	wantPaths := []string{
-		"config/renamed.yml-shared-task-at-resources.jobs.first.tasks-0.generated-requirements.txt",
-		"config/renamed.yml-shared-task-at-targets.production.resources.jobs.second.tasks-0.generated-requirements.txt",
-		"other.yaml-shared-task.generated-requirements.txt",
+		"config/renamed.yml-base-first-shared-task.generated-requirements.txt",
+		"config/renamed.yml-target-production-second-shared-task.generated-requirements.txt",
+		"other.yaml-base-third-shared-task.generated-requirements.txt",
 	}
 	if !slices.Equal(result.Generation.Paths, wantPaths) {
 		t.Fatalf("generated paths: %v, want %v", result.Generation.Paths, wantPaths)
@@ -161,7 +161,7 @@ func TestGenerateMavenPOMFromMixedDatabricksBundle(t *testing.T) {
 	if code := run([]string{"--json", "--generate", "maven-pom", project}, &out, &stderr); code != 0 {
 		t.Fatalf("exit=%d stderr=%s", code, &stderr)
 	}
-	path := filepath.Join(project, "bundle.yml-mixed-task.generated-maven", "pom.xml")
+	path := filepath.Join(project, "bundle.yml-base-main-mixed-task.generated-maven", "pom.xml")
 	body, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
@@ -212,7 +212,7 @@ func TestGeneratePythonIgnoresInvalidDatabricksMaven(t *testing.T) {
 	if code := run([]string{"--generate", "python-requirements", project}, &out, &stderr); code != 0 {
 		t.Fatalf("exit=%d stderr=%s", code, &stderr)
 	}
-	if _, err := os.Stat(filepath.Join(project, "bundle.yaml-mixed.generated-requirements.txt")); err != nil {
+	if _, err := os.Stat(filepath.Join(project, "bundle.yaml-base-main-mixed.generated-requirements.txt")); err != nil {
 		t.Fatal(err)
 	}
 }

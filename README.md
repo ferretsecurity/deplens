@@ -204,7 +204,7 @@ Generated 2 requirements files:
 
 The built-in `typescript.cdk.aws_glue_job.python` detector is also eligible. Every statically readable Glue `CfnJob` is exported separately, using its construct ID when available. Duplicate or unreadable IDs use the same location-based disambiguation as YAML groups. If a selected job's properties or Python module declaration cannot be evaluated statically, generation fails before writing any planned file; deplens never executes CDK code.
 
-Databricks bundle `.yaml` and `.yml` files are detected by their `resources.jobs.*.tasks` content, regardless of the filename or directory. Each base or target-specific task is a separate group. Deplens reads literal `libraries[].pypi.package` and `libraries[].maven.coordinates` values. Select one output format per command with `--generate python-requirements` or `--generate maven-pom`. Maven outputs are independent sibling directories ending in `.generated-maven`, each containing a standard `pom.xml`; supported `groupId:artifactId` exclusions are preserved. There is no aggregator POM.
+Databricks bundle `.yaml` and `.yml` files are detected by their `resources.jobs.*.tasks` content, regardless of the filename or directory. Each base or target-specific task is a separate group. Generated names include the base or target scope, job key, and task key. Deplens reads literal `libraries[].pypi.package` and `libraries[].maven.coordinates` values. Select one output format per command with `--generate python-requirements` or `--generate maven-pom`. Maven outputs are independent sibling directories ending in `.generated-maven`, each containing a standard `pom.xml`; supported `groupId:artifactId` exclusions are preserved. There is no aggregator POM.
 
 Invalid Python declarations block only Python generation, and invalid Maven declarations block only Maven generation. Git, wheel, URL or path, custom repository, variable, requirements-file, JAR/path, and malformed declarations are reported. The scanner does not follow bundle includes, resolve variables, or merge base and target settings. Each output describes only the declarations in that source, task, and scope, not a complete deployed environment.
 
@@ -221,13 +221,13 @@ config/anything.yaml [manifest · 2 dependencies]
 
 $ deplens --generate python-requirements bundle-root
 Generated 2 requirements files:
-  config/anything.yaml (ingest) -> config/anything.yaml-ingest-at-resources.jobs.analytics.tasks-0.generated-requirements.txt
-  config/anything.yaml (ingest) -> config/anything.yaml-ingest-at-targets.production.resources.jobs.analytics.tasks-0.generated-requirements.txt
+  config/anything.yaml (base-analytics-ingest) -> config/anything.yaml-base-analytics-ingest.generated-requirements.txt
+  config/anything.yaml (target-production-analytics-ingest) -> config/anything.yaml-target-production-analytics-ingest.generated-requirements.txt
 
 $ deplens --generate maven-pom bundle-root
 Generated 2 Maven POM files:
-  config/anything.yaml (ingest) -> config/anything.yaml-ingest-at-resources.jobs.analytics.tasks-0.generated-maven/pom.xml
-  config/anything.yaml (ingest) -> config/anything.yaml-ingest-at-targets.production.resources.jobs.analytics.tasks-0.generated-maven/pom.xml
+  config/anything.yaml (base-analytics-ingest) -> config/anything.yaml-base-analytics-ingest.generated-maven/pom.xml
+  config/anything.yaml (target-production-analytics-ingest) -> config/anything.yaml-target-production-analytics-ingest.generated-maven/pom.xml
 ```
 
 For example, an ordinary scan of two TypeScript Glue jobs reports one source:

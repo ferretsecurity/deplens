@@ -43,11 +43,16 @@ targets:
 		t.Fatalf("groups = %+v", result.Groups)
 	}
 	states := map[string]DependencyGroupState{}
+	names := map[string]string{}
 	for _, group := range result.Groups {
 		states[group.Location] = group.State
+		names[group.Location] = group.Name
 	}
 	if states[".resources.jobs.first.tasks[1]"] != GroupEmpty || states[".resources.jobs.first.tasks[2]"] != GroupMissing {
 		t.Fatalf("group states = %+v", states)
+	}
+	if names[".resources.jobs.first.tasks[0]"] != "base-first-shared" || names[".targets.dev.resources.jobs.second.tasks[0]"] != "target-dev-second-shared" {
+		t.Fatalf("group names = %+v", names)
 	}
 }
 
@@ -77,11 +82,65 @@ targets: []
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !result.Recognized || result.Analysis.Extraction != ExtractionFailed || result.Analysis.Presence != PresenceAbsent {
+	if !result.Recognized || result.Analysis != (SourceAnalysis{Presence: PresenceUnknown, Extraction: ExtractionFailed}) {
 		t.Fatalf("result = %+v", result)
 	}
 	if len(result.Diagnostics) != 1 || !strings.Contains(result.Diagnostics[0].Message, ".resources.jobs.first.tasks") || !strings.Contains(result.Diagnostics[0].Message, ".targets") {
 		t.Fatalf("diagnostics = %+v", result.Diagnostics)
+	}
+}
+
+func TestDatabricksBundleAnalyzerReportsMalformedJobsAndTargets(t *testing.T) {
+	for name, content := range map[string]string{
+		"job":    "resources:\n  jobs:\n    broken: not-a-map\n",
+		"target": "targets:\n  dev: not-a-map\n",
+	} {
+		t.Run(name, func(t *testing.T) {
+			result, err := (databricksBundleAnalyzer{}).Analyze("bundle.yml", []byte(content))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !result.Recognized || result.Analysis != (SourceAnalysis{Presence: PresenceUnknown, Extraction: ExtractionFailed}) {
+				t.Fatalf("result = %+v", result)
+			}
+			if len(result.Diagnostics) != 1 || !strings.Contains(result.Diagnostics[0].Message, "must be a mapping") {
+				t.Fatalf("diagnostics = %+v", result.Diagnostics)
+			}
+		})
+	}
+}
+
+func TestDatabricksBundleScanUsesValidAnalysisPairs(t *testing.T) {
+	ruleset, err := LoadDefaultRules()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, tc := range map[string]struct {
+		content  string
+		analysis SourceAnalysis
+	}{
+		"total failure": {
+			content:  "resources:\n  jobs:\n    broken: not-a-map\n",
+			analysis: SourceAnalysis{Presence: PresenceUnknown, Extraction: ExtractionFailed},
+		},
+		"partial extraction": {
+			content:  "resources:\n  jobs:\n    usable:\n      tasks:\n        - task_key: task\n          libraries:\n            - pypi: {package: requests}\n    broken: not-a-map\n",
+			analysis: SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionPartial},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			root := t.TempDir()
+			if err := os.WriteFile(filepath.Join(root, "bundle.yml"), []byte(tc.content), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			result, err := Scan(root, nil, ruleset)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(result.Sources) != 1 || result.Sources[0].Analysis != tc.analysis {
+				t.Fatalf("sources = %+v", result.Sources)
+			}
+		})
 	}
 }
 
@@ -160,8 +219,8 @@ func TestDatabricksBundleBuiltInRuleScansAndGeneratesSeparateFiles(t *testing.T)
 			t.Errorf("unexpected %s contents: %q", generated, body)
 		}
 	}
-	if result.Generation.Paths[0] == result.Generation.Paths[1] || !strings.Contains(result.Generation.Paths[0], "at-") || !strings.Contains(result.Generation.Paths[1], "at-") {
-		t.Fatalf("repeated task names were not disambiguated: %v", result.Generation.Paths)
+	if result.Generation.Paths[0] == result.Generation.Paths[1] || !strings.Contains(result.Generation.Paths[0], "base-analytics-ingest") || !strings.Contains(result.Generation.Paths[1], "target-production-analytics-ingest") {
+		t.Fatalf("generated paths do not identify scope, job, and task: %v", result.Generation.Paths)
 	}
 }
 
