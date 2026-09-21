@@ -84,6 +84,46 @@ new CfnJob(this, "legacy", { defaultArguments: {"--job-language": "python", "--a
 	}
 }
 
+func TestVendorCIExampleKeepsDocumentedPathsAndZeroOutput(t *testing.T) {
+	project := t.TempDir()
+	example := filepath.Join("..", "..", "examples", "vendor-ci")
+	for _, name := range []string{"jobs.py", "jobs.ts", "workflow.yaml"} {
+		content, err := os.ReadFile(filepath.Join(example, name))
+		if err != nil {
+			t.Fatalf("read example %s: %v", name, err)
+		}
+		writeFile(t, filepath.Join(project, name), string(content))
+	}
+
+	var out, stderr bytes.Buffer
+	code := run([]string{"--extend-rules", filepath.Join(example, "rules.yaml"), "--generate", "python-requirements", "--json", project}, &out, &stderr)
+	if code != 0 {
+		t.Fatalf("exit=%d stderr=%s", code, stderr.String())
+	}
+	var result analyze.ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	wantPaths := []string{
+		"jobs.py-python-current.generated-requirements.txt",
+		"jobs.py-python-legacy.generated-requirements.txt",
+		"jobs.ts-typescript-current.generated-requirements.txt",
+		"jobs.ts-typescript-legacy.generated-requirements.txt",
+		"workflow.yaml-current.generated-requirements.txt",
+		"workflow.yaml-legacy.generated-requirements.txt",
+	}
+	if !slices.Equal(result.Generation.Paths, wantPaths) {
+		t.Fatalf("generated paths: %v, want %v", result.Generation.Paths, wantPaths)
+	}
+	statuses := map[string]string{}
+	for _, outcome := range result.Generation.Outcomes {
+		statuses[outcome.Group] = outcome.Status
+	}
+	if statuses["empty"] != "empty" || statuses["missing"] != "missing" {
+		t.Fatalf("zero-output statuses: %v", statuses)
+	}
+}
+
 func TestTypeScriptGlueGenerationUsesLocationForDuplicateAndMissingIDs(t *testing.T) {
 	project := t.TempDir()
 	writeFile(t, filepath.Join(project, "jobs.ts"), `import * as glue from "aws-cdk-lib/aws-glue";
