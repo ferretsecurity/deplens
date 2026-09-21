@@ -1,0 +1,10 @@
+workflow groups:
+  daily:
+    python:
+      dependencies:
+        - paramiko
+        - pandas==1.4.4
+  legacy:
+    python:
+      dependencies:
+        - pandas<1

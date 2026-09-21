@@ -2,16 +2,30 @@ package analyze
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 
+	"github.com/itchyny/gojq"
 	"gopkg.in/yaml.v3"
 )
 
 type yamlMatcherConfig struct {
-	Query     string   `yaml:"query"`
-	Exists    string   `yaml:"exists"`
-	ExistsAny []string `yaml:"exists-any"`
+	Query     string            `yaml:"query"`
+	Exists    string            `yaml:"exists"`
+	ExistsAny []string          `yaml:"exists-any"`
+	Groups    *yamlGroupsConfig `yaml:"groups"`
 }
+
+type yamlGroupsConfig struct {
+	Query             string `yaml:"query"`
+	NameQuery         string `yaml:"name-query"`
+	DependenciesQuery string `yaml:"dependencies-query"`
+}
+
+type yamlGroupsParser struct{ pathCode, nameCode, dependenciesCode *gojq.Code }
+
+var jqIdentifier = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
 type yamlPathSegment struct {
 	key    string
@@ -41,11 +55,17 @@ func newYAMLQueryParser(raw yamlMatcherConfig) (sourceAnalyzer, error) {
 	if len(raw.ExistsAny) > 0 {
 		modeCount++
 	}
+	if raw.Groups != nil {
+		modeCount++
+	}
 	if modeCount > 1 {
-		return nil, fmt.Errorf("yaml.query, yaml.exists, and yaml.exists-any are mutually exclusive")
+		return nil, fmt.Errorf("yaml.query, yaml.exists, yaml.exists-any, and yaml.groups are mutually exclusive")
 	}
 	if modeCount == 0 {
-		return nil, fmt.Errorf("yaml.query, yaml.exists, or yaml.exists-any: required")
+		return nil, fmt.Errorf("yaml.query, yaml.exists, yaml.exists-any, or yaml.groups: required")
+	}
+	if raw.Groups != nil {
+		return newYAMLGroupsParser(*raw.Groups)
 	}
 
 	if raw.Query != "" {
@@ -73,6 +93,200 @@ func newYAMLQueryParser(raw yamlMatcherConfig) (sourceAnalyzer, error) {
 		return nil, err
 	}
 	return yamlExistsParser{segments: segments}, nil
+}
+
+func newYAMLGroupsParser(raw yamlGroupsConfig) (sourceAnalyzer, error) {
+	if raw.Query == "" || raw.NameQuery == "" || raw.DependenciesQuery == "" {
+		return nil, fmt.Errorf("yaml.groups.query, name-query, and dependencies-query are required")
+	}
+	compile := func(label, query string, variables ...string) (*gojq.Code, error) {
+		parsed, err := gojq.Parse(query)
+		if err != nil {
+			return nil, fmt.Errorf("yaml.groups.%s: %w", label, err)
+		}
+		code, err := gojq.Compile(parsed, gojq.WithVariables(variables))
+		if err != nil {
+			return nil, fmt.Errorf("yaml.groups.%s: %w", label, err)
+		}
+		return code, nil
+	}
+	pathCode, err := compile("query", "path("+raw.Query+")")
+	if err != nil {
+		return nil, err
+	}
+	nameCode, err := compile("name-query", raw.NameQuery, "$key")
+	if err != nil {
+		return nil, err
+	}
+	depsCode, err := compile("dependencies-query", raw.DependenciesQuery, "$key")
+	if err != nil {
+		return nil, err
+	}
+	return yamlGroupsParser{pathCode, nameCode, depsCode}, nil
+}
+
+func (p yamlGroupsParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
+	var root any
+	if err := yaml.Unmarshal(content, &root); err != nil {
+		return sourceAnalyzerResult{}, fmt.Errorf("parse yaml file %q: %w", path, err)
+	}
+	paths, err := jqValues(p.pathCode, root)
+	if err != nil {
+		return sourceAnalyzerResult{}, fmt.Errorf("select yaml groups in %q: %w", path, err)
+	}
+	if len(paths) == 0 {
+		return sourceAnalyzerResult{}, nil
+	}
+	groups := make([]DependencyGroup, 0, len(paths))
+	deps := make([]DependencyReference, 0)
+	seenPaths := map[string]struct{}{}
+	for _, rawPath := range paths {
+		segments, ok := rawPath.([]any)
+		if !ok {
+			return sourceAnalyzerResult{}, fmt.Errorf("select yaml groups in %q: query did not select source nodes", path)
+		}
+		node, ok := yamlNodeAt(root, segments)
+		if !ok {
+			return sourceAnalyzerResult{}, fmt.Errorf("select yaml groups in %q: query transformed a group", path)
+		}
+		location := jqPath(segments)
+		if _, exists := seenPaths[location]; exists {
+			return sourceAnalyzerResult{}, fmt.Errorf("select yaml groups in %q: query selected %s more than once", path, location)
+		}
+		seenPaths[location] = struct{}{}
+		var key any
+		if len(segments) > 0 {
+			if mappingKey, ok := segments[len(segments)-1].(string); ok {
+				key = mappingKey
+			}
+		}
+		names, err := jqValuesWithVariables(p.nameCode, node, key)
+		if err != nil {
+			return sourceAnalyzerResult{}, fmt.Errorf("group %s in %q name: %w", location, path, err)
+		}
+		if len(names) != 1 {
+			return sourceAnalyzerResult{}, fmt.Errorf("group %s in %q: name-query must produce one value", location, path)
+		}
+		var name string
+		if names[0] != nil {
+			var ok bool
+			name, ok = names[0].(string)
+			if !ok {
+				return sourceAnalyzerResult{}, fmt.Errorf("group %s in %q: name-query must produce a string or null, got %T", location, path, names[0])
+			}
+		}
+		values, err := jqValuesWithVariables(p.dependenciesCode, node, key)
+		if err != nil {
+			return sourceAnalyzerResult{}, fmt.Errorf("group %q at %s in %q dependencies: %w", name, location, path, err)
+		}
+		group := DependencyGroup{Name: name, Location: location}
+		if len(values) == 0 || (len(values) == 1 && values[0] == nil) {
+			group.State = GroupMissing
+			groups = append(groups, group)
+			continue
+		}
+		if len(values) != 1 {
+			return sourceAnalyzerResult{}, fmt.Errorf("group %q at %s in %q: dependencies-query must produce one list", name, location, path)
+		}
+		items, ok := values[0].([]any)
+		if !ok {
+			return sourceAnalyzerResult{}, fmt.Errorf("group %q at %s in %q: dependencies must be a list", name, location, path)
+		}
+		if len(items) == 0 {
+			group.State = GroupEmpty
+			groups = append(groups, group)
+			continue
+		}
+		group.State = GroupReady
+		for i, item := range items {
+			spec, ok := item.(string)
+			if !ok {
+				return sourceAnalyzerResult{}, fmt.Errorf("group %q at %s in %q: dependency %d must be a string", name, location, path, i)
+			}
+			dep, err := parsePythonRequirement(spec)
+			if err != nil {
+				return sourceAnalyzerResult{}, fmt.Errorf("group %q at %s in %q: dependency %q: %w", name, location, path, spec, err)
+			}
+			dep.SourceGroup = name
+			group.Dependencies = append(group.Dependencies, dep)
+			deps = append(deps, dep)
+		}
+		groups = append(groups, group)
+	}
+	analysis := SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}
+	if len(deps) > 0 {
+		analysis.Presence = PresencePresent
+	}
+	return sourceAnalyzerResult{Recognized: true, Analysis: analysis, Dependencies: deps, Groups: groups}, nil
+}
+
+func jqValues(code *gojq.Code, input any) ([]any, error) {
+	return jqValuesWithVariables(code, input)
+}
+
+func jqValuesWithVariables(code *gojq.Code, input any, variables ...any) ([]any, error) {
+	var out []any
+	iter := code.Run(input, variables...)
+	for {
+		v, ok := iter.Next()
+		if !ok {
+			break
+		}
+		if err, ok := v.(error); ok {
+			return nil, err
+		}
+		out = append(out, v)
+	}
+	return out, nil
+}
+
+func yamlNodeAt(root any, path []any) (any, bool) {
+	current := root
+	for _, segment := range path {
+		switch s := segment.(type) {
+		case string:
+			m, ok := asStringMap(current)
+			if !ok {
+				return nil, false
+			}
+			current, ok = m[s]
+			if !ok {
+				return nil, false
+			}
+		case int:
+			a, ok := current.([]any)
+			if !ok || s < 0 || s >= len(a) {
+				return nil, false
+			}
+			current = a[s]
+		default:
+			return nil, false
+		}
+	}
+	return current, true
+}
+
+func jqPath(path []any) string {
+	var b strings.Builder
+	b.WriteByte('.')
+	for _, s := range path {
+		switch v := s.(type) {
+		case string:
+			if jqIdentifier.MatchString(v) {
+				if b.Len() > 1 {
+					b.WriteByte('.')
+				}
+				b.WriteString(v)
+			} else {
+				b.WriteByte('[')
+				b.WriteString(strconv.Quote(v))
+				b.WriteByte(']')
+			}
+		case int:
+			fmt.Fprintf(&b, "[%d]", v)
+		}
+	}
+	return b.String()
 }
 
 func parseYAMLPath(raw string, fieldName string) ([]yamlPathSegment, error) {

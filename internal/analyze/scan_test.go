@@ -2726,7 +2726,7 @@ new GlueJob(this, "Job", {
 	}
 }
 
-func TestScanDoesNotMatchTypeScriptWithoutAdditionalModules(t *testing.T) {
+func TestScanRetainsTypeScriptGlueJobWithoutAdditionalModules(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()
 	mustWriteFile(t, filepath.Join(root, "job.ts"), `
@@ -2743,8 +2743,12 @@ new glue.CfnJob(this, "Job", {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Sources) != 0 {
-		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected one dependency source, got %+v", result.Sources)
+	}
+	source := result.Sources[0]
+	if source.Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) || len(source.Groups) != 1 || source.Groups[0].State != GroupMissing {
+		t.Fatalf("unexpected missing declaration result: %+v", source)
 	}
 }
 
@@ -2870,7 +2874,27 @@ func TestScanMatchesTypeScriptFixtureFromTestdata(t *testing.T) {
 	}
 }
 
-func TestScanDoesNotMatchTypeScriptNegativeFixturesFromTestdata(t *testing.T) {
+func TestScanExtractsEveryTypeScriptGlueJobFromFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := filepath.Join("..", "..", "testdata", "typescript", "glue-cfnjob-multiple")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
+	}
+	source := result.Sources[0]
+	if got, want := dependencyNames(source.Dependencies), []string{"pandas==1.4.4", "paramiko", "pandas==0.25.3"}; !slices.Equal(got, want) {
+		t.Fatalf("dependencies: got %v want %v", got, want)
+	}
+	if len(source.Groups) != 2 || source.Groups[0].Name != "daily" || source.Groups[1].Name != "legacy" {
+		t.Fatalf("groups: %+v", source.Groups)
+	}
+}
+
+func TestScanRetainsTypeScriptMissingDeclarationFixtureFromTestdata(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	fixtures := []string{
 		filepath.Join("..", "..", "testdata", "typescript", "glue-cfnjob-no-modules"),
@@ -2881,8 +2905,8 @@ func TestScanDoesNotMatchTypeScriptNegativeFixturesFromTestdata(t *testing.T) {
 		if err != nil {
 			t.Fatalf("scan failed for %s: %v", root, err)
 		}
-		if len(result.Sources) != 0 {
-			t.Fatalf("expected no dependency sources for %s, got %+v", root, result.Sources)
+		if len(result.Sources) != 1 || len(result.Sources[0].Groups) != 1 || result.Sources[0].Groups[0].State != GroupMissing {
+			t.Fatalf("expected a missing dependency group for %s, got %+v", root, result.Sources)
 		}
 	}
 }
@@ -3053,6 +3077,32 @@ func TestScanMatchesPythonFixtureFromTestdata(t *testing.T) {
 	}
 	if got := dependencyNames(result.Sources[0].Dependencies); !slices.Equal(got, []string{"pandas==2.2.1"}) {
 		t.Fatalf("unexpected dependencies: %+v", got)
+	}
+}
+
+func TestScanCollectsEveryPythonGlueJobAsIndependentGroup(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := filepath.Join("..", "..", "testdata", "python", "glue-cfnjob-multiple")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
+	}
+	source := result.Sources[0]
+	if len(source.Groups) != 5 {
+		t.Fatalf("expected 5 independent groups, got %+v", source.Groups)
+	}
+	if source.Groups[0].Name != "daily/job" || source.Groups[1].Name != "daily job" || source.Groups[2].Name != "" || source.Groups[3].Name != "duplicate" || source.Groups[4].Name != "duplicate" {
+		t.Fatalf("unexpected group identities: %+v", source.Groups)
+	}
+	if got := dependencyNames(source.Groups[0].Dependencies); !slices.Equal(got, []string{"requests>=2.31", "urllib3<3"}) {
+		t.Fatalf("unexpected first group: %v", got)
+	}
+	if source.Groups[0].Location == source.Groups[1].Location || !strings.HasPrefix(source.Groups[0].Location, "line-") {
+		t.Fatalf("groups do not have stable source locations: %+v", source.Groups)
 	}
 }
 

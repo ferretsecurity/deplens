@@ -41,6 +41,8 @@ The path is optional and defaults to the current directory. Common options are:
 --disable-check ID             Exclude one policy check ID, repeatable
 --ignore dist,build,vendor     Replace the default ignored directories
 --show-without-dependencies    Include sources confirmed to contain no dependencies
+--generate python-requirements Generate requirements from eligible grouped sources
+--overwrite-generated          Replace intended generated files after full preflight
 ```
 
 Run `deplens --help` to see the complete command usage.
@@ -124,6 +126,109 @@ Disabled checks produce no runs or findings and do not change detection. Explici
 Prerequisites include manifest discovery, accepted lockfile alternatives, package-manager evidence, and workspace ownership. Skips are conservative: removing an accepted alternative or competing manager detector skips the affected evaluator even if another lockfile or custom replacement survives. Unrelated evaluators continue. CODEOWNERS still checks surviving sources; when explicit exclusions leave no sources, it reports a skip. Missing detectors in a custom base alone do not cause exclusion skips.
 
 Removing every detector or check is valid. JSON retains empty arrays and the existing schema. Findings and skips keep a successful exit status; configuration errors fail before scanning.
+
+### Generate Python requirements
+
+Generation is opt-in and works without a vendor preset. The built-in Python and TypeScript CDK Glue detectors are eligible. Custom YAML rules can opt in with `generate: python-requirements` and grouped extraction:
+
+```yaml
+rules:
+  - id: company-workflows
+    package-type: pypi
+    form: automation-definition
+    roles: [declaration, constraint]
+    filename-regex: '^workflow\.yaml$'
+    generate: python-requirements
+    analyzer:
+      type: yaml
+      groups:
+        query: '.workflows[]'
+        name-query: '.name // $key'
+        dependencies-query: '.configuration.python.dependencies'
+```
+
+The group query uses embedded jq and may select a root or nested list or mapping, including quoted keys and filters. It must select existing nodes from the source document; construction, merging, and reshaping are rejected. The name and dependency queries run relative to each selected group. For mapping values, `$key` contains the selected mapping key, so `name-query: '$key'` can name groups without a separate field.
+
+Unique safe names are used unchanged. Unsafe filename characters are converted to `-`. Missing names, duplicate names, and names that collide after conversion receive a deterministic source-location suffix. Reports retain the original name. Generated files stay beside their source, and groups selected through filters keep their original source locations rather than their result positions.
+
+Run generation with:
+
+```bash
+deplens --extend-rules company.yaml --generate python-requirements .
+```
+
+In CI, add `--overwrite-generated` when the workspace may contain output from an earlier run:
+
+```bash
+deplens --extend-rules company.yaml --generate python-requirements --overwrite-generated .
+```
+
+Without the overwrite flag, a rerun refuses the existing destination:
+
+```text
+$ deplens --extend-rules company.yaml --generate python-requirements .
+error: generated destination already exists: workflow.yaml-daily.generated-requirements.txt
+```
+
+The explicit rerun replaces that planned file and reports the result:
+
+```text
+$ deplens --extend-rules company.yaml --generate python-requirements --overwrite-generated .
+Generated 1 requirements file:
+  workflow.yaml (daily) -> workflow.yaml-daily.generated-requirements.txt
+```
+
+Without `--generate`, the same command only scans. With generation enabled, a `daily` group in `workflow.yaml` produces `workflow.yaml-daily.generated-requirements.txt` beside the source. Each group gets a separate file. Names, version constraints, extras, and environment markers retain their declaration text. Local paths, URLs, Git requirements, pip options, included files, and malformed requirements fail generation.
+
+Generation validates every selected source and destination before it writes. Missing dependency fields and empty lists are reported as separate successful skips. Existing destinations cause an error and remain unchanged unless `--overwrite-generated` is set. Overwrite replaces only the files planned by the current run. It does not follow destination symlinks, delete stale outputs, or provide a cross-file transaction if a filesystem write fails after writing starts. Generated paths in JSON are relative to the absolute scan `root`, so CI can resolve them with `root + path`. Poetry, uv, built-in detectors without explicit eligibility, disabled rules, and previously generated requirements files do not generate output.
+
+For per-group Socket and Snyk jobs driven by those JSON paths, including zero-output handling and separate Python environments, see [Scan generated Python requirements in CI](docs/generated-requirements-vendor-ci.md). Live vendor acceptance status and exact fixtures are recorded there too.
+
+The built-in `typescript.cdk.aws_glue_job.python` detector is also eligible. Every statically readable Glue `CfnJob` is exported separately, using its construct ID when available. Duplicate or unreadable IDs use the same location-based disambiguation as YAML groups. If a selected job's properties or Python module declaration cannot be evaluated statically, generation fails before writing any planned file; deplens never executes CDK code.
+
+For example, an ordinary scan of two TypeScript Glue jobs reports one source:
+
+```text
+jobs.ts [source-code · 3 dependencies]
+```
+
+Explicit generation adds one file per job without a vendor preset:
+
+```text
+Generated 2 requirements files:
+  jobs.ts (daily) -> jobs.ts-daily.generated-requirements.txt
+  jobs.ts (legacy) -> jobs.ts-legacy.generated-requirements.txt
+```
+
+Python CDK sources also produce one file per matching `aws_glue.CfnJob`. Deplens uses the construct ID as the group name when it is a static string and falls back to the call location when it is not. Aliases, multiline calls, reused argument dictionaries, duplicate IDs, and incompatible requirements remain separate. If any selected job cannot be read completely, generation fails before writing files. Deplens parses source text only. It does not import or execute Python code.
+
+For example, two constructs named `daily` and `legacy` in `jobs.py` change the output from a normal scan with no file writes:
+
+```text
+jobs.py [source-code · 2 dependencies]
+```
+
+to an explicit generation report:
+
+```text
+Generated 2 requirements files:
+  jobs.py (daily) -> jobs.py-daily.generated-requirements.txt
+  jobs.py (legacy) -> jobs.py-legacy.generated-requirements.txt
+```
+
+Example output changes from an ordinary scan:
+
+```text
+workflow.yaml [automation-definition · 2 dependencies]
+```
+
+to an explicit generation report:
+
+```text
+Generated 2 requirements files:
+  workflow.yaml (daily) -> workflow.yaml-daily.generated-requirements.txt
+  workflow.yaml (legacy) -> workflow.yaml-legacy.generated-requirements.txt
+```
 
 ### Vendor coverage presets
 

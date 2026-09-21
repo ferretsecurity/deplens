@@ -3,6 +3,7 @@ package analyze
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 	"unicode"
 )
@@ -273,9 +274,14 @@ func (m pythonCDKConstructMatcher) Analyze(path string, content []byte) (sourceA
 	}
 
 	callStarts := pythonConstructorCallStarts(source, imports, m.construct)
+	groups := make([]DependencyGroup, 0, len(callStarts))
+	dependencies := make([]DependencyReference, 0)
+	var incomplete []string
 	for _, start := range callStarts {
+		location := pythonSourceLocation(source, start)
 		args, end, ok := pythonCallArguments(source, start)
 		if !ok {
+			incomplete = append(incomplete, fmt.Sprintf("job at %s has unreadable arguments", location))
 			continue
 		}
 
@@ -283,9 +289,18 @@ func (m pythonCDKConstructMatcher) Analyze(path string, content []byte) (sourceA
 		if !ok {
 			continue
 		}
+		name := ""
+		if identity, ok := pythonPositionalArgumentValue(args, 1); ok {
+			name, _ = resolvePythonStringValue(source, identity, start)
+		}
+		context := fmt.Sprintf("job %q at %s", name, location)
+		if name == "" {
+			context = fmt.Sprintf("job at %s", location)
+		}
 
 		objectValue, ok := resolvePythonObjectValue(source, kwargsValue, start)
 		if !ok {
+			incomplete = append(incomplete, context+" has unreadable default_arguments")
 			continue
 		}
 
@@ -305,38 +320,77 @@ func (m pythonCDKConstructMatcher) Analyze(path string, content []byte) (sourceA
 			current = resolved
 		}
 		if !valid {
+			incomplete = append(incomplete, context+" has unreadable nested arguments")
 			continue
 		}
 
-		if !m.matchesConditions(source, current, end) {
+		matched, readable := m.matchesConditions(source, current, end)
+		if !readable {
+			incomplete = append(incomplete, context+" has an unreadable selection condition")
+			continue
+		}
+		if !matched {
 			continue
 		}
 
 		if m.extract == nil {
-			return sourceAnalyzerResult{Recognized: true, Analysis: identifiedAnalysis()}, nil
+			groups = append(groups, DependencyGroup{Name: name, Location: location, State: GroupMissing})
+			continue
 		}
 
 		valueExpr, ok := pythonDictValue(source, current, m.extract.key, end)
 		if !ok {
+			incomplete = append(incomplete, context+" is missing the selected dependency declaration")
 			continue
 		}
 		value, ok := resolvePythonStringValue(source, valueExpr, end)
 		if !ok {
+			incomplete = append(incomplete, context+" has an unreadable dependency declaration")
 			continue
 		}
 
-		dependencies := splitExtractedValue(value, m.extract.split)
-		if len(dependencies) == 0 {
+		rawDependencies := splitExtractedValue(value, m.extract.split)
+		group := DependencyGroup{Name: name, Location: location, State: GroupEmpty}
+		for _, raw := range rawDependencies {
+			dependency, err := parsePythonRequirement(raw)
+			if err != nil {
+				incomplete = append(incomplete, fmt.Sprintf("%s has invalid dependency %q: %v", context, raw, err))
+				continue
+			}
+			dependency.SourceGroup = name
+			group.Dependencies = append(group.Dependencies, dependency)
+		}
+		if len(group.Dependencies) == 0 && len(rawDependencies) > 0 {
 			continue
 		}
-		return sourceAnalyzerResult{
-			Dependencies: dependenciesFromStrings(dependencies),
-			Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
-			Recognized:   true,
-		}, nil
+		if len(group.Dependencies) > 0 {
+			group.State = GroupReady
+			dependencies = append(dependencies, group.Dependencies...)
+		}
+		groups = append(groups, group)
 	}
 
-	return sourceAnalyzerResult{}, nil
+	if len(incomplete) > 0 {
+		severity := DiagnosticError
+		extraction := ExtractionFailed
+		presence := PresenceUnknown
+		if len(dependencies) > 0 {
+			severity = DiagnosticWarning
+			extraction = ExtractionPartial
+			presence = PresencePresent
+		}
+		return sourceAnalyzerResult{
+			Recognized:   true,
+			Analysis:     SourceAnalysis{Presence: presence, Extraction: extraction},
+			Dependencies: dependencies,
+			Groups:       groups,
+			Diagnostics:  []Diagnostic{{Severity: severity, Code: "python-cdk-incomplete", Message: strings.Join(incomplete, "; ")}},
+		}, nil
+	}
+	if len(groups) == 0 {
+		return sourceAnalyzerResult{}, nil
+	}
+	return sourceAnalyzerResult{Recognized: true, Analysis: completeAnalysis(dependencies), Dependencies: dependencies, Groups: groups}, nil
 }
 
 func (m pythonCallMatcher) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
@@ -400,21 +454,24 @@ func (m pythonCallMatcher) extractDependencies(args string) []string {
 	return dependencies
 }
 
-func (m pythonCDKConstructMatcher) matchesConditions(source string, objectExpr string, before int) bool {
+func (m pythonCDKConstructMatcher) matchesConditions(source string, objectExpr string, before int) (bool, bool) {
 	for _, cond := range m.conditions {
 		valueExpr, ok := pythonDictValue(source, objectExpr, cond.key, before)
 		if !ok {
-			return false
+			return false, true
 		}
 		if cond.present {
 			continue
 		}
 		value, ok := resolvePythonStringValue(source, valueExpr, before)
-		if !ok || value != *cond.equals {
-			return false
+		if !ok {
+			return false, false
+		}
+		if value != *cond.equals {
+			return false, true
 		}
 	}
-	return true
+	return true, true
 }
 
 func (c pythonCallConditions) match(source string, args string, before int) bool {
@@ -551,6 +608,7 @@ func pythonConstructorCallStarts(source string, imports pythonImportTable, const
 		}
 	}
 
+	sort.Ints(starts)
 	return starts
 }
 
@@ -582,6 +640,33 @@ func pythonKeywordArgumentValue(args string, name string) (string, bool) {
 		return value, true
 	}
 	return "", false
+}
+
+func pythonPositionalArgumentValue(args string, index int) (string, bool) {
+	position := 0
+	for _, part := range splitTopLevel(args, ',') {
+		value := strings.TrimSpace(part)
+		if value == "" || topLevelAssignmentIndex(value) >= 0 {
+			continue
+		}
+		if position == index {
+			return value, true
+		}
+		position++
+	}
+	return "", false
+}
+
+func pythonSourceLocation(source string, offset int) string {
+	line, column := 1, 1
+	for index := 0; index < offset && index < len(source); index++ {
+		if source[index] == '\n' {
+			line, column = line+1, 1
+		} else {
+			column++
+		}
+	}
+	return fmt.Sprintf("line-%d-column-%d", line, column)
 }
 
 func resolvePythonObjectValue(source string, expr string, before int) (string, bool) {

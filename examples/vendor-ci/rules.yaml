@@ -1,0 +1,13 @@
+rules:
+  - id: vendor-ci-workflows
+    package-type: pypi
+    form: automation-definition
+    roles: [declaration, constraint]
+    filename-regex: '^workflow\.yaml$'
+    generate: python-requirements
+    analyzer:
+      type: yaml
+      groups:
+        query: '.workflows[]'
+        name-query: '.name'
+        dependencies-query: '.python.dependencies'

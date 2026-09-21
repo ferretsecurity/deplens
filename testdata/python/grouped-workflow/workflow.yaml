@@ -1,0 +1,12 @@
+workflows:
+  - name: daily
+    configuration:
+      python:
+        dependencies:
+          - paramiko
+          - pandas==1.4.4
+  - name: legacy
+    configuration:
+      python:
+        dependencies:
+          - pandas<1

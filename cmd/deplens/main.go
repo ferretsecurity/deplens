@@ -70,6 +70,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "error: %v\n", err)
 		return 1
 	}
+	if cfg.generate != "" {
+		if err := analyze.GeneratePythonRequirements(&result, cfg.overwriteGenerated); err != nil {
+			fmt.Fprintf(stderr, "error: %v\n", err)
+			return 1
+		}
+	}
 
 	var output []byte
 	if cfg.json {
@@ -105,6 +111,8 @@ type config struct {
 	ignoreDirs              []string
 	rulesPath               string
 	extendRulesPaths        []string
+	generate                string
+	overwriteGenerated      bool
 }
 
 func parseArgs(args []string) (config, string, error) {
@@ -131,6 +139,8 @@ func parseArgs(args []string) (config, string, error) {
 	}
 	fs.BoolVar(&cfg.json, "json", false, "emit machine-readable JSON output")
 	fs.BoolVar(&cfg.showWithoutDependencies, "show-without-dependencies", false, "include dependency sources confirmed to have no dependency references")
+	fs.StringVar(&cfg.generate, "generate", "", "generate dependency files (supported: python-requirements)")
+	fs.BoolVar(&cfg.overwriteGenerated, "overwrite-generated", false, "replace existing generated files after preflight succeeds")
 
 	var ignore string
 	fs.StringVar(&ignore, "ignore", "", "comma-separated directory names to skip")
@@ -156,6 +166,12 @@ func parseArgs(args []string) (config, string, error) {
 
 	if err := fs.Parse(args); err != nil {
 		return config{}, renderUsage(), err
+	}
+	if cfg.generate != "" && cfg.generate != "python-requirements" {
+		return config{}, renderUsage(), fmt.Errorf("unsupported generation format %q", cfg.generate)
+	}
+	if cfg.overwriteGenerated && cfg.generate == "" {
+		return config{}, renderUsage(), fmt.Errorf("--overwrite-generated requires --generate")
 	}
 
 	if ignore != "" {
