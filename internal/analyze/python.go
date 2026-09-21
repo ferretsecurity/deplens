@@ -334,7 +334,7 @@ func (m pythonCDKConstructMatcher) Analyze(path string, content []byte) (sourceA
 		}
 
 		if m.extract == nil {
-			groups = append(groups, DependencyGroup{Name: name, Location: location, State: "missing"})
+			groups = append(groups, DependencyGroup{Name: name, Location: location, State: GroupMissing})
 			continue
 		}
 
@@ -350,7 +350,7 @@ func (m pythonCDKConstructMatcher) Analyze(path string, content []byte) (sourceA
 		}
 
 		rawDependencies := splitExtractedValue(value, m.extract.split)
-		group := DependencyGroup{Name: name, Location: location, State: "empty"}
+		group := DependencyGroup{Name: name, Location: location, State: GroupEmpty}
 		for _, raw := range rawDependencies {
 			dependency, err := parsePythonRequirement(raw)
 			if err != nil {
@@ -364,7 +364,7 @@ func (m pythonCDKConstructMatcher) Analyze(path string, content []byte) (sourceA
 			continue
 		}
 		if len(group.Dependencies) > 0 {
-			group.State = "ready"
+			group.State = GroupReady
 			dependencies = append(dependencies, group.Dependencies...)
 		}
 		groups = append(groups, group)

@@ -21,6 +21,9 @@ type OriginKind string
 type DiagnosticSeverity string
 type FindingSeverity string
 type CheckRunStatus string
+type DependencyGroupState string
+type GenerationFormat string
+type GenerationOutcomeStatus string
 
 const (
 	PresenceUnknown DependencyPresence = "unknown"
@@ -44,6 +47,12 @@ const (
 	CheckCompleted CheckRunStatus = "completed"
 	CheckSkipped   CheckRunStatus = "skipped"
 	CheckFailed    CheckRunStatus = "failed"
+
+	GroupMissing DependencyGroupState = "missing"
+	GroupEmpty   DependencyGroupState = "empty"
+	GroupReady   DependencyGroupState = "ready"
+
+	GenerationPythonRequirements GenerationFormat = "python-requirements"
 
 	RelationshipDirect       Relationship = "direct"
 	RelationshipTransitive   Relationship = "transitive"
@@ -80,7 +89,7 @@ type DependencyGroup struct {
 	Name         string                `json:"name"`
 	Location     string                `json:"location"`
 	Dependencies []DependencyReference `json:"dependencies,omitempty"`
-	State        string                `json:"state"`
+	State        DependencyGroupState  `json:"state"`
 }
 
 type SourceAnalysis struct {
@@ -103,7 +112,7 @@ type DependencySourceResult struct {
 	Dependencies []DependencyReference `json:"dependencies,omitempty"`
 	Diagnostics  []Diagnostic          `json:"diagnostics,omitempty"`
 	Groups       []DependencyGroup     `json:"-"`
-	Generate     string                `json:"-"`
+	Generate     GenerationFormat      `json:"-"`
 	content      []byte
 }
 
@@ -144,14 +153,14 @@ type ScanResult struct {
 }
 
 type GenerationOutcome struct {
-	Source   string `json:"source"`
-	Group    string `json:"group"`
-	Location string `json:"location"`
-	Status   string `json:"status"`
-	Path     string `json:"path,omitempty"`
+	Source   string                  `json:"source"`
+	Group    string                  `json:"group"`
+	Location string                  `json:"location"`
+	Status   GenerationOutcomeStatus `json:"status"`
+	Path     string                  `json:"path,omitempty"`
 }
 type GenerationResult struct {
-	Format   string              `json:"format"`
+	Format   GenerationFormat    `json:"format"`
 	Paths    []string            `json:"paths"`
 	Outcomes []GenerationOutcome `json:"outcomes"`
 }

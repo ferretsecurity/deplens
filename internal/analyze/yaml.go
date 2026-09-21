@@ -181,7 +181,7 @@ func (p yamlGroupsParser) Analyze(path string, content []byte) (sourceAnalyzerRe
 		}
 		group := DependencyGroup{Name: name, Location: location}
 		if len(values) == 0 || (len(values) == 1 && values[0] == nil) {
-			group.State = "missing"
+			group.State = GroupMissing
 			groups = append(groups, group)
 			continue
 		}
@@ -193,11 +193,11 @@ func (p yamlGroupsParser) Analyze(path string, content []byte) (sourceAnalyzerRe
 			return sourceAnalyzerResult{}, fmt.Errorf("group %q at %s in %q: dependencies must be a list", name, location, path)
 		}
 		if len(items) == 0 {
-			group.State = "empty"
+			group.State = GroupEmpty
 			groups = append(groups, group)
 			continue
 		}
-		group.State = "ready"
+		group.State = GroupReady
 		for i, item := range items {
 			spec, ok := item.(string)
 			if !ok {

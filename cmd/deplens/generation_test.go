@@ -117,7 +117,7 @@ func TestVendorCIExampleKeepsDocumentedPathsAndZeroOutput(t *testing.T) {
 	}
 	statuses := map[string]string{}
 	for _, outcome := range result.Generation.Outcomes {
-		statuses[outcome.Group] = outcome.Status
+		statuses[outcome.Group] = string(outcome.Status)
 	}
 	if statuses["empty"] != "empty" || statuses["missing"] != "missing" {
 		t.Fatalf("zero-output statuses: %v", statuses)
@@ -160,6 +160,73 @@ new CfnJob(this, "unreadable", { defaultArguments: {"--job-language": "python", 
 	}
 	if _, err := os.Stat(filepath.Join(project, "jobs.ts-readable.generated-requirements.txt")); !os.IsNotExist(err) {
 		t.Fatalf("valid earlier job was written: %v", err)
+	}
+}
+
+func TestTypeScriptGlueMissingDependencyDeclarationIsAStructuredSkip(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "jobs.ts"), `import { CfnJob } from "aws-cdk-lib/aws-glue";
+new CfnJob(this, "missing", { defaultArguments: {"--job-language": "python"} });
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--json", "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("run failed: code=%d stderr=%s", code, stderr.String())
+	}
+	var result analyze.ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Generation.Outcomes) != 1 {
+		t.Fatalf("outcomes: %+v", result.Generation.Outcomes)
+	}
+	outcome := result.Generation.Outcomes[0]
+	if outcome.Group != "missing" || outcome.Location != "line-2-column-1" || outcome.Status != "missing" || outcome.Path != "" {
+		t.Fatalf("outcome: %+v", outcome)
+	}
+}
+
+func TestTypeScriptGlueUnreadableDependencyDeclarationKeepsJobContext(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "jobs.ts"), `import { CfnJob } from "aws-cdk-lib/aws-glue";
+new CfnJob(this, "dynamic", { defaultArguments: {"--job-language": "python", "--additional-python-modules": buildModules()} });
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--generate", "python-requirements", project}, &out, &stderr); code == 0 {
+		t.Fatal("generation succeeded")
+	}
+	for _, part := range []string{`job "dynamic"`, "line-2-column-1", `dependency declaration "--additional-python-modules" cannot be evaluated statically`} {
+		if !strings.Contains(stderr.String(), part) {
+			t.Fatalf("stderr does not contain %q: %s", part, stderr.String())
+		}
+	}
+}
+
+func TestGenerateRejectsMalformedPEP508MarkersBeforeWriting(t *testing.T) {
+	for _, marker := range []string{
+		`python_version >=`,
+		`python_version >= '3.10' and`,
+		`python_version '3.10'`,
+		`unknown_variable == 'x'`,
+		`(python_version >= '3.10'`,
+	} {
+		t.Run(marker, func(t *testing.T) {
+			dir := t.TempDir()
+			project := filepath.Join(dir, "project")
+			rules := filepath.Join(dir, "rules.yaml")
+			writeFile(t, rules, groupedRules)
+			writeFile(t, filepath.Join(project, "workflow-a.yaml"), "workflows: [{name: valid, configuration: {python: {dependencies: [paramiko]}}}]\n")
+			writeFile(t, filepath.Join(project, "workflow-z.yaml"), "workflows: [{name: invalid, configuration: {python: {dependencies: [\"requests; "+marker+"\"]}}}]\n")
+			var out, stderr bytes.Buffer
+			if code := run([]string{"--rules", rules, "--generate", "python-requirements", project}, &out, &stderr); code == 0 {
+				t.Fatal("generation succeeded")
+			}
+			if !strings.Contains(stderr.String(), "invalid environment marker") {
+				t.Fatalf("stderr: %s", stderr.String())
+			}
+			if _, err := os.Stat(filepath.Join(project, "workflow-a.yaml-valid.generated-requirements.txt")); !os.IsNotExist(err) {
+				t.Fatalf("preflight wrote valid destination: %v", err)
+			}
+		})
 	}
 }
 

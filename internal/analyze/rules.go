@@ -53,7 +53,7 @@ type detector struct {
 	FilenameRegexp *regexp.Regexp
 	PathGlob       string
 	Analyzer       sourceAnalyzer
-	Generate       string
+	Generate       GenerationFormat
 }
 
 type Ruleset struct {
@@ -335,7 +335,7 @@ func loadRulesDocument(source string, data []byte, extension bool) (Ruleset, err
 		if err != nil {
 			return Ruleset{}, fmt.Errorf("%s: %s.roles: %w", source, fieldPath, err)
 		}
-		if rawRule.Generate != "" && rawRule.Generate != "python-requirements" {
+		if rawRule.Generate != "" && GenerationFormat(rawRule.Generate) != GenerationPythonRequirements {
 			return Ruleset{}, fmt.Errorf("%s: %s.generate: invalid value %q", source, fieldPath, rawRule.Generate)
 		}
 
@@ -364,7 +364,7 @@ func loadRulesDocument(source string, data []byte, extension bool) (Ruleset, err
 			FilenameRegexp: compiled,
 			PathGlob:       rawRule.PathGlob,
 			Analyzer:       analyzer,
-			Generate:       rawRule.Generate,
+			Generate:       GenerationFormat(rawRule.Generate),
 		})
 	}
 

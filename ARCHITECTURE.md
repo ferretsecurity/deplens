@@ -22,6 +22,7 @@ internal/analyze/rules.go           strict rule schema, validation, and dispatch
 internal/analyze/parser_factory.go  nested analyzer configuration factory
 internal/analyze/default_rules.yaml embedded built-in detectors
 internal/analyze/findings.go        project ownership and check evaluators
+internal/analyze/generate.go        generation planning, preflight, and writes
 internal/analyze/*.go               analyzer implementations
 internal/render/render.go            human and JSON renderers
 testdata/                            integration fixtures
@@ -43,6 +44,7 @@ For each regular file under the scan root:
 10. Build ecosystem-specific project and workspace ownership from the immutable source set and normalized paths.
 11. Parse evaluator-specific policy inputs into repository facts.
 12. Evaluate configured checks in stable check-ID order, then sort check runs and findings by project root and check ID.
+13. When the caller requests generation, plan and validate every selected group before writing any output.
 
 Ignored directory names are skipped during traversal. Scanning does not access the network.
 
@@ -57,6 +59,15 @@ type DependencySourceResult struct {
     Analysis     SourceAnalysis
     Dependencies []DependencyReference
     Diagnostics  []Diagnostic
+    Groups       []DependencyGroup
+    Generate     GenerationFormat
+}
+
+type DependencyGroup struct {
+    Name         string
+    Location     string
+    Dependencies []DependencyReference
+    State        DependencyGroupState // missing, empty, or ready
 }
 
 type SourceAnalysis struct {
@@ -70,8 +81,11 @@ type ScanResult struct {
     Sources       []DependencySourceResult
     CheckRuns     []CheckRun
     Findings      []Finding
+    Generation    *GenerationResult
 }
 ```
+
+`Groups` and `Generate` are internal scan-to-generation contracts and are not serialized. A group represents one independently writable unit, such as a Glue job or one selected YAML node. `Location` is stable source context, not a result index. `missing` means the selected group has no dependency declaration, `empty` means it declares no dependencies, and `ready` means every dependency was parsed and can be written. An analyzer reports unreadable or malformed declarations through its normal partial or failed extraction result instead of a group state.
 
 All result collections are initialized as empty slices so JSON emits `[]`, not `null`, for an empty scan.
 
@@ -170,11 +184,19 @@ The evaluator layer remains offline and does not invoke package managers. A find
 
 Constructors validate analyzer-specific configuration before scanning starts. Runtime syntax errors identify the selected source and appear as structured diagnostics; they do not abort the entire directory walk.
 
+## Generation
+
+Generation is an optional phase after scanning and checks. A detector opts in with `generate: python-requirements`. The CLI currently accepts only the `python-requirements` format. It ignores sources without that opt-in and turns each `ready` group into one requirements file. `missing` and `empty` groups remain successful structured outcomes without paths.
+
+The generator performs a full preflight before its first write. It rejects partial or failed extraction, malformed Python requirements, destination collisions, paths outside the scan root, existing destinations unless overwrite is enabled, and non-regular overwrite targets. This means a validation error cannot leave files from earlier plans behind.
+
+Without overwrite, files are created with exclusive create semantics. With overwrite, each planned regular file is written to a temporary file in the destination directory and renamed over the old file. Writes are atomic per file, not across the whole generation set. The generator does not remove stale output and does not follow destination symlinks.
+
 ## Rendering
 
 Human rendering reads `SourceAnalysis` directly. It does not infer state from dependency count. Sources with absent presence are hidden by default and shown with `--show-without-dependencies`.
 
-JSON schema version 1 includes sources, check runs, and findings. Required source fields are detector, path, form, roles, and analysis. Empty dependencies and diagnostics are omitted. Human output renders findings after dependency sources. Findings do not alter the CLI's default successful exit status.
+JSON schema version 1 includes sources, check runs, findings, and an optional `generation` object. Required source fields are detector, path, form, roles, and analysis. Empty dependencies and diagnostics are omitted. `generation.format` identifies the requested format, `paths` contains root-relative written paths, and `outcomes` records every selected group with its source, name, location, status, and optional path. Both generation collections are empty arrays when no groups produce output. Human output renders findings after dependency sources and prints a generation report only when generation was requested. Findings and generation skips do not alter the CLI's successful exit status.
 
 ## Verification
 

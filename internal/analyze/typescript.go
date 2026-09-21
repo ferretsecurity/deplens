@@ -65,7 +65,7 @@ type typescriptConstructMatch struct {
 	name         string
 	location     string
 	dependencies []DependencyReference
-	state        string
+	state        DependencyGroupState
 	incomplete   string
 }
 
@@ -248,6 +248,9 @@ func (m typescriptCDKConstructMatcher) matchNewExpression(root *sitter.Node, nod
 	for _, cond := range m.conditions {
 		valueNode, ok := objectPropertyValue(objectNode, content, cond.key)
 		if !ok {
+			if cond.present && m.extract != nil && cond.key == m.extract.key {
+				continue
+			}
 			return typescriptConstructMatch{}
 		}
 		if cond.present {
@@ -265,13 +268,14 @@ func (m typescriptCDKConstructMatcher) matchNewExpression(root *sitter.Node, nod
 	}
 
 	if m.extract == nil {
-		result.state = "empty"
+		result.state = GroupEmpty
 		return result
 	}
 
 	valueNode, ok := objectPropertyValue(objectNode, content, m.extract.key)
 	if !ok {
-		return typescriptConstructMatch{}
+		result.state = GroupMissing
+		return result
 	}
 
 	value, ok := resolveTypeScriptStringValue(root, valueNode, content)
@@ -282,10 +286,10 @@ func (m typescriptCDKConstructMatcher) matchNewExpression(root *sitter.Node, nod
 
 	dependencies := splitExtractedValue(value, m.extract.split)
 	if len(dependencies) == 0 {
-		result.state = "empty"
+		result.state = GroupEmpty
 		return result
 	}
-	result.state = "ready"
+	result.state = GroupReady
 	for _, spec := range dependencies {
 		dependency, err := parsePythonRequirement(spec)
 		if err != nil {

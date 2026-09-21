@@ -16,10 +16,10 @@ type generationPlan struct {
 }
 
 func GeneratePythonRequirements(result *ScanResult, overwrite bool) error {
-	generation := &GenerationResult{Format: "python-requirements", Paths: []string{}, Outcomes: []GenerationOutcome{}}
+	generation := &GenerationResult{Format: GenerationPythonRequirements, Paths: []string{}, Outcomes: []GenerationOutcome{}}
 	plans := []generationPlan{}
 	for _, source := range result.Sources {
-		if source.Generate != "python-requirements" {
+		if source.Generate != GenerationPythonRequirements {
 			continue
 		}
 		if source.Analysis.Extraction == ExtractionFailed || source.Analysis.Extraction == ExtractionPartial || source.Analysis.Extraction == ExtractionUnsupported {
@@ -37,8 +37,8 @@ func GeneratePythonRequirements(result *ScanResult, overwrite bool) error {
 		components := generationGroupComponents(groups)
 		usedRelative := make(map[string]string, len(groups))
 		for index, group := range groups {
-			outcome := GenerationOutcome{Source: source.Path, Group: group.Name, Location: group.Location, Status: group.State}
-			if group.State != "ready" {
+			outcome := GenerationOutcome{Source: source.Path, Group: group.Name, Location: group.Location, Status: GenerationOutcomeStatus(group.State)}
+			if group.State != GroupReady {
 				generation.Outcomes = append(generation.Outcomes, outcome)
 				continue
 			}
