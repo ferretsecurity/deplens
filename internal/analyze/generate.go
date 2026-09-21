@@ -15,7 +15,7 @@ type generationPlan struct {
 	outcome     GenerationOutcome
 }
 
-func GeneratePythonRequirements(result *ScanResult) error {
+func GeneratePythonRequirements(result *ScanResult, overwrite bool) error {
 	generation := &GenerationResult{Format: "python-requirements", Paths: []string{}, Outcomes: []GenerationOutcome{}}
 	plans := []generationPlan{}
 	for _, source := range result.Sources {
@@ -53,8 +53,13 @@ func GeneratePythonRequirements(result *ScanResult) error {
 			if !strings.HasPrefix(filepath.Clean(destination)+string(filepath.Separator), cleanRoot) {
 				return fmt.Errorf("generated destination for %s group %q escapes scan root", source.Path, group.Name)
 			}
-			if _, err := os.Lstat(destination); err == nil {
-				return fmt.Errorf("generated destination already exists: %s", rel)
+			if info, err := os.Lstat(destination); err == nil {
+				if !overwrite {
+					return fmt.Errorf("generated destination already exists: %s", rel)
+				}
+				if !info.Mode().IsRegular() {
+					return fmt.Errorf("generated destination is not a regular file: %s", rel)
+				}
 			} else if !os.IsNotExist(err) {
 				return fmt.Errorf("inspect generated destination %s: %w", rel, err)
 			}
@@ -69,16 +74,8 @@ func GeneratePythonRequirements(result *ScanResult) error {
 	}
 	slices.SortFunc(plans, func(a, b generationPlan) int { return strings.Compare(a.relative, b.relative) })
 	for _, plan := range plans {
-		file, err := os.OpenFile(plan.destination, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
-		if err != nil {
-			return fmt.Errorf("create generated file %s: %w", plan.relative, err)
-		}
-		if _, err = file.Write(plan.content); err != nil {
-			file.Close()
-			return fmt.Errorf("write generated file %s: %w", plan.relative, err)
-		}
-		if err := file.Close(); err != nil {
-			return fmt.Errorf("close generated file %s: %w", plan.relative, err)
+		if err := writeGeneratedFile(plan, overwrite); err != nil {
+			return err
 		}
 		generation.Paths = append(generation.Paths, plan.relative)
 		generation.Outcomes = append(generation.Outcomes, plan.outcome)
@@ -153,4 +150,43 @@ func locationFilenameComponent(location string) string {
 		return "root"
 	}
 	return component
+}
+
+func writeGeneratedFile(plan generationPlan, overwrite bool) error {
+	if !overwrite {
+		file, err := os.OpenFile(plan.destination, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+		if err != nil {
+			return fmt.Errorf("create generated file %s: %w", plan.relative, err)
+		}
+		if _, err = file.Write(plan.content); err != nil {
+			file.Close()
+			return fmt.Errorf("write generated file %s: %w", plan.relative, err)
+		}
+		if err := file.Close(); err != nil {
+			return fmt.Errorf("close generated file %s: %w", plan.relative, err)
+		}
+		return nil
+	}
+
+	temporary, err := os.CreateTemp(filepath.Dir(plan.destination), ".deplens-generated-*")
+	if err != nil {
+		return fmt.Errorf("create temporary generated file for %s: %w", plan.relative, err)
+	}
+	temporaryName := temporary.Name()
+	defer os.Remove(temporaryName)
+	if err := temporary.Chmod(0o644); err != nil {
+		temporary.Close()
+		return fmt.Errorf("set permissions on temporary generated file for %s: %w", plan.relative, err)
+	}
+	if _, err := temporary.Write(plan.content); err != nil {
+		temporary.Close()
+		return fmt.Errorf("write temporary generated file for %s: %w", plan.relative, err)
+	}
+	if err := temporary.Close(); err != nil {
+		return fmt.Errorf("close temporary generated file for %s: %w", plan.relative, err)
+	}
+	if err := os.Rename(temporaryName, plan.destination); err != nil {
+		return fmt.Errorf("replace generated file %s: %w", plan.relative, err)
+	}
+	return nil
 }

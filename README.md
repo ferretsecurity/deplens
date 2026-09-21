@@ -42,6 +42,7 @@ The path is optional and defaults to the current directory. Common options are:
 --ignore dist,build,vendor     Replace the default ignored directories
 --show-without-dependencies    Include sources confirmed to contain no dependencies
 --generate python-requirements Generate requirements from eligible grouped sources
+--overwrite-generated          Replace intended generated files after full preflight
 ```
 
 Run `deplens --help` to see the complete command usage.
@@ -156,9 +157,30 @@ Run generation with:
 deplens --extend-rules company.yaml --generate python-requirements .
 ```
 
+In CI, add `--overwrite-generated` when the workspace may contain output from an earlier run:
+
+```bash
+deplens --extend-rules company.yaml --generate python-requirements --overwrite-generated .
+```
+
+Without the overwrite flag, a rerun refuses the existing destination:
+
+```text
+$ deplens --extend-rules company.yaml --generate python-requirements .
+error: generated destination already exists: workflow.yaml-daily.generated-requirements.txt
+```
+
+The explicit rerun replaces that planned file and reports the result:
+
+```text
+$ deplens --extend-rules company.yaml --generate python-requirements --overwrite-generated .
+Generated 1 requirements file:
+  workflow.yaml (daily) -> workflow.yaml-daily.generated-requirements.txt
+```
+
 Without `--generate`, the same command only scans. With generation enabled, a `daily` group in `workflow.yaml` produces `workflow.yaml-daily.generated-requirements.txt` beside the source. Each group gets a separate file. Names, version constraints, extras, and environment markers retain their declaration text. Local paths, URLs, Git requirements, pip options, included files, and malformed requirements fail generation.
 
-Generation validates every selected source and destination before it writes. Missing dependency fields and empty lists are reported as separate successful skips. Existing destinations cause an error and remain unchanged. Generated paths in JSON are relative to the absolute scan `root`, so CI can resolve them with `root + path`. Poetry, uv, built-in detectors without explicit eligibility, disabled rules, and previously generated requirements files do not generate output.
+Generation validates every selected source and destination before it writes. Missing dependency fields and empty lists are reported as separate successful skips. Existing destinations cause an error and remain unchanged unless `--overwrite-generated` is set. Overwrite replaces only the files planned by the current run. It does not follow destination symlinks, delete stale outputs, or provide a cross-file transaction if a filesystem write fails after writing starts. Generated paths in JSON are relative to the absolute scan `root`, so CI can resolve them with `root + path`. Poetry, uv, built-in detectors without explicit eligibility, disabled rules, and previously generated requirements files do not generate output.
 
 Example output changes from an ordinary scan:
 

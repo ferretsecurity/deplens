@@ -138,6 +138,101 @@ func TestGenerateDoesNotFollowDestinationSymlink(t *testing.T) {
 	}
 }
 
+func TestGenerateOverwriteReplacesOnlyPlannedRegularFiles(t *testing.T) {
+	dir := t.TempDir()
+	project := filepath.Join(dir, "project")
+	rules := filepath.Join(dir, "rules.yaml")
+	writeFile(t, rules, groupedRules)
+	source := filepath.Join(project, "workflow.yaml")
+	destination := filepath.Join(project, "workflow.yaml-daily.generated-requirements.txt")
+	unrelated := filepath.Join(project, "notes.txt")
+	writeFile(t, source, "workflows: [{name: daily, configuration: {python: {dependencies: [paramiko, \"pandas==1.4.4\"]}}}]\n")
+	writeFile(t, destination, "old\n")
+	writeFile(t, unrelated, "keep\n")
+
+	for range 2 {
+		var out, stderr bytes.Buffer
+		if code := run([]string{"--rules", rules, "--generate", "python-requirements", "--overwrite-generated", project}, &out, &stderr); code != 0 {
+			t.Fatalf("exit=%d stderr=%s", code, &stderr)
+		}
+		data, err := os.ReadFile(destination)
+		if err != nil || string(data) != "paramiko\npandas==1.4.4\n" {
+			t.Fatalf("destination: %q, %v", data, err)
+		}
+	}
+	data, err := os.ReadFile(unrelated)
+	if err != nil || string(data) != "keep\n" {
+		t.Fatalf("unrelated file changed: %q, %v", data, err)
+	}
+}
+
+func TestGenerateOverwritePreflightLeavesAllDestinationsUntouched(t *testing.T) {
+	dir := t.TempDir()
+	project := filepath.Join(dir, "project")
+	rules := filepath.Join(dir, "rules.yaml")
+	writeFile(t, rules, groupedRules)
+	writeFile(t, filepath.Join(project, "workflow-a.yaml"), "workflows: [{name: first, configuration: {python: {dependencies: [paramiko]}}}]\n")
+	writeFile(t, filepath.Join(project, "workflow-z.yaml"), "workflows: [{name: broken, configuration: {python: {dependencies: [\"git+https://example.test/repo\"]}}}]\n")
+	firstDestination := filepath.Join(project, "workflow-a.yaml-first.generated-requirements.txt")
+	writeFile(t, firstDestination, "old\n")
+	if err := os.Chmod(firstDestination, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--rules", rules, "--generate", "python-requirements", "--overwrite-generated", project}, &out, &stderr); code == 0 {
+		t.Fatal("generation succeeded")
+	}
+	data, err := os.ReadFile(firstDestination)
+	if err != nil || string(data) != "old\n" {
+		t.Fatalf("existing destination changed: %q, %v", data, err)
+	}
+	info, err := os.Stat(firstDestination)
+	if err != nil || info.Mode().Perm() != 0o600 {
+		t.Fatalf("existing destination mode changed: %v, %v", info, err)
+	}
+	if _, err := os.Stat(filepath.Join(project, "workflow-z.yaml-broken.generated-requirements.txt")); !os.IsNotExist(err) {
+		t.Fatal("generation created later destination")
+	}
+}
+
+func TestGenerateOverwriteRejectsDestinationSymlinks(t *testing.T) {
+	for _, dangling := range []bool{false, true} {
+		t.Run(map[bool]string{false: "live", true: "dangling"}[dangling], func(t *testing.T) {
+			dir := t.TempDir()
+			project := filepath.Join(dir, "project")
+			rules := filepath.Join(dir, "rules.yaml")
+			writeFile(t, rules, groupedRules)
+			writeFile(t, filepath.Join(project, "workflow.yaml"), "workflows: [{name: daily, configuration: {python: {dependencies: [paramiko]}}}]\n")
+			target := filepath.Join(dir, "target.txt")
+			if !dangling {
+				writeFile(t, target, "keep\n")
+			}
+			if err := os.Symlink(target, filepath.Join(project, "workflow.yaml-daily.generated-requirements.txt")); err != nil {
+				t.Fatal(err)
+			}
+
+			var out, stderr bytes.Buffer
+			if code := run([]string{"--rules", rules, "--generate", "python-requirements", "--overwrite-generated", project}, &out, &stderr); code == 0 || !strings.Contains(stderr.String(), "not a regular file") {
+				t.Fatalf("exit=%d stderr=%s", code, &stderr)
+			}
+			if !dangling {
+				data, err := os.ReadFile(target)
+				if err != nil || string(data) != "keep\n" {
+					t.Fatalf("symlink target changed: %q, %v", data, err)
+				}
+			}
+		})
+	}
+}
+
+func TestOverwriteGeneratedRequiresGeneration(t *testing.T) {
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--overwrite-generated"}, &out, &stderr); code == 0 || !strings.Contains(stderr.String(), "requires --generate") {
+		t.Fatalf("exit=%d stderr=%s", code, &stderr)
+	}
+}
+
 func TestGenerateRejectsInvalidConfigurationAndGroups(t *testing.T) {
 	for _, tc := range []struct{ name, rule, source, errorPart string }{{"format", groupedRules, "workflows: []\n", "unsupported generation format"}, {"eligibility", strings.Replace(groupedRules, "python-requirements", "cyclonedx", 1), "workflows: []\n", "generate"}, {"wrong-type", groupedRules, "workflows: [{name: daily, configuration: {python: {dependencies: flask}}}]\n", "must be a list"}, {"name-shape", strings.Replace(groupedRules, "name-query: '.name'", "name-query: '.name[]'", 1), "workflows: [{name: [one, two], configuration: {python: {dependencies: [flask]}}}]\n", "name-query must produce one value"}, {"transformation", strings.Replace(groupedRules, "query: '.workflows[]'", "query: '.workflows[] | {name: .name}'", 1), "workflows: [{name: daily, configuration: {python: {dependencies: [flask]}}}]\n", "select yaml groups"}} {
 		t.Run(tc.name, func(t *testing.T) {
