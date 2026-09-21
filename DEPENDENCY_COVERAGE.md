@@ -188,6 +188,6 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 | `js-banner-line-comment` | `source-code` | `usage, inventory` | `banner-regex` | select, recognize, extract, normalize |
 | `js-banner-version-tagged` | `source-code` | `usage, inventory` | `banner-regex` | select, recognize, extract, normalize |
 | `html-external-scripts` | `markup` | `usage` | `html` | select, recognize, extract, normalize |
-| `terraform.aws_glue_job.python` | `source-code` | `usage, inventory` | `terraform` | select, recognize |
+| `terraform.aws_glue_job.python` | `source-code` | `usage, inventory` | `terraform-glue-python` | select, recognize, extract, normalize |
 | `typescript.cdk.aws_glue_job.python` | `source-code` | `usage, inventory` | `typescript` | select, recognize, extract, normalize |
 | `python.cdk.aws_glue_job.python` | `source-code` | `usage, inventory` | `python` | select, recognize, extract, normalize |

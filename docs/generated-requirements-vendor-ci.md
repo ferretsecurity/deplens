@@ -130,3 +130,24 @@ Live ingestion passed with Snyk CLI 1.1300.0 and Socket CLI 1.1.176:
 - A second Socket scan placed `workflow.yaml-legacy.generated-requirements.txt` in `.gitignore`. Socket collected five files, and raw scan `d6ac3e91-b005-4ae9-9112-2ca84734a9d2` omitted only that path.
 
 The scans used temporary workspaces and test-organization credentials. No credential or installed environment is part of the repository or normal test suite.
+
+### Databricks bundle fixture
+
+On 2026-09-21, `go run ./cmd/deplens --json --generate python-requirements testdata/databricks/bundle-renamed` produced two files. The base task contained `requests>=2.32`; the target task contained `urllib3<3`. The JSON result kept their base and target locations separate and reported the task without libraries as `missing`.
+
+The installed Socket CLI reported version 1.1.176. The installed Snyk wrapper targets CLI 1.1300.0, but its version command could not start in the restricted test environment because it could not open a local proxy socket. Neither `SOCKET_SECURITY_API_KEY` nor `SNYK_TOKEN` was available, so live ingestion commands were not run for this fixture. The intended commands are `socket scan create --report --json testdata/databricks/bundle-renamed` and one `snyk test --file=<generated-path> --package-manager=pip --json` call per generated path. This is an unmet credential and sandbox prerequisite, not a successful vendor check. The earlier six-file acceptance above confirms that both tools ingest the same generated filename and requirements format.
+
+Maven generation was also exercised locally with `go run ./cmd/deplens --generate maven-pom testdata/databricks/bundle-renamed`. It produced two independent `.generated-maven/pom.xml` files, retained the `org.slf4j:slf4j-api` exclusion, and both files parsed as XML in the Go test suite. Live Maven ingestion was not completed: Java and Maven were not installed, and Socket/Snyk credentials were unavailable. The intended checks are `mvn dependency:tree -f <generated-path>` (confirming the exclusion changes the transitive tree), `socket scan create --report --json testdata/databricks/bundle-renamed`, and `snyk test --file=<generated-path> --package-manager=maven --json` for each generated POM. These missing prerequisites are recorded as an unmet acceptance item, not as successful ingestion.
+
+### Terraform Glue validation
+
+On 2026-09-21, the Terraform Glue fixture in `testdata/terraform/glue-job-python/jobs.tf` was generated with Go 1.25.6:
+
+```sh
+go build -buildvcs=false -o /tmp/deplens-151-validation/deplens ./cmd/deplens
+/tmp/deplens-151-validation/deplens --generate python-requirements /tmp/deplens-151-validation
+```
+
+The command found three direct dependencies and wrote two independent files, `jobs.tf-daily.generated-requirements.txt` and `jobs.tf-legacy.generated-requirements.txt`. Their contents were `pandas==2.2.1` plus `paramiko`, and `pandas==0.25.3`, respectively.
+
+The installed CLIs were Socket 1.1.176 and Snyk 1.1300.0. A new live ingestion run was not completed. Uploading the synthetic directory to Socket was not authorized in the execution environment, so no scan ID or discovery result exists. Snyk was not run after that restriction because it would send the same generated declarations to an external service. The earlier six-file live acceptance results above still cover the generated requirements filename pattern and dependency ingestion, but they do not count as a live scan of the new Terraform fixture.

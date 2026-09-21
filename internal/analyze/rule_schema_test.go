@@ -10,8 +10,8 @@ func TestDefaultRulesUseCompleteDependencySourceMetadata(t *testing.T) {
 	if err != nil {
 		t.Fatalf("LoadDefaultRules failed: %v", err)
 	}
-	if len(ruleset.detectors) != 185 {
-		t.Fatalf("expected 185 built-in detectors, got %d", len(ruleset.detectors))
+	if len(ruleset.detectors) != 186 {
+		t.Fatalf("expected 186 built-in detectors, got %d", len(ruleset.detectors))
 	}
 	if len(ruleset.checks) != 10 {
 		t.Fatalf("expected 10 built-in checks, got %d", len(ruleset.checks))

@@ -1,0 +1,25 @@
+resources:
+  jobs:
+    analytics:
+      tasks:
+        - task_key: ingest
+          libraries:
+            - pypi:
+                package: requests>=2.32
+            - maven:
+                coordinates: org.example:metrics:1.0.0
+                exclusions:
+                  - org.slf4j:slf4j-api
+        - task_key: no-libraries
+targets:
+  production:
+    resources:
+      jobs:
+        analytics:
+          tasks:
+            - task_key: ingest
+              libraries:
+                - pypi:
+                    package: urllib3<3
+                - maven:
+                    coordinates: org.example:warehouse:2.0.0

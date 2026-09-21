@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"os"
 	"path/filepath"
 	"slices"
@@ -81,6 +82,220 @@ new CfnJob(this, "legacy", { defaultArguments: {"--job-language": "python", "--a
 	wantPaths := []string{"jobs.ts-daily.generated-requirements.txt", "jobs.ts-legacy.generated-requirements.txt"}
 	if !slices.Equal(result.Generation.Paths, wantPaths) {
 		t.Fatalf("generated paths: %v", result.Generation.Paths)
+	}
+}
+
+func TestGeneratePythonRequirementsFromDatabricksBundle(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "config", "renamed.yml"), `resources:
+  jobs:
+    first:
+      tasks:
+        - task_key: shared/task
+          libraries:
+            - pypi: {package: "requests>=2.32"}
+            - maven: {coordinates: "org.example:tool:1.0"}
+targets:
+  production:
+    resources:
+      jobs:
+        second:
+          tasks:
+            - task_key: shared task
+              libraries:
+                - pypi: {package: "urllib3<3"}
+`)
+	writeFile(t, filepath.Join(project, "other.yaml"), `resources:
+  jobs:
+    third:
+      tasks:
+        - task_key: shared/task
+          libraries:
+            - pypi: {package: "idna==3.10"}
+`)
+	writeFile(t, filepath.Join(project, "unrelated.yaml"), "jobs:\n  example:\n    tasks: [libraries]\n")
+
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--json", "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("exit=%d stderr=%s", code, &stderr)
+	}
+	var result analyze.ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	wantPaths := []string{
+		"config/renamed.yml-base-first-shared-task.generated-requirements.txt",
+		"config/renamed.yml-target-production-second-shared-task.generated-requirements.txt",
+		"other.yaml-base-third-shared-task.generated-requirements.txt",
+	}
+	if !slices.Equal(result.Generation.Paths, wantPaths) {
+		t.Fatalf("generated paths: %v, want %v", result.Generation.Paths, wantPaths)
+	}
+	if len(result.Sources) != 2 || result.Sources[0].Path != "config/renamed.yml" || result.Sources[1].Path != "other.yaml" {
+		t.Fatalf("sources: %+v", result.Sources)
+	}
+	for index, want := range []string{"requests>=2.32\n", "urllib3<3\n", "idna==3.10\n"} {
+		body, err := os.ReadFile(filepath.Join(project, filepath.FromSlash(wantPaths[index])))
+		if err != nil || string(body) != want {
+			t.Fatalf("generated %s: %q, %v", wantPaths[index], body, err)
+		}
+	}
+}
+
+func TestGenerateMavenPOMFromMixedDatabricksBundle(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "bundle.yml"), `resources:
+  jobs:
+    main:
+      tasks:
+        - task_key: mixed/task
+          libraries:
+            - pypi: {package: "${var.invalid_python}"}
+            - maven:
+                coordinates: "org.example:app:1.2.3"
+                exclusions: ["org.example:legacy"]
+        - task_key: empty
+          libraries: []
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--json", "--generate", "maven-pom", project}, &out, &stderr); code != 0 {
+		t.Fatalf("exit=%d stderr=%s", code, &stderr)
+	}
+	path := filepath.Join(project, "bundle.yml-base-main-mixed-task.generated-maven", "pom.xml")
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var document struct{ XMLName xml.Name }
+	if err := xml.Unmarshal(body, &document); err != nil || document.XMLName.Local != "project" {
+		t.Fatalf("invalid generated POM: root=%s err=%v", document.XMLName.Local, err)
+	}
+	for _, want := range []string{`xmlns="http://maven.apache.org/POM/4.0.0"`, "<groupId>org.example</groupId>", "<artifactId>app</artifactId>", "<version>1.2.3</version>", "<artifactId>legacy</artifactId>"} {
+		if !strings.Contains(string(body), want) {
+			t.Errorf("pom missing %q:\n%s", want, body)
+		}
+	}
+	var result analyze.ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if result.Generation.Format != analyze.GenerationMavenPOM || len(result.Generation.Paths) != 1 {
+		t.Fatalf("generation = %+v", result.Generation)
+	}
+}
+
+func TestGenerateMavenFailureLeavesNoDirectories(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "bundle.yaml"), `resources:
+  jobs:
+    main:
+      tasks:
+        - task_key: good
+          libraries: [{maven: {coordinates: "org.example:good:1.0"}}]
+        - task_key: bad
+          libraries: [{maven: {coordinates: "not-a-coordinate"}}]
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--generate", "maven-pom", project}, &out, &stderr); code == 0 {
+		t.Fatal("expected failure")
+	}
+	matches, err := filepath.Glob(filepath.Join(project, "*.generated-maven"))
+	if err != nil || len(matches) != 0 {
+		t.Fatalf("generated directories after failed preflight: %v, %v", matches, err)
+	}
+}
+
+func TestGeneratePythonIgnoresInvalidDatabricksMaven(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "bundle.yaml"), `resources: {jobs: {main: {tasks: [{task_key: mixed, libraries: [{pypi: {package: "requests==2.32.3"}}, {maven: {coordinates: bad}}]}]}}}`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("exit=%d stderr=%s", code, &stderr)
+	}
+	if _, err := os.Stat(filepath.Join(project, "bundle.yaml-base-main-mixed.generated-requirements.txt")); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestGeneratePythonRequirementsFromTerraformGlueJobs(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "jobs.tf"), `
+resource "aws_glue_job" "daily" {
+  default_arguments = {
+    "--additional-python-modules" = "pandas==2.2.1,paramiko"
+    "--enable-continuous-cloudwatch-log" = var.logging
+  }
+}
+resource "aws_glue_job" "override" {
+  default_arguments = {
+    "--job-language" = "python"
+    "--additional-python-modules" = "old==1"
+  }
+  non_overridable_arguments = {
+    "--additional-python-modules" = "new==2"
+  }
+}
+resource "aws_glue_job" "scala" {
+  default_arguments = {
+    "--job-language" = "scala"
+    "--additional-python-modules" = "ignored"
+  }
+}
+resource "aws_glue_job" "empty" {
+  default_arguments = { "--additional-python-modules" = "" }
+}
+resource "aws_glue_job" "missing" {}
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--json", "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("run failed: code=%d stderr=%s", code, stderr.String())
+	}
+	for name, want := range map[string]string{
+		"daily":    "pandas==2.2.1\nparamiko\n",
+		"override": "new==2\n",
+	} {
+		data, err := os.ReadFile(filepath.Join(project, "jobs.tf-"+name+".generated-requirements.txt"))
+		if err != nil || string(data) != want {
+			t.Fatalf("%s generated content: %q, %v", name, data, err)
+		}
+	}
+	var result analyze.ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	statuses := map[string]string{}
+	for _, outcome := range result.Generation.Outcomes {
+		statuses[outcome.Group] = string(outcome.Status)
+	}
+	if statuses["empty"] != "empty" || statuses["missing"] != "missing" {
+		t.Fatalf("outcomes: %+v", result.Generation.Outcomes)
+	}
+	if _, found := statuses["scala"]; found {
+		t.Fatalf("Scala job produced an outcome: %+v", result.Generation.Outcomes)
+	}
+}
+
+func TestTerraformGlueIncompleteLaterJobPreventsAllWrites(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "jobs.tf"), `
+resource "aws_glue_job" "readable" {
+  default_arguments = { "--additional-python-modules" = "pandas==2.2.1" }
+}
+resource "aws_glue_job" "unreadable" {
+  default_arguments = { "--additional-python-modules" = var.modules }
+}
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--generate", "python-requirements", project}, &out, &stderr); code == 0 {
+		t.Fatalf("generation succeeded: %s", out.String())
+	}
+	for _, part := range []string{`Glue job "unreadable"`, "line-5-column-1", "cannot be evaluated statically"} {
+		if !strings.Contains(stderr.String(), part) {
+			t.Fatalf("stderr does not contain %q: %s", part, stderr.String())
+		}
+	}
+	if _, err := os.Stat(filepath.Join(project, "jobs.tf-readable.generated-requirements.txt")); !os.IsNotExist(err) {
+		t.Fatalf("valid earlier job was written: %v", err)
 	}
 }
 
