@@ -1,0 +1,17 @@
+pipelines:
+  release jobs:
+    - name: ignored
+      export: false
+      python:
+        dependencies: [ignored]
+    - name: duplicate
+      export: true
+      python:
+        dependencies: [paramiko]
+    - name: duplicate
+      export: true
+      python:
+        dependencies: ["pandas<1"]
+    - export: true
+      python:
+        dependencies: [flask]

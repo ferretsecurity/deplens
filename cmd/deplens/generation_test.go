@@ -139,7 +139,7 @@ func TestGenerateDoesNotFollowDestinationSymlink(t *testing.T) {
 }
 
 func TestGenerateRejectsInvalidConfigurationAndGroups(t *testing.T) {
-	for _, tc := range []struct{ name, rule, source, errorPart string }{{"format", groupedRules, "workflows: []\n", "unsupported generation format"}, {"eligibility", strings.Replace(groupedRules, "python-requirements", "cyclonedx", 1), "workflows: []\n", "generate"}, {"unsafe-name", groupedRules, "workflows: [{name: ../escape, configuration: {python: {dependencies: [flask]}}}]\n", "unsafe"}, {"duplicate-name", groupedRules, "workflows: [{name: same, configuration: {python: {dependencies: [flask]}}}, {name: same, configuration: {python: {dependencies: [django]}}}]\n", "duplicate"}, {"wrong-type", groupedRules, "workflows: [{name: daily, configuration: {python: {dependencies: flask}}}]\n", "must be a list"}} {
+	for _, tc := range []struct{ name, rule, source, errorPart string }{{"format", groupedRules, "workflows: []\n", "unsupported generation format"}, {"eligibility", strings.Replace(groupedRules, "python-requirements", "cyclonedx", 1), "workflows: []\n", "generate"}, {"wrong-type", groupedRules, "workflows: [{name: daily, configuration: {python: {dependencies: flask}}}]\n", "must be a list"}, {"name-shape", strings.Replace(groupedRules, "name-query: '.name'", "name-query: '.name[]'", 1), "workflows: [{name: [one, two], configuration: {python: {dependencies: [flask]}}}]\n", "name-query must produce one value"}, {"transformation", strings.Replace(groupedRules, "query: '.workflows[]'", "query: '.workflows[] | {name: .name}'", 1), "workflows: [{name: daily, configuration: {python: {dependencies: [flask]}}}]\n", "select yaml groups"}} {
 		t.Run(tc.name, func(t *testing.T) {
 			dir := t.TempDir()
 			project := filepath.Join(dir, "project")
@@ -155,5 +155,114 @@ func TestGenerateRejectsInvalidConfigurationAndGroups(t *testing.T) {
 				t.Fatalf("exit=%d stderr=%s", code, &stderr)
 			}
 		})
+	}
+}
+
+func TestGenerateFromMappingKeysAndQuotedPath(t *testing.T) {
+	dir := t.TempDir()
+	project := filepath.Join(dir, "project")
+	rules := filepath.Join(dir, "rules.yaml")
+	writeFile(t, rules, strings.NewReplacer(
+		"query: '.workflows[]'", "query: '.[\"workflow groups\"][]'",
+		"name-query: '.name'", "name-query: '$key'",
+		"dependencies-query: '.configuration.python.dependencies'", "dependencies-query: '.python.dependencies'").Replace(groupedRules))
+	fixture, err := os.ReadFile(filepath.Join("..", "..", "testdata", "python", "grouped-workflow-mapping", "workflow.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(project, "workflow.yaml"), string(fixture))
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--rules", rules, "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("exit=%d stderr=%s", code, &stderr)
+	}
+	for name, want := range map[string]string{"daily": "paramiko\npandas==1.4.4\n", "legacy": "pandas<1\n"} {
+		data, err := os.ReadFile(filepath.Join(project, "workflow.yaml-"+name+".generated-requirements.txt"))
+		if err != nil || string(data) != want {
+			t.Fatalf("%s: %q, %v", name, data, err)
+		}
+	}
+}
+
+func TestGenerateFilteredGroupsPreserveLocationsAndDisambiguateNames(t *testing.T) {
+	dir := t.TempDir()
+	project := filepath.Join(dir, "project")
+	rules := filepath.Join(dir, "rules.yaml")
+	writeFile(t, rules, strings.Replace(groupedRules, "query: '.workflows[]'", "query: '.workflows[] | select(.enabled)'", 1))
+	writeFile(t, filepath.Join(project, "workflow.yaml"), `workflows:
+  - {name: skip, enabled: false, configuration: {python: {dependencies: [ignored]}}}
+  - {name: same, enabled: true, configuration: {python: {dependencies: [first]}}}
+  - {name: same, enabled: true, configuration: {python: {dependencies: [second]}}}
+  - {enabled: true, configuration: {python: {dependencies: [unnamed]}}}
+  - {name: "unsafe/name", enabled: true, configuration: {python: {dependencies: [unsafe]}}}
+  - {name: "unsafe name", enabled: true, configuration: {python: {dependencies: [collision]}}}
+  - {name: "unique/unsafe", enabled: true, configuration: {python: {dependencies: [converted]}}}
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--json", "--rules", rules, "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("exit=%d stderr=%s", code, &stderr)
+	}
+	var result analyze.ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	wantPaths := []string{
+		"workflow.yaml-group-at-workflows-3.generated-requirements.txt",
+		"workflow.yaml-same-at-workflows-1.generated-requirements.txt",
+		"workflow.yaml-same-at-workflows-2.generated-requirements.txt",
+		"workflow.yaml-unique-unsafe.generated-requirements.txt",
+		"workflow.yaml-unsafe-name-at-workflows-4.generated-requirements.txt",
+		"workflow.yaml-unsafe-name-at-workflows-5.generated-requirements.txt",
+	}
+	if strings.Join(result.Generation.Paths, "\n") != strings.Join(wantPaths, "\n") {
+		t.Fatalf("paths:\n%v\nwant:\n%v", result.Generation.Paths, wantPaths)
+	}
+	locations := map[string]string{}
+	for _, outcome := range result.Generation.Outcomes {
+		locations[outcome.Group+":"+outcome.Path] = outcome.Location
+	}
+	if locations["same:"+wantPaths[1]] != ".workflows[1]" || locations[":"+wantPaths[0]] != ".workflows[3]" {
+		t.Fatalf("outcomes did not retain source identity: %+v", result.Generation.Outcomes)
+	}
+	if locations["unique/unsafe:"+wantPaths[3]] != ".workflows[6]" {
+		t.Fatalf("report did not retain unsafe original name: %+v", result.Generation.Outcomes)
+	}
+}
+
+func TestGenerateIdenticalMappingValuesRemainDistinct(t *testing.T) {
+	dir := t.TempDir()
+	project := filepath.Join(dir, "project")
+	rules := filepath.Join(dir, "rules.yaml")
+	writeFile(t, rules, strings.NewReplacer(
+		"query: '.workflows[]'", "query: '.workflows[]'",
+		"name-query: '.name'", "name-query: '$key'",
+		"dependencies-query: '.configuration.python.dependencies'", "dependencies-query: '.dependencies'").Replace(groupedRules))
+	writeFile(t, filepath.Join(project, "workflow.yaml"), "workflows: {one: {dependencies: [flask]}, two: {dependencies: [flask]}}\n")
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--rules", rules, "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatal(stderr.String())
+	}
+	for _, name := range []string{"one", "two"} {
+		if _, err := os.Stat(filepath.Join(project, "workflow.yaml-"+name+".generated-requirements.txt")); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func TestGenerateFromRootList(t *testing.T) {
+	dir := t.TempDir()
+	project := filepath.Join(dir, "project")
+	rules := filepath.Join(dir, "rules.yaml")
+	writeFile(t, rules, strings.NewReplacer(
+		"query: '.workflows[]'", "query: '.[]'",
+		"dependencies-query: '.configuration.python.dependencies'", "dependencies-query: '.dependencies'",
+	).Replace(groupedRules))
+	writeFile(t, filepath.Join(project, "workflow.yaml"), "- {name: root, dependencies: [flask]}\n")
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--rules", rules, "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatal(stderr.String())
+	}
+	data, err := os.ReadFile(filepath.Join(project, "workflow.yaml-root.generated-requirements.txt"))
+	if err != nil || string(data) != "flask\n" {
+		t.Fatalf("generated root list: %q, %v", data, err)
 	}
 }

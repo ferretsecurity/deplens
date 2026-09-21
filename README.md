@@ -142,11 +142,13 @@ rules:
       type: yaml
       groups:
         query: '.workflows[]'
-        name-query: '.name'
+        name-query: '.name // $key'
         dependencies-query: '.configuration.python.dependencies'
 ```
 
-The group query uses embedded jq and may select a root list such as `.[]` or a nested list such as `.workflows[]`. It must select nodes from the source document. The name and dependency queries run relative to each selected group. This first version requires unique group names containing only letters, digits, `.`, `_`, or `-`.
+The group query uses embedded jq and may select a root or nested list or mapping, including quoted keys and filters. It must select existing nodes from the source document; construction, merging, and reshaping are rejected. The name and dependency queries run relative to each selected group. For mapping values, `$key` contains the selected mapping key, so `name-query: '$key'` can name groups without a separate field.
+
+Unique safe names are used unchanged. Unsafe filename characters are converted to `-`. Missing names, duplicate names, and names that collide after conversion receive a deterministic source-location suffix. Reports retain the original name. Generated files stay beside their source, and groups selected through filters keep their original source locations rather than their result positions.
 
 Run generation with:
 

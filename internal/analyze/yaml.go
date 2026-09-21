@@ -2,6 +2,8 @@ package analyze
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/itchyny/gojq"
@@ -22,6 +24,8 @@ type yamlGroupsConfig struct {
 }
 
 type yamlGroupsParser struct{ pathCode, nameCode, dependenciesCode *gojq.Code }
+
+var jqIdentifier = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
 type yamlPathSegment struct {
 	key    string
@@ -95,12 +99,12 @@ func newYAMLGroupsParser(raw yamlGroupsConfig) (sourceAnalyzer, error) {
 	if raw.Query == "" || raw.NameQuery == "" || raw.DependenciesQuery == "" {
 		return nil, fmt.Errorf("yaml.groups.query, name-query, and dependencies-query are required")
 	}
-	compile := func(label, query string) (*gojq.Code, error) {
+	compile := func(label, query string, variables ...string) (*gojq.Code, error) {
 		parsed, err := gojq.Parse(query)
 		if err != nil {
 			return nil, fmt.Errorf("yaml.groups.%s: %w", label, err)
 		}
-		code, err := gojq.Compile(parsed)
+		code, err := gojq.Compile(parsed, gojq.WithVariables(variables))
 		if err != nil {
 			return nil, fmt.Errorf("yaml.groups.%s: %w", label, err)
 		}
@@ -110,11 +114,11 @@ func newYAMLGroupsParser(raw yamlGroupsConfig) (sourceAnalyzer, error) {
 	if err != nil {
 		return nil, err
 	}
-	nameCode, err := compile("name-query", raw.NameQuery)
+	nameCode, err := compile("name-query", raw.NameQuery, "$key")
 	if err != nil {
 		return nil, err
 	}
-	depsCode, err := compile("dependencies-query", raw.DependenciesQuery)
+	depsCode, err := compile("dependencies-query", raw.DependenciesQuery, "$key")
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +139,7 @@ func (p yamlGroupsParser) Analyze(path string, content []byte) (sourceAnalyzerRe
 	}
 	groups := make([]DependencyGroup, 0, len(paths))
 	deps := make([]DependencyReference, 0)
-	seen := map[string]string{}
+	seenPaths := map[string]struct{}{}
 	for _, rawPath := range paths {
 		segments, ok := rawPath.([]any)
 		if !ok {
@@ -146,25 +150,32 @@ func (p yamlGroupsParser) Analyze(path string, content []byte) (sourceAnalyzerRe
 			return sourceAnalyzerResult{}, fmt.Errorf("select yaml groups in %q: query transformed a group", path)
 		}
 		location := jqPath(segments)
-		names, err := jqValues(p.nameCode, node)
+		if _, exists := seenPaths[location]; exists {
+			return sourceAnalyzerResult{}, fmt.Errorf("select yaml groups in %q: query selected %s more than once", path, location)
+		}
+		seenPaths[location] = struct{}{}
+		var key any
+		if len(segments) > 0 {
+			if mappingKey, ok := segments[len(segments)-1].(string); ok {
+				key = mappingKey
+			}
+		}
+		names, err := jqValuesWithVariables(p.nameCode, node, key)
 		if err != nil {
 			return sourceAnalyzerResult{}, fmt.Errorf("group %s in %q name: %w", location, path, err)
 		}
 		if len(names) != 1 {
 			return sourceAnalyzerResult{}, fmt.Errorf("group %s in %q: name-query must produce one value", location, path)
 		}
-		name, ok := names[0].(string)
-		if !ok || name == "" {
-			return sourceAnalyzerResult{}, fmt.Errorf("group %s in %q: name must be a nonempty string", location, path)
+		var name string
+		if names[0] != nil {
+			var ok bool
+			name, ok = names[0].(string)
+			if !ok {
+				return sourceAnalyzerResult{}, fmt.Errorf("group %s in %q: name-query must produce a string or null, got %T", location, path, names[0])
+			}
 		}
-		if !safeGroupName(name) {
-			return sourceAnalyzerResult{}, fmt.Errorf("group %q at %s in %q: name contains unsafe filename characters", name, location, path)
-		}
-		if previous, exists := seen[name]; exists {
-			return sourceAnalyzerResult{}, fmt.Errorf("duplicate group name %q in %q at %s and %s", name, path, previous, location)
-		}
-		seen[name] = location
-		values, err := jqValues(p.dependenciesCode, node)
+		values, err := jqValuesWithVariables(p.dependenciesCode, node, key)
 		if err != nil {
 			return sourceAnalyzerResult{}, fmt.Errorf("group %q at %s in %q dependencies: %w", name, location, path, err)
 		}
@@ -210,8 +221,12 @@ func (p yamlGroupsParser) Analyze(path string, content []byte) (sourceAnalyzerRe
 }
 
 func jqValues(code *gojq.Code, input any) ([]any, error) {
+	return jqValuesWithVariables(code, input)
+}
+
+func jqValuesWithVariables(code *gojq.Code, input any, variables ...any) ([]any, error) {
 	var out []any
-	iter := code.Run(input)
+	iter := code.Run(input, variables...)
 	for {
 		v, ok := iter.Next()
 		if !ok {
@@ -257,24 +272,21 @@ func jqPath(path []any) string {
 	for _, s := range path {
 		switch v := s.(type) {
 		case string:
-			if b.Len() > 1 {
-				b.WriteByte('.')
+			if jqIdentifier.MatchString(v) {
+				if b.Len() > 1 {
+					b.WriteByte('.')
+				}
+				b.WriteString(v)
+			} else {
+				b.WriteByte('[')
+				b.WriteString(strconv.Quote(v))
+				b.WriteByte(']')
 			}
-			b.WriteString(v)
 		case int:
 			fmt.Fprintf(&b, "[%d]", v)
 		}
 	}
 	return b.String()
-}
-
-func safeGroupName(name string) bool {
-	for _, r := range name {
-		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '-' || r == '_' || r == '.') {
-			return false
-		}
-	}
-	return name != "." && name != ".."
 }
 
 func parseYAMLPath(raw string, fieldName string) ([]yamlPathSegment, error) {

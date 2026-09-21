@@ -32,13 +32,22 @@ func GeneratePythonRequirements(result *ScanResult) error {
 		if len(source.Groups) == 0 {
 			return fmt.Errorf("cannot generate from %s (%s): analyzer returned no independent groups", source.Path, source.Detector)
 		}
-		for _, group := range source.Groups {
+		groups := slices.Clone(source.Groups)
+		slices.SortFunc(groups, func(a, b DependencyGroup) int { return strings.Compare(a.Location, b.Location) })
+		components := generationGroupComponents(groups)
+		usedRelative := make(map[string]string, len(groups))
+		for index, group := range groups {
 			outcome := GenerationOutcome{Source: source.Path, Group: group.Name, Location: group.Location, Status: group.State}
 			if group.State != "ready" {
 				generation.Outcomes = append(generation.Outcomes, outcome)
 				continue
 			}
-			rel := source.Path + "-" + group.Name + ".generated-requirements.txt"
+			component := components[index]
+			rel := source.Path + "-" + component + ".generated-requirements.txt"
+			if previous, exists := usedRelative[rel]; exists {
+				return fmt.Errorf("generated destination collision for %s groups at %s and %s", source.Path, previous, group.Location)
+			}
+			usedRelative[rel] = group.Location
 			destination := filepath.Join(result.Root, filepath.FromSlash(rel))
 			cleanRoot := filepath.Clean(result.Root) + string(filepath.Separator)
 			if !strings.HasPrefix(filepath.Clean(destination)+string(filepath.Separator), cleanRoot) {
@@ -82,4 +91,66 @@ func GeneratePythonRequirements(result *ScanResult) error {
 	})
 	result.Generation = generation
 	return nil
+}
+
+// generationGroupComponents keeps ordinary names readable while making every
+// selected source node addressable. Name conversion happens before collision
+// detection so names such as "daily job" and "daily/job" are disambiguated.
+func generationGroupComponents(groups []DependencyGroup) []string {
+	base := make([]string, len(groups))
+	counts := make(map[string]int, len(groups))
+	for i, group := range groups {
+		if group.Name == "" {
+			base[i] = "group"
+		} else {
+			base[i] = safeFilenameComponent(group.Name)
+		}
+		counts[base[i]]++
+	}
+	components := make([]string, len(groups))
+	used := make(map[string]struct{}, len(groups))
+	for i, group := range groups {
+		component := base[i]
+		if group.Name == "" || counts[component] > 1 {
+			component += "-at-" + locationFilenameComponent(group.Location)
+		}
+		candidate := component
+		for suffix := 2; ; suffix++ {
+			if _, exists := used[candidate]; !exists {
+				break
+			}
+			candidate = fmt.Sprintf("%s-%d", component, suffix)
+		}
+		used[candidate] = struct{}{}
+		components[i] = candidate
+	}
+	return components
+}
+
+func safeFilenameComponent(value string) string {
+	var b strings.Builder
+	separator := false
+	for _, r := range value {
+		safe := r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '-' || r == '_' || r == '.'
+		if safe {
+			b.WriteRune(r)
+			separator = false
+		} else if !separator {
+			b.WriteByte('-')
+			separator = true
+		}
+	}
+	component := b.String()
+	if component == "" || component == "." || component == ".." {
+		return "group"
+	}
+	return component
+}
+
+func locationFilenameComponent(location string) string {
+	component := strings.Trim(safeFilenameComponent(strings.TrimPrefix(location, ".")), "-.")
+	if component == "group" {
+		return "root"
+	}
+	return component
 }
