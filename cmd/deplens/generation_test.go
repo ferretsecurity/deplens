@@ -441,3 +441,96 @@ func TestGenerateFromRootList(t *testing.T) {
 		t.Fatalf("generated root list: %q, %v", data, err)
 	}
 }
+
+func TestGeneratePythonCDKGlueJobs(t *testing.T) {
+	dir := t.TempDir()
+	project := filepath.Join(dir, "project")
+	fixture, err := os.ReadFile(filepath.Join("..", "..", "testdata", "python", "glue-cfnjob-multiple", "job.py"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(project, "job.py"), string(fixture))
+	writeFile(t, filepath.Join(project, "requirements.txt"), "should-not-generate\n")
+
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--json", "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("exit=%d stderr=%s", code, &stderr)
+	}
+	var result analyze.ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if result.Generation == nil || len(result.Generation.Paths) != 5 {
+		t.Fatalf("generation: %+v", result.Generation)
+	}
+	wantContents := map[string]int{
+		"requests>=2.31\nurllib3<3\n": 1,
+		"pandas==1.4.4\n":             1,
+		"paramiko\n":                  1,
+		"flask<3\n":                   1,
+		"flask>=3\n":                  1,
+	}
+	for _, outcome := range result.Generation.Outcomes {
+		data, err := os.ReadFile(filepath.Join(project, filepath.FromSlash(outcome.Path)))
+		if err != nil || wantContents[string(data)] == 0 {
+			t.Fatalf("group %q path %q: %q, %v", outcome.Group, outcome.Path, data, err)
+		}
+		wantContents[string(data)]--
+		if (outcome.Group == "daily/job" || outcome.Group == "daily job") && !strings.Contains(outcome.Path, "daily-job-at-line-") {
+			t.Fatalf("converted collision was not disambiguated: %+v", outcome)
+		}
+		if outcome.Group == "" && !strings.Contains(outcome.Path, "group-at-line-") {
+			t.Fatalf("missing name did not use location fallback: %+v", outcome)
+		}
+		if outcome.Group == "duplicate" && !strings.Contains(outcome.Path, "duplicate-at-line-") {
+			t.Fatalf("duplicate name was not disambiguated: %+v", outcome)
+		}
+	}
+
+	projectWithoutFlag := filepath.Join(dir, "without-flag")
+	writeFile(t, filepath.Join(projectWithoutFlag, "job.py"), string(fixture))
+	out.Reset()
+	stderr.Reset()
+	if code := run([]string{projectWithoutFlag}, &out, &stderr); code != 0 {
+		t.Fatal(stderr.String())
+	}
+	matches, err := filepath.Glob(filepath.Join(projectWithoutFlag, "*.generated-requirements.txt"))
+	if err != nil || len(matches) != 0 {
+		t.Fatalf("ordinary scan generated files: %v, %v", matches, err)
+	}
+}
+
+func TestGeneratePythonCDKIncompleteLaterJobLeavesNoOutput(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "a.py"), `from aws_cdk import aws_glue as glue
+glue.CfnJob(self, "first", default_arguments={"--job-language": "python", "--additional-python-modules": "requests>=2.31"})
+`)
+	writeFile(t, filepath.Join(project, "z.py"), `from aws_cdk import aws_glue as glue
+modules = load_modules()
+glue.CfnJob(self, "broken", default_arguments={"--job-language": "python", "--additional-python-modules": modules})
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--generate", "python-requirements", project}, &out, &stderr); code == 0 {
+		t.Fatal("generation succeeded")
+	}
+	if !strings.Contains(stderr.String(), `job "broken"`) || !strings.Contains(stderr.String(), "unreadable dependency declaration") {
+		t.Fatalf("missing contextual error: %s", &stderr)
+	}
+	if _, err := os.Stat(filepath.Join(project, "a.py-first.generated-requirements.txt")); !os.IsNotExist(err) {
+		t.Fatal("preflight wrote the valid earlier job")
+	}
+}
+
+func TestGeneratePythonCDKRespectsDetectorExclusion(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "job.py"), `from aws_cdk import aws_glue as glue
+glue.CfnJob(self, "job", default_arguments={"--job-language": "python", "--additional-python-modules": "flask"})
+`)
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--disable-rule", "python.cdk.aws_glue_job.python", "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("exit=%d stderr=%s", code, &stderr)
+	}
+	if _, err := os.Stat(filepath.Join(project, "job.py-job.generated-requirements.txt")); !os.IsNotExist(err) {
+		t.Fatal("disabled detector generated a file")
+	}
+}

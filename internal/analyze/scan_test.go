@@ -3076,6 +3076,32 @@ func TestScanMatchesPythonFixtureFromTestdata(t *testing.T) {
 	}
 }
 
+func TestScanCollectsEveryPythonGlueJobAsIndependentGroup(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	root := filepath.Join("..", "..", "testdata", "python", "glue-cfnjob-multiple")
+
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Sources) != 1 {
+		t.Fatalf("expected 1 dependency source, got %d", len(result.Sources))
+	}
+	source := result.Sources[0]
+	if len(source.Groups) != 5 {
+		t.Fatalf("expected 5 independent groups, got %+v", source.Groups)
+	}
+	if source.Groups[0].Name != "daily/job" || source.Groups[1].Name != "daily job" || source.Groups[2].Name != "" || source.Groups[3].Name != "duplicate" || source.Groups[4].Name != "duplicate" {
+		t.Fatalf("unexpected group identities: %+v", source.Groups)
+	}
+	if got := dependencyNames(source.Groups[0].Dependencies); !slices.Equal(got, []string{"requests>=2.31", "urllib3<3"}) {
+		t.Fatalf("unexpected first group: %v", got)
+	}
+	if source.Groups[0].Location == source.Groups[1].Location || !strings.HasPrefix(source.Groups[0].Location, "line-") {
+		t.Fatalf("groups do not have stable source locations: %+v", source.Groups)
+	}
+}
+
 func TestScanSkipsIgnoredDirectories(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	root := t.TempDir()

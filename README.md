@@ -129,7 +129,7 @@ Removing every detector or check is valid. JSON retains empty arrays and the exi
 
 ### Generate Python requirements
 
-Generation is opt-in and works without a vendor preset. Add `generate: python-requirements` to an eligible custom YAML rule, then configure grouped extraction:
+Generation is opt-in and works without a vendor preset. The built-in Python and TypeScript CDK Glue detectors are eligible. Custom YAML rules can opt in with `generate: python-requirements` and grouped extraction:
 
 ```yaml
 rules:
@@ -196,6 +196,22 @@ Explicit generation adds one file per job without a vendor preset:
 Generated 2 requirements files:
   jobs.ts (daily) -> jobs.ts-daily.generated-requirements.txt
   jobs.ts (legacy) -> jobs.ts-legacy.generated-requirements.txt
+```
+
+Python CDK sources also produce one file per matching `aws_glue.CfnJob`. Deplens uses the construct ID as the group name when it is a static string and falls back to the call location when it is not. Aliases, multiline calls, reused argument dictionaries, duplicate IDs, and incompatible requirements remain separate. If any selected job cannot be read completely, generation fails before writing files. Deplens parses source text only. It does not import or execute Python code.
+
+For example, two constructs named `daily` and `legacy` in `jobs.py` change the output from a normal scan with no file writes:
+
+```text
+jobs.py [source-code · 2 dependencies]
+```
+
+to an explicit generation report:
+
+```text
+Generated 2 requirements files:
+  jobs.py (daily) -> jobs.py-daily.generated-requirements.txt
+  jobs.py (legacy) -> jobs.py-legacy.generated-requirements.txt
 ```
 
 Example output changes from an ordinary scan:
