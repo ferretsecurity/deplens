@@ -186,6 +186,25 @@ For per-group Socket and Snyk jobs driven by those JSON paths, including zero-ou
 
 The built-in `typescript.cdk.aws_glue_job.python` detector is also eligible. Every statically readable Glue `CfnJob` is exported separately, using its construct ID when available. Duplicate or unreadable IDs use the same location-based disambiguation as YAML groups. If a selected job's properties or Python module declaration cannot be evaluated statically, generation fails before writing any planned file; deplens never executes CDK code.
 
+Databricks bundle `.yaml` and `.yml` files are detected by their `resources.jobs.*.tasks` content, regardless of the filename or directory. Each base or target-specific task is a separate group. Deplens reads literal `libraries[].pypi.package` values and ignores Maven libraries in the same task. Git, wheel, URL or path, custom repository, variable, requirements-file, and malformed Python declarations are reported and stop all writes. The scanner does not follow bundle includes, resolve variables, or merge base and target settings. A generated file describes only the declarations in that source, task, and scope, not the complete deployed task.
+
+```text
+$ deplens bundle-root
+Root: /workspace/bundle-root
+
+Found 1 dependency source:
+
+config/anything.yaml [manifest · 2 dependencies]
+  ingest:
+    - requests>=2.32
+    - urllib3<3
+
+$ deplens --generate python-requirements bundle-root
+Generated 2 requirements files:
+  config/anything.yaml (ingest) -> config/anything.yaml-ingest-at-resources.jobs.analytics.tasks-0.generated-requirements.txt
+  config/anything.yaml (ingest) -> config/anything.yaml-ingest-at-targets.production.resources.jobs.analytics.tasks-0.generated-requirements.txt
+```
+
 For example, an ordinary scan of two TypeScript Glue jobs reports one source:
 
 ```text

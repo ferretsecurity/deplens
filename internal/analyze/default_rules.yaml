@@ -1205,6 +1205,14 @@ rules:
           equals: python
         - path: default_arguments.--additional-python-modules
           present: true
+  - id: databricks.bundle.task.python
+    form: manifest
+    roles: [declaration, usage, inventory]
+    package-type: pypi
+    filename-regex: '.*\.ya?ml$'
+    generate: python-requirements
+    analyzer:
+      type: databricks-bundle
   - id: typescript.cdk.aws_glue_job.python
     form: source-code
     roles: [usage, inventory]

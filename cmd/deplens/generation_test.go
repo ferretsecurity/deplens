@@ -84,6 +84,63 @@ new CfnJob(this, "legacy", { defaultArguments: {"--job-language": "python", "--a
 	}
 }
 
+func TestGeneratePythonRequirementsFromDatabricksBundle(t *testing.T) {
+	project := t.TempDir()
+	writeFile(t, filepath.Join(project, "config", "renamed.yml"), `resources:
+  jobs:
+    first:
+      tasks:
+        - task_key: shared/task
+          libraries:
+            - pypi: {package: "requests>=2.32"}
+            - maven: {coordinates: "org.example:tool:1.0"}
+targets:
+  production:
+    resources:
+      jobs:
+        second:
+          tasks:
+            - task_key: shared task
+              libraries:
+                - pypi: {package: "urllib3<3"}
+`)
+	writeFile(t, filepath.Join(project, "other.yaml"), `resources:
+  jobs:
+    third:
+      tasks:
+        - task_key: shared/task
+          libraries:
+            - pypi: {package: "idna==3.10"}
+`)
+	writeFile(t, filepath.Join(project, "unrelated.yaml"), "jobs:\n  example:\n    tasks: [libraries]\n")
+
+	var out, stderr bytes.Buffer
+	if code := run([]string{"--json", "--generate", "python-requirements", project}, &out, &stderr); code != 0 {
+		t.Fatalf("exit=%d stderr=%s", code, &stderr)
+	}
+	var result analyze.ScanResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	wantPaths := []string{
+		"config/renamed.yml-shared-task-at-resources.jobs.first.tasks-0.generated-requirements.txt",
+		"config/renamed.yml-shared-task-at-targets.production.resources.jobs.second.tasks-0.generated-requirements.txt",
+		"other.yaml-shared-task.generated-requirements.txt",
+	}
+	if !slices.Equal(result.Generation.Paths, wantPaths) {
+		t.Fatalf("generated paths: %v, want %v", result.Generation.Paths, wantPaths)
+	}
+	if len(result.Sources) != 2 || result.Sources[0].Path != "config/renamed.yml" || result.Sources[1].Path != "other.yaml" {
+		t.Fatalf("sources: %+v", result.Sources)
+	}
+	for index, want := range []string{"requests>=2.32\n", "urllib3<3\n", "idna==3.10\n"} {
+		body, err := os.ReadFile(filepath.Join(project, filepath.FromSlash(wantPaths[index])))
+		if err != nil || string(body) != want {
+			t.Fatalf("generated %s: %q, %v", wantPaths[index], body, err)
+		}
+	}
+}
+
 func TestVendorCIExampleKeepsDocumentedPathsAndZeroOutput(t *testing.T) {
 	project := t.TempDir()
 	example := filepath.Join("..", "..", "examples", "vendor-ci")

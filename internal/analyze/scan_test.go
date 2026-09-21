@@ -4217,6 +4217,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		DetectorID("js-banner-version-tagged"),
 		DetectorID("html-external-scripts"),
 		DetectorID("terraform.aws_glue_job.python"),
+		DetectorID("databricks.bundle.task.python"),
 		DetectorID("typescript.cdk.aws_glue_job.python"),
 		DetectorID("python.cdk.aws_glue_job.python"),
 	}
