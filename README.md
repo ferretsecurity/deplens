@@ -41,6 +41,7 @@ The path is optional and defaults to the current directory. Common options are:
 --disable-check ID             Exclude one policy check ID, repeatable
 --ignore dist,build,vendor     Replace the default ignored directories
 --show-without-dependencies    Include sources confirmed to contain no dependencies
+--generate python-requirements Generate requirements from eligible grouped sources
 ```
 
 Run `deplens --help` to see the complete command usage.
@@ -124,6 +125,52 @@ Disabled checks produce no runs or findings and do not change detection. Explici
 Prerequisites include manifest discovery, accepted lockfile alternatives, package-manager evidence, and workspace ownership. Skips are conservative: removing an accepted alternative or competing manager detector skips the affected evaluator even if another lockfile or custom replacement survives. Unrelated evaluators continue. CODEOWNERS still checks surviving sources; when explicit exclusions leave no sources, it reports a skip. Missing detectors in a custom base alone do not cause exclusion skips.
 
 Removing every detector or check is valid. JSON retains empty arrays and the existing schema. Findings and skips keep a successful exit status; configuration errors fail before scanning.
+
+### Generate Python requirements
+
+Generation is opt-in and works without a vendor preset. Add `generate: python-requirements` to an eligible custom YAML rule, then configure grouped extraction:
+
+```yaml
+rules:
+  - id: company-workflows
+    package-type: pypi
+    form: automation-definition
+    roles: [declaration, constraint]
+    filename-regex: '^workflow\.yaml$'
+    generate: python-requirements
+    analyzer:
+      type: yaml
+      groups:
+        query: '.workflows[]'
+        name-query: '.name'
+        dependencies-query: '.configuration.python.dependencies'
+```
+
+The group query uses embedded jq and may select a root list such as `.[]` or a nested list such as `.workflows[]`. It must select nodes from the source document. The name and dependency queries run relative to each selected group. This first version requires unique group names containing only letters, digits, `.`, `_`, or `-`.
+
+Run generation with:
+
+```bash
+deplens --extend-rules company.yaml --generate python-requirements .
+```
+
+Without `--generate`, the same command only scans. With generation enabled, a `daily` group in `workflow.yaml` produces `workflow.yaml-daily.generated-requirements.txt` beside the source. Each group gets a separate file. Names, version constraints, extras, and environment markers retain their declaration text. Local paths, URLs, Git requirements, pip options, included files, and malformed requirements fail generation.
+
+Generation validates every selected source and destination before it writes. Missing dependency fields and empty lists are reported as separate successful skips. Existing destinations cause an error and remain unchanged. Generated paths in JSON are relative to the absolute scan `root`, so CI can resolve them with `root + path`. Poetry, uv, built-in detectors without explicit eligibility, disabled rules, and previously generated requirements files do not generate output.
+
+Example output changes from an ordinary scan:
+
+```text
+workflow.yaml [automation-definition · 2 dependencies]
+```
+
+to an explicit generation report:
+
+```text
+Generated 2 requirements files:
+  workflow.yaml (daily) -> workflow.yaml-daily.generated-requirements.txt
+  workflow.yaml (legacy) -> workflow.yaml-legacy.generated-requirements.txt
+```
 
 ### Vendor coverage presets
 

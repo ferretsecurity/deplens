@@ -53,6 +53,7 @@ type detector struct {
 	FilenameRegexp *regexp.Regexp
 	PathGlob       string
 	Analyzer       sourceAnalyzer
+	Generate       string
 }
 
 type Ruleset struct {
@@ -122,11 +123,12 @@ type ruleConfig struct {
 	FilenameRegex string          `yaml:"filename-regex"`
 	PathGlob      string          `yaml:"path-glob"`
 	Analyzer      *analyzerConfig `yaml:"analyzer"`
+	Generate      string          `yaml:"generate"`
 }
 
 func (c *ruleConfig) UnmarshalYAML(node *yaml.Node) error {
 	type plain ruleConfig
-	return decodeDefinition(node, (*plain)(c), "detector", "id", "package-type", "form", "roles", "filename-regex", "path-glob", "analyzer")
+	return decodeDefinition(node, (*plain)(c), "detector", "id", "package-type", "form", "roles", "filename-regex", "path-glob", "analyzer", "generate")
 }
 
 func (c *checkConfig) UnmarshalYAML(node *yaml.Node) error {
@@ -261,6 +263,7 @@ type sourceAnalyzerResult struct {
 	Analysis     SourceAnalysis
 	Dependencies []DependencyReference
 	Diagnostics  []Diagnostic
+	Groups       []DependencyGroup
 }
 
 func LoadDefaultRules() (Ruleset, error) {
@@ -332,6 +335,9 @@ func loadRulesDocument(source string, data []byte, extension bool) (Ruleset, err
 		if err != nil {
 			return Ruleset{}, fmt.Errorf("%s: %s.roles: %w", source, fieldPath, err)
 		}
+		if rawRule.Generate != "" && rawRule.Generate != "python-requirements" {
+			return Ruleset{}, fmt.Errorf("%s: %s.generate: invalid value %q", source, fieldPath, rawRule.Generate)
+		}
 
 		var compiled *regexp.Regexp
 		if rawRule.FilenameRegex != "" {
@@ -358,6 +364,7 @@ func loadRulesDocument(source string, data []byte, extension bool) (Ruleset, err
 			FilenameRegexp: compiled,
 			PathGlob:       rawRule.PathGlob,
 			Analyzer:       analyzer,
+			Generate:       rawRule.Generate,
 		})
 	}
 
@@ -465,7 +472,7 @@ func (r Ruleset) analyzeDependencySourceWithContent(filePath, name, relPath stri
 		if !d.matches(name, relPath) {
 			continue
 		}
-		base := DependencySourceResult{Detector: d.ID, Path: relPath, Form: d.Form, Roles: append([]SourceRole(nil), d.Roles...)}
+		base := DependencySourceResult{Detector: d.ID, Path: relPath, Form: d.Form, Roles: append([]SourceRole(nil), d.Roles...), Generate: d.Generate}
 		if d.Analyzer == nil {
 			base.Analysis = identifiedAnalysis()
 			if needsPolicyContent(d.ID) && filePath != "" {
@@ -510,6 +517,7 @@ func (r Ruleset) analyzeDependencySourceWithContent(filePath, name, relPath stri
 			base.Analysis = result.Analysis
 			base.Dependencies = result.Dependencies
 			base.Diagnostics = result.Diagnostics
+			base.Groups = result.Groups
 			if needsPolicyContent(d.ID) {
 				base.content = append([]byte(nil), content...)
 			}

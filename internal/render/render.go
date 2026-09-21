@@ -32,7 +32,7 @@ type HumanOptions struct {
 
 func Human(result analyze.ScanResult, opts HumanOptions) string {
 	if len(result.Sources) == 0 && len(result.Findings) == 0 {
-		return fmt.Sprintf("Root: %s\nNo dependency sources found.\n%s", result.Root, renderFailedChecks(result.CheckRuns)+renderDisabledChecks(result.CheckRuns))
+		return fmt.Sprintf("Root: %s\nNo dependency sources found.\n%s", result.Root, renderFailedChecks(result.CheckRuns)+renderDisabledChecks(result.CheckRuns)+renderGeneration(result.Generation))
 	}
 
 	sources := slices.Clone(result.Sources)
@@ -65,6 +65,23 @@ func Human(result analyze.ScanResult, opts HumanOptions) string {
 	}
 	b.WriteString(renderFailedChecks(result.CheckRuns) + renderDisabledChecks(result.CheckRuns))
 	b.WriteString(renderFindings(result.Findings))
+	b.WriteString(renderGeneration(result.Generation))
+	return b.String()
+}
+
+func renderGeneration(result *analyze.GenerationResult) string {
+	if result == nil {
+		return ""
+	}
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("\nGenerated %d requirements %s:\n", len(result.Paths), pluralize(len(result.Paths), "file", "files")))
+	for _, outcome := range result.Outcomes {
+		if outcome.Status == "ready" {
+			b.WriteString(fmt.Sprintf("  %s (%s) -> %s\n", outcome.Source, outcome.Group, outcome.Path))
+		} else {
+			b.WriteString(fmt.Sprintf("  %s (%s) skipped: %s dependencies\n", outcome.Source, outcome.Group, outcome.Status))
+		}
+	}
 	return b.String()
 }
 

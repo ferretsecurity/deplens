@@ -76,6 +76,13 @@ type DependencyReference struct {
 	Attributes        map[string]string `json:"attributes,omitempty"`
 }
 
+type DependencyGroup struct {
+	Name         string                `json:"name"`
+	Location     string                `json:"location"`
+	Dependencies []DependencyReference `json:"dependencies,omitempty"`
+	State        string                `json:"state"`
+}
+
 type SourceAnalysis struct {
 	Presence   DependencyPresence `json:"presence"`
 	Extraction ExtractionState    `json:"extraction"`
@@ -95,6 +102,8 @@ type DependencySourceResult struct {
 	Analysis     SourceAnalysis        `json:"analysis"`
 	Dependencies []DependencyReference `json:"dependencies,omitempty"`
 	Diagnostics  []Diagnostic          `json:"diagnostics,omitempty"`
+	Groups       []DependencyGroup     `json:"-"`
+	Generate     string                `json:"-"`
 	content      []byte
 }
 
@@ -131,6 +140,20 @@ type ScanResult struct {
 	Sources       []DependencySourceResult `json:"sources"`
 	CheckRuns     []CheckRun               `json:"check_runs"`
 	Findings      []Finding                `json:"findings"`
+	Generation    *GenerationResult        `json:"generation,omitempty"`
+}
+
+type GenerationOutcome struct {
+	Source   string `json:"source"`
+	Group    string `json:"group"`
+	Location string `json:"location"`
+	Status   string `json:"status"`
+	Path     string `json:"path,omitempty"`
+}
+type GenerationResult struct {
+	Format   string              `json:"format"`
+	Paths    []string            `json:"paths"`
+	Outcomes []GenerationOutcome `json:"outcomes"`
 }
 
 func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error) {
