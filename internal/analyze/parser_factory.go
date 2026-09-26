@@ -33,6 +33,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return newBannerRegexParser(config.Pattern)
 	case "terraform":
 		return decodeAndCreate(raw.Analyzer, newTerraformResourceParser)
+	case "terraform-glue-python":
+		return decodeAndCreate(raw.Analyzer, newTerraformGluePythonParser)
 	case "ini":
 		return decodeAndCreate(raw.Analyzer, newINIQueryParser)
 	case "git-submodules":
@@ -259,6 +261,8 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 		return decodeAndCreate(raw.Analyzer, newGleamParser)
 	case "yaml":
 		return decodeAndCreate(raw.Analyzer, newYAMLQueryParser)
+	case "databricks-bundle":
+		return decodeAndCreate(raw.Analyzer, newDatabricksBundleAnalyzer)
 	case "toml":
 		return decodeAndCreate(raw.Analyzer, newTOMLQueryParser)
 	case "json":

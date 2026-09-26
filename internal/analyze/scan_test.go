@@ -2598,8 +2598,19 @@ resource "aws_glue_job" "python_shell_example" {
 	if result.Sources[0].Detector != DetectorID("terraform.aws_glue_job.python") || result.Sources[0].Path != "glue/job.tf" {
 		t.Fatalf("unexpected dependency source: %+v", result.Sources[0])
 	}
-	if len(result.Sources[0].Dependencies) != 0 {
-		t.Fatalf("expected terraform detector to keep dependencies empty, got %+v", result.Sources[0].Dependencies)
+	if got := result.Sources[0].Dependencies; len(got) != 2 || got[0].Name != "scikit-learn" || got[1].Name != "pandas" {
+		t.Fatalf("unexpected terraform dependencies: %+v", got)
+	}
+}
+
+func TestScanMatchesTerraformGluePythonFixture(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	result, err := Scan(filepath.Join("..", "..", "testdata", "terraform", "glue-job-python"), nil, ruleset)
+	if err != nil {
+		t.Fatalf("scan failed: %v", err)
+	}
+	if len(result.Sources) != 1 || result.Sources[0].Detector != "terraform.aws_glue_job.python" || len(result.Sources[0].Groups) != 2 || len(result.Sources[0].Dependencies) != 3 {
+		t.Fatalf("unexpected fixture result: %+v", result.Sources)
 	}
 }
 
@@ -2618,8 +2629,8 @@ resource "aws_glue_job" "python_shell_example" {
 	if err != nil {
 		t.Fatalf("scan failed: %v", err)
 	}
-	if len(result.Sources) != 0 {
-		t.Fatalf("expected no dependency sources, got %+v", result.Sources)
+	if len(result.Sources) != 1 || len(result.Sources[0].Groups) != 1 || result.Sources[0].Groups[0].State != GroupMissing {
+		t.Fatalf("expected a missing dependency group, got %+v", result.Sources)
 	}
 }
 
@@ -4217,6 +4228,7 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		DetectorID("js-banner-version-tagged"),
 		DetectorID("html-external-scripts"),
 		DetectorID("terraform.aws_glue_job.python"),
+		DetectorID("databricks.bundle.task.python"),
 		DetectorID("typescript.cdk.aws_glue_job.python"),
 		DetectorID("python.cdk.aws_glue_job.python"),
 	}

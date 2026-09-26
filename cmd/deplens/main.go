@@ -71,7 +71,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 1
 	}
 	if cfg.generate != "" {
-		if err := analyze.GeneratePythonRequirements(&result, cfg.overwriteGenerated); err != nil {
+		if err := analyze.Generate(&result, analyze.GenerationFormat(cfg.generate), cfg.overwriteGenerated); err != nil {
 			fmt.Fprintf(stderr, "error: %v\n", err)
 			return 1
 		}
@@ -139,7 +139,7 @@ func parseArgs(args []string) (config, string, error) {
 	}
 	fs.BoolVar(&cfg.json, "json", false, "emit machine-readable JSON output")
 	fs.BoolVar(&cfg.showWithoutDependencies, "show-without-dependencies", false, "include dependency sources confirmed to have no dependency references")
-	fs.StringVar(&cfg.generate, "generate", "", "generate dependency files (supported: python-requirements)")
+	fs.StringVar(&cfg.generate, "generate", "", "generate dependency files (supported: python-requirements, maven-pom)")
 	fs.BoolVar(&cfg.overwriteGenerated, "overwrite-generated", false, "replace existing generated files after preflight succeeds")
 
 	var ignore string
@@ -167,7 +167,7 @@ func parseArgs(args []string) (config, string, error) {
 	if err := fs.Parse(args); err != nil {
 		return config{}, renderUsage(), err
 	}
-	if cfg.generate != "" && cfg.generate != "python-requirements" {
+	if cfg.generate != "" && cfg.generate != "python-requirements" && cfg.generate != "maven-pom" {
 		return config{}, renderUsage(), fmt.Errorf("unsupported generation format %q", cfg.generate)
 	}
 	if cfg.overwriteGenerated && cfg.generate == "" {

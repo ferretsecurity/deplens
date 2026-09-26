@@ -11,6 +11,9 @@ import (
 )
 
 func displayDependency(d analyze.DependencyReference) string {
+	if d.PackageType == "maven" && d.Raw != "" {
+		return d.Raw
+	}
 	if d.PackageType == "npm" && d.Relationship == analyze.RelationshipDirect && d.Raw != "" {
 		return d.Raw
 	}
@@ -74,7 +77,11 @@ func renderGeneration(result *analyze.GenerationResult) string {
 		return ""
 	}
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("\nGenerated %d requirements %s:\n", len(result.Paths), pluralize(len(result.Paths), "file", "files")))
+	label := "requirements"
+	if result.Format == analyze.GenerationMavenPOM {
+		label = "Maven POM"
+	}
+	b.WriteString(fmt.Sprintf("\nGenerated %d %s %s:\n", len(result.Paths), label, pluralize(len(result.Paths), "file", "files")))
 	for _, outcome := range result.Outcomes {
 		if outcome.Status == "ready" {
 			b.WriteString(fmt.Sprintf("  %s (%s) -> %s\n", outcome.Source, outcome.Group, outcome.Path))

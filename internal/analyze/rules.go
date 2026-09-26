@@ -335,7 +335,7 @@ func loadRulesDocument(source string, data []byte, extension bool) (Ruleset, err
 		if err != nil {
 			return Ruleset{}, fmt.Errorf("%s: %s.roles: %w", source, fieldPath, err)
 		}
-		if rawRule.Generate != "" && GenerationFormat(rawRule.Generate) != GenerationPythonRequirements {
+		if rawRule.Generate != "" && GenerationFormat(rawRule.Generate) != GenerationPythonRequirements && GenerationFormat(rawRule.Generate) != GenerationMavenPOM {
 			return Ruleset{}, fmt.Errorf("%s: %s.generate: invalid value %q", source, fieldPath, rawRule.Generate)
 		}
 

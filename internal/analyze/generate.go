@@ -1,6 +1,7 @@
 package analyze
 
 import (
+	"encoding/xml"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,19 +11,31 @@ import (
 
 type generationPlan struct {
 	destination string
+	directory   string
 	relative    string
 	content     []byte
 	outcome     GenerationOutcome
 }
 
 func GeneratePythonRequirements(result *ScanResult, overwrite bool) error {
-	generation := &GenerationResult{Format: GenerationPythonRequirements, Paths: []string{}, Outcomes: []GenerationOutcome{}}
+	return Generate(result, GenerationPythonRequirements, overwrite)
+}
+
+func Generate(result *ScanResult, format GenerationFormat, overwrite bool) error {
+	if format != GenerationPythonRequirements && format != GenerationMavenPOM {
+		return fmt.Errorf("unsupported generation format %q", format)
+	}
+	generation := &GenerationResult{Format: format, Paths: []string{}, Outcomes: []GenerationOutcome{}}
 	plans := []generationPlan{}
 	for _, source := range result.Sources {
-		if source.Generate != GenerationPythonRequirements {
+		formatGroups := false
+		for _, group := range source.Groups {
+			formatGroups = formatGroups || group.Format == format
+		}
+		if source.Generate != format && !formatGroups {
 			continue
 		}
-		if source.Analysis.Extraction == ExtractionFailed || source.Analysis.Extraction == ExtractionPartial || source.Analysis.Extraction == ExtractionUnsupported {
+		if !formatGroups && (source.Analysis.Extraction == ExtractionFailed || source.Analysis.Extraction == ExtractionPartial || source.Analysis.Extraction == ExtractionUnsupported) {
 			detail := fmt.Sprintf("extraction is %s", source.Analysis.Extraction)
 			if len(source.Diagnostics) > 0 {
 				detail = source.Diagnostics[0].Message
@@ -33,10 +46,16 @@ func GeneratePythonRequirements(result *ScanResult, overwrite bool) error {
 			return fmt.Errorf("cannot generate from %s (%s): analyzer returned no independent groups", source.Path, source.Detector)
 		}
 		groups := slices.Clone(source.Groups)
+		if formatGroups {
+			groups = slices.DeleteFunc(groups, func(group DependencyGroup) bool { return group.Format != format })
+		}
 		slices.SortFunc(groups, func(a, b DependencyGroup) int { return strings.Compare(a.Location, b.Location) })
 		components := generationGroupComponents(groups)
 		usedRelative := make(map[string]string, len(groups))
 		for index, group := range groups {
+			if len(group.Diagnostics) > 0 {
+				return fmt.Errorf("cannot generate from %s (%s) group at %s: %s", source.Path, source.Detector, group.Location, group.Diagnostics[0].Message)
+			}
 			outcome := GenerationOutcome{Source: source.Path, Group: group.Name, Location: group.Location, Status: GenerationOutcomeStatus(group.State)}
 			if group.State != GroupReady {
 				generation.Outcomes = append(generation.Outcomes, outcome)
@@ -44,6 +63,11 @@ func GeneratePythonRequirements(result *ScanResult, overwrite bool) error {
 			}
 			component := components[index]
 			rel := source.Path + "-" + component + ".generated-requirements.txt"
+			directory := ""
+			if format == GenerationMavenPOM {
+				directory = source.Path + "-" + component + ".generated-maven"
+				rel = directory + "/pom.xml"
+			}
 			if previous, exists := usedRelative[rel]; exists {
 				return fmt.Errorf("generated destination collision for %s groups at %s and %s", source.Path, previous, group.Location)
 			}
@@ -52,6 +76,11 @@ func GeneratePythonRequirements(result *ScanResult, overwrite bool) error {
 			cleanRoot := filepath.Clean(result.Root) + string(filepath.Separator)
 			if !strings.HasPrefix(filepath.Clean(destination)+string(filepath.Separator), cleanRoot) {
 				return fmt.Errorf("generated destination for %s group %q escapes scan root", source.Path, group.Name)
+			}
+			if directory != "" {
+				if err := validateGeneratedMavenDirectory(result.Root, directory, overwrite); err != nil {
+					return err
+				}
 			}
 			if info, err := os.Lstat(destination); err == nil {
 				if !overwrite {
@@ -63,17 +92,25 @@ func GeneratePythonRequirements(result *ScanResult, overwrite bool) error {
 			} else if !os.IsNotExist(err) {
 				return fmt.Errorf("inspect generated destination %s: %w", rel, err)
 			}
-			var lines strings.Builder
-			for _, dep := range group.Dependencies {
-				lines.WriteString(dep.Raw)
-				lines.WriteByte('\n')
+			content := pythonRequirementsContent(group.Dependencies)
+			if format == GenerationMavenPOM {
+				var err error
+				content, err = mavenPOMContent(group.Dependencies)
+				if err != nil {
+					return fmt.Errorf("cannot generate from %s (%s) group at %s: %w", source.Path, source.Detector, group.Location, err)
+				}
 			}
 			outcome.Path = rel
-			plans = append(plans, generationPlan{destination: destination, relative: rel, content: []byte(lines.String()), outcome: outcome})
+			plans = append(plans, generationPlan{destination: destination, directory: directory, relative: rel, content: content, outcome: outcome})
 		}
 	}
 	slices.SortFunc(plans, func(a, b generationPlan) int { return strings.Compare(a.relative, b.relative) })
 	for _, plan := range plans {
+		if plan.directory != "" {
+			if err := os.MkdirAll(filepath.Join(result.Root, filepath.FromSlash(plan.directory)), 0o755); err != nil {
+				return fmt.Errorf("create generated directory %s: %w", plan.directory, err)
+			}
+		}
 		if err := writeGeneratedFile(plan, overwrite); err != nil {
 			return err
 		}
@@ -87,6 +124,78 @@ func GeneratePythonRequirements(result *ScanResult, overwrite bool) error {
 		return strings.Compare(a.Location, b.Location)
 	})
 	result.Generation = generation
+	return nil
+}
+
+func pythonRequirementsContent(dependencies []DependencyReference) []byte {
+	var lines strings.Builder
+	for _, dep := range dependencies {
+		lines.WriteString(dep.Raw)
+		lines.WriteByte('\n')
+	}
+	return []byte(lines.String())
+}
+
+type pomProject struct {
+	XMLName      xml.Name        `xml:"project"`
+	XMLNS        string          `xml:"xmlns,attr"`
+	ModelVersion string          `xml:"modelVersion"`
+	GroupID      string          `xml:"groupId"`
+	ArtifactID   string          `xml:"artifactId"`
+	Version      string          `xml:"version"`
+	Dependencies []pomDependency `xml:"dependencies>dependency"`
+}
+type pomDependency struct {
+	GroupID    string         `xml:"groupId"`
+	ArtifactID string         `xml:"artifactId"`
+	Version    string         `xml:"version"`
+	Exclusions *pomExclusions `xml:"exclusions,omitempty"`
+}
+type pomExclusions struct {
+	Values []MavenExclusion `xml:"exclusion"`
+}
+
+func mavenPOMContent(dependencies []DependencyReference) ([]byte, error) {
+	p := pomProject{XMLNS: "http://maven.apache.org/POM/4.0.0", ModelVersion: "4.0.0", GroupID: "dev.deplens.generated", ArtifactID: "dependencies", Version: "1.0.0"}
+	for _, dep := range dependencies {
+		parts := strings.SplitN(dep.Name, ":", 2)
+		if len(parts) != 2 || parts[0] == "" || parts[1] == "" || dep.VersionConstraint == "" {
+			return nil, fmt.Errorf("dependency %q does not contain groupId:artifactId and version", dep.Raw)
+		}
+		item := pomDependency{GroupID: parts[0], ArtifactID: parts[1], Version: dep.VersionConstraint}
+		if len(dep.MavenExclusions) > 0 {
+			item.Exclusions = &pomExclusions{Values: dep.MavenExclusions}
+		}
+		p.Dependencies = append(p.Dependencies, item)
+	}
+	body, _ := xml.MarshalIndent(p, "", "  ")
+	return append([]byte(xml.Header), append(body, '\n')...), nil
+}
+
+func validateGeneratedMavenDirectory(root, relative string, overwrite bool) error {
+	path := filepath.Join(root, filepath.FromSlash(relative))
+	info, err := os.Lstat(path)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("inspect generated directory %s: %w", relative, err)
+	}
+	if !overwrite {
+		return fmt.Errorf("generated destination already exists: %s", relative)
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("generated destination is not a directory: %s", relative)
+	}
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return fmt.Errorf("inspect generated directory %s: %w", relative, err)
+	}
+	for _, entry := range entries {
+		if entry.Name() != "pom.xml" {
+			return fmt.Errorf("generated directory contains unmanaged entry: %s/%s", relative, entry.Name())
+		}
+	}
 	return nil
 }
 
