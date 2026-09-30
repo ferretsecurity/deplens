@@ -17,7 +17,41 @@ type pnpmLockFile struct {
 	DevDependencies      map[string]pnpmLockDependency `yaml:"devDependencies"`
 	OptionalDependencies map[string]pnpmLockDependency `yaml:"optionalDependencies"`
 	// `packages` lists every resolved version in the store (transitive, etc.).
-	Packages map[string]yaml.Node `yaml:"packages"`
+	Packages pnpmLockPackages `yaml:"packages"`
+}
+
+// pnpmLockPackages avoids yaml.v3's all-pairs duplicate-key check on large
+// package stores. Keep the upstream decoder for small or unusual mappings so
+// merge semantics, complex keys, and duplicate diagnostics stay unchanged.
+type pnpmLockPackages map[string]yaml.Node
+
+func (p *pnpmLockPackages) UnmarshalYAML(node *yaml.Node) error {
+	fallback := func() error {
+		return node.Decode((*map[string]yaml.Node)(p))
+	}
+	if node.Kind != yaml.MappingNode || len(node.Content) < 128 {
+		return fallback()
+	}
+	seen := make(map[string]struct{}, len(node.Content)/2)
+	for i := 0; i < len(node.Content); i += 2 {
+		key := node.Content[i]
+		// A string scalar has the same decoded map key as its node value. Other
+		// tags, aliases, and merge keys need the upstream conversion rules.
+		if key.Kind != yaml.ScalarNode || key.ShortTag() != "!!str" {
+			return fallback()
+		}
+		if _, duplicate := seen[key.Value]; duplicate {
+			return fallback()
+		}
+		seen[key.Value] = struct{}{}
+	}
+	if *p == nil {
+		*p = make(pnpmLockPackages, len(seen))
+	}
+	for i := 0; i < len(node.Content); i += 2 {
+		(*p)[node.Content[i].Value] = *node.Content[i+1]
+	}
+	return nil
 }
 
 type pnpmLockImporter struct {
