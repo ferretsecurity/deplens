@@ -10,13 +10,13 @@ The benchmarks load default rules and call `Scan`, including extraction, normali
 
 | Workload | Baseline | Optimized | Speedup | Baseline Go bytes/op | Optimized Go bytes/op |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| TypeScript, 200 × 100 KB | 4.159 s | 14.02 ms | 296.5× | 247 MB | 22.2 MB |
-| TypeScript, 1 × 1 KB | 291.9 µs | 25.84 µs | 11.3× | 17.8 KB | 4.7–5.2 KB |
+| TypeScript, 200 × 100 KB | 4.364 s | 13.40 ms | 325.5× | 247 MB | 22.1 MB |
+| TypeScript, 1 × 1 KB | 264.9 µs | 24.43 µs | 10.8× | 16.7 KB | 3.98 KB |
 | Pnpm, 1,000 packages | 4.648 ms | 3.187 ms | 1.46× | 2.47 MB | 2.29 MB |
 | Pnpm, 10,000 packages | 218.501 ms | 30.906 ms | 7.07× | 27.9 MB | 26.0 MB |
 | Pnpm, 30,000 packages | 2.374 s | 96.897 ms | 24.5× | 89.9 MB | 84.3 MB |
 
-The large TypeScript runs range from 4.133–4.312 s before to 13.58–14.52 ms after. Go allocation counts fall from about 8.17 million to 9,500. The large pnpm allocation count falls from 810,699 to 720,692. Memory costs remain proportional to the file content and number of extracted references.
+The large TypeScript runs range from 4.142–4.609 s before to 12.15–13.74 ms after. Go allocation counts fall from about 8.17 million to 9,500. The large pnpm allocation count falls from 810,699 to 720,692. Memory costs remain proportional to the file content and number of extracted references.
 
 Run the committed benchmarks with:
 

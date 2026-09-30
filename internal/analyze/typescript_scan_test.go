@@ -36,17 +36,25 @@ func benchmarkScanOrdinaryTypeScript(b *testing.B, files, size int) {
 		}
 	}
 	want := ScanResult{SchemaVersion: 1, Root: root, Sources: []DependencySourceResult{}, CheckRuns: []CheckRun{{CheckID: "dependency-source-codeowners-missing", Subject: FindingSubject{ProjectRoot: "."}, Status: CheckCompleted}}, Findings: []Finding{}}
+	got, err := Scan(root, nil, ruleset)
+	if err != nil {
+		b.Fatal(err)
+	}
+	if !reflect.DeepEqual(got, want) {
+		b.Fatalf("unexpected scan result before measurement: %+v", got)
+	}
 	b.SetBytes(int64(files * len(content)))
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		got, err := Scan(root, nil, ruleset)
+		got, err = Scan(root, nil, ruleset)
 		if err != nil {
 			b.Fatal(err)
 		}
-		if !reflect.DeepEqual(got, want) {
-			b.Fatalf("unexpected scan result: %+v", got)
-		}
+	}
+	b.StopTimer()
+	if !reflect.DeepEqual(got, want) {
+		b.Fatalf("unexpected scan result after measurement: %+v", got)
 	}
 }
 
