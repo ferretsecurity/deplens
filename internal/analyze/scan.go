@@ -214,6 +214,18 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 			return nil
 		}
 
+		// DirEntry already identifies ordinary files and special files. Only
+		// symlinks need a lookup to distinguish regular targets from streams.
+		if d.Type()&fs.ModeSymlink != 0 {
+			target, statErr := os.Stat(path)
+			if statErr == nil && !target.Mode().IsRegular() {
+				return nil
+			}
+			// Keep failed lookups eligible for the existing read diagnostics.
+		} else if !d.Type().IsRegular() {
+			return nil
+		}
+
 		relPath, err := filepath.Rel(absRoot, path)
 		if err != nil {
 			return fmt.Errorf("relative path for %s: %w", path, err)
