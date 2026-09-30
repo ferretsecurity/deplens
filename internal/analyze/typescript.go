@@ -1,6 +1,7 @@
 package analyze
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
@@ -139,6 +140,14 @@ func newTypeScriptMatcher(raw typescriptMatcherConfig) (sourceAnalyzer, error) {
 }
 
 func (m typescriptCDKConstructMatcher) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
+	// Recognition requires an import from the configured module. Escaped string
+	// literals can spell it without containing these bytes, so retain parsing
+	// whenever an escape could be present. Comments and strings may also pass
+	// this filter; the parser remains responsible for recognizing actual imports.
+	if !bytes.Contains(content, []byte(m.module)) && !bytes.ContainsRune(content, '\\') {
+		return sourceAnalyzerResult{}, nil
+	}
+
 	parser := sitter.NewParser()
 	defer parser.Close()
 
