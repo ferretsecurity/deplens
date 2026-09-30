@@ -6,6 +6,8 @@ It also runs policy checks, such as finding a missing lockfile, conflicting Java
 
 The scan is local and deterministic, self-contained, `deplens` makes no network calls and does not scan dependencies for vulnerabilities.
 
+Scans skip named pipes, sockets, devices, and symlinks to these files before reading them or using them as project evidence. Symlinks to regular files keep their scan-relative paths, and broken matching symlinks retain read-failure diagnostics. Scans do not traverse symlink directories. CODEOWNERS policy inputs keep their separate rules and require a regular file, rejecting symlinks.
+
 Dependencies are not always declared in one manifest. A repository can reference them from Dockerfiles, CI workflows, version catalogs, source code, and many ecosystem-specific files. `deplens` gives you one inventory across the whole repository and reports policy problems that can be checked without contacting an external service.
 
 ## Installation
