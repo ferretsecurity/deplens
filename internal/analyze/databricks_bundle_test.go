@@ -72,6 +72,53 @@ func TestDatabricksBundleAnalyzerRejectsUnrelatedYAML(t *testing.T) {
 	}
 }
 
+func TestDatabricksBundleAnalyzerIgnoresUnparseableUnrelatedYAML(t *testing.T) {
+	for _, content := range []string{
+		"metadata:\n  labels:\n    {{- include \"app.labels\" . | nindent 4 }}\n",
+		"test:\n  <<: *missing_anchor\n",
+		// jobs and tasks without resources are not enough to look like a bundle.
+		"jobs:\n  build:\n    tasks: [test\n",
+	} {
+		result, err := (databricksBundleAnalyzer{}).Analyze("templates/service.yaml", []byte(content))
+		if err != nil {
+			t.Fatalf("unrelated YAML %q returned error: %v", content, err)
+		}
+		if result.Recognized {
+			t.Fatalf("unrelated YAML recognized: %s", content)
+		}
+	}
+}
+
+func TestDatabricksBundleAnalyzerFailsUnparseableBundle(t *testing.T) {
+	for _, content := range []string{
+		"resources:\n  jobs:\n    job:\n      tasks:\n        - task_key: {{ broken\n",
+		"\"resources\":\n  jobs :\n    job:\n      'tasks':\n        - task_key: {{ broken\n",
+	} {
+		if _, err := (databricksBundleAnalyzer{}).Analyze("databricks.yml", []byte(content)); err == nil {
+			t.Fatalf("expected parse error for bundle-like YAML: %s", content)
+		}
+	}
+}
+
+func TestDatabricksBundleScanSkipsUnparseableUnrelatedYAML(t *testing.T) {
+	ruleset, err := LoadDefaultRules()
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := t.TempDir()
+	content := []byte("apiVersion: v1\nkind: Service\nmetadata:\n  labels:\n    {{- include \"app.labels\" . | nindent 4 }}\n")
+	if err := os.WriteFile(filepath.Join(root, "service.yaml"), content, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	result, err := Scan(root, nil, ruleset)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Sources) != 0 {
+		t.Fatalf("sources = %+v", result.Sources)
+	}
+}
+
 func TestDatabricksBundleAnalyzerReportsMalformedNestedFields(t *testing.T) {
 	result, err := (databricksBundleAnalyzer{}).Analyze("bundle.yml", []byte(`resources:
   jobs:

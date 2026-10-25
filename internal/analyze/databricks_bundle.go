@@ -2,6 +2,7 @@ package analyze
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -17,6 +18,9 @@ func newDatabricksBundleAnalyzer(databricksBundleConfig) (sourceAnalyzer, error)
 func (databricksBundleAnalyzer) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	var root any
 	if err := yaml.Unmarshal(content, &root); err != nil {
+		if !looksLikeDatabricksBundle(content) {
+			return sourceAnalyzerResult{}, nil
+		}
 		return sourceAnalyzerResult{}, fmt.Errorf("parse yaml file %q: %w", path, err)
 	}
 	rootMap, ok := asStringMap(root)
@@ -189,6 +193,27 @@ func (databricksBundleAnalyzer) Analyze(path string, content []byte) (sourceAnal
 		}
 	}
 	return sourceAnalyzerResult{Recognized: true, Analysis: analysis, Dependencies: dependencies, Groups: groups, Diagnostics: diagnostics}, nil
+}
+
+var databricksBundleKeyPatterns = databricksKeyPatterns("resources", "jobs", "tasks")
+
+func databricksKeyPatterns(keys ...string) []*regexp.Regexp {
+	patterns := make([]*regexp.Regexp, 0, len(keys))
+	for _, key := range keys {
+		patterns = append(patterns, regexp.MustCompile(`(?m)^[ \t-]*["']?`+key+`["']?[ \t]*:`))
+	}
+	return patterns
+}
+
+// looksLikeDatabricksBundle keeps parse failures visible for bundle-like files
+// while ignoring unrelated YAML, such as Helm templates, that the rule also matches.
+func looksLikeDatabricksBundle(content []byte) bool {
+	for _, pattern := range databricksBundleKeyPatterns {
+		if !pattern.Match(content) {
+			return false
+		}
+	}
+	return true
 }
 
 func databricksGroupName(segments []any, jobName, taskName string) string {
