@@ -20,7 +20,7 @@ func dependencyVERS(packageType PackageType, versionConstraint string) string {
 		return ""
 	}
 	nativeScheme, outputScheme, ok := versSchemeForPackageType(packageType)
-	if !ok || versionConstraint == "" {
+	if !ok || strings.Trim(versionConstraint, " \t\r\n<>=!^~|,") == "" {
 		return ""
 	}
 

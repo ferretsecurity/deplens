@@ -11,7 +11,7 @@ import (
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/hmarr/codeowners"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 type codeownersPlatform string

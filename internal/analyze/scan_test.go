@@ -1914,7 +1914,7 @@ func TestScanMatchesPyprojectDependenciesFromFixture(t *testing.T) {
 		{PackageType: PackageType("pypi"), Raw: "requests>=2.31", Name: "requests", VersionConstraint: ">=2.31", VERS: "vers:pypi/>=2.31", SourceGroup: "project.dependencies"},
 		{PackageType: PackageType("pypi"), Raw: "fastapi[all]>=0.110; python_version >= '3.10'", Name: "fastapi", VersionConstraint: ">=0.110", VERS: "vers:pypi/>=0.110", SourceGroup: "project.dependencies", Attributes: map[string]string{"extras": "all", "marker": "python_version >= '3.10'"}},
 		{PackageType: PackageType("pypi"), Raw: "pytest>=8", Name: "pytest", VersionConstraint: ">=8", VERS: "vers:pypi/>=8", SourceGroup: "project.optional-dependencies.dev"},
-		{PackageType: PackageType("pypi"), Raw: "ruff==0.4.8", Name: "ruff", VersionConstraint: "==0.4.8", VERS: "vers:pypi/%3D0.4.8", SourceGroup: "project.optional-dependencies.dev"},
+		{PackageType: PackageType("pypi"), Raw: "ruff==0.4.8", Name: "ruff", VersionConstraint: "==0.4.8", VERS: "vers:pypi/0.4.8", SourceGroup: "project.optional-dependencies.dev"},
 		{PackageType: PackageType("pypi"), Raw: "mypy>=1.10", Name: "mypy", VersionConstraint: ">=1.10", VERS: "vers:pypi/>=1.10", SourceGroup: "dependency-groups.lint"},
 		{PackageType: PackageType("pypi"), Raw: "django = \"^5.0\"", SourceGroup: "tool.poetry.dependencies"},
 		{PackageType: PackageType("pypi"), Raw: "httpx = { extras = [\"http2\"], version = \"^0.27\" }", SourceGroup: "tool.poetry.dependencies"},

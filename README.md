@@ -12,6 +12,8 @@ Dependencies are not always declared in one manifest. A repository can reference
 
 ## Installation
 
+Building from source requires Go 1.27.3 or newer and a C compiler for Tree-sitter.
+
 Install the latest version with Go:
 
 ```bash

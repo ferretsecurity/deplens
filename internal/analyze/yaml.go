@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/itchyny/gojq"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 type yamlMatcherConfig struct {

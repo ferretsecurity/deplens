@@ -14,7 +14,7 @@ Requirements:
 
 - Codex must report that it is logged in using ChatGPT.
 - GitHub CLI authentication and repository access must succeed.
-- Go must report version 1.25.6.
+- Go must report the version declared by the `go` directive in `go.mod`.
 - Do not edit files, create commits, push branches, or modify GitHub issues.
 
 If every check succeeds, output `<smoke>PASS</smoke>`.
