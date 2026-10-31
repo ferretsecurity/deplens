@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"go.yaml.in/yaml/v3"
 	"golang.org/x/mod/modfile"
-	"gopkg.in/yaml.v3"
 )
 
 const findingFingerprintVersion = "1"

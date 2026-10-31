@@ -30,7 +30,7 @@ func TestDenoJSONCFixturesExtractImportMapDependencies(t *testing.T) {
 			want: []DependencyReference{
 				{PackageType: "generic", Raw: "@example/cli@jsr:@example/cli@1.2.3-rc.1", Name: "@example/cli", VersionConstraint: "1.2.3-rc.1", SourceGroup: "imports", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"registry": "jsr"}},
 				{PackageType: "npm", Raw: "bundler@npm:bundler@2.3.4", Name: "bundler", VersionConstraint: "2.3.4", VERS: "vers:npm/2.3.4", SourceGroup: "imports", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"registry": "npm"}},
-				{PackageType: "npm", Raw: "validator@npm:validator@next", Name: "validator", VersionConstraint: "next", VERS: "vers:npm/next.0.0", SourceGroup: "imports", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"registry": "npm"}},
+				{PackageType: "npm", Raw: "validator@npm:validator@next", Name: "validator", VersionConstraint: "next", VERS: "vers:npm/next", SourceGroup: "imports", OriginKind: OriginRegistry, Relationship: RelationshipDirect, Scope: ScopeRuntime, Attributes: map[string]string{"registry": "npm"}},
 			},
 		},
 		{

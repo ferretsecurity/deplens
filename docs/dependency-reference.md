@@ -112,6 +112,12 @@ The field is omitted when the package type is unsupported, the constraint is
 empty or templated, or the native constraint cannot be parsed. Consumers can
 always fall back to `version_constraint`, which preserves the native syntax.
 
+Go dependencies use the canonical `vers:go/` scheme while retaining
+`package_type: "golang"`. PyPI equality uses a bare version, such as
+`vers:pypi/1.2.3` for `==1.2.3`; `==1.2.*` becomes
+`vers:pypi/>=1.2.dev0|<1.3.dev0`. Cargo upper bounds can include `-0` to
+exclude prereleases, such as `vers:cargo/>=1.0.0|<2.0.0-0` for `>=1.0,<2.0`.
+
 ## Classification fields
 
 ### Origin kind
