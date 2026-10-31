@@ -24,3 +24,6 @@ A dependency source produced by deplens from declarations or other dependency re
 
 **Independent dependency group**:
 A set of dependency declarations within a source that belongs to its own environment. Different groups may have incompatible requirements, such as jobs that use different versions of the same package.
+
+**Repository inventory**:
+The dependency sources and dependency references observed by deplens in a particular repository revision, within the scope of the scan configuration and supported analysis.
