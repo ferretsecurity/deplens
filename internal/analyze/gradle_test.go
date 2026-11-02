@@ -350,3 +350,28 @@ broken = { module = "org.example:broken", version.ref = "missing" }
 		t.Fatalf("unexpected result: %+v", result)
 	}
 }
+
+func TestGradleBuildParserDoesNotExtractInlineReasons(t *testing.T) {
+	for _, path := range []string{"build.gradle", "build.gradle.kts"} {
+		t.Run(path, func(t *testing.T) {
+			parser, _ := newGradleBuildParser(gradleBuildMatcherConfig{})
+			result, err := parser.Analyze(path, []byte(`dependencies {
+  implementation("org.example:core:1.2") { because("align with org.example:other:2.0") }
+  constraints {
+    implementation("org.example:core:1.2") { because("align with org.example:other:2.0") }
+  }
+}`))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(result.Dependencies) != 2 {
+				t.Fatalf("expected only direct and constraint declarations, got %+v", result.Dependencies)
+			}
+			for _, dependency := range result.Dependencies {
+				if dependency.Name != "org.example:core" {
+					t.Fatalf("unexpected dependency from reason: %+v", dependency)
+				}
+			}
+		})
+	}
+}
