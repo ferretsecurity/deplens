@@ -139,6 +139,15 @@ An absent `relationship` means the analyzer did not classify it. It is distinct
 from `inconclusive`, which is an explicit classification based on limited source
 information.
 
+Gradle references inside a `constraints` block within `dependencies` use
+`relationship: "inconclusive"`. A constraint applies if the module appears in
+the dependency graph, but does not introduce the module. The `source_group`
+retains the configuration with a `constraints.` prefix, such as
+`constraints.implementation` or `constraints.api`. Scope derives from the
+original configuration, so both examples have runtime scope. A direct declaration
+of the same coordinate remains a separate reference with its original group and
+`relationship: "direct"`.
+
 ### Scope
 
 - `runtime`: needed for normal execution or the default dependency group.
@@ -177,6 +186,32 @@ Docker `platform` and `stage`, Gradle `classifier` and `version_ref`, and
 ecosystem identifiers such as `uuid`, `channel`, or `package_id`. All attribute
 values remain strings even when the source represents a number, Boolean, or
 list.
+
+### pnpm lockfile attributes
+
+Root importer declarations and older top-level declarations retain their
+source-facing resolution in `raw`. Their normalized `version` excludes peer
+context. The `peer_context` attribute retains the exact suffix, including its
+leading `(` or `_`, such as `(typescript@5.2.2)` or `_react@18.2.0`. Nested
+parenthesized contexts remain intact.
+
+Aliases use the target package's `name` and selected `version`. When the name
+differs from the declaration, `declared_name` retains the declaration name.
+Aliases support modern `name@version` and scoped coordinates, older
+`/name/version` and `/name@version` package IDs, and an `npm:` specifier with a
+bare selected version. The original `specifier` remains an attribute when a
+resolution is present.
+
+`link:` and `file:` resolutions omit `version` and use `origin_kind: "path"`.
+Their `protocol` and `path` attributes retain the protocol without the colon
+and the path after it. A `workspace:` specifier resolved through `link:` uses
+`origin_kind: "workspace"` with the same attributes.
+
+Entries from the `packages` store are deduplicated by normalized name and
+version against importer references and other store entries. Separate importer
+declarations retain their own `raw`, `source_group`, and attributes even when
+their normalized names and versions match. Only the `.` importer is read for
+declarations; the store can include packages used by other importers.
 
 ### Maven profiles
 

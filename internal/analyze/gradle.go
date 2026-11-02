@@ -43,7 +43,7 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 		return sourceAnalyzerResult{}, err
 	}
 
-	dependencyBlocks, err := gradleDependencyBlocks(path, cleaned)
+	segments, err := gradleDependencySegments(path, cleaned)
 	if err != nil {
 		return sourceAnalyzerResult{}, err
 	}
@@ -52,120 +52,122 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 	incomplete := make([]string, 0)
 	dynamicSeen := make(map[string]struct{})
 
-	masked := []byte(dependencyBlocks)
-	for _, location := range gradleRichVersionToken.FindAllStringIndex(dependencyBlocks, -1) {
-		if masked[location[0]] != 'v' {
-			continue
-		}
-		end, ok := executableDSLMatchingBrace(dependencyBlocks, location[1])
-		if !ok {
-			return sourceAnalyzerResult{}, fmt.Errorf("parse Gradle build %q: unterminated rich version block", path)
-		}
-		for index := location[0]; index <= end; index++ {
-			if masked[index] != '\n' {
-				masked[index] = ' '
+	for _, segment := range segments {
+		masked := []byte(segment.text)
+		for _, location := range gradleRichVersionToken.FindAllStringIndex(segment.text, -1) {
+			if masked[location[0]] != 'v' {
+				continue
 			}
+			end, ok := executableDSLMatchingBrace(segment.text, location[1])
+			if !ok {
+				return sourceAnalyzerResult{}, fmt.Errorf("parse Gradle build %q: unterminated rich version block", path)
+			}
+			for index := location[0]; index <= end; index++ {
+				if masked[index] != '\n' {
+					masked[index] = ' '
+				}
+			}
+			incomplete = appendUniqueMessage(incomplete, dynamicSeen, "Gradle rich version declarations could not be extracted")
 		}
-		incomplete = appendUniqueMessage(incomplete, dynamicSeen, "Gradle rich version declarations could not be extracted")
-	}
-	dependencyBlocks = string(masked)
+		segment.text = string(masked)
 
-	for _, location := range gradleDeclarationHead.FindAllStringSubmatchIndex(dependencyBlocks, -1) {
-		configuration := dependencyBlocks[location[2]:location[3]]
-		switch configuration {
-		case "if", "else", "for", "while", "when", "switch", "catch", "synchronized":
-			continue
-		}
-		start := gradleAttachedClosure(dependencyBlocks, location[3])
-		if start < 0 {
-			continue
-		}
-		head := dependencyBlocks[location[0]:start]
-		dependencyCall := gradleMapKey.MatchString(head) || gradleAliasCall.MatchString(head) ||
-			gradleLocalDependency.MatchString(dependencyBlocks[location[3]:start])
-		for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall, gradlePlatformCall} {
-			if match := matcher.FindStringSubmatch(head); match != nil {
-				if _, ok := gradleCoordinateDependency(match[2], configuration); ok {
-					dependencyCall = true
+		for _, location := range gradleDeclarationHead.FindAllStringSubmatchIndex(segment.text, -1) {
+			configuration := segment.text[location[2]:location[3]]
+			switch configuration {
+			case "if", "else", "for", "while", "when", "switch", "catch", "synchronized":
+				continue
+			}
+			start := gradleAttachedClosure(segment.text, location[3])
+			if start < 0 {
+				continue
+			}
+			head := segment.text[location[0]:start]
+			dependencyCall := gradleMapKey.MatchString(head) || gradleAliasCall.MatchString(head) ||
+				gradleLocalDependency.MatchString(segment.text[location[3]:start])
+			for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall, gradlePlatformCall} {
+				if match := matcher.FindStringSubmatch(head); match != nil {
+					if _, ok := gradleCoordinateDependency(match[2], configuration, segment.context); ok {
+						dependencyCall = true
+					}
+				}
+			}
+			if !dependencyCall {
+				continue
+			}
+			end, ok := executableDSLMatchingBrace(segment.text, start+1)
+			if !ok {
+				return sourceAnalyzerResult{}, fmt.Errorf("parse Gradle build %q: unterminated dependency configuration block", path)
+			}
+			for index := start; index <= end; index++ {
+				if masked[index] != '\n' {
+					masked[index] = ' '
 				}
 			}
 		}
-		if !dependencyCall {
-			continue
-		}
-		end, ok := executableDSLMatchingBrace(dependencyBlocks, start+1)
-		if !ok {
-			return sourceAnalyzerResult{}, fmt.Errorf("parse Gradle build %q: unterminated dependency configuration block", path)
-		}
-		for index := start; index <= end; index++ {
-			if masked[index] != '\n' {
-				masked[index] = ' '
-			}
-		}
-	}
-	dependencyBlocks = string(masked)
+		segment.text = string(masked)
 
-	for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall, gradlePlatformCall} {
-		for _, match := range matcher.FindAllStringSubmatch(dependencyBlocks, -1) {
+		for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall, gradlePlatformCall} {
+			for _, match := range matcher.FindAllStringSubmatch(segment.text, -1) {
+				configuration := lastIdentifier(match[1])
+				coordinate := strings.TrimSpace(match[2])
+				if strings.Count(coordinate, ":") < 1 {
+					continue
+				}
+				if strings.ContainsAny(coordinate, "$") {
+					message := fmt.Sprintf("dynamic Gradle dependency in configuration %s could not be extracted: %s", configuration, coordinate)
+					incomplete = appendUniqueMessage(incomplete, dynamicSeen, message)
+					continue
+				}
+				dependency, ok := gradleCoordinateDependency(coordinate, configuration, segment.context)
+				if !ok {
+					continue
+				}
+				key := dependency.SourceGroup + "\x00" + dependency.Name + "\x00" + dependency.VersionConstraint
+				dependencies = appendUniqueDependency(dependencies, seen, key, dependency)
+			}
+		}
+
+		for _, match := range gradleMapCall.FindAllStringSubmatch(segment.text, -1) {
 			configuration := lastIdentifier(match[1])
-			coordinate := strings.TrimSpace(match[2])
-			if strings.Count(coordinate, ":") < 1 {
+			body := match[2]
+			if body == "" {
+				body = match[3]
+			}
+			values := make(map[string]string)
+			for _, pair := range gradleMapPair.FindAllStringSubmatch(body, -1) {
+				values[pair[1]] = pair[2]
+			}
+			mapKeys := make(map[string]struct{})
+			for _, keyMatch := range gradleMapKey.FindAllStringSubmatch(body, -1) {
+				mapKeys[keyMatch[1]] = struct{}{}
+			}
+			if values["group"] == "" || values["name"] == "" {
+				if len(mapKeys) > 0 {
+					message := fmt.Sprintf("dynamic Gradle map dependency in configuration %s could not be fully extracted", configuration)
+					incomplete = appendUniqueMessage(incomplete, dynamicSeen, message)
+				}
 				continue
 			}
-			if strings.ContainsAny(coordinate, "$") {
-				message := fmt.Sprintf("dynamic Gradle dependency in configuration %s could not be extracted: %s", configuration, coordinate)
-				incomplete = appendUniqueMessage(incomplete, dynamicSeen, message)
-				continue
+			coordinate := values["group"] + ":" + values["name"]
+			if values["version"] != "" {
+				coordinate += ":" + values["version"]
 			}
-			dependency, ok := gradleCoordinateDependency(coordinate, configuration)
+			dependency, ok := gradleCoordinateDependency(coordinate, configuration, segment.context)
 			if !ok {
 				continue
 			}
 			key := dependency.SourceGroup + "\x00" + dependency.Name + "\x00" + dependency.VersionConstraint
 			dependencies = appendUniqueDependency(dependencies, seen, key, dependency)
-		}
-	}
-
-	for _, match := range gradleMapCall.FindAllStringSubmatch(dependencyBlocks, -1) {
-		configuration := lastIdentifier(match[1])
-		body := match[2]
-		if body == "" {
-			body = match[3]
-		}
-		values := make(map[string]string)
-		for _, pair := range gradleMapPair.FindAllStringSubmatch(body, -1) {
-			values[pair[1]] = pair[2]
-		}
-		mapKeys := make(map[string]struct{})
-		for _, keyMatch := range gradleMapKey.FindAllStringSubmatch(body, -1) {
-			mapKeys[keyMatch[1]] = struct{}{}
-		}
-		if values["group"] == "" || values["name"] == "" {
-			if len(mapKeys) > 0 {
-				message := fmt.Sprintf("dynamic Gradle map dependency in configuration %s could not be fully extracted", configuration)
+			if _, declaresVersion := mapKeys["version"]; declaresVersion && values["version"] == "" {
+				message := fmt.Sprintf("dynamic Gradle version in configuration %s could not be extracted", configuration)
 				incomplete = appendUniqueMessage(incomplete, dynamicSeen, message)
 			}
-			continue
 		}
-		coordinate := values["group"] + ":" + values["name"]
-		if values["version"] != "" {
-			coordinate += ":" + values["version"]
-		}
-		dependency, ok := gradleCoordinateDependency(coordinate, configuration)
-		if !ok {
-			continue
-		}
-		key := dependency.SourceGroup + "\x00" + dependency.Name + "\x00" + dependency.VersionConstraint
-		dependencies = appendUniqueDependency(dependencies, seen, key, dependency)
-		if _, declaresVersion := mapKeys["version"]; declaresVersion && values["version"] == "" {
-			message := fmt.Sprintf("dynamic Gradle version in configuration %s could not be extracted", configuration)
+
+		for _, match := range gradleAliasCall.FindAllStringSubmatch(segment.text, -1) {
+			message := fmt.Sprintf("version-catalog alias %s could not be resolved from this build file", match[2])
 			incomplete = appendUniqueMessage(incomplete, dynamicSeen, message)
 		}
-	}
-
-	for _, match := range gradleAliasCall.FindAllStringSubmatch(dependencyBlocks, -1) {
-		message := fmt.Sprintf("version-catalog alias %s could not be resolved from this build file", match[2])
-		incomplete = appendUniqueMessage(incomplete, dynamicSeen, message)
 	}
 
 	sortDependencyReferences(dependencies)
@@ -222,21 +224,6 @@ func gradleAttachedClosure(content string, start int) int {
 	return -1
 }
 
-var gradleDependenciesBlock = regexp.MustCompile(`\bdependencies\s*\{`)
-
-func gradleDependencyBlocks(path, content string) (string, error) {
-	blocks := make([]string, 0)
-	for _, location := range gradleDependenciesBlock.FindAllStringIndex(content, -1) {
-		start := location[1]
-		end, ok := executableDSLMatchingBrace(content, start)
-		if !ok {
-			return "", fmt.Errorf("parse Gradle build %q: unterminated dependencies block", path)
-		}
-		blocks = append(blocks, content[start:end])
-	}
-	return strings.Join(blocks, "\n"), nil
-}
-
 func executableDSLMatchingBrace(content string, start int) (int, bool) {
 	depth := 1
 	var quote byte
@@ -270,7 +257,82 @@ func executableDSLMatchingBrace(content string, start int) (int, bool) {
 	return 0, false
 }
 
-func gradleCoordinateDependency(coordinate, configuration string) (DependencyReference, bool) {
+type gradleDependencyContext uint8
+
+const (
+	gradleOutsideDependencies gradleDependencyContext = iota
+	gradleDirectDependencies
+	gradleConstraintDependencies
+)
+
+type gradleDependencySegment struct {
+	text    string
+	context gradleDependencyContext
+}
+
+var gradleContextBlock = regexp.MustCompile(`\b(dependencies|constraints)\s*$`)
+
+func gradleDependencySegments(path, content string) ([]gradleDependencySegment, error) {
+	segments := make([]gradleDependencySegment, 0)
+	stack := []gradleDependencyContext{gradleOutsideDependencies}
+	start := 0
+	var quote byte
+	escaped := false
+	for index := 0; index < len(content); index++ {
+		current := content[index]
+		if quote != 0 {
+			if escaped {
+				escaped = false
+			} else if current == '\\' {
+				escaped = true
+			} else if current == quote {
+				quote = 0
+			}
+			continue
+		}
+		if current == '"' || current == '\'' {
+			quote = current
+			continue
+		}
+		if current != '{' && current != '}' {
+			continue
+		}
+		context := stack[len(stack)-1]
+		nextContext := context
+		if current == '{' {
+			if match := gradleContextBlock.FindStringSubmatch(content[start:index]); match != nil {
+				switch match[1] {
+				case "dependencies":
+					if context == gradleOutsideDependencies {
+						nextContext = gradleDirectDependencies
+					}
+				case "constraints":
+					if context != gradleOutsideDependencies {
+						nextContext = gradleConstraintDependencies
+					}
+				}
+			}
+			stack = append(stack, nextContext)
+		} else if len(stack) > 1 {
+			stack = stack[:len(stack)-1]
+			nextContext = stack[len(stack)-1]
+		}
+		if context != nextContext {
+			if context != gradleOutsideDependencies {
+				segments = append(segments, gradleDependencySegment{text: content[start:index], context: context})
+			}
+			start = index + 1
+		}
+	}
+	for _, context := range stack {
+		if context != gradleOutsideDependencies {
+			return nil, fmt.Errorf("parse Gradle build %q: unterminated dependencies block", path)
+		}
+	}
+	return segments, nil
+}
+
+func gradleCoordinateDependency(coordinate, configuration string, context gradleDependencyContext) (DependencyReference, bool) {
 	parts := strings.Split(coordinate, ":")
 	if len(parts) < 2 || parts[0] == "" || parts[1] == "" {
 		return DependencyReference{}, false
@@ -281,6 +343,10 @@ func gradleCoordinateDependency(coordinate, configuration string) (DependencyRef
 		SourceGroup:  configuration,
 		Relationship: RelationshipDirect,
 		Scope:        gradleConfigurationScope(configuration),
+	}
+	if context == gradleConstraintDependencies {
+		dependency.SourceGroup = "constraints." + configuration
+		dependency.Relationship = RelationshipInconclusive
 	}
 	if len(parts) >= 3 && parts[2] != "" {
 		version := parts[2]

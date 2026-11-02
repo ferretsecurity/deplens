@@ -1,0 +1,8 @@
+dependencies { constraints { implementation 'org.example:core:1.2' } }
+
+dependencies {
+  constraints {
+    runtimeOnly group: 'org.example', name: 'runtime', version: '2.0'
+    testImplementation enforcedPlatform('org.example:test-platform:3.0')
+  }
+}
