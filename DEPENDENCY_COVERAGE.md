@@ -6,6 +6,8 @@ Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize
 
 `python-setup-cfg` reads inline semicolon-separated requirements and indented continuation values. It normalizes supported package names, constraints, extras, and multiline environment markers. It does not expand `file:` directives or interpolation.
 
+The `js-pnpm-lock` analyzer extracts package-store references using lockfile schema v5 `/name/version`, v6 `/name@version`, and v9 `name@version` keys. Scoped names remain intact. Parenthesized peer contexts are stripped, and package-store references are deduplicated against root dependencies.
+
 | Detector ID | Form | Roles | Analyzer | Capabilities |
 | --- | --- | --- | --- | --- |
 | `python-requirements` | `requirements` | `declaration, constraint` | `py-requirements` | select, recognize, extract, normalize |
