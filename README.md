@@ -78,6 +78,8 @@ package.json [medium] npm project has dependencies but no npm lockfile
 
 Use `--json` for machine-readable format. JSON output includes the detected sources, extracted dependency references, check runs, findings, and diagnostics. Findings do not change the successful exit status. See the [dependency reference specification](docs/dependency-reference.md) for the dependency object fields, values, and omission rules.
 
+Maven `pom.xml` extraction includes root and profile `dependencies` and `dependencyManagement` sections. Profile source groups include the profile ID, such as `profiles.benchmark.dependencies`. Profile references carry `profile` and `conditional` attributes, plus activation XML when declared. Deplens records every profile without deciding which profiles are active. Profile properties override root properties only within that profile. See [Maven profile references](docs/dependency-reference.md#maven-profiles) for the attribute format.
+
 ## Rules
 
 `deplens` is driven by a YAML ruleset. Detector rules describe which files are dependency sources and how to analyze them. Check rules evaluate repository-wide policies after all sources have been found. Here is a small ruleset that extracts Go modules and checks that `go.sum` exists when needed:
