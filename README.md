@@ -78,6 +78,10 @@ package.json [medium] npm project has dependencies but no npm lockfile
 
 Use `--json` for machine-readable format. JSON output includes the detected sources, extracted dependency references, check runs, findings, and diagnostics. Findings do not change the successful exit status. See the [dependency reference specification](docs/dependency-reference.md) for the dependency object fields, values, and omission rules.
 
+JavaScript `package.json` references using `catalog:` resolve through the owning pnpm workspace's `pnpm-workspace.yaml` or `pnpm-workspace.yml`, or the owning Yarn project's `.yarnrc.yml`. The scan uses explicit workspace membership and exclusions, and keeps nested projects separate. Resolution runs even when policy checks are disabled. Only referenced catalog entries become dependencies; the configuration sources remain identification-only.
+
+Resolved references keep the original `raw` declaration and add the catalog target's origin, version constraint, and VERS where supported. Their attributes include `catalog_name`, `catalog_source`, and `catalog_specifier`. Catalog path targets remain relative to the catalog configuration. Missing, ambiguous, malformed, or unsupported targets preserve the reference and produce partial extraction with a diagnostic. pnpm treats `catalog:` and `catalog:default` as aliases. Yarn uses `catalog:` for `catalog` and `catalog:default` for the separate `catalogs.default` table.
+
 Maven `pom.xml` extraction includes root and profile `dependencies` and `dependencyManagement` sections. Profile source groups include the profile ID, such as `profiles.benchmark.dependencies`. Profile references carry `profile` and `conditional` attributes, plus activation XML when declared. Deplens records every profile without deciding which profiles are active. Profile properties override root properties only within that profile. See [Maven profile references](docs/dependency-reference.md#maven-profiles) for the attribute format.
 
 ## Rules
@@ -290,6 +294,8 @@ The offline lists are the 2026-09-17 research snapshot, with 43 Snyk Open Source
 ## Supported dependency sources
 
 The 185 built-in detectors cover common package managers and languages as well as containers, CI systems, deployment tools, build systems, and infrastructure configuration. Some sources support full dependency extraction, while others can only be identified or checked for the presence of dependency references.
+
+For npm v2 and v3 lockfiles, `package-lock.json` and `npm-shrinkwrap.json` entries with an explicit package name use that name as the package identity. When it differs from the installation name, `raw` and `attributes.declared_name` preserve the installation alias.
 
 See [Dependency coverage](DEPENDENCY_COVERAGE.md) for the complete list of detectors and the capabilities available for each source.
 
