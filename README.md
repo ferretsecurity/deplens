@@ -301,6 +301,10 @@ For npm v2 and v3 lockfiles, `package-lock.json` and `npm-shrinkwrap.json` entri
 
 See [Dependency coverage](DEPENDENCY_COVERAGE.md) for the complete list of detectors and the capabilities available for each source.
 
+Gradle Groovy and Kotlin builds retain literal `group:artifact` declarations, including dependencies whose versions come from a BOM. These references keep their configuration and scope, with no version or version constraint. Deplens does not resolve BOM versions.
+
+Rich `version { ... }` closures are not interpreted, including literal or dynamic `strictly`, `require`, `prefer`, and `reject` declarations. Known dependency coordinates remain in the result, and a warning marks extraction as partial. Strings inside these closures do not become dependency references.
+
 Gradle build definitions preserve dependency constraints separately from direct declarations. References inside `dependencies { constraints { ... } }` have `relationship: "inconclusive"` and a `source_group` such as `constraints.implementation`. A constraint does not establish that the project uses the module. Scope comes from the original configuration, so `constraints.api` retains runtime scope. A matching direct declaration remains a separate reference.
 
 Gradle version catalogs retain rich version tables in `raw` and `attributes` and report partial extraction. Rich versions leave `version`, `version_constraint`, and `vers` unset because their semantics cannot be represented as one shared constraint. Simple version strings keep their existing constraint normalization.
