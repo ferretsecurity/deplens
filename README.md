@@ -293,6 +293,8 @@ The offline lists are the 2026-09-17 research snapshot, with 43 Snyk Open Source
 
 The 185 built-in detectors cover common package managers and languages as well as containers, CI systems, deployment tools, build systems, and infrastructure configuration. Some sources support full dependency extraction, while others can only be identified or checked for the presence of dependency references.
 
+For npm v2 and v3 lockfiles, `package-lock.json` and `npm-shrinkwrap.json` entries with an explicit package name use that name as the package identity. When it differs from the installation name, `raw` and `attributes.declared_name` preserve the installation alias.
+
 See [Dependency coverage](DEPENDENCY_COVERAGE.md) for the complete list of detectors and the capabilities available for each source.
 
 ## Security scanning

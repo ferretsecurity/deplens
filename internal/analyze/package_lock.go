@@ -16,6 +16,7 @@ type packageLockFile struct {
 }
 
 type packageLockPackage struct {
+	Name                 string                     `json:"name"`
 	Dependencies         map[string]json.RawMessage `json:"dependencies"`
 	DevDependencies      map[string]json.RawMessage `json:"devDependencies"`
 	OptionalDependencies map[string]json.RawMessage `json:"optionalDependencies"`
@@ -28,9 +29,10 @@ type packageLockV1Dependency struct {
 }
 
 type packageLockDependency struct {
-	Name        string
-	Version     string
-	SourceGroup string
+	Name         string
+	DeclaredName string
+	Version      string
+	SourceGroup  string
 }
 
 func newPackageLockParser(raw packageLockMatcherConfig) (sourceAnalyzer, error) {
@@ -217,6 +219,10 @@ func matchPackageLockV2V3(file packageLockFile) sourceAnalyzerResult {
 			Name:    name,
 			Version: pkg.Version,
 		}
+		if pkg.Name != "" && pkg.Name != name {
+			dep.Name = pkg.Name
+			dep.DeclaredName = name
+		}
 		if s, ok := sourceGroupByName[name]; ok {
 			dep.SourceGroup = s
 		}
@@ -243,8 +249,12 @@ func packageLockResultFromDependencies(resolved []packageLockDependency) sourceA
 			Name:        r.Name,
 			SourceGroup: r.SourceGroup,
 		}
+		if r.DeclaredName != "" {
+			dep.Raw = r.DeclaredName
+			dep.Attributes = map[string]string{"declared_name": r.DeclaredName}
+		}
 		if r.Version != "" {
-			dep.Raw = r.Name + "@" + r.Version
+			dep.Raw += "@" + r.Version
 			dep.Version = r.Version
 		}
 		deps = append(deps, dep)
