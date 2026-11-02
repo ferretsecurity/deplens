@@ -1,0 +1,15 @@
+[versions]
+shared = { require = "[1.0,2.0)", prefer = "1.5", reject = ["1.4"] }
+rejected = { reject = ["1.4"] }
+blocked = { rejectAll = true }
+
+[libraries]
+prefer = { module = "org.example:core", version = { prefer = "1.5" } }
+combined = { module = "org.example:core", version = { require = "[1.0,2.0)", prefer = "1.5", reject = ["1.4"] } }
+strictly = { module = "org.example:strict", version = { strictly = "[1.0,2.0)" } }
+reject-all = { module = "org.example:blocked", version = { rejectAll = true } }
+allow = { module = "org.example:allowed", version = { rejectAll = false } }
+referenced = { module = "org.example:referenced", version.ref = "shared" }
+referenced-reject = { module = "org.example:rejected", version.ref = "rejected" }
+referenced-reject-all = { module = "org.example:blocked", version.ref = "blocked" }
+simple = "org.example:simple:1.5"
