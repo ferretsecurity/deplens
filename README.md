@@ -80,6 +80,8 @@ Use `--json` for machine-readable format. JSON output includes the detected sour
 
 Python requirements scans separate pip options from version constraints and resolve local `-r` includes, including lines with trailing comments. Repeated `--hash` values are preserved in the comma-separated `hashes` attribute. Editable requirements retain `editable: "true"`; Git, URL, and local path requirements retain their origin and source attributes. Named direct references in `pyproject.toml` also retain their source rather than becoming version constraints. Declarations that cannot be normalized remain available in `raw` without a guessed name or version constraint.
 
+Maven `pom.xml` extraction includes root and profile `dependencies` and `dependencyManagement` sections. Profile source groups include the profile ID, such as `profiles.benchmark.dependencies`. Profile references carry `profile` and `conditional` attributes, plus activation XML when declared. Deplens records every profile without deciding which profiles are active. Profile properties override root properties only within that profile. See [Maven profile references](docs/dependency-reference.md#maven-profiles) for the attribute format.
+
 ## Rules
 
 `deplens` is driven by a YAML ruleset. Detector rules describe which files are dependency sources and how to analyze them. Check rules evaluate repository-wide policies after all sources have been found. Here is a small ruleset that extracts Go modules and checks that `go.sum` exists when needed:
