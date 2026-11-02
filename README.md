@@ -291,6 +291,8 @@ The 185 built-in detectors cover common package managers and languages as well a
 
 See [Dependency coverage](DEPENDENCY_COVERAGE.md) for the complete list of detectors and the capabilities available for each source.
 
+Gradle build definitions preserve dependency constraints separately from direct declarations. References inside `dependencies { constraints { ... } }` have `relationship: "inconclusive"` and a `source_group` such as `constraints.implementation`. A constraint does not establish that the project uses the module. Scope comes from the original configuration, so `constraints.api` retains runtime scope. A matching direct declaration remains a separate reference.
+
 ## Security scanning
 
 We use [Snyk](https://snyk.io/) and [Socket](https://socket.dev/) to scan this repository's dependencies for security risks. We also use GitHub's [CodeQL](https://codeql.github.com/) to scan Go code and GitHub Actions workflows for security issues, and [Dependabot](https://docs.github.com/en/code-security/dependabot) to alert us to vulnerable dependencies and open pull requests for security and version updates.

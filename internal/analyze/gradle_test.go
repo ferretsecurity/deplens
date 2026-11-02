@@ -62,6 +62,11 @@ func TestGradleBuildParserKeepsConstraintsSeparateFromDirectDependencies(t *test
 }`,
 			direct: true,
 		},
+		{
+			name:    "inline direct declaration after constraint",
+			content: `dependencies { constraints { implementation("org.example:core:1.2") }; implementation("org.example:core:1.2") }`,
+			direct:  true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -112,6 +117,110 @@ dependencies {
 	}
 	if result.Analysis.Extraction != ExtractionPartial || len(result.Dependencies) != 1 || len(result.Diagnostics) != 2 {
 		t.Fatalf("unexpected result: %+v", result)
+	}
+}
+
+func TestGradleBuildParserPreservesConstraintContextAcrossNotationAndClosures(t *testing.T) {
+	parser, _ := newGradleBuildParser(gradleBuildMatcherConfig{})
+	result, err := parser.Analyze("build.gradle.kts", []byte(`
+val message = "dependencies { constraints {"
+dependencies {
+  implementation("org.example:core:1.2") {
+    because("constraints { with an escaped quote \" and brace }")
+  }
+  constraints {
+    api 'org.example:api:2.0'
+    testImplementation(platform("org.example:test-platform:3.0")) {
+      because('a closing brace } and constraints { are text')
+    }
+    compileOnly(
+      group = "org.example",
+      name = "compile",
+      version = "4.0",
+    )
+    nested { runtimeOnly enforcedPlatform('org.example:runtime-platform:5.0') }
+  }
+  notconstraints { implementation("org.example:unconstrained:6.0") }
+  runtimeOnly("org.example:after:7.0")
+}
+dependencies { implementation("org.example:other:8.0") }
+`))
+	if err != nil {
+		t.Fatalf("Analyze: %v", err)
+	}
+	if result.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
+		t.Fatalf("unexpected analysis: %+v", result.Analysis)
+	}
+	want := map[string]struct {
+		group        string
+		relationship Relationship
+		scope        DependencyScope
+	}{
+		"org.example:core:1.2":             {"implementation", RelationshipDirect, ScopeRuntime},
+		"org.example:api:2.0":              {"constraints.api", RelationshipInconclusive, ScopeRuntime},
+		"org.example:test-platform:3.0":    {"constraints.testImplementation", RelationshipInconclusive, ScopeTest},
+		"org.example:compile:4.0":          {"constraints.compileOnly", RelationshipInconclusive, ScopeBuild},
+		"org.example:runtime-platform:5.0": {"constraints.runtimeOnly", RelationshipInconclusive, ScopeRuntime},
+		"org.example:unconstrained:6.0":    {"implementation", RelationshipDirect, ScopeRuntime},
+		"org.example:after:7.0":            {"runtimeOnly", RelationshipDirect, ScopeRuntime},
+		"org.example:other:8.0":            {"implementation", RelationshipDirect, ScopeRuntime},
+	}
+	if len(result.Dependencies) != len(want) {
+		t.Fatalf("expected %d dependencies, got %+v", len(want), result.Dependencies)
+	}
+	for _, dependency := range result.Dependencies {
+		expected, ok := want[dependency.Raw]
+		if !ok || dependency.SourceGroup != expected.group || dependency.Relationship != expected.relationship || dependency.Scope != expected.scope {
+			t.Fatalf("unexpected dependency: %+v", dependency)
+		}
+	}
+}
+
+func TestGradleBuildParserKeepsConstraintDiagnostics(t *testing.T) {
+	parser, _ := newGradleBuildParser(gradleBuildMatcherConfig{})
+	result, err := parser.Analyze("build.gradle.kts", []byte(`
+dependencies {
+  constraints {
+    implementation(libs.core)
+    implementation("org.example:dynamic:$libraryVersion")
+    runtimeOnly(group = "org.example", name = "runtime", version = libraryVersion)
+    testImplementation(group = "org.example", name = artifactName, version = "2.0")
+  }
+  implementation(libs.core)
+}
+`))
+	if err != nil {
+		t.Fatalf("Analyze: %v", err)
+	}
+	if result.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionPartial}) || len(result.Dependencies) != 1 {
+		t.Fatalf("unexpected result: %+v", result)
+	}
+	dependency := result.Dependencies[0]
+	if dependency.Name != "org.example:runtime" || dependency.VersionConstraint != "" ||
+		dependency.SourceGroup != "constraints.runtimeOnly" || dependency.Relationship != RelationshipInconclusive || dependency.Scope != ScopeRuntime {
+		t.Fatalf("unexpected dependency: %+v", dependency)
+	}
+	wantMessages := []string{
+		"dynamic Gradle dependency in configuration implementation could not be extracted: org.example:dynamic:$libraryVersion",
+		"dynamic Gradle version in configuration runtimeOnly could not be extracted",
+		"dynamic Gradle map dependency in configuration testImplementation could not be fully extracted",
+		"version-catalog alias libs.core could not be resolved from this build file",
+	}
+	if len(result.Diagnostics) != len(wantMessages) {
+		t.Fatalf("unexpected diagnostics: %+v", result.Diagnostics)
+	}
+	for _, message := range wantMessages {
+		if !slices.ContainsFunc(result.Diagnostics, func(d Diagnostic) bool { return d.Message == message }) {
+			t.Errorf("missing diagnostic %q in %+v", message, result.Diagnostics)
+		}
+	}
+}
+
+func TestGradleBuildParserRejectsUnterminatedConstraintBlock(t *testing.T) {
+	parser, _ := newGradleBuildParser(gradleBuildMatcherConfig{})
+	_, err := parser.Analyze("build.gradle.kts", []byte(`dependencies { constraints { implementation("org.example:core:1.2") }`))
+	if err == nil || !strings.Contains(err.Error(), "unterminated dependencies block") {
+		t.Fatalf("expected unterminated block error, got %v", err)
 	}
 }
 

@@ -139,6 +139,15 @@ An absent `relationship` means the analyzer did not classify it. It is distinct
 from `inconclusive`, which is an explicit classification based on limited source
 information.
 
+Gradle references inside a `constraints` block within `dependencies` use
+`relationship: "inconclusive"`. A constraint applies if the module appears in
+the dependency graph, but does not introduce the module. The `source_group`
+retains the configuration with a `constraints.` prefix, such as
+`constraints.implementation` or `constraints.api`. Scope derives from the
+original configuration, so both examples have runtime scope. A direct declaration
+of the same coordinate remains a separate reference with its original group and
+`relationship: "direct"`.
+
 ### Scope
 
 - `runtime`: needed for normal execution or the default dependency group.
