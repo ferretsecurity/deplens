@@ -4,6 +4,8 @@ This inventory is derived from `internal/analyze/default_rules.yaml`. It describ
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
+The `js-pnpm-lock` analyzer extracts package-store references using lockfile schema v5 `/name/version`, v6 `/name@version`, and v9 `name@version` keys. Scoped names remain intact. Parenthesized peer contexts are stripped, and package-store references are deduplicated against root dependencies.
+
 | Detector ID | Form | Roles | Analyzer | Capabilities |
 | --- | --- | --- | --- | --- |
 | `python-requirements` | `requirements` | `declaration, constraint` | `py-requirements` | select, recognize, extract, normalize |
