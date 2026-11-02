@@ -104,7 +104,7 @@ func parsePythonDependencySource(value string) pep508Dependency {
 	if value == "" || strings.ContainsAny(value, " \t\r\n") {
 		return pep508Dependency{}
 	}
-	localPath := !strings.Contains(value, "://") && (strings.HasPrefix(value, ".") || strings.HasPrefix(value, "/") || strings.ContainsAny(value, `/\`) || strings.HasSuffix(value, ".whl") || strings.HasSuffix(value, ".tar.gz") || strings.HasSuffix(value, ".zip"))
+	localPath := !strings.Contains(value, "://") && !strings.ContainsAny(value, "<>=!~") && (strings.HasPrefix(value, ".") || strings.HasPrefix(value, "/") || strings.ContainsAny(value, `/\`) || strings.HasSuffix(value, ".whl") || strings.HasSuffix(value, ".tar.gz") || strings.HasSuffix(value, ".zip"))
 	if strings.HasPrefix(value, "file:") || localPath {
 		return pep508Dependency{originKind: OriginPath, attributes: map[string]string{"source_path": value}}
 	}

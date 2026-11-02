@@ -284,3 +284,27 @@ func TestPyRequirementsParserWarnsOnIncludeCycles(t *testing.T) {
 		t.Fatalf("expected one warning, got %+v", result.Diagnostics)
 	}
 }
+
+func TestPyRequirementsParserPreservesValidPipSyntax(t *testing.T) {
+	parser, _ := newPyRequirementsMatcher(pyRequirementsMatcherConfig{})
+	for _, tc := range []struct {
+		raw, constraint, hashes string
+	}{
+		{`demo[]>=1`, ">=1", ""},
+		{`demo>=1,`, ">=1,", ""},
+		{`demo===foo/bar`, "===foo/bar", ""},
+		{`demo==1 --config-settings="build_option=hello world"`, "==1", ""},
+		{`demo==1 --hash="sha256:aaa"`, "==1", "sha256:aaa"},
+	} {
+		t.Run(tc.raw, func(t *testing.T) {
+			result, err := parser.Analyze("requirements.txt", []byte(tc.raw+"\n"))
+			if err != nil || len(result.Dependencies) != 1 {
+				t.Fatalf("result = %+v, error = %v", result, err)
+			}
+			dep := result.Dependencies[0]
+			if dep.Raw != tc.raw || dep.Name != "demo" || dep.VersionConstraint != tc.constraint || dep.OriginKind != "" || dep.Attributes["hashes"] != tc.hashes {
+				t.Fatalf("valid requirement lost normalization: %+v", dep)
+			}
+		})
+	}
+}

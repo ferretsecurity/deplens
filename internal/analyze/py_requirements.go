@@ -206,9 +206,11 @@ func validPyRequirementsDeclaration(parsed pep508Dependency, declaration string)
 		if close < 0 {
 			return false
 		}
-		for _, extra := range strings.Split(rest[1:close], ",") {
-			if !pyRequirementNamePattern.MatchString(strings.TrimSpace(extra)) {
-				return false
+		if extras := strings.TrimSpace(rest[1:close]); extras != "" {
+			for _, extra := range strings.Split(extras, ",") {
+				if !pyRequirementNamePattern.MatchString(strings.TrimSpace(extra)) {
+					return false
+				}
 			}
 		}
 		rest = strings.TrimSpace(rest[close+1:])
@@ -226,7 +228,7 @@ func validPyRequirementsDeclaration(parsed pep508Dependency, declaration string)
 	if strings.HasPrefix(constraint, "(") && strings.HasSuffix(constraint, ")") {
 		constraint = strings.TrimSpace(constraint[1 : len(constraint)-1])
 	}
-	for _, clause := range strings.Split(constraint, ",") {
+	for _, clause := range strings.Split(strings.TrimSuffix(strings.TrimSpace(constraint), ","), ",") {
 		parts := pyRequirementConstraintPattern.FindStringSubmatch(strings.TrimSpace(clause))
 		if parts == nil {
 			return false
@@ -267,7 +269,10 @@ func splitPyRequirementsOptions(line string) (string, string) {
 
 func parsePyRequirementsOptions(options string) (map[string]string, bool) {
 	attributes := make(map[string]string)
-	words := strings.Fields(options)
+	words, valid := splitPyRequirementsOptionWords(options)
+	if !valid {
+		return nil, false
+	}
 	for i := 0; i < len(words); i++ {
 		key, value, assigned := strings.Cut(words[i], "=")
 		switch key {
@@ -297,4 +302,50 @@ func parsePyRequirementsOptions(options string) (map[string]string, bool) {
 		}
 	}
 	return attributes, true
+}
+
+func splitPyRequirementsOptionWords(options string) ([]string, bool) {
+	var words []string
+	var word strings.Builder
+	var quote byte
+	started := false
+	for i := 0; i < len(options); i++ {
+		c := options[i]
+		switch {
+		case c == '\\' && quote != '\'':
+			if i+1 == len(options) {
+				return nil, false
+			}
+			next := options[i+1]
+			if quote == '"' && next != '\\' && next != '"' && next != '$' && next != '`' {
+				word.WriteByte(c)
+			} else {
+				i++
+				word.WriteByte(next)
+			}
+			started = true
+		case quote != 0:
+			if c == quote {
+				quote = 0
+			} else {
+				word.WriteByte(c)
+			}
+		case c == '\'' || c == '"':
+			quote = c
+			started = true
+		case c == ' ' || c == '\t':
+			if started {
+				words = append(words, word.String())
+				word.Reset()
+				started = false
+			}
+		default:
+			word.WriteByte(c)
+			started = true
+		}
+	}
+	if started {
+		words = append(words, word.String())
+	}
+	return words, quote == 0
 }
