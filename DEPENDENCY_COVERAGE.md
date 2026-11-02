@@ -4,6 +4,8 @@ This inventory is derived from `internal/analyze/default_rules.yaml`. It describ
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
+`python-setup-cfg` reads inline semicolon-separated requirements and indented continuation values. It normalizes supported package names, constraints, extras, and multiline environment markers. It does not expand `file:` directives or interpolation.
+
 JavaScript scans also resolve used `package.json` catalog references through the owning pnpm workspace configuration or Yarn `.yarnrc.yml`, independently of policy checks. Default and named catalogs enrich the manifest references with normalized targets and catalog provenance. Explicit workspace membership and nested project boundaries constrain ownership. Missing, ambiguous, malformed, or unsupported targets produce partial extraction and diagnostics. The `js-pnpm-workspace` and `js-yarnrc` sources remain identification-only and do not emit unused catalog definitions as dependencies.
 
 The `js-pnpm-lock` analyzer extracts package-store references using lockfile schema v5 `/name/version`, v6 `/name@version`, and v9 `name@version` keys. Scoped names remain intact. Root importer and legacy top-level resolutions separate selected versions from peer context, normalize alias target names while retaining declared names, and classify link/file paths without a selected version. Workspace declarations resolved through links retain workspace origin. Package-store references are deduplicated against normalized root dependency identities.

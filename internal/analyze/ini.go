@@ -54,16 +54,28 @@ func newINIQueryParser(raw iniMatcherConfig) (sourceAnalyzer, error) {
 }
 
 func (p iniQueryParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
+	// The INI library ends Python continuations at blank or unindented comment
+	// lines. Python's config parser ignores these lines inside a value.
+	lines := strings.Split(string(content), "\n")
+	valueLines := lines[:0]
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed != "" && !strings.HasPrefix(trimmed, "#") && !strings.HasPrefix(trimmed, ";") {
+			valueLines = append(valueLines, line)
+		}
+	}
 	file, err := ini.LoadSources(ini.LoadOptions{
-		AllowNestedValues:        true,
-		Insensitive:              true,
-		SpaceBeforeInlineComment: true,
-	}, content)
+		AllowPythonMultilineValues: true,
+		Insensitive:                true,
+		IgnoreInlineComment:        true,
+		// Python multiline parsing peeks ahead only within the reader buffer.
+		ReaderBufferSize: len(content) + 1,
+	}, []byte(strings.Join(valueLines, "\n")+"\n"))
 	if err != nil {
 		return sourceAnalyzerResult{}, fmt.Errorf("parse ini file %q: %w", path, err)
 	}
 
-	dependencies := make([]string, 0)
+	dependencies := make([]DependencyReference, 0)
 	found := false
 	for _, query := range p.queries {
 		sourceGroup, err := file.GetSection(query.sourceGroup)
@@ -89,7 +101,7 @@ func (p iniQueryParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 		return sourceAnalyzerResult{Analysis: SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}, Recognized: true}, nil
 	}
 	return sourceAnalyzerResult{
-		Dependencies: dependenciesFromStrings(dependencies),
+		Dependencies: dependencies,
 		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 		Recognized:   true,
 	}, nil
@@ -105,17 +117,31 @@ func matchingINIKeys(sourceGroup *ini.Section, query iniQuery) []*ini.Key {
 	return []*ini.Key{sourceGroup.Key(query.key)}
 }
 
-func extractINIDependencies(key *ini.Key) []string {
-	entries := key.NestedValues()
-	if len(entries) == 0 {
-		return nil
+func extractINIDependencies(key *ini.Key) []DependencyReference {
+	value := key.Value()
+	multiline := strings.Contains(value, "\n")
+	separator := ";"
+	if multiline {
+		separator = "\n"
+	} else {
+		value = normalizeINIDependency(value)
 	}
-
-	dependencies := make([]string, 0, len(entries))
+	entries := strings.Split(value, separator)
+	dependencies := make([]DependencyReference, 0, len(entries))
 	for _, entry := range entries {
-		dependency := normalizeINIDependency(entry)
-		if dependency == "" {
+		raw := normalizeINIDependency(entry)
+		if raw == "" {
 			continue
+		}
+		parsed, err := parsePythonRequirement(raw)
+		if err != nil && !multiline {
+			continue
+		}
+		dependency := DependencyReference{Raw: raw}
+		if err == nil {
+			dependency.Name = parsed.Name
+			dependency.VersionConstraint = parsed.VersionConstraint
+			dependency.Attributes = parsed.Attributes
 		}
 		dependencies = append(dependencies, dependency)
 	}
@@ -145,7 +171,7 @@ func normalizeINIDependency(raw string) string {
 func findInlineCommentStart(value string) int {
 	for idx := 0; idx < len(value); idx++ {
 		switch value[idx] {
-		case '#', ';':
+		case '#':
 			if idx > 0 && isWhitespace(value[idx-1]) {
 				return idx
 			}

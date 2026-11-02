@@ -301,6 +301,8 @@ For npm v2 and v3 lockfiles, `package-lock.json` and `npm-shrinkwrap.json` entri
 
 See [Dependency coverage](DEPENDENCY_COVERAGE.md) for the complete list of detectors and the capabilities available for each source.
 
+For Python `setup.cfg`, deplens extracts `install_requires`, `setup_requires`, and all `options.extras_require` entries. It supports inline semicolon-separated lists and indented continuation lines, including an initial inline requirement. Multiline requirements retain PEP 508 environment markers. Supported requirements include normalized names, version constraints, and extras while keeping the original requirement text. Commas stay inside version constraints. Use multiline values for environment markers, following [setuptools configuration syntax](https://setuptools.pypa.io/en/latest/userguide/declarative_config.html#specifying-values). `file:` directives and interpolation are not expanded, and comma-separated package lists are not supported.
+
 ## Security scanning
 
 We use [Snyk](https://snyk.io/) and [Socket](https://socket.dev/) to scan this repository's dependencies for security risks. We also use GitHub's [CodeQL](https://codeql.github.com/) to scan Go code and GitHub Actions workflows for security issues, and [Dependabot](https://docs.github.com/en/code-security/dependabot) to alert us to vulnerable dependencies and open pull requests for security and version updates.
