@@ -1,0 +1,25 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <properties>
+    <platform.version>1.0</platform.version>
+  </properties>
+  <profiles>
+    <profile>
+      <id>production</id>
+      <properties>
+        <platform.version>2.0</platform.version>
+      </properties>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>platform</artifactId>
+            <version>${platform.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+    </profile>
+  </profiles>
+</project>
