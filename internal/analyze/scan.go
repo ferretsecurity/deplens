@@ -271,6 +271,7 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 	if len(result.Sources) > 0 && ruleset.hasEvaluator("dependency-source-codeowners") {
 		codeownersInputs = collectCodeownersPolicyInputs(absRoot)
 	}
+	resolveJavaScriptCatalogs(result.Sources)
 	result.CheckRuns, result.Findings = evaluateChecks(result.Sources, policyInputs, codeownersInputs, discoveredPaths, ruleset.checks, ruleset.disabledDetectors...)
 	for index := range result.Sources {
 		result.Sources[index].content = nil
