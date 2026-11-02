@@ -406,6 +406,7 @@ func (m pythonCallMatcher) Analyze(path string, content []byte) (sourceAnalyzerR
 		if !ok {
 			continue
 		}
+		args = stripPythonCallComments(args)
 		if m.conditions.match(source, args, start) {
 			if len(m.extract) == 0 {
 				return sourceAnalyzerResult{Recognized: true, Analysis: identifiedAnalysis()}, nil
@@ -421,6 +422,11 @@ func (m pythonCallMatcher) Analyze(path string, content []byte) (sourceAnalyzerR
 func (m pythonCallMatcher) extractDependencies(args string) ([]string, []string) {
 	dependencies := make([]string, 0)
 	var unresolved []string
+	for _, argument := range splitTopLevel(args, ',') {
+		if strings.HasPrefix(strings.TrimSpace(argument), "**") {
+			unresolved = append(unresolved, "install_requires or extras_require may be supplied by unsupported **kwargs")
+		}
+	}
 	seen := make(map[string]struct{})
 	for _, extract := range m.extract {
 		value, ok := pythonKeywordArgumentValue(args, extract.keyword)
@@ -807,6 +813,26 @@ func pythonDictStringListsLiteral(expr string) ([]string, bool) {
 		result = append(result, items...)
 	}
 	return result, complete
+}
+
+func stripPythonCallComments(args string) string {
+	clean := []byte(args)
+	for index := 0; index < len(args); index++ {
+		switch args[index] {
+		case '\'', '"':
+			end, ok := pythonStringEnd(args, index)
+			if !ok {
+				return string(clean)
+			}
+			index = end
+		case '#':
+			for index < len(args) && args[index] != '\n' {
+				clean[index] = ' '
+				index++
+			}
+		}
+	}
+	return string(clean)
 }
 
 func pythonDependencyStringLiteral(expr string) (string, bool) {
