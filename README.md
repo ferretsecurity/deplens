@@ -78,6 +78,10 @@ package.json [medium] npm project has dependencies but no npm lockfile
 
 Use `--json` for machine-readable format. JSON output includes the detected sources, extracted dependency references, check runs, findings, and diagnostics. Findings do not change the successful exit status. See the [dependency reference specification](docs/dependency-reference.md) for the dependency object fields, values, and omission rules.
 
+JavaScript `package.json` references using `catalog:` resolve through the owning pnpm workspace's `pnpm-workspace.yaml` or `pnpm-workspace.yml`, or the owning Yarn project's `.yarnrc.yml`. The scan uses explicit workspace membership and exclusions, and keeps nested projects separate. Resolution runs even when policy checks are disabled. Only referenced catalog entries become dependencies; the configuration sources remain identification-only.
+
+Resolved references keep the original `raw` declaration and add the catalog target's origin, version constraint, and VERS where supported. Their attributes include `catalog_name`, `catalog_source`, and `catalog_specifier`. Catalog path targets remain relative to the catalog configuration. Missing, ambiguous, malformed, or unsupported targets preserve the reference and produce partial extraction with a diagnostic. pnpm treats `catalog:` and `catalog:default` as aliases. Yarn uses `catalog:` for `catalog` and `catalog:default` for the separate `catalogs.default` table.
+
 ## Rules
 
 `deplens` is driven by a YAML ruleset. Detector rules describe which files are dependency sources and how to analyze them. Check rules evaluate repository-wide policies after all sources have been found. Here is a small ruleset that extracts Go modules and checks that `go.sum` exists when needed:

@@ -4,6 +4,8 @@ This inventory is derived from `internal/analyze/default_rules.yaml`. It describ
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
+JavaScript scans also resolve used `package.json` catalog references through the owning pnpm workspace configuration or Yarn `.yarnrc.yml`, independently of policy checks. Default and named catalogs enrich the manifest references with normalized targets and catalog provenance. Explicit workspace membership and nested project boundaries constrain ownership. Missing, ambiguous, malformed, or unsupported targets produce partial extraction and diagnostics. The `js-pnpm-workspace` and `js-yarnrc` sources remain identification-only and do not emit unused catalog definitions as dependencies.
+
 | Detector ID | Form | Roles | Analyzer | Capabilities |
 | --- | --- | --- | --- | --- |
 | `python-requirements` | `requirements` | `declaration, constraint` | `py-requirements` | select, recognize, extract, normalize |

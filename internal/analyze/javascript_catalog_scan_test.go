@@ -56,7 +56,7 @@ func TestJavaScriptCatalogScanDefaultSemanticsWithoutChecks(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			result := scanJavaScriptCatalogFiles(t, map[string]string{
 				test.configPath: test.config,
-				"package.json": `{"dependencies":{"react":"` + test.specifier + `"}}`,
+				"package.json":  `{"dependencies":{"react":"` + test.specifier + `"}}`,
 			})
 			source := sourceForPath(t, result, "package.json")
 			if source.Analysis.Extraction != ExtractionComplete || len(source.Dependencies) != 1 || source.Dependencies[0].VersionConstraint != test.constraint || source.Dependencies[0].VERS == "" {
@@ -92,7 +92,7 @@ func TestJavaScriptCatalogScanRejectsUnresolvedReferences(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			result := scanJavaScriptCatalogFiles(t, map[string]string{
 				"pnpm-workspace.yaml": test.config,
-				"package.json": `{"dependencies":{"react":"` + test.specifier + `","unrelated":"^1.0.0"}}`,
+				"package.json":        `{"dependencies":{"react":"` + test.specifier + `","unrelated":"^1.0.0"}}`,
 			})
 			source := sourceForPath(t, result, "package.json")
 			dependency := dependencyByName(t, source.Dependencies, "react")
