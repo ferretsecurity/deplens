@@ -181,3 +181,19 @@ func assertPythonAnalysis(t *testing.T, source DependencySourceResult, presence 
 		t.Fatalf("analysis = %+v, want %+v; source: %+v", source.Analysis, want, source)
 	}
 }
+
+func TestScanPyprojectDynamicFixture(t *testing.T) {
+	source := scanPythonSource(t, filepath.Join("..", "..", "testdata", "python", "pyproject-dynamic-files"), "python-pyproject")
+	assertPythonAnalysis(t, source, PresencePresent, ExtractionComplete)
+	if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"setuptools>=68", "requests>=2.31; python_version >= '3.10'", "pytest>=8"}) {
+		t.Fatalf("unexpected dependencies: %v", got)
+	}
+}
+
+func TestScanSetupPyPartialFixture(t *testing.T) {
+	source := scanPythonSource(t, filepath.Join("..", "..", "testdata", "python", "setup-py-partial"), "python-setup-py")
+	assertPythonAnalysis(t, source, PresencePresent, ExtractionPartial)
+	if got := dependencyNames(source.Dependencies); !slices.Equal(got, []string{"pytest>=8"}) || len(source.Diagnostics) == 0 || !strings.Contains(source.Diagnostics[0].Message, "install_requires") {
+		t.Fatalf("lost literal extra or unresolved keyword: %+v", source)
+	}
+}

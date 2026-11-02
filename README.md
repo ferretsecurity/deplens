@@ -78,6 +78,14 @@ package.json [medium] npm project has dependencies but no npm lockfile
 
 Use `--json` for machine-readable format. JSON output includes the detected sources, extracted dependency references, check runs, findings, and diagnostics. Findings do not change the successful exit status. See the [dependency reference specification](docs/dependency-reference.md) for the dependency object fields, values, and omission rules.
 
+## Python declarations
+
+The built-in `python-pyproject` detector reads static project, optional, build-system, dependency-group, and Poetry dependencies. It also recognizes `project.dynamic` declarations for `dependencies` and `optional-dependencies`. Setuptools `tool.setuptools.dynamic` file declarations accept a path or a list of paths, including separate files for optional groups. Paths resolve from the manifest directory and must stay within the scan root. Referenced files must be regular files. Symlinks cannot escape the root.
+
+These files support package names, extras, version constraints, environment markers, comments, and blank lines. Pip options, recursive includes, direct URLs, unsupported backend declarations, missing files, and malformed declarations produce diagnostics. Usable references remain in the result with partial extraction. If none can be extracted, the source reports unknown presence and failed extraction. See the [dynamic pyproject fixture](testdata/python/pyproject-dynamic-files/pyproject.toml) for an example.
+
+The `python-setup-py` detector reads literal dependency lists and extra dictionaries. Variables, calls, comprehensions, and other expressions remain unresolved, even when a variable has a nearby literal assignment. Literal references remain available, and unresolved keywords produce diagnostics and partial or failed extraction. Empty literal declarations report absent presence and complete extraction. Deplens never executes Python, imports a package, or runs a build backend.
+
 ## Rules
 
 `deplens` is driven by a YAML ruleset. Detector rules describe which files are dependency sources and how to analyze them. Check rules evaluate repository-wide policies after all sources have been found. Here is a small ruleset that extracts Go modules and checks that `go.sum` exists when needed:

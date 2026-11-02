@@ -96,6 +96,16 @@ func TestScanSpecialFiles(t *testing.T) {
 					}
 				})
 			}
+			t.Run("setuptools-file", func(t *testing.T) {
+				root := fixtureRoot(t)
+				mustWriteFile(t, filepath.Join(root, "pyproject.toml"), "[project]\ndynamic = ['dependencies']\n[tool.setuptools.dynamic]\ndependencies = {file = 'runtime.deps'}\n")
+				fixture.create(t, filepath.Join(root, "runtime.deps"))
+				source := scanPythonSource(t, root, "python-pyproject")
+				assertPythonAnalysis(t, source, PresenceUnknown, ExtractionFailed)
+				if len(source.Diagnostics) == 0 {
+					t.Fatalf("missing special-file diagnostic: %+v", source)
+				}
+			})
 			t.Run("project-evidence", func(t *testing.T) {
 				root := fixtureRoot(t)
 				mustWriteFile(t, filepath.Join(root, "Cargo.toml"), "[package]\nname = 'example'\nversion = '0.1.0'\n[dependencies]\nserde = '1'\n")

@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dynamic-example"
+version = "0.1.0"
+dynamic = ["dependencies", "optional-dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["runtime.deps"]}
+
+[tool.setuptools.dynamic.optional-dependencies]
+test = {file = "test.deps"}

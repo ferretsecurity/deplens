@@ -407,27 +407,20 @@ func (m pythonCallMatcher) Analyze(path string, content []byte) (sourceAnalyzerR
 			continue
 		}
 		if m.conditions.match(source, args, start) {
-			dependencies := m.extractDependencies(args)
-			if len(dependencies) == 0 {
+			if len(m.extract) == 0 {
 				return sourceAnalyzerResult{Recognized: true, Analysis: identifiedAnalysis()}, nil
 			}
-			return sourceAnalyzerResult{
-				Dependencies: dependenciesFromStrings(dependencies),
-				Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
-				Recognized:   true,
-			}, nil
+			dependencies, unresolved := m.extractDependencies(args)
+			return pythonExtractionResult(dependenciesFromStrings(dependencies), unresolved, "python-call-incomplete"), nil
 		}
 	}
 
 	return sourceAnalyzerResult{}, nil
 }
 
-func (m pythonCallMatcher) extractDependencies(args string) []string {
-	if len(m.extract) == 0 {
-		return nil
-	}
-
+func (m pythonCallMatcher) extractDependencies(args string) ([]string, []string) {
 	dependencies := make([]string, 0)
+	var unresolved []string
 	seen := make(map[string]struct{})
 	for _, extract := range m.extract {
 		value, ok := pythonKeywordArgumentValue(args, extract.keyword)
@@ -436,11 +429,15 @@ func (m pythonCallMatcher) extractDependencies(args string) []string {
 		}
 
 		var extracted []string
+		var complete bool
 		switch extract.literal {
 		case pythonLiteralStringList:
-			extracted = pythonStringListLiteral(value)
+			extracted, complete = pythonStringListLiteral(value)
 		case pythonLiteralDictStringList:
-			extracted = pythonDictStringListsLiteral(value)
+			extracted, complete = pythonDictStringListsLiteral(value)
+		}
+		if !complete {
+			unresolved = append(unresolved, extract.keyword+" contains an unsupported expression; only literal dependency strings are extracted")
 		}
 
 		for _, dep := range extracted {
@@ -451,7 +448,22 @@ func (m pythonCallMatcher) extractDependencies(args string) []string {
 			dependencies = append(dependencies, dep)
 		}
 	}
-	return dependencies
+	return dependencies, unresolved
+}
+
+func pythonExtractionResult(dependencies []DependencyReference, incomplete []string, code string) sourceAnalyzerResult {
+	result := sourceAnalyzerResult{Recognized: true, Analysis: completeAnalysis(dependencies), Dependencies: dependencies}
+	if len(incomplete) == 0 {
+		return result
+	}
+	severity := DiagnosticError
+	result.Analysis = failedAnalysis()
+	if len(dependencies) > 0 {
+		severity = DiagnosticWarning
+		result.Analysis = SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionPartial}
+	}
+	result.Diagnostics = diagnosticsFromMessages(severity, code, incomplete)
+	return result
 }
 
 func (m pythonCDKConstructMatcher) matchesConditions(source string, objectExpr string, before int) (bool, bool) {
@@ -740,56 +752,73 @@ func resolvePythonStringValue(source string, expr string, before int) (string, b
 	return resolvePythonStringValue(source, assigned, before)
 }
 
-func pythonStringListLiteral(expr string) []string {
+func pythonStringListLiteral(expr string) ([]string, bool) {
 	value := strings.TrimSpace(expr)
 	if value == "" || value[0] != '[' {
-		return nil
+		return nil, false
 	}
 	end, ok := pythonMatchingDelimiter(value, 0, '[', ']')
 	if !ok || end != len(value)-1 {
-		return nil
+		return nil, false
 	}
 
 	items := splitTopLevel(value[1:end], ',')
 	result := make([]string, 0, len(items))
+	complete := true
 	for _, item := range items {
-		resolved, ok := unquotePythonString(item)
+		resolved, ok := pythonDependencyStringLiteral(item)
 		if !ok {
-			return nil
+			complete = false
+			continue
 		}
 		result = append(result, resolved)
 	}
-	return result
+	return result, complete
 }
 
-func pythonDictStringListsLiteral(expr string) []string {
+func pythonDictStringListsLiteral(expr string) ([]string, bool) {
 	value := strings.TrimSpace(expr)
 	if value == "" || value[0] != '{' {
-		return nil
+		return nil, false
 	}
 	end, ok := pythonMatchingDelimiter(value, 0, '{', '}')
 	if !ok || end != len(value)-1 {
-		return nil
+		return nil, false
 	}
 
 	parts := splitTopLevel(value[1:end], ',')
 	result := make([]string, 0)
+	complete := true
 	for _, part := range parts {
 		idx := topLevelColonIndex(part)
 		if idx < 0 {
-			return nil
+			complete = false
+			continue
 		}
 		key := strings.TrimSpace(part[:idx])
-		if _, ok := unquotePythonString(key); !ok {
-			return nil
+		if _, ok := pythonDependencyStringLiteral(key); !ok {
+			complete = false
+			continue
 		}
-		items := pythonStringListLiteral(part[idx+1:])
-		if items == nil {
-			return nil
+		items, readable := pythonStringListLiteral(part[idx+1:])
+		if !readable {
+			complete = false
 		}
 		result = append(result, items...)
 	}
-	return result
+	return result, complete
+}
+
+func pythonDependencyStringLiteral(expr string) (string, bool) {
+	value := strings.TrimSpace(expr)
+	if value == "" || strings.ContainsRune("bBfF", rune(value[0])) {
+		return "", false
+	}
+	end, ok := pythonStringEnd(value, 0)
+	if !ok || end != len(value)-1 {
+		return "", false
+	}
+	return unquotePythonString(value)
 }
 
 func findPythonAssignment(source string, name string, before int) (string, bool) {

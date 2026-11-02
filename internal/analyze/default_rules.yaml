@@ -62,14 +62,7 @@ rules:
     package-type: pypi
     filename-regex: '^pyproject\.toml$'
     analyzer:
-      type: toml
-      queries:
-        - build-system.requires[]
-        - project.dependencies[]
-        - project.optional-dependencies.*[]
-        - dependency-groups.*[]
-        - tool.poetry.dependencies
-        - tool.poetry.group.*.dependencies
+      type: python-pyproject
   - id: python-conda-environment
     package-type: conda
     form: manifest

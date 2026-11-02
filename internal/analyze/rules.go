@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
@@ -258,6 +259,10 @@ type sourceAnalyzer interface {
 	Analyze(path string, content []byte) (sourceAnalyzerResult, error)
 }
 
+type rootSourceAnalyzer interface {
+	AnalyzeInRoot(root, path string, content []byte) (sourceAnalyzerResult, error)
+}
+
 type sourceAnalyzerResult struct {
 	Recognized   bool
 	Analysis     SourceAnalysis
@@ -499,7 +504,21 @@ func (r Ruleset) analyzeDependencySourceWithContent(filePath, name, relPath stri
 			content = data
 			contentLoaded = true
 		}
-		result, err := d.Analyzer.Analyze(filePath, content)
+		var result sourceAnalyzerResult
+		var err error
+		if analyzer, ok := d.Analyzer.(rootSourceAnalyzer); ok {
+			root := filepath.Dir(filePath)
+			if relative := filepath.FromSlash(relPath); filepath.IsLocal(relative) {
+				for _, segment := range strings.Split(filepath.Dir(relative), string(filepath.Separator)) {
+					if segment != "." {
+						root = filepath.Dir(root)
+					}
+				}
+			}
+			result, err = analyzer.AnalyzeInRoot(root, filePath, content)
+		} else {
+			result, err = d.Analyzer.Analyze(filePath, content)
+		}
 		if err != nil {
 			base.Analysis = failedAnalysis()
 			base.Diagnostics = []Diagnostic{{Severity: DiagnosticError, Code: "source-analysis-failed", Message: err.Error()}}
