@@ -106,7 +106,11 @@ func TestPNPMLockDeduplicatesLegacyPackageIDs(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			content := "lockfileVersion: '6.0'\ndependencies:\n  alias: '" + test.version + "'\npackages:\n  '" + test.packageID + "': {}\n  '/react@18.2.0': {}\n"
+			schema, reactKey := "6.0", "/react@18.2.0"
+			if test.name == "v5" {
+				schema, reactKey = "5.4", "/react/18.2.0"
+			}
+			content := "lockfileVersion: '" + schema + "'\ndependencies:\n  alias: '" + test.version + "'\npackages:\n  '" + test.packageID + "': {}\n  '" + reactKey + "': {}\n"
 			result, err := (pnpmLockParser{}).Analyze("pnpm-lock.yaml", []byte(content))
 			if err != nil {
 				t.Fatalf("Analyze failed: %v", err)
