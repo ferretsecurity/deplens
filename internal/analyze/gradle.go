@@ -72,7 +72,7 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 	for _, location := range gradleDeclarationHead.FindAllStringSubmatchIndex(dependencyBlocks, -1) {
 		configuration := dependencyBlocks[location[2]:location[3]]
 		switch configuration {
-		case "if", "for", "while", "when", "switch":
+		case "if", "else", "for", "while", "when", "switch", "catch", "synchronized":
 			continue
 		}
 		start := gradleAttachedClosure(dependencyBlocks, location[3])
@@ -163,6 +163,7 @@ func gradleAttachedClosure(content string, start int) int {
 	if tail == "" || tail[0] == '{' {
 		return -1
 	}
+	start = len(content) - len(tail)
 	var quote byte
 	escaped := false
 	depth := 0
@@ -188,6 +189,10 @@ func gradleAttachedClosure(content string, start int) int {
 		case '{':
 			if depth == 0 {
 				return index
+			}
+		case ';', '}':
+			if depth == 0 {
+				return -1
 			}
 		case '\n':
 			if depth == 0 {

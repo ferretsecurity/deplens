@@ -311,6 +311,7 @@ func TestGradleBuildParserIgnoresMetadataOnOtherDeclarationForms(t *testing.T) {
     requireCapability("org.example:core-fixtures")
   }
 }
+
 }`))
 			if err != nil {
 				t.Fatalf("Analyze: %v", err)
@@ -328,6 +329,40 @@ func TestGradleBuildParserIgnoresMetadataOnOtherDeclarationForms(t *testing.T) {
 				t.Fatalf("dependencies: got %+v want %d references", result.Dependencies, wantCount)
 			}
 		})
+	}
+}
+
+func TestGradleBuildParserPreservesDependencyContainers(t *testing.T) {
+	parser, _ := newGradleBuildParser(gradleBuildMatcherConfig{})
+	result, err := parser.Analyze("build.gradle.kts", []byte(`dependencies {
+  implementation("org.example:first:1.0"); constraints {
+    implementation("org.example:constraint:2.0")
+  }
+  if (enabled) {
+    implementation("org.example:conditional:1.0")
+  }
+  else if (fallback) {
+    implementation("org.example:fallback:1.0")
+  }
+  try {
+    implementation("org.example:try:1.0")
+  }
+  catch (ignored: Exception) {
+    implementation("org.example:catch:1.0")
+  }
+  implementation
+  ("org.example:split") {
+    because("reason: detail")
+  }
+}`))
+	if err != nil {
+		t.Fatalf("Analyze: %v", err)
+	}
+	if got, want := dependencyNames(result.Dependencies), []string{
+		"org.example:catch:1.0", "org.example:conditional:1.0", "org.example:constraint:2.0",
+		"org.example:fallback:1.0", "org.example:first:1.0", "org.example:split", "org.example:try:1.0",
+	}; !slices.Equal(got, want) {
+		t.Fatalf("dependencies: got %v want %v", got, want)
 	}
 }
 
