@@ -41,7 +41,7 @@ func TestPyRequirementsParserSetsStructuredFields(t *testing.T) {
 
 func TestPyRequirementsParserKeepsUnsupportedDeclarationsRaw(t *testing.T) {
 	parser, _ := newPyRequirementsMatcher(pyRequirementsMatcherConfig{})
-	for _, raw := range []string{"demo==", "demo=>2", "demo==1 --hash", "demo==not-a-version", "demo>=1 garbage", "demo[bad extra]>=1"} {
+	for _, raw := range []string{"demo==", "demo=>2", "demo==1 --hash", "demo==not-a-version", "demo==2garbage", "demo>=1.*", "demo~=1", "demo>=1 garbage", "demo[bad extra]>=1", "demo;"} {
 		t.Run(raw, func(t *testing.T) {
 			result, err := parser.Analyze("requirements.txt", []byte(raw+"\n"))
 			if err != nil || len(result.Dependencies) != 1 {

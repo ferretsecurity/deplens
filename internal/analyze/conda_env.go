@@ -123,13 +123,17 @@ func condaEnvironmentPipDependencies(value map[string]any) ([]DependencyReferenc
 		if parsed.name == "" {
 			return nil, fmt.Sprintf("pip[%d]: package name is required", index)
 		}
+		origin := parsed.originKind
+		if origin == "" {
+			origin = OriginRegistry
+		}
 		dependencies = append(dependencies, DependencyReference{
 			PackageType:       "pypi",
 			Raw:               raw,
 			Name:              parsed.name,
 			VersionConstraint: parsed.versionConstraint,
 			SourceGroup:       "dependencies.pip",
-			OriginKind:        OriginRegistry,
+			OriginKind:        origin,
 			Relationship:      RelationshipDirect,
 			Scope:             ScopeRuntime,
 			Attributes:        parsed.attributes,

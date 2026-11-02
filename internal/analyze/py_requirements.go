@@ -4,41 +4,29 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+
+	"github.com/git-pkgs/vers"
 )
 
 type pyRequirementsMatcherConfig struct{}
 
 type pyRequirementsMatcher struct{}
 
-var ignoredPyRequirementsLinePrefixes = []string{
-	"-c",
-	"--constraint",
-	"--index-url",
-	"--extra-index-url",
-	"--find-links",
-	"--trusted-host",
-	"--hash",
-}
+var pyRequirementConstraintPattern = regexp.MustCompile(`^(===|==|!=|~=|<=|>=|<|>)\s*([^\s,;()]+)$`)
+
+var pyRequirementNamePattern = regexp.MustCompile(`^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$`)
+
+var pyRequirementCompatibleReleasePattern = regexp.MustCompile(`^[0-9]+(?:![0-9]+)?\.[0-9]`)
 
 func newPyRequirementsMatcher(raw pyRequirementsMatcherConfig) (sourceAnalyzer, error) {
 	return pyRequirementsMatcher{}, nil
 }
 
 func (m pyRequirementsMatcher) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
-	rawDeps, diagnosticMessages := m.collectDependencies(path, content, map[string]bool{})
-	if len(rawDeps) > 0 {
-		deps := make([]DependencyReference, 0, len(rawDeps))
-		for _, spec := range rawDeps {
-			parsed := parsePEP508Dep(spec)
-			dep := DependencyReference{Raw: spec}
-			if parsed.name != "" {
-				dep.Name = parsed.name
-				dep.VersionConstraint = parsed.versionConstraint
-				dep.Attributes = parsed.attributes
-			}
-			deps = append(deps, dep)
-		}
+	deps, diagnosticMessages := m.collectDependencies(path, content, map[string]bool{})
+	if len(deps) > 0 {
 		return sourceAnalyzerResult{
 			Dependencies: deps,
 			Analysis: SourceAnalysis{
@@ -67,9 +55,9 @@ func (m pyRequirementsMatcher) Analyze(path string, content []byte) (sourceAnaly
 	}, nil
 }
 
-func (m pyRequirementsMatcher) collectDependencies(path string, content []byte, active map[string]bool) ([]string, []string) {
+func (m pyRequirementsMatcher) collectDependencies(path string, content []byte, active map[string]bool) ([]DependencyReference, []string) {
 	logicalLines := joinPyRequirementsContinuations(string(content))
-	dependencies := make([]string, 0, len(logicalLines))
+	dependencies := make([]DependencyReference, 0, len(logicalLines))
 	diagnosticMessages := make([]string, 0)
 
 	cleanPath := filepath.Clean(path)
@@ -77,8 +65,8 @@ func (m pyRequirementsMatcher) collectDependencies(path string, content []byte, 
 	defer delete(active, cleanPath)
 
 	for _, line := range logicalLines {
-		trimmed := strings.TrimSpace(line)
-		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+		trimmed := stripPyRequirementsComment(line)
+		if trimmed == "" {
 			continue
 		}
 		if includeTarget, ok := parsePyRequirementsInclude(trimmed); ok {
@@ -99,10 +87,11 @@ func (m pyRequirementsMatcher) collectDependencies(path string, content []byte, 
 			diagnosticMessages = append(diagnosticMessages, includedDiagnostics...)
 			continue
 		}
-		if isIgnoredPyRequirementsDirective(trimmed) {
+		_, editable := pyRequirementsEditableTarget(trimmed)
+		if strings.HasPrefix(trimmed, "-") && !editable {
 			continue
 		}
-		dependencies = append(dependencies, trimmed)
+		dependencies = append(dependencies, parsePyRequirementsDependency(strings.TrimSpace(line)))
 	}
 
 	return dependencies, diagnosticMessages
@@ -149,21 +138,6 @@ func joinPyRequirementsContinuations(content string) []string {
 	return joined
 }
 
-func isIgnoredPyRequirementsDirective(line string) bool {
-	for _, prefix := range ignoredPyRequirementsLinePrefixes {
-		if line == prefix {
-			return true
-		}
-		if strings.HasPrefix(line, prefix+" ") || strings.HasPrefix(line, prefix+"\t") {
-			return true
-		}
-		if strings.HasPrefix(line, prefix+"=") {
-			return true
-		}
-	}
-	return false
-}
-
 func parsePyRequirementsInclude(line string) (string, bool) {
 	for _, prefix := range []string{"-r", "--requirement", "--requirements"} {
 		if line == prefix {
@@ -179,4 +153,148 @@ func parsePyRequirementsInclude(line string) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+func pyRequirementsEditableTarget(line string) (string, bool) {
+	for _, prefix := range []string{"-e", "--editable"} {
+		if strings.HasPrefix(line, prefix+" ") || strings.HasPrefix(line, prefix+"\t") || strings.HasPrefix(line, prefix+"=") {
+			return strings.TrimSpace(line[len(prefix)+1:]), true
+		}
+	}
+	return line, false
+}
+
+func parsePyRequirementsDependency(raw string) DependencyReference {
+	declaration, options := splitPyRequirementsOptions(stripPyRequirementsComment(raw))
+	attributes, valid := parsePyRequirementsOptions(options)
+	if !valid {
+		return DependencyReference{Raw: raw}
+	}
+	declaration, editable := pyRequirementsEditableTarget(declaration)
+	if editable {
+		attributes["editable"] = "true"
+	}
+	parsed := parsePythonDependencySource(declaration)
+	if editable && parsed.originKind == "" && declaration != "" && !strings.ContainsAny(declaration, " \t@;=") {
+		parsed = pep508Dependency{originKind: OriginPath, attributes: map[string]string{"source_path": declaration}}
+	}
+	if parsed.originKind == "" {
+		parsed = parsePEP508Dep(declaration)
+		if !validPyRequirementsDeclaration(parsed, declaration) {
+			return DependencyReference{Raw: raw}
+		}
+	}
+	for key, value := range parsed.attributes {
+		attributes[key] = value
+	}
+	if len(attributes) == 0 {
+		attributes = nil
+	}
+	return DependencyReference{Raw: raw, Name: parsed.name, VersionConstraint: parsed.versionConstraint, OriginKind: parsed.originKind, Attributes: attributes}
+}
+
+func validPyRequirementsDeclaration(parsed pep508Dependency, declaration string) bool {
+	if !pyRequirementNamePattern.MatchString(parsed.name) {
+		return false
+	}
+	if marker := parsed.attributes["marker"]; marker != "" && validatePEP508Marker(marker) != nil {
+		return false
+	}
+	rest := strings.TrimSpace(strings.TrimPrefix(declaration, parsed.name))
+	if strings.HasPrefix(rest, "[") {
+		close := strings.IndexByte(rest, ']')
+		if close < 0 {
+			return false
+		}
+		for _, extra := range strings.Split(rest[1:close], ",") {
+			if !pyRequirementNamePattern.MatchString(strings.TrimSpace(extra)) {
+				return false
+			}
+		}
+		rest = strings.TrimSpace(rest[close+1:])
+	}
+	if parsed.originKind != "" {
+		return strings.HasPrefix(rest, "@")
+	}
+	constraint, marker := splitPEP508Marker(rest)
+	if strings.Contains(rest, ";") && marker == "" {
+		return false
+	}
+	if constraint == "" {
+		return rest == "" || strings.HasPrefix(rest, ";")
+	}
+	if strings.HasPrefix(constraint, "(") && strings.HasSuffix(constraint, ")") {
+		constraint = strings.TrimSpace(constraint[1 : len(constraint)-1])
+	}
+	for _, clause := range strings.Split(constraint, ",") {
+		parts := pyRequirementConstraintPattern.FindStringSubmatch(strings.TrimSpace(clause))
+		if parts == nil {
+			return false
+		}
+		if parts[1] != "===" {
+			if strings.HasSuffix(parts[2], ".*") && parts[1] != "==" && parts[1] != "!=" {
+				return false
+			}
+			version, err := vers.NormalizeWithScheme(strings.TrimSuffix(parts[2], ".*"), "pypi")
+			if err != nil || parts[1] == "~=" && !pyRequirementCompatibleReleasePattern.MatchString(version) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func splitPyRequirementsOptions(line string) (string, string) {
+	var quote byte
+	for i := 0; i < len(line); i++ {
+		if quote != 0 && line[i] == '\\' && i+1 < len(line) {
+			i++
+			continue
+		}
+		if line[i] == '\'' || line[i] == '"' {
+			if quote == 0 {
+				quote = line[i]
+			} else if quote == line[i] {
+				quote = 0
+			}
+		}
+		if quote == 0 && i > 0 && (line[i-1] == ' ' || line[i-1] == '\t') && strings.HasPrefix(line[i:], "--") {
+			return strings.TrimSpace(line[:i]), line[i:]
+		}
+	}
+	return line, ""
+}
+
+func parsePyRequirementsOptions(options string) (map[string]string, bool) {
+	attributes := make(map[string]string)
+	words := strings.Fields(options)
+	for i := 0; i < len(words); i++ {
+		key, value, assigned := strings.Cut(words[i], "=")
+		switch key {
+		case "--hash", "--config-settings", "--global-option", "--install-option":
+		default:
+			return nil, false
+		}
+		if !assigned {
+			i++
+			if i >= len(words) || strings.HasPrefix(words[i], "--") {
+				return nil, false
+			}
+			value = words[i]
+		}
+		if value == "" {
+			return nil, false
+		}
+		if key == "--hash" {
+			algorithm, digest, ok := strings.Cut(value, ":")
+			if !ok || algorithm == "" || digest == "" {
+				return nil, false
+			}
+			if attributes["hashes"] != "" {
+				attributes["hashes"] += ","
+			}
+			attributes["hashes"] += value
+		}
+	}
+	return attributes, true
 }

@@ -78,6 +78,8 @@ package.json [medium] npm project has dependencies but no npm lockfile
 
 Use `--json` for machine-readable format. JSON output includes the detected sources, extracted dependency references, check runs, findings, and diagnostics. Findings do not change the successful exit status. See the [dependency reference specification](docs/dependency-reference.md) for the dependency object fields, values, and omission rules.
 
+Python requirements scans separate pip options from version constraints and resolve local `-r` includes, including lines with trailing comments. Repeated `--hash` values are preserved in the comma-separated `hashes` attribute. Editable requirements retain `editable: "true"`; Git, URL, and local path requirements retain their origin and source attributes. Named direct references in `pyproject.toml` also retain their source rather than becoming version constraints. Declarations that cannot be normalized remain available in `raw` without a guessed name or version constraint.
+
 ## Rules
 
 `deplens` is driven by a YAML ruleset. Detector rules describe which files are dependency sources and how to analyze them. Check rules evaluate repository-wide policies after all sources have been found. Here is a small ruleset that extracts Go modules and checks that `go.sum` exists when needed:
