@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"go.yaml.in/yaml/v3"
+	"golang.org/x/mod/semver"
 )
 
 type pnpmLockParser struct{}
@@ -65,6 +66,11 @@ type pnpmLockDependency struct {
 	Specifier string `yaml:"specifier"`
 }
 
+type pnpmLockPackageID struct {
+	name    string
+	version string
+}
+
 func (d *pnpmLockDependency) UnmarshalYAML(value *yaml.Node) error {
 	if value.Kind == yaml.ScalarNode {
 		d.Version = value.Value
@@ -94,7 +100,7 @@ func (p pnpmLockParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 	}
 
 	dependencies := make([]DependencyReference, 0)
-	seen := make(map[string]struct{})
+	seen := make(map[pnpmLockPackageID]struct{})
 
 	if importer, ok := file.Importers["."]; ok {
 		dependencies = appendPNPMLockDependencies(dependencies, seen, "dependencies", importer.Dependencies)
@@ -122,7 +128,7 @@ func (p pnpmLockParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 	}, nil
 }
 
-func appendPNPMLockTransitiveFromPackages(dependencies []DependencyReference, seen map[string]struct{}, packages map[string]yaml.Node) []DependencyReference {
+func appendPNPMLockTransitiveFromPackages(dependencies []DependencyReference, seen map[pnpmLockPackageID]struct{}, packages map[string]yaml.Node) []DependencyReference {
 	if len(packages) == 0 {
 		return dependencies
 	}
@@ -134,7 +140,8 @@ func appendPNPMLockTransitiveFromPackages(dependencies []DependencyReference, se
 	}
 	slices.Sort(keys)
 	for _, key := range keys {
-		name, version := pnpmLockPackageKeyNameVersion(pnpmLockStripPeeringSuffix(key))
+		name, version := pnpmLockPackageKeyNameVersion(key)
+		version, _ = pnpmLockVersionAndPeerContext(version)
 		if name == "" {
 			continue
 		}
@@ -142,10 +149,11 @@ func appendPNPMLockTransitiveFromPackages(dependencies []DependencyReference, se
 		if version != "" {
 			raw = name + "@" + version
 		}
-		if _, ok := seen[raw]; ok {
+		id := pnpmLockPackageID{name: name, version: version}
+		if _, ok := seen[id]; ok {
 			continue
 		}
-		seen[raw] = struct{}{}
+		seen[id] = struct{}{}
 		dep := DependencyReference{Raw: raw, Name: name}
 		if version != "" {
 			dep.Version = version
@@ -155,76 +163,93 @@ func appendPNPMLockTransitiveFromPackages(dependencies []DependencyReference, se
 	return dependencies
 }
 
-func pnpmLockStripPeeringSuffix(key string) string {
-	if i := strings.Index(key, "("); i != -1 {
-		return strings.TrimSpace(key[:i])
+func pnpmLockVersionAndPeerContext(version string) (string, string) {
+	if i := strings.IndexAny(version, "(_"); i != -1 {
+		return version[:i], version[i:]
 	}
-	return key
+	return version, ""
 }
 
 // pnpmLockPackageKeyNameVersion parses a `packages` / lockfile key into name and resolved version.
-// v9+: "react@1.0.0", "@types/node@20.0.0". v5/v6: "/react/1.0.0", "/@types/node/20.0.0".
+// v5 uses /name/version, v6 uses /name@version, and v9 uses name@version.
 func pnpmLockPackageKeyNameVersion(key string) (name, version string) {
-	if key == "" {
-		return "", ""
-	}
-	if strings.HasPrefix(key, "/") {
-		return pnpmLockPackageKeyNameVersionV5Path(key)
-	}
-	return pnpmLockPackageKeyNameVersionV9(key)
-}
-
-func pnpmLockPackageKeyNameVersionV5Path(key string) (name, version string) {
-	k := strings.TrimPrefix(key, "/")
-	if k == "" {
-		return "", ""
-	}
-	last := strings.LastIndex(k, "/")
-	if last == -1 {
-		return k, ""
-	}
-	return k[:last], k[last+1:]
-}
-
-func pnpmLockPackageKeyNameVersionV9(key string) (name, version string) {
+	key = strings.TrimPrefix(key, "/")
+	start := 0
 	if strings.HasPrefix(key, "@") {
-		rest := key[1:]
-		i := strings.LastIndex(rest, "@")
-		if i == -1 {
+		start = strings.Index(key, "/") + 1
+		if start == 0 {
 			return key, ""
 		}
-		if i == 0 { // "@@" weird
-			return key, ""
-		}
-		return "@" + rest[:i], rest[i+1:]
 	}
-	i := strings.LastIndex(key, "@")
-	if i <= 0 {
+	i := strings.IndexAny(key[start:], "@/")
+	if i == -1 {
 		return key, ""
 	}
+	i += start
 	return key[:i], key[i+1:]
 }
 
-func appendPNPMLockDependencies(dependencies []DependencyReference, seen map[string]struct{}, sourceGroup string, values map[string]pnpmLockDependency) []DependencyReference {
+func appendPNPMLockDependencies(dependencies []DependencyReference, seen map[pnpmLockPackageID]struct{}, sourceGroup string, values map[string]pnpmLockDependency) []DependencyReference {
 	for _, name := range sortedPNPMLockDependencyNames(values) {
-		d := values[name]
-		dep := DependencyReference{
-			Raw:         formatPNPMLockDependencyName(name, d),
-			Name:        name,
-			SourceGroup: sourceGroup,
-		}
-		if d.Version != "" {
-			dep.Version = d.Version
-			if d.Specifier != "" {
-				dep.Attributes = map[string]string{"specifier": d.Specifier}
-			}
-		} else if d.Specifier != "" {
-			dep.VersionConstraint = d.Specifier
-		}
-		seen[dep.Raw] = struct{}{}
+		dep := pnpmLockImporterDependency(name, values[name], sourceGroup)
+		seen[pnpmLockPackageID{name: dep.Name, version: dep.Version}] = struct{}{}
 		dependencies = append(dependencies, dep)
 	}
 	return dependencies
+}
+
+func pnpmLockImporterDependency(name string, value pnpmLockDependency, sourceGroup string) DependencyReference {
+	dep := DependencyReference{
+		Raw:         formatPNPMLockDependencyName(name, value),
+		Name:        name,
+		Version:     value.Version,
+		SourceGroup: sourceGroup,
+	}
+	if value.Version == "" {
+		dep.VersionConstraint = value.Specifier
+		return dep
+	}
+	attributes := make(map[string]string)
+	if value.Specifier != "" {
+		attributes["specifier"] = value.Specifier
+	}
+	switch {
+	case strings.HasPrefix(value.Version, "link:"), strings.HasPrefix(value.Version, "file:"):
+		protocol, path, _ := strings.Cut(value.Version, ":")
+		dep.Version = ""
+		dep.OriginKind = OriginPath
+		if protocol == "link" && strings.HasPrefix(value.Specifier, "workspace:") {
+			dep.OriginKind = OriginWorkspace
+		}
+		attributes["protocol"] = protocol
+		attributes["path"] = path
+	case !strings.Contains(value.Version, ":"):
+		version, peerContext := pnpmLockVersionAndPeerContext(value.Version)
+		// A native version can contain peer names with @. Parse aliases only
+		// after ruling out that version prefix, so underscores in names survive.
+		if !semver.IsValid("v" + strings.TrimPrefix(version, "v")) {
+			if targetName, targetVersion := pnpmLockPackageKeyNameVersion(value.Version); targetVersion != "" {
+				dep.Name = targetName
+				version, peerContext = pnpmLockVersionAndPeerContext(targetVersion)
+			}
+		}
+		dep.Version = version
+		if dep.Name == name && strings.HasPrefix(value.Specifier, "npm:") {
+			if targetName, _ := parseNPMAlias(strings.TrimPrefix(value.Specifier, "npm:")); targetName != "" {
+				dep.Name = targetName
+			}
+		}
+		if dep.Name != name {
+			attributes["declared_name"] = name
+		}
+		if peerContext != "" {
+			attributes["peer_context"] = peerContext
+		}
+	}
+	if len(attributes) > 0 {
+		dep.Attributes = attributes
+	}
+	return dep
 }
 
 func formatPNPMLockDependencyName(name string, dependency pnpmLockDependency) string {
