@@ -34,6 +34,70 @@ dependencies {
 	}
 }
 
+func TestGradleBuildParserKeepsConstraintsSeparateFromDirectDependencies(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+		direct  bool
+	}{
+		{
+			name: "multiline constraint only",
+			content: `dependencies {
+  constraints {
+    implementation("org.example:core:1.2")
+  }
+}`,
+		},
+		{
+			name:    "inline constraint only",
+			content: `dependencies { constraints { implementation("org.example:core:1.2") } }`,
+		},
+		{
+			name: "same coordinate declared directly",
+			content: `dependencies {
+  implementation("org.example:core:1.2")
+  constraints {
+    implementation("org.example:core:1.2")
+  }
+}`,
+			direct: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			parser, _ := newGradleBuildParser(gradleBuildMatcherConfig{})
+			result, err := parser.Analyze("build.gradle.kts", []byte(tt.content))
+			if err != nil {
+				t.Fatalf("Analyze: %v", err)
+			}
+			if result.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) {
+				t.Fatalf("unexpected analysis: %+v", result.Analysis)
+			}
+			wantCount := 1
+			if tt.direct {
+				wantCount++
+			}
+			if len(result.Dependencies) != wantCount {
+				t.Fatalf("expected %d dependencies, got %+v", wantCount, result.Dependencies)
+			}
+			groups := make(map[string]Relationship)
+			for _, dependency := range result.Dependencies {
+				if dependency.Raw != "org.example:core:1.2" || dependency.Name != "org.example:core" ||
+					dependency.VersionConstraint != "[1.2]" || dependency.Scope != ScopeRuntime {
+					t.Fatalf("unexpected dependency: %+v", dependency)
+				}
+				groups[dependency.SourceGroup] = dependency.Relationship
+			}
+			if groups["constraints.implementation"] != RelationshipInconclusive {
+				t.Fatalf("expected inconclusive constraint, got %+v", result.Dependencies)
+			}
+			if tt.direct && groups["implementation"] != RelationshipDirect {
+				t.Fatalf("expected separate direct declaration, got %+v", result.Dependencies)
+			}
+		})
+	}
+}
+
 func TestGradleBuildParserReportsStaticAndDynamicAsPartial(t *testing.T) {
 	parser, _ := newGradleBuildParser(gradleBuildMatcherConfig{})
 	result, err := parser.Analyze("build.gradle.kts", []byte(`
