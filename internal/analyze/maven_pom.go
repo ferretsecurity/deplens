@@ -20,6 +20,19 @@ type mavenPOM struct {
 	Properties           mavenProperties           `xml:"properties"`
 	Dependencies         []mavenDependency         `xml:"dependencies>dependency"`
 	DependencyManagement mavenDependencyManagement `xml:"dependencyManagement"`
+	Profiles             []mavenProfile            `xml:"profiles>profile"`
+}
+
+type mavenProfile struct {
+	ID                   string                    `xml:"id"`
+	Properties           mavenProperties           `xml:"properties"`
+	Activation           *mavenActivation          `xml:"activation"`
+	Dependencies         []mavenDependency         `xml:"dependencies>dependency"`
+	DependencyManagement mavenDependencyManagement `xml:"dependencyManagement"`
+}
+
+type mavenActivation struct {
+	InnerXML string `xml:",innerxml"`
 }
 
 type mavenParent struct {
@@ -81,17 +94,47 @@ func (mavenPOMParser) Analyze(path string, content []byte) (sourceAnalyzerResult
 		return sourceAnalyzerResult{}, nil
 	}
 
-	properties := mavenPOMProperties(pom)
+	properties := mavenPOMProperties(pom, nil)
 	dependencies := make([]DependencyReference, 0, len(pom.Dependencies)+len(pom.DependencyManagement.Dependencies))
 	incomplete := make([]string, 0)
 	dependencies, incomplete = appendMavenDependencies(dependencies, incomplete, pom.Dependencies, "dependencies", RelationshipDirect, properties)
 	dependencies, incomplete = appendMavenDependencies(dependencies, incomplete, pom.DependencyManagement.Dependencies, "dependencyManagement", RelationshipInconclusive, properties)
+	for index, profile := range pom.Profiles {
+		if len(profile.Dependencies)+len(profile.DependencyManagement.Dependencies) == 0 {
+			continue
+		}
+		id := strings.TrimSpace(profile.ID)
+		group := "profiles." + id
+		if id == "" {
+			id = fmt.Sprintf("[%d]", index+1)
+			group = "profiles" + id
+			incomplete = append(incomplete, fmt.Sprintf("%s has no profile id; using its position", group))
+		}
+		start := len(dependencies)
+		profileProperties := mavenPOMProperties(pom, profile.Properties)
+		dependencies, incomplete = appendMavenDependencies(dependencies, incomplete, profile.Dependencies, group+".dependencies", RelationshipDirect, profileProperties)
+		dependencies, incomplete = appendMavenDependencies(dependencies, incomplete, profile.DependencyManagement.Dependencies, group+".dependencyManagement", RelationshipInconclusive, profileProperties)
+		for index := start; index < len(dependencies); index++ {
+			dependency := &dependencies[index]
+			if dependency.Attributes == nil {
+				dependency.Attributes = make(map[string]string)
+			}
+			dependency.Attributes["profile"] = id
+			dependency.Attributes["conditional"] = "true"
+			if profile.Activation != nil {
+				dependency.Attributes["maven_activation"] = strings.TrimSpace(profile.Activation.InnerXML)
+			}
+		}
+	}
 	return semanticAnalyzerResult(dependencies, incomplete), nil
 }
 
-func mavenPOMProperties(pom mavenPOM) map[string]string {
-	properties := make(map[string]string, len(pom.Properties)+8)
+func mavenPOMProperties(pom mavenPOM, overrides mavenProperties) map[string]string {
+	properties := make(map[string]string, len(pom.Properties)+len(overrides)+8)
 	for key, value := range pom.Properties {
+		properties[key] = value
+	}
+	for key, value := range overrides {
 		properties[key] = value
 	}
 	groupID := strings.TrimSpace(pom.GroupID)
