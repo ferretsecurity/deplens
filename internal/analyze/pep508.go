@@ -109,7 +109,10 @@ func parsePythonDependencySource(value string) pep508Dependency {
 		return pep508Dependency{originKind: OriginPath, attributes: map[string]string{"source_path": value}}
 	}
 	parsedURL, err := url.Parse(value)
-	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
+	if err != nil || parsedURL.Scheme == "" {
+		return pep508Dependency{}
+	}
+	if parsedURL.Host == "" && !(parsedURL.Scheme == "git+file" && strings.HasPrefix(parsedURL.Path, "/")) {
 		return pep508Dependency{}
 	}
 	dep := pep508Dependency{originKind: OriginURL, attributes: map[string]string{"source_url": value}}
