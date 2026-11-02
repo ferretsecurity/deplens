@@ -188,6 +188,32 @@ assembled TOML containing the alias declaration and its referenced version,
 when present. It preserves unknown fields but does not retain comments or
 original whitespace.
 
+### pnpm lockfile attributes
+
+Root importer declarations and older top-level declarations retain their
+source-facing resolution in `raw`. Their normalized `version` excludes peer
+context. The `peer_context` attribute retains the exact suffix, including its
+leading `(` or `_`, such as `(typescript@5.2.2)` or `_react@18.2.0`. Nested
+parenthesized contexts remain intact.
+
+Aliases use the target package's `name` and selected `version`. When the name
+differs from the declaration, `declared_name` retains the declaration name.
+Aliases support modern `name@version` and scoped coordinates, older
+`/name/version` and `/name@version` package IDs, and an `npm:` specifier with a
+bare selected version. The original `specifier` remains an attribute when a
+resolution is present.
+
+`link:` and `file:` resolutions omit `version` and use `origin_kind: "path"`.
+Their `protocol` and `path` attributes retain the protocol without the colon
+and the path after it. A `workspace:` specifier resolved through `link:` uses
+`origin_kind: "workspace"` with the same attributes.
+
+Entries from the `packages` store are deduplicated by normalized name and
+version against importer references and other store entries. Separate importer
+declarations retain their own `raw`, `source_group`, and attributes even when
+their normalized names and versions match. Only the `.` importer is read for
+declarations; the store can include packages used by other importers.
+
 ### Maven profiles
 
 Maven POM references use `dependencies` and `dependencyManagement` for root
