@@ -291,6 +291,8 @@ The 185 built-in detectors cover common package managers and languages as well a
 
 See [Dependency coverage](DEPENDENCY_COVERAGE.md) for the complete list of detectors and the capabilities available for each source.
 
+Gradle version catalogs retain rich version tables in `raw` and `attributes` and report partial extraction. Rich versions leave `version`, `version_constraint`, and `vers` unset because their semantics cannot be represented as one shared constraint. Simple version strings keep their existing constraint normalization.
+
 ## Security scanning
 
 We use [Snyk](https://snyk.io/) and [Socket](https://socket.dev/) to scan this repository's dependencies for security risks. We also use GitHub's [CodeQL](https://codeql.github.com/) to scan Go code and GitHub Actions workflows for security issues, and [Dependabot](https://docs.github.com/en/code-security/dependabot) to alert us to vulnerable dependencies and open pull requests for security and version updates.

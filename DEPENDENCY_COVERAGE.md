@@ -4,6 +4,8 @@ This inventory is derived from `internal/analyze/default_rules.yaml`. It describ
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
+Gradle version catalogs normalize simple version strings. Rich version tables retain their fields in `raw` and `attributes` with partial extraction; they do not produce a shared version constraint or VERS.
+
 | Detector ID | Form | Roles | Analyzer | Capabilities |
 | --- | --- | --- | --- | --- |
 | `python-requirements` | `requirements` | `declaration, constraint` | `py-requirements` | select, recognize, extract, normalize |

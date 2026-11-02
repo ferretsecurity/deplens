@@ -178,6 +178,16 @@ ecosystem identifiers such as `uuid`, `channel`, or `package_id`. All attribute
 values remain strings even when the source represents a number, Boolean, or
 list.
 
+Gradle version catalogs preserve rich version fields as `version_require`,
+`version_strictly`, `version_prefer`, `version_reject`, and `version_reject_all`.
+`version_reject` is a JSON string array encoded as a string, and
+`version_reject_all` is the string `"true"` or `"false"`. Referenced versions
+also retain `version_ref`. Rich versions leave `version`, `version_constraint`,
+and `vers` unset and produce a partial-extraction warning. Their `raw` is
+assembled TOML containing the alias declaration and its referenced version,
+when present. It preserves unknown fields but does not retain comments or
+original whitespace.
+
 ## Stability and consumer guidance
 
 - The enclosing JSON document's `schema_version` governs the dependency object.

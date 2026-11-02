@@ -1,8 +1,12 @@
 package analyze
 
 import (
+	"encoding/json"
 	"fmt"
+	"maps"
 	"regexp"
+	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -344,8 +348,8 @@ func (gradleVersionCatalogParser) Analyze(path string, content []byte) (sourceAn
 
 	dependencies := make([]DependencyReference, 0, len(catalog.Libraries))
 	incomplete := make([]string, 0)
-	seen := make(map[string]struct{})
-	for alias, raw := range catalog.Libraries {
+	for _, alias := range slices.Sorted(maps.Keys(catalog.Libraries)) {
+		raw := catalog.Libraries[alias]
 		module, version, versionRef, ok := gradleCatalogLibrary(raw, catalog.Versions)
 		if !ok {
 			incomplete = append(incomplete, fmt.Sprintf("Gradle version-catalog alias %s could not be statically extracted", alias))
@@ -363,21 +367,34 @@ func (gradleVersionCatalogParser) Analyze(path string, content []byte) (sourceAn
 			Relationship: RelationshipInconclusive,
 			Attributes:   map[string]string{"alias": alias},
 		}
-		if version != "" {
-			dependency.Raw += ":" + version
-			dependency.VersionConstraint = normalizeGradleMavenConstraint(version)
+		switch value := version.(type) {
+		case string:
+			if value != "" {
+				dependency.Raw += ":" + value
+				dependency.VersionConstraint = normalizeGradleMavenConstraint(value)
+			}
+		case map[string]any:
+			declaration := gradleVersionCatalogFile{Libraries: map[string]any{alias: raw}}
+			if versionRef != "" {
+				declaration.Versions = map[string]any{versionRef: catalog.Versions[versionRef]}
+			}
+			assembled, err := toml.Marshal(declaration)
+			if err != nil {
+				return sourceAnalyzerResult{}, fmt.Errorf("assemble Gradle version-catalog alias %s in %q: %w", alias, path, err)
+			}
+			dependency.Raw = strings.TrimSpace(string(assembled))
+			gradleCatalogRichVersionAttributes(dependency.Attributes, value)
+			incomplete = append(incomplete, fmt.Sprintf("Gradle version-catalog alias %s has rich version semantics that cannot be represented as a shared version constraint", alias))
 		}
 		if versionRef != "" {
 			dependency.Attributes["version_ref"] = versionRef
 		}
-		key := dependency.Name + "\x00" + dependency.VersionConstraint
-		dependencies = appendUniqueDependency(dependencies, seen, key, dependency)
+		dependencies = append(dependencies, dependency)
 	}
-	sortDependencyReferences(dependencies)
 	return semanticAnalyzerResult(dependencies, incomplete), nil
 }
 
-func gradleCatalogLibrary(raw any, versions map[string]any) (module, version, versionRef string, ok bool) {
+func gradleCatalogLibrary(raw any, versions map[string]any) (module string, version any, versionRef string, ok bool) {
 	switch value := raw.(type) {
 	case string:
 		parts := strings.Split(value, ":")
@@ -406,12 +423,21 @@ func gradleCatalogLibrary(raw any, versions map[string]any) (module, version, ve
 		case map[string]any:
 			if ref, exists := rawVersion["ref"].(string); exists {
 				versionRef = ref
-				version = gradleCatalogVersion(versions[ref])
-				if version == "" {
-					return "", "", "", false
+				version = versions[ref]
+				switch value := version.(type) {
+				case string:
+					if value == "" {
+						return "", nil, "", false
+					}
+				case map[string]any:
+				default:
+					return "", nil, "", false
+				}
+				if len(rawVersion) > 1 {
+					version = rawVersion
 				}
 			} else {
-				version = gradleCatalogVersion(rawVersion)
+				version = rawVersion
 			}
 		case nil:
 		default:
@@ -423,16 +449,24 @@ func gradleCatalogLibrary(raw any, versions map[string]any) (module, version, ve
 	}
 }
 
-func gradleCatalogVersion(raw any) string {
-	switch value := raw.(type) {
-	case string:
-		return value
-	case map[string]any:
-		for _, key := range []string{"strictly", "require", "prefer"} {
-			if version, ok := value[key].(string); ok {
-				return version
-			}
+func gradleCatalogRichVersionAttributes(attributes map[string]string, version map[string]any) {
+	for _, key := range []string{"require", "strictly", "prefer"} {
+		if value, ok := version[key].(string); ok {
+			attributes["version_"+key] = value
 		}
 	}
-	return ""
+	if value, ok := version["rejectAll"].(bool); ok {
+		attributes["version_reject_all"] = strconv.FormatBool(value)
+	}
+	if values, ok := version["reject"].([]any); ok {
+		for _, value := range values {
+			if _, ok := value.(string); !ok {
+				return
+			}
+		}
+		encoded, err := json.Marshal(values)
+		if err == nil {
+			attributes["version_reject"] = string(encoded)
+		}
+	}
 }
