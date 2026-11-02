@@ -82,6 +82,8 @@ JavaScript `package.json` references using `catalog:` resolve through the owning
 
 Resolved references keep the original `raw` declaration and add the catalog target's origin, version constraint, and VERS where supported. Their attributes include `catalog_name`, `catalog_source`, and `catalog_specifier`. Catalog path targets remain relative to the catalog configuration. Missing, ambiguous, malformed, or unsupported targets preserve the reference and produce partial extraction with a diagnostic. pnpm treats `catalog:` and `catalog:default` as aliases. Yarn uses `catalog:` for `catalog` and `catalog:default` for the separate `catalogs.default` table.
 
+Maven `pom.xml` extraction includes root and profile `dependencies` and `dependencyManagement` sections. Profile source groups include the profile ID, such as `profiles.benchmark.dependencies`. Profile references carry `profile` and `conditional` attributes, plus activation XML when declared. Deplens records every profile without deciding which profiles are active. Profile properties override root properties only within that profile. See [Maven profile references](docs/dependency-reference.md#maven-profiles) for the attribute format.
+
 ## Rules
 
 `deplens` is driven by a YAML ruleset. Detector rules describe which files are dependency sources and how to analyze them. Check rules evaluate repository-wide policies after all sources have been found. Here is a small ruleset that extracts Go modules and checks that `go.sum` exists when needed:
