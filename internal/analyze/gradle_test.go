@@ -366,6 +366,27 @@ func TestGradleBuildParserPreservesDependencyContainers(t *testing.T) {
 	}
 }
 
+func TestGradleBuildParserPreservesExecutableContainers(t *testing.T) {
+	for _, container := range []string{"true ->", "with(this)", "listOf(1, 2).forEach"} {
+		t.Run(container, func(t *testing.T) {
+			parser, _ := newGradleBuildParser(gradleBuildMatcherConfig{})
+			body := container + ` {
+  implementation("org.example:contained:1.0")
+}`
+			if container == "true ->" {
+				body = "when {\n" + body + "\n}"
+			}
+			result, err := parser.Analyze("build.gradle.kts", []byte("dependencies {\n"+body+"\n}"))
+			if err != nil {
+				t.Fatalf("Analyze: %v", err)
+			}
+			if got, want := dependencyNames(result.Dependencies), []string{"org.example:contained:1.0"}; !slices.Equal(got, want) {
+				t.Fatalf("dependencies: got %v want %v", got, want)
+			}
+		})
+	}
+}
+
 func TestGradleLockParserExtractsResolvedModules(t *testing.T) {
 	parser, _ := newGradleLockParser(gradleLockMatcherConfig{})
 	result, err := parser.Analyze("gradle.lockfile", []byte(`

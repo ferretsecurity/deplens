@@ -22,6 +22,7 @@ var (
 	gradleMapKey           = regexp.MustCompile(`\b(group|name|version)\s*[:=]`)
 	gradleRichVersionToken = regexp.MustCompile(`"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\bversion\s*\{`)
 	gradleDeclarationHead  = regexp.MustCompile(`(?m)(?:^|\n|;)[ \t]*([A-Za-z_][A-Za-z0-9_.]*)`)
+	gradleLocalDependency  = regexp.MustCompile(`^\s*\(?\s*(?:project|files|fileTree|testFixtures)\s*\(`)
 )
 
 func newGradleBuildParser(gradleBuildMatcherConfig) (sourceAnalyzer, error) {
@@ -77,6 +78,19 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 		}
 		start := gradleAttachedClosure(dependencyBlocks, location[3])
 		if start < 0 {
+			continue
+		}
+		head := dependencyBlocks[location[0]:start]
+		dependencyCall := gradleMapKey.MatchString(head) || gradleAliasCall.MatchString(head) ||
+			gradleLocalDependency.MatchString(dependencyBlocks[location[3]:start])
+		for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall, gradlePlatformCall} {
+			if match := matcher.FindStringSubmatch(head); match != nil {
+				if _, ok := gradleCoordinateDependency(match[2], configuration); ok {
+					dependencyCall = true
+				}
+			}
+		}
+		if !dependencyCall {
 			continue
 		}
 		end, ok := executableDSLMatchingBrace(dependencyBlocks, start+1)
