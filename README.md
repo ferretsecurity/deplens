@@ -78,7 +78,7 @@ package.json [medium] npm project has dependencies but no npm lockfile
 
 Use `--json` for machine-readable format. JSON output includes the detected sources, extracted dependency references, check runs, findings, and diagnostics. Findings do not change the successful exit status. See the [dependency reference specification](docs/dependency-reference.md) for the dependency object fields, values, and omission rules.
 
-Python requirements scans separate pip options from version constraints and resolve local `-r` includes, including lines with trailing comments. Repeated `--hash` values are preserved in the comma-separated `hashes` attribute. Editable requirements retain `editable: "true"`; Git, URL, and local path requirements retain their origin and source attributes. Named direct references in `pyproject.toml` also retain their source rather than becoming version constraints. Declarations that cannot be normalized remain available in `raw` without a guessed name or version constraint.
+The pnpm lockfile analyzer reads root importer declarations, older top-level declarations, and the `packages` store. It separates selected versions from peer context, normalizes npm alias names, and records `link:` and `file:` resolutions as local paths. A `workspace:` declaration resolved through `link:` has workspace origin. Matching store entries are omitted by normalized name and version, while separate importer declarations stay visible. See [pnpm lockfile attributes](docs/dependency-reference.md#pnpm-lockfile-attributes).
 
 JavaScript `package.json` references using `catalog:` resolve through the owning pnpm workspace's `pnpm-workspace.yaml` or `pnpm-workspace.yml`, or the owning Yarn project's `.yarnrc.yml`. The scan uses explicit workspace membership and exclusions, and keeps nested projects separate. Resolution runs even when policy checks are disabled. Only referenced catalog entries become dependencies; the configuration sources remain identification-only.
 
@@ -301,7 +301,11 @@ For npm v2 and v3 lockfiles, `package-lock.json` and `npm-shrinkwrap.json` entri
 
 See [Dependency coverage](DEPENDENCY_COVERAGE.md) for the complete list of detectors and the capabilities available for each source.
 
+Gradle build definitions preserve dependency constraints separately from direct declarations. References inside `dependencies { constraints { ... } }` have `relationship: "inconclusive"` and a `source_group` such as `constraints.implementation`. A constraint does not establish that the project uses the module. Scope comes from the original configuration, so `constraints.api` retains runtime scope. A matching direct declaration remains a separate reference.
+
 For Python `setup.cfg`, deplens extracts `install_requires`, `setup_requires`, and all `options.extras_require` entries. It supports inline semicolon-separated lists and indented continuation lines, including an initial inline requirement. Multiline requirements retain PEP 508 environment markers. Supported requirements include normalized names, version constraints, and extras while keeping the original requirement text. Commas stay inside version constraints. Use multiline values for environment markers, following [setuptools configuration syntax](https://setuptools.pypa.io/en/latest/userguide/declarative_config.html#specifying-values). `file:` directives and interpolation are not expanded, and comma-separated package lists are not supported.
+
+Python requirements scans separate pip options from version constraints and resolve local `-r` includes, including lines with trailing comments. Repeated `--hash` values are preserved in the comma-separated `hashes` attribute. Editable requirements retain `editable: "true"`; Git, URL, and local path requirements retain their origin and source attributes. Named direct references in `pyproject.toml` also retain their source rather than becoming version constraints. Declarations that cannot be normalized remain available in `raw` without a guessed name or version constraint.
 
 ## Security scanning
 
