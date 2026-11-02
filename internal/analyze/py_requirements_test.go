@@ -39,6 +39,34 @@ func TestPyRequirementsParserSetsStructuredFields(t *testing.T) {
 	}
 }
 
+func TestPyRequirementsParserKeepsUnsupportedDeclarationsRaw(t *testing.T) {
+	parser, _ := newPyRequirementsMatcher(pyRequirementsMatcherConfig{})
+	for _, raw := range []string{"demo==", "demo=>2", "demo==1 --hash", "demo==not-a-version", "demo==2garbage", "demo>=1.*", "demo~=1", "demo>=1 garbage", "demo[bad extra]>=1", "demo;"} {
+		t.Run(raw, func(t *testing.T) {
+			result, err := parser.Analyze("requirements.txt", []byte(raw+"\n"))
+			if err != nil || len(result.Dependencies) != 1 {
+				t.Fatalf("result = %+v, error = %v", result, err)
+			}
+			dep := result.Dependencies[0]
+			if dep.Raw != raw || dep.Name != "" || dep.VersionConstraint != "" || dep.VERS != "" {
+				t.Fatalf("unsupported declaration acquired normalized fields: %+v", dep)
+			}
+		})
+	}
+}
+
+func TestPyRequirementsParserPreservesQuotedMarkersAndParenthesizedConstraints(t *testing.T) {
+	parser, _ := newPyRequirementsMatcher(pyRequirementsMatcherConfig{})
+	result, err := parser.Analyze("requirements.txt", []byte("demo (>=1, <2) ; os_name == 'a # b; --hash=x' # comment\n"))
+	if err != nil || len(result.Dependencies) != 1 {
+		t.Fatalf("result = %+v, error = %v", result, err)
+	}
+	dep := result.Dependencies[0]
+	if dep.VersionConstraint != "(>=1, <2)" || dep.Attributes["marker"] != "os_name == 'a # b; --hash=x'" {
+		t.Fatalf("declaration syntax was lost: %+v", dep)
+	}
+}
+
 func TestPyRequirementsParserExtractsStaticDependencyLines(t *testing.T) {
 	parser, err := newPyRequirementsMatcher(pyRequirementsMatcherConfig{})
 	if err != nil {
@@ -254,5 +282,29 @@ func TestPyRequirementsParserWarnsOnIncludeCycles(t *testing.T) {
 	}
 	if len(result.Diagnostics) != 1 {
 		t.Fatalf("expected one warning, got %+v", result.Diagnostics)
+	}
+}
+
+func TestPyRequirementsParserPreservesValidPipSyntax(t *testing.T) {
+	parser, _ := newPyRequirementsMatcher(pyRequirementsMatcherConfig{})
+	for _, tc := range []struct {
+		raw, constraint, hashes string
+	}{
+		{`demo[]>=1`, ">=1", ""},
+		{`demo>=1,`, ">=1,", ""},
+		{`demo===foo/bar`, "===foo/bar", ""},
+		{`demo==1 --config-settings="build_option=hello world"`, "==1", ""},
+		{`demo==1 --hash="sha256:aaa"`, "==1", "sha256:aaa"},
+	} {
+		t.Run(tc.raw, func(t *testing.T) {
+			result, err := parser.Analyze("requirements.txt", []byte(tc.raw+"\n"))
+			if err != nil || len(result.Dependencies) != 1 {
+				t.Fatalf("result = %+v, error = %v", result, err)
+			}
+			dep := result.Dependencies[0]
+			if dep.Raw != tc.raw || dep.Name != "demo" || dep.VersionConstraint != tc.constraint || dep.OriginKind != "" || dep.Attributes["hashes"] != tc.hashes {
+				t.Fatalf("valid requirement lost normalization: %+v", dep)
+			}
+		})
 	}
 }
