@@ -557,7 +557,7 @@ func (r Ruleset) hasEvaluator(evaluatorType string) bool {
 
 func needsPolicyContent(id DetectorID) bool {
 	switch id {
-	case "js", "js-pnpm-workspace", "rust-cargo", "go-mod", "php-composer", "ruby-gemfile":
+	case "js", "js-pnpm-workspace", "js-yarnrc", "rust-cargo", "go-mod", "php-composer", "ruby-gemfile":
 		return true
 	default:
 		return false
