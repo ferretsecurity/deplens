@@ -1,10 +1,38 @@
 package analyze
 
 import (
+	"fmt"
 	"maps"
 	"slices"
+	"strings"
 	"testing"
 )
+
+func TestINIParserExtractsLongMultilineDependencies(t *testing.T) {
+	parser, err := newINIQueryParser(iniMatcherConfig{
+		Queries: []iniQueryConfig{{Section: "options", Key: "install_requires"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var content strings.Builder
+	content.WriteString("[options]\ninstall_requires =\n")
+	for i := range 400 {
+		fmt.Fprintf(&content, "    package%d>=1.0\n", i)
+	}
+	result, err := parser.Analyze("setup.cfg", []byte(content.String()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Dependencies) != 400 {
+		t.Fatalf("expected 400 dependencies, got %d", len(result.Dependencies))
+	}
+	for i, dependency := range result.Dependencies {
+		if want := fmt.Sprintf("package%d", i); dependency.Name != want {
+			t.Errorf("dependency %d: got %+v, want name %q", i, dependency, want)
+		}
+	}
+}
 
 func TestINIParserRejectsPartialWildcardKey(t *testing.T) {
 	_, err := newINIQueryParser(iniMatcherConfig{
