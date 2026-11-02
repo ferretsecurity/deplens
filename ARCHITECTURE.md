@@ -42,6 +42,7 @@ For each regular file under the scan root:
 8. Convert file-read or total analyzer errors to `unknown` + `failed` with an error diagnostic.
 9. Sort source results by path, then detector ID.
 10. Build ecosystem-specific project and workspace ownership from the immutable source set and normalized paths.
+    Resolve used JavaScript catalog references through their owning workspace or project configuration before policy evaluation, including scans without checks.
 11. Parse evaluator-specific policy inputs into repository facts.
 12. Evaluate configured checks in stable check-ID order, then sort check runs and findings by project root and check ID.
 13. When the caller requests generation, plan and validate every selected group before writing any output.

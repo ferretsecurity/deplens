@@ -1,0 +1,4 @@
+{
+  "devDependencies": {"server": "catalog:tools"},
+  "optionalDependencies": {"local": "catalog:tools", "toolkit": "catalog:tools"}
+}
