@@ -23,6 +23,7 @@ var (
 	gradleRichVersionToken = regexp.MustCompile(`"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\bversion\s*\{`)
 	gradleDeclarationHead  = regexp.MustCompile(`(?m)(?:^|\n|;)[ \t]*([A-Za-z_][A-Za-z0-9_.]*)`)
 	gradleLocalDependency  = regexp.MustCompile(`^\s*\(?\s*(?:project|files|fileTree|testFixtures)\s*\(`)
+	gradleContainerCall    = regexp.MustCompile(`^(?:if|else|for|while|when|switch|catch|synchronized|with|run|let|apply|also|use|listOf|setOf|sequenceOf|arrayOf)$`)
 )
 
 func newGradleBuildParser(gradleBuildMatcherConfig) (sourceAnalyzer, error) {
@@ -73,8 +74,7 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 
 		for _, location := range gradleDeclarationHead.FindAllStringSubmatchIndex(segment.text, -1) {
 			configuration := segment.text[location[2]:location[3]]
-			switch configuration {
-			case "if", "else", "for", "while", "when", "switch", "catch", "synchronized":
+			if gradleContainerCall.MatchString(lastIdentifier(configuration)) {
 				continue
 			}
 			start := gradleAttachedClosure(segment.text, location[3])
@@ -109,6 +109,9 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 		for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall, gradlePlatformCall} {
 			for _, match := range matcher.FindAllStringSubmatch(segment.text, -1) {
 				configuration := lastIdentifier(match[1])
+				if gradleContainerCall.MatchString(configuration) {
+					continue
+				}
 				coordinate := strings.TrimSpace(match[2])
 				if strings.Count(coordinate, ":") < 1 {
 					continue
@@ -202,6 +205,14 @@ func gradleAttachedClosure(content string, start int) int {
 			depth++
 		case ')':
 			depth--
+			if depth == 0 {
+				tail := content[index+1:]
+				trimmed := strings.TrimLeft(tail, " \t\r\n")
+				if strings.HasPrefix(trimmed, "{") {
+					return index + 1 + len(tail) - len(trimmed)
+				}
+				return -1
+			}
 		case '{':
 			if depth == 0 {
 				return index

@@ -544,7 +544,11 @@ func TestGradleBuildParserPreservesDependencyContainers(t *testing.T) {
 }
 
 func TestGradleBuildParserPreservesExecutableContainers(t *testing.T) {
-	for _, container := range []string{"true ->", "with(this)", "listOf(1, 2).forEach"} {
+	for _, container := range []string{
+		"true ->", "with(this)", "listOf(1, 2).forEach",
+		`with(project(":subproject"))`, `with("org.example:input")`,
+		`listOf("org.example:input:1.0").forEach`, `listOf("org.example:input").forEach`,
+	} {
 		t.Run(container, func(t *testing.T) {
 			parser, _ := newGradleBuildParser(gradleBuildMatcherConfig{})
 			body := container + ` {
@@ -557,8 +561,13 @@ func TestGradleBuildParserPreservesExecutableContainers(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Analyze: %v", err)
 			}
-			if got, want := dependencyNames(result.Dependencies), []string{"org.example:contained:1.0"}; !slices.Equal(got, want) {
-				t.Fatalf("dependencies: got %v want %v", got, want)
+			if !slices.Contains(dependencyNames(result.Dependencies), "org.example:contained:1.0") {
+				t.Fatalf("lost contained dependency: %+v", result)
+			}
+			for _, dependency := range result.Dependencies {
+				if dependency.SourceGroup == "with" || dependency.SourceGroup == "listOf" {
+					t.Fatalf("scope argument became dependency: %+v", dependency)
+				}
 			}
 		})
 	}
