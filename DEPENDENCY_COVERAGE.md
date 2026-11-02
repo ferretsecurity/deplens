@@ -4,6 +4,8 @@ This inventory is derived from `internal/analyze/default_rules.yaml`. It describ
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
+`python-setup-cfg` reads inline semicolon-separated requirements and indented continuation values. It normalizes supported package names, constraints, extras, and multiline environment markers. It does not expand `file:` directives or interpolation.
+
 | Detector ID | Form | Roles | Analyzer | Capabilities |
 | --- | --- | --- | --- | --- |
 | `python-requirements` | `requirements` | `declaration, constraint` | `py-requirements` | select, recognize, extract, normalize |
