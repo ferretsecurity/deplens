@@ -21,6 +21,7 @@ var (
 	gradleMapPair          = regexp.MustCompile(`\b(group|name|version)\s*[:=]\s*["']([^"']+)["']`)
 	gradleMapKey           = regexp.MustCompile(`\b(group|name|version)\s*[:=]`)
 	gradleRichVersionToken = regexp.MustCompile(`"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\bversion\s*\{`)
+	gradleDeclarationHead  = regexp.MustCompile(`(?m)(?:^|\n|;)[ \t]*([A-Za-z_][A-Za-z0-9_.]*)`)
 )
 
 func newGradleBuildParser(gradleBuildMatcherConfig) (sourceAnalyzer, error) {
@@ -68,22 +69,23 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 	}
 	dependencyBlocks = string(masked)
 
-	for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall, gradlePlatformCall} {
-		for _, location := range matcher.FindAllStringSubmatchIndex(dependencyBlocks, -1) {
-			tail := dependencyBlocks[location[1]:]
-			trimmed := strings.TrimLeft(tail, " \t\r\n)")
-			if !strings.HasPrefix(trimmed, "{") {
-				continue
-			}
-			start := location[1] + len(tail) - len(trimmed)
-			end, ok := executableDSLMatchingBrace(dependencyBlocks, start+1)
-			if !ok {
-				return sourceAnalyzerResult{}, fmt.Errorf("parse Gradle build %q: unterminated dependency configuration block", path)
-			}
-			for index := start; index <= end; index++ {
-				if masked[index] != '\n' {
-					masked[index] = ' '
-				}
+	for _, location := range gradleDeclarationHead.FindAllStringSubmatchIndex(dependencyBlocks, -1) {
+		configuration := dependencyBlocks[location[2]:location[3]]
+		switch configuration {
+		case "if", "for", "while", "when", "switch":
+			continue
+		}
+		start := gradleAttachedClosure(dependencyBlocks, location[3])
+		if start < 0 {
+			continue
+		}
+		end, ok := executableDSLMatchingBrace(dependencyBlocks, start+1)
+		if !ok {
+			return sourceAnalyzerResult{}, fmt.Errorf("parse Gradle build %q: unterminated dependency configuration block", path)
+		}
+		for index := start; index <= end; index++ {
+			if masked[index] != '\n' {
+				masked[index] = ' '
 			}
 		}
 	}
@@ -154,6 +156,51 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 
 	sortDependencyReferences(dependencies)
 	return semanticAnalyzerResult(dependencies, incomplete), nil
+}
+
+func gradleAttachedClosure(content string, start int) int {
+	tail := strings.TrimLeft(content[start:], " \t\r\n")
+	if tail == "" || tail[0] == '{' {
+		return -1
+	}
+	var quote byte
+	escaped := false
+	depth := 0
+	for index := start; index < len(content); index++ {
+		current := content[index]
+		if quote != 0 {
+			if escaped {
+				escaped = false
+			} else if current == '\\' {
+				escaped = true
+			} else if current == quote {
+				quote = 0
+			}
+			continue
+		}
+		switch current {
+		case '\'', '"':
+			quote = current
+		case '(':
+			depth++
+		case ')':
+			depth--
+		case '{':
+			if depth == 0 {
+				return index
+			}
+		case '\n':
+			if depth == 0 {
+				tail := content[index:]
+				trimmed := strings.TrimLeft(tail, " \t\r\n")
+				if strings.HasPrefix(trimmed, "{") {
+					return index + len(tail) - len(trimmed)
+				}
+				return -1
+			}
+		}
+	}
+	return -1
 }
 
 var gradleDependenciesBlock = regexp.MustCompile(`\bdependencies\s*\{`)

@@ -295,6 +295,42 @@ func TestGradleBuildParserIgnoresDependencyConfigurationMetadata(t *testing.T) {
 	}
 }
 
+func TestGradleBuildParserIgnoresMetadataOnOtherDeclarationForms(t *testing.T) {
+	for _, declaration := range []string{
+		`implementation(group: 'org.example', name: 'core', version: '1.0')`,
+		`implementation group: 'org.example', name: 'core', version: '1.0'`,
+		`implementation(group = "org.example", name = "core", version = "1.0")`,
+		`implementation(libs.example.core)`,
+		`implementation(project(":core"))`,
+	} {
+		t.Run(declaration, func(t *testing.T) {
+			parser, _ := newGradleBuildParser(gradleBuildMatcherConfig{})
+			result, err := parser.Analyze("build.gradle", []byte("dependencies {\n"+declaration+` {
+  because("reason: detail")
+  capabilities {
+    requireCapability("org.example:core-fixtures")
+  }
+}
+}`))
+			if err != nil {
+				t.Fatalf("Analyze: %v", err)
+			}
+			for _, dependency := range result.Dependencies {
+				if dependency.Name != "org.example:core" {
+					t.Fatalf("unexpected metadata reference: %+v", dependency)
+				}
+			}
+			wantCount := 0
+			if strings.Contains(declaration, "group") {
+				wantCount = 1
+			}
+			if len(result.Dependencies) != wantCount {
+				t.Fatalf("dependencies: got %+v want %d references", result.Dependencies, wantCount)
+			}
+		})
+	}
+}
+
 func TestGradleLockParserExtractsResolvedModules(t *testing.T) {
 	parser, _ := newGradleLockParser(gradleLockMatcherConfig{})
 	result, err := parser.Analyze("gradle.lockfile", []byte(`
