@@ -80,6 +80,8 @@ Use `--json` for machine-readable format. JSON output includes the detected sour
 
 The pnpm lockfile analyzer reads root importer declarations, older top-level declarations, and the `packages` store. It separates selected versions from peer context, normalizes npm alias names, and records `link:` and `file:` resolutions as local paths. A `workspace:` declaration resolved through `link:` has workspace origin. Matching store entries are omitted by normalized name and version, while separate importer declarations stay visible. See [pnpm lockfile attributes](docs/dependency-reference.md#pnpm-lockfile-attributes).
 
+Maven `pom.xml` extraction includes root and profile `dependencies` and `dependencyManagement` sections. Profile source groups include the profile ID, such as `profiles.benchmark.dependencies`. Profile references carry `profile` and `conditional` attributes, plus activation XML when declared. Deplens records every profile without deciding which profiles are active. Profile properties override root properties only within that profile. See [Maven profile references](docs/dependency-reference.md#maven-profiles) for the attribute format.
+
 ## Rules
 
 `deplens` is driven by a YAML ruleset. Detector rules describe which files are dependency sources and how to analyze them. Check rules evaluate repository-wide policies after all sources have been found. Here is a small ruleset that extracts Go modules and checks that `go.sum` exists when needed:

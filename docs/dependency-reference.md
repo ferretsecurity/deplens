@@ -204,6 +204,34 @@ declarations retain their own `raw`, `source_group`, and attributes even when
 their normalized names and versions match. Only the `.` importer is read for
 declarations; the store can include packages used by other importers.
 
+### Maven profiles
+
+Maven POM references use `dependencies` and `dependencyManagement` for root
+sections. Profile sections use `profiles.<id>.dependencies` and
+`profiles.<id>.dependencyManagement`. Profile dependencies have a `direct`
+relationship. Managed references have an `inconclusive` relationship.
+
+Profile references use these attributes:
+
+| Attribute | Meaning |
+| --- | --- |
+| `profile` | Profile ID, with surrounding whitespace removed. |
+| `conditional` | Always `"true"`. Profile activity is not evaluated. |
+| `maven_activation` | Raw inner XML of the profile's `activation` element, with surrounding whitespace removed. Omitted when no activation element exists. |
+
+Activation XML preserves declared conditions such as `activeByDefault`, JDK,
+OS, property, and file requirements. Deplens extracts every profile, including
+profiles without activation declarations. The references do not assert that a
+profile is active in any environment.
+
+Profile properties override root properties only within that profile. The
+`project.*` and `pom.*` aliases for project coordinates retain their POM values.
+Unresolved expressions retain their source text and produce extraction warnings.
+
+A profile without an ID uses its one-based position, such as
+`profiles[2].dependencies` and `profile: "[2]"`. A dependency-bearing profile
+without an ID produces a warning and incomplete extraction.
+
 ## Stability and consumer guidance
 
 - The enclosing JSON document's `schema_version` governs the dependency object.
