@@ -71,6 +71,9 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 	for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall, gradlePlatformCall} {
 		for _, match := range matcher.FindAllStringSubmatch(dependencyBlocks, -1) {
 			configuration := lastIdentifier(match[1])
+			if configuration == "because" {
+				continue
+			}
 			coordinate := strings.TrimSpace(match[2])
 			if strings.Count(coordinate, ":") < 1 {
 				continue
