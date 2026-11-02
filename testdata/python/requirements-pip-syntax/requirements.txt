@@ -1,0 +1,15 @@
+--no-index
+--only-binary=:all:
+-i https://pypi.example.test/simple
+requests==2.31.0 \
+  --hash=sha256:aaa \
+  --hash sha256:bbb
+fastapi[all]>=0.110; python_version >= "3.10" --hash=sha256:ccc
+-e git+https://example.test/requests.git@v2.31.0#egg=requests
+httpx @ https://example.test/httpx-0.27.0.zip#sha256=ddd
+demo[cli] @ git+ssh://git@example.test/demo.git@release#subdirectory=python ; os_name == "posix"
+-e ../local-project
+./dist/demo-1.0.whl
+https://example.test/dist/archive.whl#sha256=eee
+-r base.txt # included dependencies
+--requirement=base.txt	# included twice

@@ -377,6 +377,7 @@ func extractTOMLDependencies(nodes []tomlMatchedValue, query tomlQuery) []Depend
 					if parsed.name != "" {
 						dep.Name = parsed.name
 						dep.VersionConstraint = parsed.versionConstraint
+						dep.OriginKind = parsed.originKind
 						dep.Attributes = parsed.attributes
 					}
 				}

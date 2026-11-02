@@ -199,3 +199,5 @@ The `java` analyzer inventories root and profile dependencies and dependency man
 | `terraform.aws_glue_job.python` | `source-code` | `usage, inventory` | `terraform-glue-python` | select, recognize, extract, normalize |
 | `typescript.cdk.aws_glue_job.python` | `source-code` | `usage, inventory` | `typescript` | select, recognize, extract, normalize |
 | `python.cdk.aws_glue_job.python` | `source-code` | `usage, inventory` | `python` | select, recognize, extract, normalize |
+
+Gradle version catalogs normalize simple version strings. Rich version tables retain their fields in `raw` and `attributes` with partial extraction; they do not produce a shared version constraint or VERS.

@@ -241,6 +241,18 @@ A profile without an ID uses its one-based position, such as
 `profiles[2].dependencies` and `profile: "[2]"`. A dependency-bearing profile
 without an ID produces a warning and incomplete extraction.
 
+### Gradle version catalogs
+
+Gradle version catalogs preserve rich version fields as `version_require`,
+`version_strictly`, `version_prefer`, `version_reject`, and `version_reject_all`.
+`version_reject` is a JSON string array encoded as a string, and
+`version_reject_all` is the string `"true"` or `"false"`. Referenced versions
+also retain `version_ref`. Rich versions leave `version`, `version_constraint`,
+and `vers` unset and produce a partial-extraction warning. Their `raw` is
+assembled TOML containing the alias declaration and its referenced version,
+when present. It preserves unknown fields but does not retain comments or
+original whitespace.
+
 ## Stability and consumer guidance
 
 - The enclosing JSON document's `schema_version` governs the dependency object.
