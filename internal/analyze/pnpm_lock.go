@@ -106,7 +106,7 @@ func (p pnpmLockParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 		dependencies = appendPNPMLockDependencies(dependencies, seen, "optionalDependencies", file.OptionalDependencies)
 	}
 
-	dependencies = appendPNPMLockTransitiveFromPackages(dependencies, seen, file.Packages)
+	dependencies = appendPNPMLockTransitiveFromPackages(dependencies, seen, file.Packages, file.LockfileVersion)
 
 	if len(dependencies) == 0 {
 		return sourceAnalyzerResult{
@@ -122,7 +122,7 @@ func (p pnpmLockParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 	}, nil
 }
 
-func appendPNPMLockTransitiveFromPackages(dependencies []DependencyReference, seen map[string]struct{}, packages map[string]yaml.Node) []DependencyReference {
+func appendPNPMLockTransitiveFromPackages(dependencies []DependencyReference, seen map[string]struct{}, packages map[string]yaml.Node, lockfileVersion string) []DependencyReference {
 	if len(packages) == 0 {
 		return dependencies
 	}
@@ -134,7 +134,7 @@ func appendPNPMLockTransitiveFromPackages(dependencies []DependencyReference, se
 	}
 	slices.Sort(keys)
 	for _, key := range keys {
-		name, version := pnpmLockPackageKeyNameVersion(pnpmLockStripPeeringSuffix(key))
+		name, version := pnpmLockPackageKeyNameVersion(pnpmLockStripPeeringSuffix(key), lockfileVersion)
 		if name == "" {
 			continue
 		}
@@ -163,13 +163,17 @@ func pnpmLockStripPeeringSuffix(key string) string {
 }
 
 // pnpmLockPackageKeyNameVersion parses a `packages` / lockfile key into name and resolved version.
-// v9+: "react@1.0.0", "@types/node@20.0.0". v5/v6: "/react/1.0.0", "/@types/node/20.0.0".
-func pnpmLockPackageKeyNameVersion(key string) (name, version string) {
+// v5: "/react/1.0.0". v6: "/react@1.0.0". v9+: "react@1.0.0".
+func pnpmLockPackageKeyNameVersion(key, lockfileVersion string) (name, version string) {
 	if key == "" {
 		return "", ""
 	}
-	if strings.HasPrefix(key, "/") {
+	major, _, _ := strings.Cut(lockfileVersion, ".")
+	switch major {
+	case "5":
 		return pnpmLockPackageKeyNameVersionV5Path(key)
+	case "6":
+		key = strings.TrimPrefix(key, "/")
 	}
 	return pnpmLockPackageKeyNameVersionV9(key)
 }
