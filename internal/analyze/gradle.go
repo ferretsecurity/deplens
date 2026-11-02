@@ -159,27 +159,31 @@ func gradleDependencySegments(path, content string) ([]gradleDependencySegment, 
 			continue
 		}
 		context := stack[len(stack)-1]
-		if context != gradleOutsideDependencies {
-			segments = append(segments, gradleDependencySegment{text: content[start:index], context: context})
-		}
+		nextContext := context
 		if current == '{' {
 			if match := gradleContextBlock.FindStringSubmatch(content[start:index]); match != nil {
 				switch match[1] {
 				case "dependencies":
 					if context == gradleOutsideDependencies {
-						context = gradleDirectDependencies
+						nextContext = gradleDirectDependencies
 					}
 				case "constraints":
 					if context != gradleOutsideDependencies {
-						context = gradleConstraintDependencies
+						nextContext = gradleConstraintDependencies
 					}
 				}
 			}
-			stack = append(stack, context)
+			stack = append(stack, nextContext)
 		} else if len(stack) > 1 {
 			stack = stack[:len(stack)-1]
+			nextContext = stack[len(stack)-1]
 		}
-		start = index + 1
+		if context != nextContext {
+			if context != gradleOutsideDependencies {
+				segments = append(segments, gradleDependencySegment{text: content[start:index], context: context})
+			}
+			start = index + 1
+		}
 	}
 	for _, context := range stack {
 		if context != gradleOutsideDependencies {

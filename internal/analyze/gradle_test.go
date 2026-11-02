@@ -138,9 +138,13 @@ dependencies {
       name = "compile",
       version = "4.0",
     )
-    nested { runtimeOnly enforcedPlatform('org.example:runtime-platform:5.0') }
+    nested {
+      runtimeOnly enforcedPlatform('org.example:runtime-platform:5.0')
+    }
   }
-  notconstraints { implementation("org.example:unconstrained:6.0") }
+  notconstraints {
+    implementation("org.example:unconstrained:6.0")
+  }
   runtimeOnly("org.example:after:7.0")
 }
 dependencies { implementation("org.example:other:8.0") }
