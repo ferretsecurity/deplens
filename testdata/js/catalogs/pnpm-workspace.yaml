@@ -1,0 +1,10 @@
+packages:
+  - packages/*
+catalog:
+  react: ^18.3.1
+  unused: ^1.0.0
+catalogs:
+  tools:
+    server: npm:@acme/server@~3.2.0
+    local: file:../local
+    toolkit: github:acme/toolkit#v2
