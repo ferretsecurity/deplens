@@ -68,6 +68,8 @@ func (p iniQueryParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 		AllowPythonMultilineValues: true,
 		Insensitive:                true,
 		IgnoreInlineComment:        true,
+		// Python multiline parsing peeks ahead only within the reader buffer.
+		ReaderBufferSize: len(content) + 1,
 	}, []byte(strings.Join(valueLines, "\n")+"\n"))
 	if err != nil {
 		return sourceAnalyzerResult{}, fmt.Errorf("parse ini file %q: %w", path, err)
