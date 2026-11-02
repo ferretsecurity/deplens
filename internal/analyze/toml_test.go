@@ -18,3 +18,11 @@ func TestExtractTOMLDependenciesSetsStructuredFieldsForStrings(t *testing.T) {
 		t.Errorf("second dep: %+v", got[1])
 	}
 }
+
+func TestExtractTOMLDependenciesSeparatesDirectReferences(t *testing.T) {
+	raw := "demo @ git+https://example.test/demo.git@v1#subdirectory=python"
+	got := extractTOMLDependencies([]tomlMatchedValue{{value: raw}}, tomlQuery{})
+	if len(got) != 1 || got[0].Raw != raw || got[0].Name != "demo" || got[0].VersionConstraint != "" || got[0].OriginKind != OriginGit || got[0].Attributes["source_url"] != "git+https://example.test/demo.git#subdirectory=python" || got[0].Attributes["source_ref"] != "v1" {
+		t.Fatalf("direct reference = %+v", got)
+	}
+}

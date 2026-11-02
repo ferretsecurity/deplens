@@ -39,6 +39,34 @@ func TestPyRequirementsParserSetsStructuredFields(t *testing.T) {
 	}
 }
 
+func TestPyRequirementsParserKeepsUnsupportedDeclarationsRaw(t *testing.T) {
+	parser, _ := newPyRequirementsMatcher(pyRequirementsMatcherConfig{})
+	for _, raw := range []string{"demo==", "demo=>2", "demo==1 --hash", "demo==not-a-version", "demo>=1 garbage", "demo[bad extra]>=1"} {
+		t.Run(raw, func(t *testing.T) {
+			result, err := parser.Analyze("requirements.txt", []byte(raw+"\n"))
+			if err != nil || len(result.Dependencies) != 1 {
+				t.Fatalf("result = %+v, error = %v", result, err)
+			}
+			dep := result.Dependencies[0]
+			if dep.Raw != raw || dep.Name != "" || dep.VersionConstraint != "" || dep.VERS != "" {
+				t.Fatalf("unsupported declaration acquired normalized fields: %+v", dep)
+			}
+		})
+	}
+}
+
+func TestPyRequirementsParserPreservesQuotedMarkersAndParenthesizedConstraints(t *testing.T) {
+	parser, _ := newPyRequirementsMatcher(pyRequirementsMatcherConfig{})
+	result, err := parser.Analyze("requirements.txt", []byte("demo (>=1, <2) ; os_name == 'a # b; --hash=x' # comment\n"))
+	if err != nil || len(result.Dependencies) != 1 {
+		t.Fatalf("result = %+v, error = %v", result, err)
+	}
+	dep := result.Dependencies[0]
+	if dep.VersionConstraint != "(>=1, <2)" || dep.Attributes["marker"] != "os_name == 'a # b; --hash=x'" {
+		t.Fatalf("declaration syntax was lost: %+v", dep)
+	}
+}
+
 func TestPyRequirementsParserExtractsStaticDependencyLines(t *testing.T) {
 	parser, err := newPyRequirementsMatcher(pyRequirementsMatcherConfig{})
 	if err != nil {
