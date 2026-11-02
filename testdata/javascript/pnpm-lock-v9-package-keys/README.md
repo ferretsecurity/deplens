@@ -1,0 +1,1 @@
+Reduced from the [Vite lockfile](https://github.com/vitejs/vite/blob/v6.0.0/pnpm-lock.yaml). Package names, versions, and package-key syntax are preserved. Unrelated packages, package metadata, and dependency edges are omitted. The root declaration uses the selected React version to check deduplication against the package store.

@@ -55,6 +55,26 @@ func TestScanPNPMLockWithTransitiveInPackagesFixture(t *testing.T) {
 	}
 }
 
+func TestScanPNPMLockV6PackageKeys(t *testing.T) {
+	result, err := Scan(filepath.Join("..", "..", "testdata", "javascript", "pnpm-lock-v6-package-keys"), nil, mustLoadDefaultRules(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := mustFindPNPMLockSource(t, result)
+	if source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) || len(source.Diagnostics) != 0 {
+		t.Fatalf("unexpected analysis: %+v", source)
+	}
+	want := []DependencyReference{
+		{PackageType: "npm", Raw: "react@18.2.0", Name: "react", Version: "18.2.0", SourceGroup: "dependencies", Attributes: map[string]string{"specifier": "^18.2.0"}},
+		{PackageType: "npm", Raw: "@docsearch/react@3.5.2", Name: "@docsearch/react", Version: "3.5.2"},
+		{PackageType: "npm", Raw: "loose-envify@1.4.0", Name: "loose-envify", Version: "1.4.0"},
+		{PackageType: "npm", Raw: "react-dom@18.2.0", Name: "react-dom", Version: "18.2.0"},
+	}
+	if !equalDependencies(source.Dependencies, want) {
+		t.Fatalf("unexpected dependencies: got %+v want %+v", source.Dependencies, want)
+	}
+}
+
 func TestScanPNPMLockExtractsTopLevelDependenciesForOlderLocks(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 
