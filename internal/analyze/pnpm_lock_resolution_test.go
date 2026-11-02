@@ -74,6 +74,10 @@ func TestPNPMLockNormalizesImporterResolutions(t *testing.T) {
 			want: DependencyReference{Raw: "declared@link:packages/local", Name: "declared", SourceGroup: "dependencies", OriginKind: OriginWorkspace, Attributes: map[string]string{"specifier": "workspace:*", "protocol": "link", "path": "packages/local"}},
 		},
 		{
+			name: "hosted git locator", version: "github.com/org/repo_name/0123456789012345678901234567890123456789",
+			want: DependencyReference{Raw: "declared@github.com/org/repo_name/0123456789012345678901234567890123456789", Name: "declared", Version: "github.com/org/repo_name/0123456789012345678901234567890123456789", SourceGroup: "dependencies"},
+		},
+		{
 			name: "unrelated protocol", version: "git+ssh://git@github.com/org/repo.git#commit",
 			want: DependencyReference{Raw: "declared@git+ssh://git@github.com/org/repo.git#commit", Name: "declared", Version: "git+ssh://git@github.com/org/repo.git#commit", SourceGroup: "dependencies"},
 		},

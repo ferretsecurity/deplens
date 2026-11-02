@@ -274,10 +274,12 @@ func pnpmLockImporterDependency(name string, value pnpmLockDependency, sourceGro
 		// A native version can contain peer names with @. Parse aliases only
 		// after ruling out that version prefix, so underscores in names survive.
 		if !semver.IsValid("v" + strings.TrimPrefix(version, "v")) {
-			if targetName, targetVersion := pnpmLockLocatorNameVersion(value.Version); targetVersion != "" {
-				dep.Name = targetName
-				version, peerContext = pnpmLockVersionAndPeerContext(targetVersion)
+			targetName, targetVersion := pnpmLockLocatorNameVersion(value.Version)
+			version, peerContext = pnpmLockVersionAndPeerContext(targetVersion)
+			if !semver.IsValid("v" + strings.TrimPrefix(version, "v")) {
+				break
 			}
+			dep.Name = targetName
 		}
 		dep.Version = version
 		if dep.Name == name && strings.HasPrefix(value.Specifier, "npm:") {
