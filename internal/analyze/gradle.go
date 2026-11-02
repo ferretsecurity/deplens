@@ -20,6 +20,7 @@ var (
 	gradleMapCall          = regexp.MustCompile(`(?ms)^\s*([A-Za-z_][A-Za-z0-9_.]*)\s*(?:\(([^)]*)\)|([^\n]+))`)
 	gradleMapPair          = regexp.MustCompile(`\b(group|name|version)\s*[:=]\s*["']([^"']+)["']`)
 	gradleMapKey           = regexp.MustCompile(`\b(group|name|version)\s*[:=]`)
+	gradleRichVersionToken = regexp.MustCompile(`"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\bversion\s*\{`)
 )
 
 func newGradleBuildParser(gradleBuildMatcherConfig) (sourceAnalyzer, error) {
@@ -49,11 +50,29 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 	incomplete := make([]string, 0)
 	dynamicSeen := make(map[string]struct{})
 
+	masked := []byte(dependencyBlocks)
+	for _, location := range gradleRichVersionToken.FindAllStringIndex(dependencyBlocks, -1) {
+		if masked[location[0]] != 'v' {
+			continue
+		}
+		end, ok := executableDSLMatchingBrace(dependencyBlocks, location[1])
+		if !ok {
+			return sourceAnalyzerResult{}, fmt.Errorf("parse Gradle build %q: unterminated rich version block", path)
+		}
+		for index := location[0]; index <= end; index++ {
+			if masked[index] != '\n' {
+				masked[index] = ' '
+			}
+		}
+		incomplete = appendUniqueMessage(incomplete, dynamicSeen, "Gradle rich version declarations could not be extracted")
+	}
+	dependencyBlocks = string(masked)
+
 	for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall, gradlePlatformCall} {
 		for _, match := range matcher.FindAllStringSubmatch(dependencyBlocks, -1) {
 			configuration := lastIdentifier(match[1])
 			coordinate := strings.TrimSpace(match[2])
-			if strings.Count(coordinate, ":") < 2 {
+			if strings.Count(coordinate, ":") < 1 {
 				continue
 			}
 			if strings.ContainsAny(coordinate, "$") {

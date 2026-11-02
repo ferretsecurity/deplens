@@ -291,6 +291,10 @@ The 185 built-in detectors cover common package managers and languages as well a
 
 See [Dependency coverage](DEPENDENCY_COVERAGE.md) for the complete list of detectors and the capabilities available for each source.
 
+Gradle Groovy and Kotlin builds retain literal `group:artifact` declarations, including dependencies whose versions come from a BOM. These references keep their configuration and scope, with no version or version constraint. Deplens does not resolve BOM versions.
+
+Rich `version { ... }` closures are not interpreted, including literal or dynamic `strictly`, `require`, `prefer`, and `reject` declarations. Known dependency coordinates remain in the result, and a warning marks extraction as partial. Strings inside these closures do not become dependency references.
+
 ## Security scanning
 
 We use [Snyk](https://snyk.io/) and [Socket](https://socket.dev/) to scan this repository's dependencies for security risks. We also use GitHub's [CodeQL](https://codeql.github.com/) to scan Go code and GitHub Actions workflows for security issues, and [Dependabot](https://docs.github.com/en/code-security/dependabot) to alert us to vulnerable dependencies and open pull requests for security and version updates.
