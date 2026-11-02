@@ -264,7 +264,7 @@ func TestGradleBuildParserIgnoresRichVersionTextInsideStrings(t *testing.T) {
 	}
 }
 
-func TestGradleBuildParserIgnoresDependencyReasons(t *testing.T) {
+func TestGradleBuildParserIgnoresDependencyConfigurationMetadata(t *testing.T) {
 	for _, path := range []string{"build.gradle", "build.gradle.kts"} {
 		t.Run(path, func(t *testing.T) {
 			parser, _ := newGradleBuildParser(gradleBuildMatcherConfig{})
@@ -273,12 +273,19 @@ func TestGradleBuildParserIgnoresDependencyReasons(t *testing.T) {
     because("reason: detail")
     because("reason:detail")
     because("reason:detail:more")
+    capabilities {
+      requireCapability("org.example:core-fixtures")
+      requireCapabilities("org.example:core-extra")
+    }
+  }
+  constraints {
+    implementation("org.example:constraint")
   }
 }`))
 			if err != nil {
 				t.Fatalf("Analyze: %v", err)
 			}
-			if got, want := dependencyNames(result.Dependencies), []string{"org.example:core"}; !slices.Equal(got, want) {
+			if got, want := dependencyNames(result.Dependencies), []string{"org.example:core", "org.example:constraint"}; !slices.Equal(got, want) {
 				t.Fatalf("dependencies: got %v want %v", got, want)
 			}
 			if result.Analysis.Extraction != ExtractionComplete || len(result.Diagnostics) != 0 || result.Dependencies[0].SourceGroup != "customConfiguration" {

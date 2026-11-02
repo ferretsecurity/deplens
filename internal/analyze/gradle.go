@@ -69,11 +69,29 @@ func (gradleBuildParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 	dependencyBlocks = string(masked)
 
 	for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall, gradlePlatformCall} {
-		for _, match := range matcher.FindAllStringSubmatch(dependencyBlocks, -1) {
-			configuration := lastIdentifier(match[1])
-			if configuration == "because" {
+		for _, location := range matcher.FindAllStringSubmatchIndex(dependencyBlocks, -1) {
+			tail := dependencyBlocks[location[1]:]
+			trimmed := strings.TrimLeft(tail, " \t\r\n)")
+			if !strings.HasPrefix(trimmed, "{") {
 				continue
 			}
+			start := location[1] + len(tail) - len(trimmed)
+			end, ok := executableDSLMatchingBrace(dependencyBlocks, start+1)
+			if !ok {
+				return sourceAnalyzerResult{}, fmt.Errorf("parse Gradle build %q: unterminated dependency configuration block", path)
+			}
+			for index := start; index <= end; index++ {
+				if masked[index] != '\n' {
+					masked[index] = ' '
+				}
+			}
+		}
+	}
+	dependencyBlocks = string(masked)
+
+	for _, matcher := range []*regexp.Regexp{gradleDoubleQuotedCall, gradleSingleQuotedCall, gradlePlatformCall} {
+		for _, match := range matcher.FindAllStringSubmatch(dependencyBlocks, -1) {
+			configuration := lastIdentifier(match[1])
 			coordinate := strings.TrimSpace(match[2])
 			if strings.Count(coordinate, ":") < 1 {
 				continue
