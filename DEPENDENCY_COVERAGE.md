@@ -12,6 +12,8 @@ The `js-pnpm-lock` analyzer extracts package-store references using lockfile sch
 
 The `java` analyzer inventories root and profile dependencies and dependency management. Profile references retain their ID and activation declarations without evaluating profile activity. See [Maven profiles](docs/dependency-reference.md#maven-profiles) for groups, attributes, and property handling.
 
+The `python-pyproject` analyzer follows explicit setuptools dynamic dependency files within the scan root. Unreadable or unsupported declarations produce incomplete extraction diagnostics. The `python-setup-py` analyzer extracts literal declarations and reports unresolved expressions, including variables, even when literal extras are readable. See [Python declarations](README.md#python-declarations) for supported syntax and limits.
+
 | Detector ID | Form | Roles | Analyzer | Capabilities |
 | --- | --- | --- | --- | --- |
 | `python-requirements` | `requirements` | `declaration, constraint` | `py-requirements` | select, recognize, extract, normalize |
@@ -22,7 +24,7 @@ The `java` analyzer inventories root and profile dependencies and dependency man
 | `python-pdm-lock` | `lockfile` | `resolution, integrity` | `pdm-lock` | select, recognize, extract, normalize |
 | `python-conda-lock` | `lockfile` | `resolution, integrity` | `yaml` | select, recognize, assess-presence |
 | `python-conda-env-alt` | `manifest` | `declaration, constraint` | `conda-environment` | select, recognize, extract, normalize, relate |
-| `python-pyproject` | `manifest` | `declaration, constraint` | `toml` | select, recognize, extract, normalize |
+| `python-pyproject` | `manifest` | `declaration, constraint` | `python-pyproject` | select, recognize, extract, normalize |
 | `python-conda-environment` | `manifest` | `declaration, constraint` | `conda-environment` | select, recognize, extract, normalize, relate |
 | `python-pipfile` | `manifest` | `declaration, constraint` | `toml` | select, recognize, extract, normalize |
 | `python-setup-py` | `manifest` | `declaration, constraint` | `python` | select, recognize, extract, normalize |

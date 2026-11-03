@@ -110,7 +110,10 @@ func (p tomlQueryParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 	if err := toml.Unmarshal(content, &root); err != nil {
 		return sourceAnalyzerResult{}, fmt.Errorf("parse toml file %q: %w", path, err)
 	}
+	return p.analyze(root), nil
+}
 
+func (p tomlQueryParser) analyze(root map[string]any) sourceAnalyzerResult {
 	dependencies := make([]DependencyReference, 0)
 	for _, query := range p.queries {
 		nodes := evalTOMLQuery([]tomlMatchedValue{{value: root}}, query)
@@ -125,27 +128,27 @@ func (p tomlQueryParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 			for _, query := range p.existsAny {
 				nodes := evalTOMLQuery([]tomlMatchedValue{{value: root}}, query)
 				if hasNonEmptyTOMLValue(nodes) {
-					return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}, nil
+					return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}
 				}
 			}
-			return sourceAnalyzerResult{Analysis: presenceAnalysis(false), Recognized: true}, nil
+			return sourceAnalyzerResult{Analysis: presenceAnalysis(false), Recognized: true}
 		}
 		if len(p.tableExistsAny) > 0 {
 			for _, query := range p.tableExistsAny {
 				tables := evalTOMLTableQuery([]tomlMatchedTable{{value: root}}, query)
 				if hasNonEmptyTOMLTable(tables) {
-					return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}, nil
+					return sourceAnalyzerResult{Analysis: presenceAnalysis(true), Recognized: true}
 				}
 			}
-			return sourceAnalyzerResult{Analysis: presenceAnalysis(false), Recognized: true}, nil
+			return sourceAnalyzerResult{Analysis: presenceAnalysis(false), Recognized: true}
 		}
-		return sourceAnalyzerResult{}, nil
+		return sourceAnalyzerResult{}
 	}
 	return sourceAnalyzerResult{
 		Dependencies: dependencies,
 		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 		Recognized:   true,
-	}, nil
+	}
 }
 
 func hasNonEmptyTOMLTable(nodes []tomlMatchedTable) bool {
