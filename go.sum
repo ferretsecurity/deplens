@@ -21,8 +21,8 @@ github.com/hashicorp/hcl/v2 v2.25.0 h1:HmmQVYRny4MaBo4b20TjmL46wyuUxpnMWkPZ4+NTb
 github.com/hashicorp/hcl/v2 v2.25.0/go.mod h1:vR+FKETxoZAmRlHgFfKmuqivj+C4Izm/c66XkmZ3r7M=
 github.com/hmarr/codeowners v1.2.1 h1:+9yndrwG0UVP1GkLBEQMSbSUNeLpbrbL924SRthA/9k=
 github.com/hmarr/codeowners v1.2.1/go.mod h1:KPlR1p/B4owPjwfNIBueWlOP4CmqlQFX9b6nANG6j40=
-github.com/itchyny/gojq v0.12.19 h1:ttXA0XCLEMoaLOz5lSeFOZ6u6Q3QxmG46vfgI4O0DEs=
-github.com/itchyny/gojq v0.12.19/go.mod h1:5galtVPDywX8SPSOrqjGxkBeDhSxEW1gSxoy7tn1iZY=
+github.com/itchyny/gojq v0.12.20 h1:mvxzKjEJDfeLlPc/15q5Kf6wLtEW2T399BL8xmOd9EQ=
+github.com/itchyny/gojq v0.12.20/go.mod h1:cgT47OXUC/BWCBh9V4LuuTRSwFIJNR5loUyqlzbIJbw=
 github.com/itchyny/timefmt-go v0.1.9 h1:J4j1qMqZbg5jycwT6zIKfRgZ9aqqMxqanaI6Rr9Ezs8=
 github.com/itchyny/timefmt-go v0.1.9/go.mod h1:5E46Q+zj7vbTgWY8o5YkMeYb4I6GeWLFnetPy5oBrAI=
 github.com/mattn/go-pointer v0.0.1 h1:n+XhsuGeVO6MEAp7xyEukFINEa+Quek5psIR/ylA6o0=
