@@ -8,7 +8,7 @@ require (
 	github.com/git-pkgs/vers v0.7.2
 	github.com/hashicorp/hcl/v2 v2.25.0
 	github.com/hmarr/codeowners v1.2.1
-	github.com/itchyny/gojq v0.12.19
+	github.com/itchyny/gojq v0.12.20
 	github.com/tree-sitter/go-tree-sitter v0.25.0
 	github.com/tree-sitter/tree-sitter-typescript v0.23.2
 	github.com/zclconf/go-cty v1.19.0
