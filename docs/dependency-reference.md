@@ -128,6 +128,28 @@ exclude prereleases, such as `vers:cargo/>=1.0.0|<2.0.0-0` for `>=1.0,<2.0`.
 - `url`: obtained directly from a URL outside a more specific origin kind.
 - `workspace`: provided by another member of the same workspace.
 
+`package_type` identifies an ecosystem, not an origin. A Python local path can
+have `package_type: "pypi"` and `origin_kind: "path"`. An omitted `origin_kind`
+does not imply `registry`. Some analyzers use `name` for an import alias or a
+workspace reference, so a name alone does not establish registry identity.
+
+For Python requirements, `.` produces the following reference:
+
+```json
+{
+  "package_type": "pypi",
+  "raw": ".",
+  "origin_kind": "path",
+  "attributes": { "source_path": "." }
+}
+```
+
+Python local paths use `attributes.source_path`. URL and Git references use
+`attributes.source_url`. Editable installs add `attributes.editable` with the
+string value `"true"`. Named direct references retain their declared package
+name. Bare URLs and local paths omit `name` when no package name is declared.
+Neither paths nor URLs become version constraints or VERS values.
+
 ### Relationship
 
 - `direct`: declared or referenced directly by the project or source.
