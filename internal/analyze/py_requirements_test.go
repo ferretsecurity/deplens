@@ -302,7 +302,7 @@ func TestPyRequirementsParserPreservesValidPipSyntax(t *testing.T) {
 				t.Fatalf("result = %+v, error = %v", result, err)
 			}
 			dep := result.Dependencies[0]
-			if dep.Raw != tc.raw || dep.Name != "demo" || dep.VersionConstraint != tc.constraint || dep.OriginKind != "" || dep.Attributes["hashes"] != tc.hashes {
+			if dep.Raw != tc.raw || dep.Name != "demo" || dep.VersionConstraint != tc.constraint || dep.OriginKind != OriginRegistry || dep.Attributes["hashes"] != tc.hashes {
 				t.Fatalf("valid requirement lost normalization: %+v", dep)
 			}
 		})

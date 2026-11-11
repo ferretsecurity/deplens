@@ -78,6 +78,8 @@ package.json [medium] npm project has dependencies but no npm lockfile
 
 Use `--json` for machine-readable format. JSON output includes the detected sources, extracted dependency references, check runs, findings, and diagnostics. Findings do not change the successful exit status. See the [dependency reference specification](docs/dependency-reference.md) for the dependency object fields, values, and omission rules.
 
+Python requirements distinguish registry packages, local paths, direct URLs, and Git references through `origin_kind`. Local paths and bare URLs do not invent package names or version constraints. Editable installs retain `attributes.editable: "true"`. Unsupported requirement syntax remains in `raw` with a warning and partial extraction.
+
 The pnpm lockfile analyzer reads root importer declarations, older top-level declarations, and the `packages` store. It separates selected versions from peer context, normalizes npm alias names, and records `link:` and `file:` resolutions as local paths. A `workspace:` declaration resolved through `link:` has workspace origin. Matching store entries are omitted by normalized name and version, while separate importer declarations stay visible. See [pnpm lockfile attributes](docs/dependency-reference.md#pnpm-lockfile-attributes).
 
 JavaScript `package.json` references using `catalog:` resolve through the owning pnpm workspace's `pnpm-workspace.yaml` or `pnpm-workspace.yml`, or the owning Yarn project's `.yarnrc.yml`. The scan uses explicit workspace membership and exclusions, and keeps nested projects separate. Resolution runs even when policy checks are disabled. Only referenced catalog entries become dependencies; the configuration sources remain identification-only.

@@ -27,18 +27,28 @@ func newPyRequirementsMatcher(raw pyRequirementsMatcherConfig) (sourceAnalyzer, 
 func (m pyRequirementsMatcher) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	deps, diagnosticMessages := m.collectDependencies(path, content, map[string]bool{})
 	if len(deps) > 0 {
+		diagnostics := diagnosticsFromMessages(DiagnosticWarning, "included-requirement-unreadable", diagnosticMessages)
+		for _, dep := range deps {
+			if dep.Name == "" && dep.OriginKind == "" {
+				diagnostics = append(diagnostics, Diagnostic{
+					Severity: DiagnosticWarning,
+					Code:     "unsupported-python-requirement",
+					Message:  fmt.Sprintf("could not classify Python requirement %q", dep.Raw),
+				})
+			}
+		}
 		return sourceAnalyzerResult{
 			Dependencies: deps,
 			Analysis: SourceAnalysis{
 				Presence: PresencePresent,
 				Extraction: func() ExtractionState {
-					if len(diagnosticMessages) > 0 {
+					if len(diagnostics) > 0 {
 						return ExtractionPartial
 					}
 					return ExtractionComplete
 				}(),
 			},
-			Diagnostics: diagnosticsFromMessages(DiagnosticWarning, "included-requirement-unreadable", diagnosticMessages),
+			Diagnostics: diagnostics,
 			Recognized:  true,
 		}, nil
 	}
@@ -183,6 +193,9 @@ func parsePyRequirementsDependency(raw string) DependencyReference {
 		if !validPyRequirementsDeclaration(parsed, declaration) {
 			return DependencyReference{Raw: raw}
 		}
+	}
+	if parsed.originKind == "" {
+		parsed.originKind = OriginRegistry
 	}
 	for key, value := range parsed.attributes {
 		attributes[key] = value
