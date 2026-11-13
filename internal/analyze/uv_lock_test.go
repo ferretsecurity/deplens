@@ -302,3 +302,37 @@ func TestUVLockParserRejectsInvalidTOML(t *testing.T) {
 		t.Fatalf("expected parse error")
 	}
 }
+
+func TestUVLockParserPreservesNonregistryOrigins(t *testing.T) {
+	parser, _ := newUVLockParser(uvLockMatcherConfig{})
+	result, err := parser.Analyze("uv.lock", []byte(`
+version = 1
+[[package]]
+name = "from-git"
+version = "1.0.0"
+source = { git = "https://example.com/repo.git?rev=main#abcdef" }
+[[package]]
+name = "from-url"
+version = "1.0.0"
+source = { url = "https://example.com/wheel.whl" }
+[[package]]
+name = "from-editable"
+version = "1.0.0"
+source = { editable = "../local" }
+[[package]]
+name = "from-registry"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Dependencies) != 4 {
+		t.Fatalf("dependencies: %+v", result.Dependencies)
+	}
+	for i, want := range []OriginKind{OriginGit, OriginURL, OriginPath, OriginRegistry} {
+		if got := result.Dependencies[i].OriginKind; got != want {
+			t.Errorf("%s origin: got %q want %q", result.Dependencies[i].Name, got, want)
+		}
+	}
+}
