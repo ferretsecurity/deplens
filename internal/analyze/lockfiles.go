@@ -92,7 +92,7 @@ func mapLockfiles(sources []DependencySourceResult, inputs []policyInput, discov
 
 func lockfileJavaScriptOwner(root, lockfile string, manifests map[string]javascriptManifest, spaces []workspaceDefinition) string {
 	manifest, exists := manifests[root]
-	if !exists || len(manifest.workspaces) > 0 || manifest.manager != "" || manifest.managerInvalid {
+	if !exists || len(manifest.workspaces) > 0 || manifest.managerInvalid {
 		return root
 	}
 	for ancestor := root; ; ancestor = javascriptCatalogRoot(ancestor) {
@@ -114,7 +114,7 @@ func lockfileJavaScriptOwner(root, lockfile string, manifests map[string]javascr
 				return root
 			}
 			for intermediate := javascriptCatalogRoot(root); intermediate != ancestor; intermediate = javascriptCatalogRoot(intermediate) {
-				if nested, exists := manifests[intermediate]; exists && (len(nested.workspaces) > 0 || nested.manager != "" || nested.managerInvalid ||
+				if nested, exists := manifests[intermediate]; exists && (len(nested.workspaces) > 0 || nested.managerInvalid ||
 					!lockfileWorkspaceMatches(javascriptCatalogRelative(ancestor, intermediate), patterns)) {
 					return root
 				}
@@ -122,7 +122,7 @@ func lockfileJavaScriptOwner(root, lockfile string, manifests map[string]javascr
 			return ancestor
 		}
 		if ancestor != root {
-			if nested, exists := manifests[ancestor]; exists && (len(nested.workspaces) > 0 || nested.manager != "" || nested.managerInvalid) {
+			if nested, exists := manifests[ancestor]; exists && (len(nested.workspaces) > 0 || nested.managerInvalid) {
 				return root
 			}
 		}
