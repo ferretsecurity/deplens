@@ -115,6 +115,7 @@ type Diagnostic struct {
 type DependencySourceResult struct {
 	Detector     DetectorID            `json:"detector"`
 	Path         string                `json:"path"`
+	Lockfiles    []string              `json:"lockfiles"`
 	Form         SourceForm            `json:"form"`
 	Roles        []SourceRole          `json:"roles"`
 	Analysis     SourceAnalysis        `json:"analysis"`
@@ -200,7 +201,6 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 	discoveredPaths := make(map[string]struct{})
 	policyInputs := make([]policyInput, 0)
 	codeownersInputs := make(map[string]policyInput)
-	collectPyprojects := ruleset.hasEvaluator("uv-lockfile-missing")
 	err = filepath.WalkDir(absRoot, func(path string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
@@ -235,7 +235,7 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 
 		var source DependencySourceResult
 		var ok bool
-		if collectPyprojects && d.Name() == "pyproject.toml" {
+		if d.Name() == "pyproject.toml" {
 			content, readErr := os.ReadFile(path)
 			policyInputs = append(policyInputs, policyInput{path: relPath, content: content, readError: readErr})
 			if readErr == nil {
@@ -272,6 +272,7 @@ func Scan(root string, ignoreDirs []string, ruleset Ruleset) (ScanResult, error)
 		codeownersInputs = collectCodeownersPolicyInputs(absRoot)
 	}
 	resolveJavaScriptCatalogs(result.Sources)
+	mapLockfiles(result.Sources, policyInputs, discoveredPaths)
 	result.CheckRuns, result.Findings = evaluateChecks(result.Sources, policyInputs, codeownersInputs, discoveredPaths, ruleset.checks, ruleset.disabledDetectors...)
 	for index := range result.Sources {
 		result.Sources[index].content = nil

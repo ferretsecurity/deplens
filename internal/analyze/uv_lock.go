@@ -25,6 +25,8 @@ type uvLockSource struct {
 	Workspace *bool   `toml:"workspace"`
 	Virtual   *string `toml:"virtual"`
 	Path      *string `toml:"path"`
+	Git       *string `toml:"git"`
+	URL       *string `toml:"url"`
 }
 
 func newUVLockParser(raw uvLockMatcherConfig) (sourceAnalyzer, error) {
@@ -67,10 +69,22 @@ func (p uvLockParser) Analyze(path string, content []byte) (sourceAnalyzerResult
 		if pkg.Version == "" {
 			continue
 		}
+		origin := OriginRegistry
+		if pkg.Source != nil {
+			switch {
+			case pkg.Source.Git != nil:
+				origin = OriginGit
+			case pkg.Source.URL != nil:
+				origin = OriginURL
+			case pkg.Source.Editable != nil:
+				origin = OriginPath
+			}
+		}
 		dependencies = append(dependencies, DependencyReference{
-			Raw:     pkg.Name + "==" + pkg.Version,
-			Name:    pkg.Name,
-			Version: pkg.Version,
+			OriginKind: origin,
+			Raw:        pkg.Name + "==" + pkg.Version,
+			Name:       pkg.Name,
+			Version:    pkg.Version,
 		})
 	}
 
