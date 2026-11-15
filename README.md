@@ -153,7 +153,7 @@ Removing every detector or check is valid. JSON retains empty arrays and the exi
 
 ### Generate dependency manifests
 
-Generation is opt-in and works without a vendor preset. The built-in native Terraform, Python CDK, and TypeScript CDK Glue detectors are eligible. Custom YAML rules can opt in with `generate: python-requirements` and grouped extraction:
+Generation is opt-in and works without a vendor preset. The built-in `python-setup-cfg`, native Terraform, Python CDK, and TypeScript CDK Glue detectors are eligible. Custom YAML rules can opt in with `generate: python-requirements` and grouped extraction:
 
 ```yaml
 rules:
@@ -207,6 +207,24 @@ Without `--generate`, the same command only scans. With generation enabled, a `d
 Generation validates every selected source and destination before it writes. Missing dependency fields and empty lists are reported as separate successful skips. Existing destinations cause an error and remain unchanged unless `--overwrite-generated` is set. Overwrite replaces only the files planned by the current run. It does not follow destination symlinks, delete stale outputs, or provide a cross-file transaction if a filesystem write fails after writing starts. Generated paths in JSON are relative to the absolute scan `root`, so CI can resolve them with `root + path`. Poetry, uv, built-in detectors without explicit eligibility, disabled rules, and previously generated requirements files do not generate output.
 
 For per-group Socket and Snyk jobs driven by those JSON paths, including zero-output handling and separate Python environments, see [Scan generated Python requirements in CI](docs/generated-requirements-vendor-ci.md). Live vendor acceptance status and exact fixtures are recorded there too.
+
+### Generate from setup.cfg
+
+Run `deplens --generate python-requirements .` before scanning the generated requirements with your dependency tool. The built-in `python-setup-cfg` rule exports each declaration key separately:
+
+| Declaration | Group and filename suffix |
+| --- | --- |
+| `[options] install_requires` | `options.install_requires` |
+| `[options] setup_requires` | `options.setup_requires` |
+| `[options.extras_require] dev` | `options.extras_require.dev` |
+
+For example, runtime requirements produce `setup.cfg-options.install_requires.generated-requirements.txt`. Build requirements and every optional extra get independent files. An extra contains only its own declarations. It does not include runtime dependencies or activate the extra for installation. These files describe declaration sets, not complete install environments. Scan each set separately so incompatible constraints are not silently combined.
+
+Declaration text, constraints, requirement extras, and multiline environment markers are preserved. Inline semicolons separate requirements according to the existing setup.cfg extraction rules. Use multiline values for environment markers. Missing keys and empty values produce structured `missing` and `empty` outcomes without files. The extras section itself gets a zero-output outcome when missing or empty.
+
+Generation validates the complete selected declaration text, including entries that ordinary extraction skips. Unresolved `file:` directives, interpolation, malformed requirements, URL/path requirements, and unsupported extra-key conditions block the whole export before writes. Deplens does not read included requirements, execute setup code, install packages, resolve versions, or access the network. Ordinary scans do not write files.
+
+### Generate from Glue and Databricks
 
 The built-in `terraform.aws_glue_job.python` detector reads native `.tf` files and creates one group per `aws_glue_job` resource. It reads `--additional-python-modules` from `default_arguments` and `non_overridable_arguments`; a non-overridable value wins when both maps declare it. An omitted `--job-language` means Python, while a literal `scala` value excludes the job. Variables and other expressions are not evaluated. A dynamic language, modules value, relevant argument map, or installer option blocks generation before any files are written. Dynamic unrelated arguments do not block literal module extraction.
 
