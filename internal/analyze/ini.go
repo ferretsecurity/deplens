@@ -17,7 +17,8 @@ type iniQueryConfig struct {
 }
 
 type iniQueryParser struct {
-	queries []iniQuery
+	queries          []iniQuery
+	recognizeMissing bool
 }
 
 type iniQuery struct {
@@ -77,31 +78,45 @@ func (p iniQueryParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 
 	dependencies := make([]DependencyReference, 0)
 	found := false
+	var groups []DependencyGroup
+	duplicates := duplicateINIKeys(valueLines)
 	for _, query := range p.queries {
 		sourceGroup, err := file.GetSection(query.sourceGroup)
 		if err != nil {
+			groups = append(groups, DependencyGroup{Name: query.sourceGroup + "." + query.key, Location: query.sourceGroup + "." + query.key, State: GroupMissing})
 			continue
 		}
 
 		keys := matchingINIKeys(sourceGroup, query)
 		if len(keys) == 0 {
+			state := GroupMissing
+			if query.anyKey {
+				state = GroupEmpty
+			}
+			groups = append(groups, DependencyGroup{Name: query.sourceGroup + "." + query.key, Location: query.sourceGroup + "." + query.key, State: state})
 			continue
 		}
 
 		found = true
 		for _, key := range keys {
 			dependencies = append(dependencies, extractINIDependencies(key)...)
+			group := iniDependencyGroup(query, key)
+			if duplicates[group.Location] {
+				group.Diagnostics = append(group.Diagnostics, Diagnostic{Severity: DiagnosticError, Code: "ini-generation-incomplete", Message: "duplicate declaration at " + group.Location})
+			}
+			groups = append(groups, group)
 		}
 	}
 
-	if !found {
+	if !found && !p.recognizeMissing {
 		return sourceAnalyzerResult{}, nil
 	}
 	if len(dependencies) == 0 {
-		return sourceAnalyzerResult{Analysis: SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}, Recognized: true}, nil
+		return sourceAnalyzerResult{Analysis: SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}, Recognized: true, Groups: groups}, nil
 	}
 	return sourceAnalyzerResult{
 		Dependencies: dependencies,
+		Groups:       groups,
 		Analysis:     SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete},
 		Recognized:   true,
 	}, nil
@@ -182,4 +197,73 @@ func findInlineCommentStart(value string) int {
 
 func isWhitespace(b byte) bool {
 	return b == ' ' || b == '\t'
+}
+
+func iniDependencyGroup(query iniQuery, key *ini.Key) DependencyGroup {
+	location := query.sourceGroup + "." + key.Name()
+	group := DependencyGroup{Name: location, Location: location, State: GroupEmpty}
+	invalid := func(raw string) {
+		group.Diagnostics = append(group.Diagnostics, Diagnostic{Severity: DiagnosticError, Code: "ini-generation-incomplete", Message: fmt.Sprintf("unsupported or malformed declaration at %s: %q", location, raw)})
+	}
+	if query.anyKey && strings.ContainsAny(key.Name(), ":%$") {
+		invalid(key.Name())
+	}
+	value := key.Value()
+	separator := ";"
+	if strings.Contains(value, "\n") {
+		separator = "\n"
+	} else if index := findInlineCommentStart(value); index >= 0 {
+		value = value[:index]
+	}
+	for _, entry := range strings.Split(value, separator) {
+		raw := strings.TrimSpace(entry)
+		if index := findInlineCommentStart(raw); index >= 0 {
+			raw = strings.TrimSpace(raw[:index])
+		}
+		if raw == "" || strings.HasPrefix(raw, "#") {
+			continue
+		}
+		if strings.Contains(raw, "%(") || strings.Contains(raw, "${") {
+			invalid(raw)
+			continue
+		}
+		dependency, err := parsePythonRequirement(raw)
+		if err != nil || strings.ContainsAny(dependency.VersionConstraint, "\"'") {
+			invalid(raw)
+			continue
+		}
+		group.Dependencies = append(group.Dependencies, dependency)
+	}
+	if len(group.Dependencies) > 0 {
+		group.State = GroupReady
+	}
+	return group
+}
+
+func duplicateINIKeys(lines []string) map[string]bool {
+	seen := map[string]bool{}
+	duplicates := map[string]bool{}
+	section := "DEFAULT"
+	inValue := false
+	for _, line := range lines {
+		value := strings.TrimSpace(line)
+		if len(line) == 0 || inValue && isWhitespace(line[0]) {
+			continue
+		}
+		inValue = false
+		if strings.HasPrefix(value, "[") {
+			if end := strings.Index(value, "]"); end >= 0 {
+				section = strings.ToLower(value[1:end])
+			}
+			continue
+		}
+		if end := strings.IndexAny(value, "=:"); end >= 0 {
+			key := strings.ToLower(strings.Trim(strings.TrimSpace(value[:end]), "\"'`"))
+			location := section + "." + key
+			duplicates[location] = seen[location]
+			seen[location] = true
+			inValue = true
+		}
+	}
+	return duplicates
 }

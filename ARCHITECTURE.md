@@ -189,6 +189,8 @@ Constructors validate analyzer-specific configuration before scanning starts. Ru
 
 Generation is an optional phase after scanning and checks. A detector opts in with `generate: python-requirements`. The CLI currently accepts only the `python-requirements` format. It ignores sources without that opt-in and turns each `ready` group into one requirements file. `missing` and `empty` groups remain successful structured outcomes without paths.
 
+The INI analyzer supplies one independent group per configured key. The built-in `python-setup-cfg` rule selects runtime `options.install_requires`, build `options.setup_requires`, and one `options.extras_require.<key>` group per optional extra. Groups preserve only that key's declarations, without merging runtime into extras. Exact keys and an absent or empty wildcard section provide zero-output outcomes. Group diagnostics validate all selected text for export, including unsupported entries omitted by ordinary INI extraction. This keeps generation strict without changing ordinary extraction semantics.
+
 The generator performs a full preflight before its first write. It rejects partial or failed extraction, malformed Python requirements, destination collisions, paths outside the scan root, existing destinations unless overwrite is enabled, and non-regular overwrite targets. This means a validation error cannot leave files from earlier plans behind.
 
 Without overwrite, files are created with exclusive create semantics. With overwrite, each planned regular file is written to a temporary file in the destination directory and renamed over the old file. Writes are atomic per file, not across the whole generation set. The generator does not remove stale output and does not follow destination symlinks.

@@ -36,7 +36,12 @@ func compileSourceAnalyzer(raw ruleConfig) (sourceAnalyzer, error) {
 	case "terraform-glue-python":
 		return decodeAndCreate(raw.Analyzer, newTerraformGluePythonParser)
 	case "ini":
-		return decodeAndCreate(raw.Analyzer, newINIQueryParser)
+		parser, err := decodeAndCreate(raw.Analyzer, newINIQueryParser)
+		if parsed, ok := parser.(iniQueryParser); ok {
+			parsed.recognizeMissing = raw.Generate == string(GenerationPythonRequirements)
+			return parsed, err
+		}
+		return parser, err
 	case "git-submodules":
 		return decodeAndCreate(raw.Analyzer, newGitSubmodulesParser)
 	case "nix-default-shell":

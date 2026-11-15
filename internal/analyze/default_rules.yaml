@@ -106,6 +106,7 @@ rules:
           - keyword: extras_require
             literal: dict_string_lists
   - id: python-setup-cfg
+    generate: python-requirements
     form: manifest
     roles: [declaration, constraint]
     package-type: pypi

@@ -151,3 +151,17 @@ go build -buildvcs=false -o /tmp/deplens-151-validation/deplens ./cmd/deplens
 The command found three direct dependencies and wrote two independent files, `jobs.tf-daily.generated-requirements.txt` and `jobs.tf-legacy.generated-requirements.txt`. Their contents were `pandas==2.2.1` plus `paramiko`, and `pandas==0.25.3`, respectively.
 
 The installed CLIs were Socket 1.1.176 and Snyk 1.1300.0. A new live ingestion run was not completed. Uploading the synthetic directory to Socket was not authorized in the execution environment, so no scan ID or discovery result exists. Snyk was not run after that restriction because it would send the same generated declarations to an external service. The earlier six-file live acceptance results above still cover the generated requirements filename pattern and dependency ingestion, but they do not count as a live scan of the new Terraform fixture.
+
+### setup.cfg generation
+
+The built-in `python-setup-cfg` detector needs no extension rule. Generate into a fresh temporary copy of your project with:
+
+```sh
+deplens --generate python-requirements --json /tmp/project-copy > generation.json
+```
+
+Read `.generation.paths[]` using the recipe above, then scan the copy with `socket scan create --report --json /tmp/project-copy`. Review the directory before uploading it. Do not upload company data for an acceptance test.
+
+Runtime, build, and each optional extra remain independent declaration sets. For example, the `setup-cfg-generation` fixture produces `setup.cfg-options.install_requires.generated-requirements.txt`, `setup.cfg-options.setup_requires.generated-requirements.txt`, and separate `setup.cfg-options.extras_require.<extra>.generated-requirements.txt` files. Extras contain their own declarations only. Use separate environments if installing these files for Snyk, and choose any runtime-plus-extra installation deliberately.
+
+This change is verified locally with the built CLI, Go tests, and vet. No fresh Socket or Snyk upload was performed for setup.cfg. The recorded six-file vendor acceptance above covers the established filename pattern and requirements format, not this detector's new outputs.
