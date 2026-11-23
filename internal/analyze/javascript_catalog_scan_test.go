@@ -155,3 +155,19 @@ func scanJavaScriptCatalogFiles(t *testing.T, files map[string]string) ScanResul
 	}
 	return result
 }
+
+func TestEmptyMemberWorkspacesPreservePNPMAndYarnCatalogOwnership(t *testing.T) {
+	for _, config := range []string{"pnpm-workspace.yaml", ".yarnrc.yml"} {
+		t.Run(config, func(t *testing.T) {
+			result := scanJavaScriptCatalogFiles(t, map[string]string{
+				"package.json":              `{"workspaces":["packages/*"]}`,
+				config:                      "packages: ['packages/*']\ncatalog: {react: ^18.3.1}\n",
+				"packages/app/package.json": `{"workspaces":[],"dependencies":{"react":"catalog:"}}`,
+			})
+			source := sourceForPath(t, result, "packages/app/package.json")
+			if source.Analysis.Extraction != ExtractionComplete || dependencyByName(t, source.Dependencies, "react").VersionConstraint != "^18.3.1" {
+				t.Fatalf("source = %+v", source)
+			}
+		})
+	}
+}

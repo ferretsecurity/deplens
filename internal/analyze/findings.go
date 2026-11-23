@@ -22,6 +22,8 @@ type javascriptManifest struct {
 	manager        string
 	managerInvalid bool
 	workspaces     []string
+	hasWorkspaces  bool
+	hasCatalogs    bool
 }
 
 type workspaceDefinition struct {
@@ -229,6 +231,8 @@ func readJavaScriptManifest(data []byte, source DependencySourceResult) (javascr
 			manifest.managerInvalid = manifest.manager == ""
 		}
 	}
+	manifest.hasCatalogs = hasBunCatalogs(raw)
+	_, manifest.hasWorkspaces = raw["workspaces"]
 	manifest.workspaces = decodeJavaScriptWorkspaces(raw["workspaces"])
 	return manifest, nil
 }
@@ -239,7 +243,7 @@ func normalizeJavaScriptManager(value string) string {
 		name = value[:index]
 	}
 	switch strings.ToLower(name) {
-	case "npm", "pnpm", "yarn":
+	case "npm", "pnpm", "yarn", "bun":
 		return strings.ToLower(name)
 	default:
 		return ""

@@ -63,7 +63,9 @@ func (packageJSONParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 	}
 
 	if raw, ok := root["overrides"]; ok {
-		refs, messages := packageJSONOverrides(raw)
+		var manager string
+		_ = json.Unmarshal(root["packageManager"], &manager)
+		refs, messages := packageJSONOverrides(raw, hasBunCatalogs(root) || normalizeJavaScriptManager(manager) == "bun")
 		result := semanticAnalyzerResult(append(dependencies, refs...), append(incomplete, messages...))
 		// The missing-lockfile check needs install declarations, including malformed ones.
 		result.constraintsOnly = len(dependencies) == 0 && len(incomplete) == 0
@@ -202,4 +204,20 @@ func isPackageJSONRegistrySpecifier(value string) bool {
 
 func isJSONNull(raw json.RawMessage) bool {
 	return strings.TrimSpace(string(raw)) == "null"
+}
+
+func hasBunCatalogs(root map[string]json.RawMessage) bool {
+	if _, ok := root["catalog"]; ok {
+		return true
+	}
+	if _, ok := root["catalogs"]; ok {
+		return true
+	}
+	var workspaces map[string]json.RawMessage
+	if json.Unmarshal(root["workspaces"], &workspaces) != nil {
+		return false
+	}
+	_, hasCatalog := workspaces["catalog"]
+	_, hasCatalogs := workspaces["catalogs"]
+	return hasCatalog || hasCatalogs
 }
