@@ -129,3 +129,52 @@ func TestDockerComposeParserRejectsNonMappingServices(t *testing.T) {
 		t.Fatalf("expected services error, got %v", err)
 	}
 }
+
+func TestDockerfileHeredocsKeepFinalImage(t *testing.T) {
+	analyzer, _ := newDockerfileParser(dockerfileMatcherConfig{})
+	result, err := analyzer.Analyze("Dockerfile", []byte(`from python:3.12-slim AS VoiceServer
+RUN python - <<'PY'
+from pocket_tts import TTSModel
+from engines import POCKET_VOICES
+PY
+COPY <<TEXT /example
+COPY --from=other /file /file
+TEXT
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Dependencies) != 1 {
+		t.Fatalf("expected only the Python base image, got %+v", result.Dependencies)
+	}
+	image := result.Dependencies[0]
+	if image.Raw != "python:3.12-slim" || image.Scope != ScopeRuntime || image.Attributes["stage"] != "VoiceServer" {
+		t.Fatalf("unexpected final image: %+v", image)
+	}
+}
+
+func TestDockerfileWithOnlyCommentsHasNoDependencies(t *testing.T) {
+	analyzer, _ := newDockerfileParser(dockerfileMatcherConfig{})
+	result, err := analyzer.Analyze("Dockerfile", []byte("# syntax=docker/dockerfile:1\n\n# empty\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) {
+		t.Fatalf("unexpected analysis: %+v", result.Analysis)
+	}
+}
+
+func TestDockerfileFrontendFlagsPreserveBaseImage(t *testing.T) {
+	analyzer, _ := newDockerfileParser(dockerfileMatcherConfig{})
+	result, err := analyzer.Analyze("Dockerfile", []byte("# syntax=docker/dockerfile:1-labs\nFROM --reset=all --platform=linux/amd64 alpine:3.20\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Dependencies) != 1 {
+		t.Fatalf("unexpected dependencies: %+v", result.Dependencies)
+	}
+	image := result.Dependencies[0]
+	if image.Raw != "alpine:3.20" || image.Scope != ScopeRuntime || image.Attributes["platform"] != "linux/amd64" {
+		t.Fatalf("unexpected final image: %+v", image)
+	}
+}
