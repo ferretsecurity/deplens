@@ -129,3 +129,26 @@ func TestDockerComposeParserRejectsNonMappingServices(t *testing.T) {
 		t.Fatalf("expected services error, got %v", err)
 	}
 }
+
+func TestDockerfileHeredocsKeepFinalImage(t *testing.T) {
+	analyzer, _ := newDockerfileParser(dockerfileMatcherConfig{})
+	result, err := analyzer.Analyze("Dockerfile", []byte(`from python:3.12-slim AS VoiceServer
+RUN python - <<'PY'
+from pocket_tts import TTSModel
+from engines import POCKET_VOICES
+PY
+COPY <<TEXT /example
+COPY --from=other /file /file
+TEXT
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Dependencies) != 1 {
+		t.Fatalf("expected only the Python base image, got %+v", result.Dependencies)
+	}
+	image := result.Dependencies[0]
+	if image.Raw != "python:3.12-slim" || image.Scope != ScopeRuntime || image.Attributes["stage"] != "VoiceServer" {
+		t.Fatalf("unexpected final image: %+v", image)
+	}
+}
