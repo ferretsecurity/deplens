@@ -152,3 +152,14 @@ TEXT
 		t.Fatalf("unexpected final image: %+v", image)
 	}
 }
+
+func TestDockerfileWithOnlyCommentsHasNoDependencies(t *testing.T) {
+	analyzer, _ := newDockerfileParser(dockerfileMatcherConfig{})
+	result, err := analyzer.Analyze("Dockerfile", []byte("# syntax=docker/dockerfile:1\n\n# empty\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Analysis != (SourceAnalysis{Presence: PresenceAbsent, Extraction: ExtractionComplete}) {
+		t.Fatalf("unexpected analysis: %+v", result.Analysis)
+	}
+}

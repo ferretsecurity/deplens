@@ -1,23 +1,22 @@
 package analyze
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
 	"slices"
 	"strconv"
 	"strings"
 
+	"github.com/moby/buildkit/frontend/dockerfile/instructions"
+	"github.com/moby/buildkit/frontend/dockerfile/parser"
 	"go.yaml.in/yaml/v3"
 )
 
 type dockerfileParser struct{}
 type dockerComposeParser struct{}
 
-var (
-	dockerVariable = regexp.MustCompile(`\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))`)
-	dockerFrom     = regexp.MustCompile(`(?i)^FROM\s+(.+)$`)
-	dockerCopyFrom = regexp.MustCompile(`(?i)^COPY\s+(?:[^\n]*?\s)?--from=([^\s]+)`)
-)
+var dockerVariable = regexp.MustCompile(`\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))`)
 
 func newDockerfileParser(dockerfileMatcherConfig) (sourceAnalyzer, error) {
 	return dockerfileParser{}, nil
@@ -28,9 +27,15 @@ func newDockerComposeParser(dockerComposeMatcherConfig) (sourceAnalyzer, error) 
 }
 
 func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
-	lines, err := dockerfileLogicalLines(path, string(content))
+	tree, err := parser.Parse(bytes.NewReader(content))
 	if err != nil {
-		return sourceAnalyzerResult{}, err
+		if err.Error() == "file with no instructions" {
+			return semanticAnalyzerResult(nil, nil), nil
+		}
+		return sourceAnalyzerResult{}, fmt.Errorf("parse Dockerfile %q: %w", path, err)
+	}
+	if dockerfileHasTrailingContinuation(tree, content) {
+		return sourceAnalyzerResult{}, fmt.Errorf("parse Dockerfile %q: unterminated line continuation", path)
 	}
 
 	args := make(map[string]string)
@@ -40,45 +45,29 @@ func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 	incomplete := make([]string, 0)
 	finalImageIndex := -1
 
-	for lineNumber, line := range lines {
-		fields := strings.Fields(line)
-		if len(fields) == 0 {
+	for _, node := range tree.AST.Children {
+		switch strings.ToUpper(node.Value) {
+		case "ARG", "FROM", "COPY":
+		default:
 			continue
 		}
-		switch strings.ToUpper(fields[0]) {
-		case "ARG":
-			if len(fields) < 2 {
-				return sourceAnalyzerResult{}, fmt.Errorf("parse Dockerfile %q logical line %d: ARG requires a name", path, lineNumber+1)
-			}
-			name, value, hasValue := strings.Cut(fields[1], "=")
-			if name == "" {
-				return sourceAnalyzerResult{}, fmt.Errorf("parse Dockerfile %q logical line %d: ARG requires a name", path, lineNumber+1)
-			}
-			if hasValue {
-				args[name] = value
-			}
-		case "FROM":
-			match := dockerFrom.FindStringSubmatch(line)
-			if match == nil {
-				return sourceAnalyzerResult{}, fmt.Errorf("parse Dockerfile %q logical line %d: malformed FROM instruction", path, lineNumber+1)
-			}
-			fromFields := strings.Fields(match[1])
-			platform := ""
-			for len(fromFields) > 0 && strings.HasPrefix(fromFields[0], "--") {
-				if value, ok := strings.CutPrefix(fromFields[0], "--platform="); ok {
-					platform = value
+		instruction, err := instructions.ParseInstruction(node)
+		if err != nil {
+			return sourceAnalyzerResult{}, fmt.Errorf("parse Dockerfile %q line %d: %w", path, node.StartLine, err)
+		}
+		switch cmd := instruction.(type) {
+		case *instructions.ArgCommand:
+			for _, arg := range cmd.Args {
+				if arg.Value != nil {
+					args[arg.Key] = *arg.Value
 				}
-				fromFields = fromFields[1:]
 			}
-			if len(fromFields) == 0 {
-				return sourceAnalyzerResult{}, fmt.Errorf("parse Dockerfile %q logical line %d: FROM requires an image", path, lineNumber+1)
+		case *instructions.Stage:
+			rawImage, platform, stage := cmd.BaseName, cmd.Platform, ""
+			if cmd.Name != "" {
+				stage = node.Next.Next.Next.Value
 			}
-			rawImage := fromFields[0]
 			image, unresolved := resolveDockerVariables(rawImage, args)
-			stage := ""
-			if len(fromFields) >= 3 && strings.EqualFold(fromFields[1], "AS") {
-				stage = fromFields[2]
-			}
 			if unresolved {
 				finalImageIndex = -1
 				incomplete = append(incomplete, fmt.Sprintf("Dockerfile FROM image contains unresolved interpolation: %s", rawImage))
@@ -125,12 +114,11 @@ func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 			}
 			images = append(images, dependency)
 			finalImageIndex = len(images) - 1
-		case "COPY":
-			match := dockerCopyFrom.FindStringSubmatch(line)
-			if match == nil {
+		case *instructions.CopyCommand:
+			rawSource := strings.Trim(cmd.From, `"'`)
+			if rawSource == "" {
 				continue
 			}
-			rawSource := strings.Trim(match[1], `"'`)
 			source, unresolved := resolveDockerVariables(rawSource, args)
 			if unresolved {
 				incomplete = append(incomplete, fmt.Sprintf("Dockerfile COPY --from contains unresolved interpolation: %s", rawSource))
@@ -169,37 +157,23 @@ func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 	return semanticAnalyzerResult(dependencies, incomplete), nil
 }
 
-func dockerfileLogicalLines(path, content string) ([]string, error) {
-	physical := strings.Split(strings.ReplaceAll(content, "\r\n", "\n"), "\n")
-	logical := make([]string, 0, len(physical))
-	var current strings.Builder
-	continuing := false
-	for _, line := range physical {
-		trimmed := strings.TrimSpace(line)
-		if !continuing && (trimmed == "" || strings.HasPrefix(trimmed, "#")) {
+// BuildKit accepts an unfinished continuation at EOF. Keep reporting it as a
+// syntax error, while leaving heredoc contents to BuildKit's parser.
+func dockerfileHasTrailingContinuation(tree *parser.Result, content []byte) bool {
+	last := tree.AST.Children[len(tree.AST.Children)-1]
+	if len(last.Heredocs) > 0 {
+		return false
+	}
+	lines := bytes.Split(content, []byte("\n"))
+	for i := len(lines) - 1; i >= 0; i-- {
+		line := bytes.TrimSpace(lines[i])
+		if len(line) == 0 || line[0] == '#' {
 			continue
 		}
-		if continuing && trimmed == "" {
-			continue
-		}
-		hasContinuation := strings.HasSuffix(strings.TrimRight(line, " \t"), "\\")
-		if hasContinuation {
-			line = strings.TrimSuffix(strings.TrimRight(line, " \t"), "\\")
-		}
-		if current.Len() > 0 {
-			current.WriteByte(' ')
-		}
-		current.WriteString(strings.TrimSpace(line))
-		continuing = hasContinuation
-		if !hasContinuation {
-			logical = append(logical, current.String())
-			current.Reset()
-		}
+		escape := byte(tree.EscapeToken)
+		return line[len(line)-1] == escape && (len(line) == 1 || line[len(line)-2] != escape)
 	}
-	if continuing {
-		return nil, fmt.Errorf("parse Dockerfile %q: unterminated line continuation", path)
-	}
-	return logical, nil
+	return false
 }
 
 func resolveDockerVariables(value string, args map[string]string) (string, bool) {
