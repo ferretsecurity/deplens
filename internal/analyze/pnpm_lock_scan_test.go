@@ -2,8 +2,98 @@ package analyze
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 )
+
+func TestScanPNPMLockDocumentStream(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	for _, tc := range []struct {
+		name    string
+		content string
+		want    []DependencyReference
+	}{
+		{
+			name: "each document keeps its importer and package schema",
+			content: `lockfileVersion: '9.0'
+importers:
+  .:
+    dependencies:
+      react: 18.3.1
+dependencies:
+  ignored: 1.0.0
+packages:
+  react@18.3.1: {}
+  helper@1.0.0: {}
+---
+lockfileVersion: '5.4'
+dependencies:
+  vite: 6.0.0
+packages:
+  /helper/1.0.0: {}
+  /legacy/2.0.0: {}
+---
+dependencies:
+  unversioned: 1.0.0
+`,
+			want: []DependencyReference{
+				{PackageType: "npm", Raw: "react@18.3.1", Name: "react", Version: "18.3.1", SourceGroup: "dependencies"},
+				{PackageType: "npm", Raw: "helper@1.0.0", Name: "helper", Version: "1.0.0"},
+				{PackageType: "npm", Raw: "vite@6.0.0", Name: "vite", Version: "6.0.0", SourceGroup: "dependencies"},
+				{PackageType: "npm", Raw: "legacy@2.0.0", Name: "legacy", Version: "2.0.0"},
+			},
+		},
+		{
+			name: "recognizes a later document",
+			content: `unrelated: true
+---
+lockfileVersion: '9.0'
+dependencies:
+  react: 18.3.1
+`,
+			want: []DependencyReference{
+				{PackageType: "npm", Raw: "react@18.3.1", Name: "react", Version: "18.3.1", SourceGroup: "dependencies"},
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			root := t.TempDir()
+			mustWriteFile(t, filepath.Join(root, "pnpm-lock.yaml"), tc.content)
+			result, err := Scan(root, nil, ruleset)
+			if err != nil {
+				t.Fatal(err)
+			}
+			source := mustFindPNPMLockSource(t, result)
+			if source.Analysis != (SourceAnalysis{Presence: PresencePresent, Extraction: ExtractionComplete}) || len(source.Diagnostics) != 0 {
+				t.Fatalf("unexpected analysis: %+v", source)
+			}
+			if !equalDependencies(source.Dependencies, tc.want) {
+				t.Fatalf("unexpected dependencies: got %+v want %+v", source.Dependencies, tc.want)
+			}
+		})
+	}
+}
+
+func TestScanPNPMLockMalformedLaterDocument(t *testing.T) {
+	ruleset := mustLoadDefaultRules(t)
+	for _, tail := range []string{"dependencies: [\n", "dependencies: [unexpected]\n"} {
+		t.Run(tail, func(t *testing.T) {
+			root := t.TempDir()
+			mustWriteFile(t, filepath.Join(root, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\ndependencies:\n  react: 18.3.1\n---\n"+tail)
+			result, err := Scan(root, nil, ruleset)
+			if err != nil {
+				t.Fatal(err)
+			}
+			source := mustFindPNPMLockSource(t, result)
+			if source.Analysis != (SourceAnalysis{Presence: PresenceUnknown, Extraction: ExtractionFailed}) || len(source.Dependencies) != 0 {
+				t.Fatalf("expected failed extraction without partial dependencies, got %+v", source)
+			}
+			if len(source.Diagnostics) != 1 || !strings.Contains(source.Diagnostics[0].Message, "parse yaml file") {
+				t.Fatalf("expected YAML parse diagnostic, got %+v", source.Diagnostics)
+			}
+		})
+	}
+}
 
 func TestScanPNPMLockExtractsDependencies(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
