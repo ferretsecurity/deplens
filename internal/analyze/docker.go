@@ -29,7 +29,7 @@ func newDockerComposeParser(dockerComposeMatcherConfig) (sourceAnalyzer, error) 
 func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
 	tree, err := parser.Parse(bytes.NewReader(content))
 	if err != nil {
-		if err.Error() == "file with no instructions" {
+		if err.Error() == "file with no instructions" && len(lastDockerfileLine(content)) == 0 {
 			return semanticAnalyzerResult(nil, nil), nil
 		}
 		return sourceAnalyzerResult{}, fmt.Errorf("parse Dockerfile %q: %w", path, err)
@@ -46,12 +46,26 @@ func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 	finalImageIndex := -1
 
 	for _, node := range tree.AST.Children {
+		var imageFlag string
 		switch strings.ToUpper(node.Value) {
-		case "ARG", "FROM", "COPY":
+		case "FROM":
+			imageFlag = "--platform="
+		case "COPY":
+			imageFlag = "--from="
+		case "ARG":
 		default:
 			continue
 		}
-		instruction, err := instructions.ParseInstruction(node)
+		// Frontends can add flags, such as FROM --reset in dockerfile:1-labs.
+		// Only pass flags used for image extraction to the typed parser.
+		imageNode := *node
+		imageNode.Flags = nil
+		for _, flag := range node.Flags {
+			if imageFlag != "" && strings.HasPrefix(flag, imageFlag) {
+				imageNode.Flags = append(imageNode.Flags, flag)
+			}
+		}
+		instruction, err := instructions.ParseInstruction(&imageNode)
 		if err != nil {
 			return sourceAnalyzerResult{}, fmt.Errorf("parse Dockerfile %q line %d: %w", path, node.StartLine, err)
 		}
@@ -164,16 +178,22 @@ func dockerfileHasTrailingContinuation(tree *parser.Result, content []byte) bool
 	if len(last.Heredocs) > 0 {
 		return false
 	}
-	lines := bytes.Split(content, []byte("\n"))
-	for i := len(lines) - 1; i >= 0; i-- {
-		line := bytes.TrimSpace(lines[i])
-		if len(line) == 0 || line[0] == '#' {
-			continue
+	line := lastDockerfileLine(content)
+	escape := byte(tree.EscapeToken)
+	return len(line) > 0 && line[len(line)-1] == escape && (len(line) == 1 || line[len(line)-2] != escape)
+}
+
+func lastDockerfileLine(content []byte) []byte {
+	content = bytes.TrimPrefix(content, []byte("\xef\xbb\xbf"))
+	for len(content) > 0 {
+		start := bytes.LastIndexByte(content, '\n')
+		line := bytes.TrimSpace(content[start+1:])
+		if len(line) > 0 && line[0] != '#' {
+			return line
 		}
-		escape := byte(tree.EscapeToken)
-		return line[len(line)-1] == escape && (len(line) == 1 || line[len(line)-2] != escape)
+		content = content[:max(start, 0)]
 	}
-	return false
+	return nil
 }
 
 func resolveDockerVariables(value string, args map[string]string) (string, bool) {

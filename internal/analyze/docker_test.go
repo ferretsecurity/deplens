@@ -163,3 +163,18 @@ func TestDockerfileWithOnlyCommentsHasNoDependencies(t *testing.T) {
 		t.Fatalf("unexpected analysis: %+v", result.Analysis)
 	}
 }
+
+func TestDockerfileFrontendFlagsPreserveBaseImage(t *testing.T) {
+	analyzer, _ := newDockerfileParser(dockerfileMatcherConfig{})
+	result, err := analyzer.Analyze("Dockerfile", []byte("# syntax=docker/dockerfile:1-labs\nFROM --reset=all --platform=linux/amd64 alpine:3.20\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Dependencies) != 1 {
+		t.Fatalf("unexpected dependencies: %+v", result.Dependencies)
+	}
+	image := result.Dependencies[0]
+	if image.Raw != "alpine:3.20" || image.Scope != ScopeRuntime || image.Attributes["platform"] != "linux/amd64" {
+		t.Fatalf("unexpected final image: %+v", image)
+	}
+}
