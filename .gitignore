@@ -3,9 +3,6 @@ deplens
 /dist/
 .gocache/
 
-# Node-based development tooling
-node_modules/
-
 # Test and coverage
 *.test
 *.out
