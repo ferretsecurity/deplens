@@ -4039,6 +4039,7 @@ func TestMatchSelectorOnlySourceIgnoresClojureDepsEDNAnalyzerRule(t *testing.T) 
 func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	want := []DetectorID{
+		DetectorID("github-actions-workflow"),
 		DetectorID("python-requirements"),
 		DetectorID("python-requirements-dir"),
 		DetectorID("python-uv"),
@@ -4184,7 +4185,6 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 		DetectorID("docker-dockerfile"),
 		DetectorID("docker-compose"),
 		DetectorID("github-actions-action"),
-		DetectorID("github-actions-workflow"),
 		DetectorID("bazel-workspace"),
 		DetectorID("bazel-module"),
 		DetectorID("bazel-module-lock"),

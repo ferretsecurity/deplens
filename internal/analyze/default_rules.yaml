@@ -1,4 +1,13 @@
 rules:
+  # Workflow filenames can also match manifest rules such as Haskell's package.yaml.
+  - id: github-actions-workflow
+    package-type: github
+    form: automation-definition
+    roles: [configuration, usage]
+    path-glob: '**/.github/workflows/*'
+    filename-regex: '\.ya?ml$'
+    analyzer:
+      type: github-actions-workflow
   - id: python-requirements
     form: requirements
     roles: [declaration, constraint]
@@ -936,10 +945,6 @@ rules:
     filename-regex: '^action\.ya?ml$'
     analyzer:
       type: github-actions-action
-  - id: github-actions-workflow
-    form: automation-definition
-    roles: [configuration, usage]
-    path-glob: '**/.github/workflows/*.yml'
   - id: bazel-workspace
     form: workspace-definition
     roles: [workspace, configuration]
