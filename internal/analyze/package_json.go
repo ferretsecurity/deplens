@@ -62,6 +62,13 @@ func (packageJSONParser) Analyze(path string, content []byte) (sourceAnalyzerRes
 		}
 	}
 
+	if raw, ok := root["overrides"]; ok {
+		refs, messages := packageJSONOverrides(raw)
+		result := semanticAnalyzerResult(append(dependencies, refs...), append(incomplete, messages...))
+		// The missing-lockfile check needs install declarations, including malformed ones.
+		result.constraintsOnly = len(dependencies) == 0 && len(incomplete) == 0
+		return result, nil
+	}
 	return semanticAnalyzerResult(dependencies, incomplete), nil
 }
 

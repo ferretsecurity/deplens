@@ -187,3 +187,59 @@ func TestPackageJSONRejectsInvalidJSONAndConfiguration(t *testing.T) {
 		t.Fatalf("expected strict package-json configuration error, got %v", err)
 	}
 }
+
+func TestPackageJSONOverrideSelectorsAndReplacements(t *testing.T) {
+	result, err := (packageJSONParser{}).Analyze("package.json", []byte(`{
+		"overrides": {
+			"@org/parent@^1": {".": "2", "middle": {"@org/leaf": "npm:@fork/leaf@^3"}},
+			"other": "$@org/source",
+			"bad": false
+		}
+	}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Analysis.Extraction != ExtractionPartial || len(result.Diagnostics) != 1 || !strings.Contains(result.Diagnostics[0].Message, "bad") || len(result.Dependencies) != 3 {
+		t.Fatalf("unexpected extraction: %+v", result)
+	}
+	for _, dep := range result.Dependencies {
+		if dep.Relationship != RelationshipInconclusive || dep.SourceGroup != "overrides" || dep.Version != "" {
+			t.Fatalf("unexpected override: %+v", dep)
+		}
+	}
+	parent := dependencyByName(t, result.Dependencies, "@org/parent")
+	if parent.VersionConstraint != "2" || parent.Attributes["override_path"] != `["@org/parent@^1"]` {
+		t.Fatalf("conditional self override: %+v", parent)
+	}
+	leaf := dependencyByName(t, result.Dependencies, "@fork/leaf")
+	if leaf.VersionConstraint != "^3" || leaf.Attributes["declared_name"] != "@org/leaf" || leaf.Attributes["override_path"] != `["@org/parent@^1","middle","@org/leaf"]` {
+		t.Fatalf("nested replacement: %+v", leaf)
+	}
+	ref := dependencyByName(t, result.Dependencies, "other")
+	if ref.Attributes["spec_reference"] != "@org/source" || ref.VersionConstraint != "" || ref.VERS != "" {
+		t.Fatalf("dependency spec reference: %+v", ref)
+	}
+}
+
+func TestPackageJSONOverridesKeepSupportedSiblings(t *testing.T) {
+	result, err := (packageJSONParser{}).Analyze("package.json", []byte(`{
+		"overrides": {
+			"@scope/_pkg": "file:../pkg",
+			"pkg@not valid": "2",
+			"pkg@1@2": "2",
+			"bad-alias": "npm:bar@file:../bad",
+			"bad-ref": "$",
+			"unsupported": "catalog:tools"
+		}
+	}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Analysis.Extraction != ExtractionPartial || len(result.Diagnostics) != 5 || len(result.Dependencies) != 1 {
+		t.Fatalf("unexpected extraction: %+v", result)
+	}
+	dep := result.Dependencies[0]
+	if dep.Name != "@scope/_pkg" || dep.OriginKind != OriginPath || dep.Attributes["path"] != "../pkg" || dep.VersionConstraint != "" {
+		t.Fatalf("path replacement: %+v", dep)
+	}
+}

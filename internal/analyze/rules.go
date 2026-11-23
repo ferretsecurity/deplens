@@ -264,6 +264,8 @@ type rootSourceAnalyzer interface {
 }
 
 type sourceAnalyzerResult struct {
+	constraintsOnly bool
+
 	Recognized   bool
 	Analysis     SourceAnalysis
 	Dependencies []DependencyReference
@@ -537,6 +539,7 @@ func (r Ruleset) analyzeDependencySourceWithContent(filePath, name, relPath stri
 			base.Dependencies = result.Dependencies
 			base.Diagnostics = result.Diagnostics
 			base.Groups = result.Groups
+			base.constraintsOnly = result.constraintsOnly
 			if needsPolicyContent(d.ID) {
 				base.content = append([]byte(nil), content...)
 			}
