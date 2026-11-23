@@ -12,7 +12,7 @@ import (
 
 var npmOverrideName = regexp.MustCompile(`^(@[A-Za-z0-9.!~*'()_-]+/[A-Za-z0-9!~*'()_-]|[A-Za-z0-9!~*'()-])[A-Za-z0-9.!~*'()_-]*$`)
 
-func packageJSONOverrides(raw json.RawMessage) ([]DependencyReference, []string) {
+func packageJSONOverrides(raw json.RawMessage, allowCatalogs bool) ([]DependencyReference, []string) {
 	var entries map[string]any
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.UseNumber()
@@ -51,6 +51,9 @@ func packageJSONOverrides(raw json.RawMessage) ([]DependencyReference, []string)
 				continue
 			}
 			dep, supported := npmOverrideReplacement(name, spec)
+			if allowCatalogs && strings.HasPrefix(spec, "catalog:") {
+				supported = true
+			}
 			if !supported {
 				messages = append(messages, fmt.Sprintf("overrides %q: unsupported replacement specifier %q", path, spec))
 				continue

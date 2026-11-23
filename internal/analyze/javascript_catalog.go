@@ -28,6 +28,15 @@ func resolveJavaScriptCatalogs(sources []DependencySourceResult) {
 		}
 	}
 	for _, source := range sources {
+		if source.Detector == "js" {
+			manifest := manifests[javascriptCatalogRoot(source.Path)]
+			if manifest.hasWorkspaces && manifest.hasCatalogs {
+				config := javascriptCatalogConfig{path: source.Path, root: manifest.root, patterns: manifest.workspaces, manager: "bun"}
+				config.catalogs, config.err = readBunCatalogs(source.content)
+				configs[config.root] = append(configs[config.root], config)
+			}
+			continue
+		}
 		if source.Detector != "js-pnpm-workspace" && source.Detector != "js-yarnrc" {
 			continue
 		}
@@ -55,16 +64,25 @@ func resolveJavaScriptCatalogs(sources []DependencySourceResult) {
 				continue
 			}
 			catalogName := strings.TrimPrefix(specifier, "catalog:")
-			dependency.Attributes = map[string]string{"catalog_name": catalogName}
-			if catalogName == "" {
-				dependency.Attributes["catalog_name"] = "default"
+			if dependency.Attributes == nil {
+				dependency.Attributes = make(map[string]string)
 			}
 			config, err := javascriptCatalogOwner(javascriptCatalogRoot(source.Path), configs, manifests)
 			if config != nil {
 				dependency.Attributes["catalog_source"] = config.path
-				if config.manager == "pnpm" && catalogName == "" {
+				if config.manager == "bun" {
+					catalogName = strings.TrimSpace(catalogName)
+				}
+				if (config.manager == "pnpm" || config.manager == "bun") && catalogName == "" {
 					catalogName = "default"
 				}
+				if dependency.SourceGroup == "overrides" && (config.manager != "bun" || config.path != source.Path) {
+					err = fmt.Errorf("catalog overrides require a Bun catalog in the same manifest")
+				}
+			}
+			dependency.Attributes["catalog_name"] = catalogName
+			if catalogName == "" {
+				dependency.Attributes["catalog_name"] = "default"
 			}
 			if err == nil {
 				target, ok := config.catalogs[catalogName][dependency.Name]
@@ -73,7 +91,8 @@ func resolveJavaScriptCatalogs(sources []DependencySourceResult) {
 				} else {
 					dependency.Attributes["catalog_specifier"] = target
 					resolved := packageJSONDependency(dependency.Name, target, dependency.SourceGroup, dependency.Scope)
-					if strings.HasPrefix(target, "catalog:") || resolved.OriginKind == "" {
+					if strings.HasPrefix(target, "catalog:") || resolved.OriginKind == "" ||
+						(config.manager == "bun" && !validBunCatalogTarget(target, resolved)) {
 						err = fmt.Errorf("catalog target %q cannot be normalized", target)
 					} else {
 						resolved.Raw = dependency.Raw
@@ -101,6 +120,10 @@ func resolveJavaScriptCatalogs(sources []DependencySourceResult) {
 	}
 }
 
+func (m javascriptManifest) catalogWorkspaceBoundary(manager string) bool {
+	return len(m.workspaces) > 0 || (manager == "bun" && m.hasWorkspaces)
+}
+
 func javascriptCatalogOwner(root string, configs map[string][]javascriptCatalogConfig, manifests map[string]javascriptManifest) (*javascriptCatalogConfig, error) {
 	owner := root
 	for {
@@ -120,11 +143,11 @@ func javascriptCatalogOwner(root string, configs map[string][]javascriptCatalogC
 				return config, fmt.Errorf("package manager conflicts with %s", config.path)
 			}
 			if owner != root {
-				if len(manifest.workspaces) > 0 || !workspaceMatches(javascriptCatalogRelative(owner, root), config.patterns) {
+				if manifest.catalogWorkspaceBoundary(config.manager) || !workspaceMatches(javascriptCatalogRelative(owner, root), config.patterns) {
 					return config, fmt.Errorf("manifest is not a member of %s", config.path)
 				}
 				for ancestor := javascriptCatalogRoot(root); ancestor != owner; ancestor = javascriptCatalogRoot(ancestor) {
-					if nested, ok := manifests[ancestor]; ok && (len(nested.workspaces) > 0 || nested.manager != "" || nested.managerInvalid ||
+					if nested, ok := manifests[ancestor]; ok && (nested.catalogWorkspaceBoundary(config.manager) || nested.manager != "" || nested.managerInvalid ||
 						!workspaceMatches(javascriptCatalogRelative(owner, ancestor), config.patterns)) {
 						return config, fmt.Errorf("nested project at %q separates the manifest from %s", ancestor, config.path)
 					}
