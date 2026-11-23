@@ -34,3 +34,42 @@ func TestScanPackageJSONOverridesStayInDeclaringManifest(t *testing.T) {
 		t.Fatalf("lockfile resolution: %+v", dep)
 	}
 }
+
+func TestScanBunRootCatalogOverridesPreserveMetadata(t *testing.T) {
+	result := scanJavaScriptCatalogFiles(t, map[string]string{
+		"package.json": `{
+			"workspaces":{"packages":["packages/*"],"catalog":{"react":"^19.0.0"},"catalogs":{"tools":{"server":"npm:@acme/server@~3.2.0"}}},
+			"overrides":{"react":"catalog:","parent@^1":{"server":"catalog:tools"}}
+		}`,
+	})
+	source := sourceForPath(t, result, "package.json")
+	if source.Analysis.Extraction != ExtractionComplete || len(source.Dependencies) != 2 || len(source.Diagnostics) != 0 {
+		t.Fatalf("source = %+v", source)
+	}
+	dependency := dependencyByName(t, source.Dependencies, "react")
+	if dependency.Raw != "react@catalog:" || dependency.SourceGroup != "overrides" || dependency.Relationship != RelationshipInconclusive ||
+		dependency.VersionConstraint != "^19.0.0" || dependency.VERS == "" || dependency.Attributes["catalog_source"] != "package.json" {
+		t.Fatalf("default override = %+v", dependency)
+	}
+	alias := dependencyByName(t, source.Dependencies, "@acme/server")
+	if alias.Raw != "server@catalog:tools" || alias.SourceGroup != "overrides" || alias.Relationship != RelationshipInconclusive ||
+		alias.VersionConstraint != "~3.2.0" || alias.VERS == "" || alias.Attributes["declared_name"] != "server" ||
+		alias.Attributes["override_path"] != `["parent@^1","server"]` || alias.Attributes["catalog_name"] != "tools" {
+		t.Fatalf("named alias override = %+v", alias)
+	}
+}
+
+func TestScanBunMemberCatalogOverridesCannotResolve(t *testing.T) {
+	result := scanJavaScriptCatalogFiles(t, map[string]string{
+		"package.json":              `{"workspaces":{"packages":["packages/*"],"catalog":{"react":"^19.0.0"}}}`,
+		"packages/app/package.json": `{"packageManager":"bun@1.3.0","overrides":{"react":"catalog:"}}`,
+	})
+	source := sourceForPath(t, result, "packages/app/package.json")
+	if source.Analysis.Extraction != ExtractionPartial || len(source.Dependencies) != 1 || len(source.Diagnostics) != 1 {
+		t.Fatalf("source = %+v", source)
+	}
+	dependency := source.Dependencies[0]
+	if dependency.Raw != "react@catalog:" || dependency.OriginKind != "" || dependency.VersionConstraint != "" || dependency.VERS != "" || dependency.Relationship != RelationshipInconclusive {
+		t.Fatalf("member override = %+v", dependency)
+	}
+}
