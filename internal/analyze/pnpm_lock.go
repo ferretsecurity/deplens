@@ -1,7 +1,9 @@
 package analyze
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"slices"
 	"strings"
 
@@ -91,28 +93,38 @@ func newPNPMLockParser(raw pnpmLockMatcherConfig) (sourceAnalyzer, error) {
 }
 
 func (p pnpmLockParser) Analyze(path string, content []byte) (sourceAnalyzerResult, error) {
-	var file pnpmLockFile
-	if err := yaml.Unmarshal(content, &file); err != nil {
-		return sourceAnalyzerResult{}, fmt.Errorf("parse yaml file %q: %w", path, err)
-	}
-	if file.LockfileVersion == "" {
-		return sourceAnalyzerResult{}, nil
-	}
-
+	decoder := yaml.NewDecoder(bytes.NewReader(content))
 	dependencies := make([]DependencyReference, 0)
 	seen := make(map[pnpmLockPackageID]struct{})
+	recognized := false
+	for {
+		var file pnpmLockFile
+		if err := decoder.Decode(&file); err == io.EOF {
+			break
+		} else if err != nil {
+			return sourceAnalyzerResult{}, fmt.Errorf("parse yaml file %q: %w", path, err)
+		}
+		if file.LockfileVersion == "" {
+			continue
+		}
+		recognized = true
 
-	if importer, ok := file.Importers["."]; ok {
-		dependencies = appendPNPMLockDependencies(dependencies, seen, "dependencies", importer.Dependencies)
-		dependencies = appendPNPMLockDependencies(dependencies, seen, "devDependencies", importer.DevDependencies)
-		dependencies = appendPNPMLockDependencies(dependencies, seen, "optionalDependencies", importer.OptionalDependencies)
-	} else {
-		dependencies = appendPNPMLockDependencies(dependencies, seen, "dependencies", file.Dependencies)
-		dependencies = appendPNPMLockDependencies(dependencies, seen, "devDependencies", file.DevDependencies)
-		dependencies = appendPNPMLockDependencies(dependencies, seen, "optionalDependencies", file.OptionalDependencies)
+		if importer, ok := file.Importers["."]; ok {
+			dependencies = appendPNPMLockDependencies(dependencies, seen, "dependencies", importer.Dependencies)
+			dependencies = appendPNPMLockDependencies(dependencies, seen, "devDependencies", importer.DevDependencies)
+			dependencies = appendPNPMLockDependencies(dependencies, seen, "optionalDependencies", importer.OptionalDependencies)
+		} else {
+			dependencies = appendPNPMLockDependencies(dependencies, seen, "dependencies", file.Dependencies)
+			dependencies = appendPNPMLockDependencies(dependencies, seen, "devDependencies", file.DevDependencies)
+			dependencies = appendPNPMLockDependencies(dependencies, seen, "optionalDependencies", file.OptionalDependencies)
+		}
+
+		dependencies = appendPNPMLockTransitiveFromPackages(dependencies, seen, file.Packages, file.LockfileVersion)
 	}
 
-	dependencies = appendPNPMLockTransitiveFromPackages(dependencies, seen, file.Packages, file.LockfileVersion)
+	if !recognized {
+		return sourceAnalyzerResult{}, nil
+	}
 
 	if len(dependencies) == 0 {
 		return sourceAnalyzerResult{
