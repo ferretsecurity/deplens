@@ -124,6 +124,8 @@ type DependencySourceResult struct {
 	Groups       []DependencyGroup     `json:"-"`
 	Generate     GenerationFormat      `json:"-"`
 	content      []byte
+
+	constraintsOnly bool
 }
 
 type FindingSubject struct {

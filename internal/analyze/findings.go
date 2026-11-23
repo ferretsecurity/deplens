@@ -216,7 +216,7 @@ func readJavaScriptManifest(data []byte, source DependencySourceResult) (javascr
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return javascriptManifest{}, err
 	}
-	manifest := javascriptManifest{path: source.Path, root: path.Dir(source.Path), hasDeps: source.Analysis.Presence == PresencePresent}
+	manifest := javascriptManifest{path: source.Path, root: path.Dir(source.Path), hasDeps: source.Analysis.Presence == PresencePresent && !source.constraintsOnly}
 	if manifest.root == "." {
 		manifest.root = ""
 	}
