@@ -1,0 +1,14 @@
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: acme/tools/setup@v2
+      - uses: docker://ghcr.io/acme/tool:1.0
+      - uses: ./.github/actions/local
+      - run: echo 'uses:ignored/run@main'
+        env:
+          uses: ignored/env@main
+  release:
+    uses: acme/shared/.github/workflows/release.yml@release/stable

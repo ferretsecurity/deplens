@@ -32,9 +32,15 @@ func (githubActionsActionParser) Analyze(path string, content []byte) (sourceAna
 		return sourceAnalyzerResult{}, nil
 	}
 
-	dependencies := make([]DependencyReference, 0)
-	incomplete := make([]string, 0)
 	steps, _ := runs["steps"].([]any)
+	dependencies, incomplete := githubActionsStepDependencies(steps, "runs.steps")
+	sortDependencyReferences(dependencies)
+	return semanticAnalyzerResult(dependencies, incomplete), nil
+}
+
+func githubActionsStepDependencies(steps []any, group string) ([]DependencyReference, []string) {
+	dependencies := make([]DependencyReference, 0)
+	var incomplete []string
 	for index, rawStep := range steps {
 		step, ok := asStringMap(rawStep)
 		if !ok {
@@ -44,19 +50,18 @@ func (githubActionsActionParser) Analyze(path string, content []byte) (sourceAna
 		if !ok {
 			continue
 		}
-		dependency, ok := githubActionsActionDependency(uses)
+		dependency, ok := githubActionsActionDependency(uses, group)
 		if ok {
 			dependencies = append(dependencies, dependency)
 		} else if strings.HasPrefix(strings.TrimSpace(uses), "docker://") {
-			incomplete = append(incomplete, fmt.Sprintf("runs.steps[%d].uses could not be parsed as a Docker image: %s", index, strings.TrimSpace(uses)))
+			incomplete = append(incomplete, fmt.Sprintf("%s[%d].uses could not be parsed as a Docker image: %s", group, index, strings.TrimSpace(uses)))
 		}
 	}
 
-	sortDependencyReferences(dependencies)
-	return semanticAnalyzerResult(dependencies, incomplete), nil
+	return dependencies, incomplete
 }
 
-func githubActionsActionDependency(raw string) (DependencyReference, bool) {
+func githubActionsActionDependency(raw, group string) (DependencyReference, bool) {
 	raw = strings.TrimSpace(raw)
 	if image, ok := strings.CutPrefix(raw, "docker://"); ok {
 		if strings.Contains(image, "$") {
@@ -67,12 +72,16 @@ func githubActionsActionDependency(raw string) (DependencyReference, bool) {
 			return DependencyReference{}, false
 		}
 		dependency.Raw = raw
-		dependency.SourceGroup = "runs.steps"
+		dependency.SourceGroup = group
 		dependency.Relationship = RelationshipDirect
 		dependency.Scope = ScopeRuntime
 		return dependency, true
 	}
 
+	return githubRepositoryDependency(raw, group)
+}
+
+func githubRepositoryDependency(raw, group string) (DependencyReference, bool) {
 	name, ref, hasRef := strings.Cut(raw, "@")
 	if !hasRef || name == "" || ref == "" || strings.HasPrefix(name, "./") {
 		return DependencyReference{}, false
@@ -88,17 +97,22 @@ func githubActionsActionDependency(raw string) (DependencyReference, bool) {
 		}
 	}
 
+	attributes := map[string]string{
+		"source_url": "https://github.com/" + strings.Join(parts[:2], "/"),
+		"source_ref": ref,
+	}
+	if len(parts) > 2 {
+		attributes["source_path"] = strings.Join(parts[2:], "/")
+	}
+
 	return DependencyReference{
 		Raw:               raw,
 		Name:              name,
 		VersionConstraint: ref,
-		SourceGroup:       "runs.steps",
+		SourceGroup:       group,
 		OriginKind:        OriginGit,
 		Relationship:      RelationshipDirect,
 		Scope:             ScopeRuntime,
-		Attributes: map[string]string{
-			"source_url": "https://github.com/" + name,
-			"source_ref": ref,
-		},
+		Attributes:        attributes,
 	}, true
 }
