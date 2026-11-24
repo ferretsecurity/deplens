@@ -77,7 +77,7 @@ can record that `1.5.2` was selected for a declaration constrained to `^1.5.0`.
 built-in rules currently emit these values:
 
 ```text
-cargo, cocoapods, composer, conan, conda, cpan, cran, docker, gem, generic,
+apk, cargo, cocoapods, composer, conan, conda, cpan, cran, deb, docker, gem, generic,
 github, golang, hackage, hex, julia, luarocks, maven, npm, nuget, opam, pub,
 pypi, swift, vcpkg
 ```
@@ -91,7 +91,7 @@ Package URL types for advisory validation, and preserves unknown values with a
 warning so future ecosystems are not rejected:
 
 ```text
-alpm, apk, bazel, bitbucket, bitnami, chrome-extension, deb, huggingface,
+alpm, bazel, bitbucket, bitnami, chrome-extension, huggingface,
 mlflow, oci, otp, qpkg, rpm, swid, vscode-extension, yocto
 ```
 

@@ -75,7 +75,7 @@ func TestDefaultRulesExtractCommonSemanticCoverageFixtures(t *testing.T) {
 			fixture:      filepath.Join("docker", "dockerfile"),
 			path:         "Dockerfile",
 			detector:     "docker-dockerfile",
-			dependencies: 1,
+			dependencies: 2,
 			extraction:   ExtractionComplete,
 		},
 		{

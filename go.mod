@@ -16,6 +16,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.6
 	golang.org/x/mod v0.43.0
 	gopkg.in/ini.v1 v1.68.0
+	mvdan.cc/sh/v3 v3.14.1
 )
 
 require (
