@@ -42,6 +42,11 @@ func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 	stages := make(map[string]struct{})
 	images := make([]DependencyReference, 0)
 	copyImages := make([]DependencyReference, 0)
+	var runPackages []DependencyReference
+	seenPackages := make(map[string]struct{})
+	var currentStage string
+	customShell := false
+	stageShells := make(map[string]bool)
 	incomplete := make([]string, 0)
 	finalImageIndex := -1
 
@@ -52,6 +57,27 @@ func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 			imageFlag = "--platform="
 		case "COPY":
 			imageFlag = "--from="
+		case "SHELL":
+			customShell = !dockerShellAcceptsScript(node)
+			stageShells[currentStage] = customShell
+			continue
+		case "RUN":
+			if customShell && !node.Attributes["json"] {
+				continue
+			}
+			runNode := *node
+			runNode.Flags = nil
+			instruction, err := instructions.ParseInstruction(&runNode)
+			if err != nil {
+				incomplete = append(incomplete, fmt.Sprintf("Dockerfile RUN line %d: %v", node.StartLine, err))
+				continue
+			}
+			dependencies, warnings := dockerRunDependencies(instruction.(*instructions.RunCommand))
+			for _, dep := range dependencies {
+				runPackages = appendUniqueDependency(runPackages, seenPackages, string(dep.PackageType)+"\x00"+dep.Raw, dep)
+			}
+			incomplete = append(incomplete, warnings...)
+			continue
 		case "ARG":
 		default:
 			continue
@@ -82,6 +108,9 @@ func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 				stage = node.Next.Next.Next.Value
 			}
 			image, unresolved := resolveDockerVariables(rawImage, args)
+			currentStage = strings.ToLower(stage)
+			customShell = stageShells[strings.ToLower(image)]
+			stageShells[currentStage] = customShell
 			if unresolved {
 				finalImageIndex = -1
 				incomplete = append(incomplete, fmt.Sprintf("Dockerfile FROM image contains unresolved interpolation: %s", rawImage))
@@ -167,6 +196,7 @@ func (dockerfileParser) Analyze(path string, content []byte) (sourceAnalyzerResu
 	for _, dependency := range copyImages {
 		dependencies = appendOrMergeDockerDependency(dependencies, indexByRaw, dependency)
 	}
+	dependencies = append(dependencies, runPackages...)
 	sortDependencyReferences(dependencies)
 	return semanticAnalyzerResult(dependencies, incomplete), nil
 }

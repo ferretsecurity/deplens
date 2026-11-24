@@ -78,6 +78,8 @@ package.json [medium] npm project has dependencies but no npm lockfile
 
 Use `--json` for machine-readable format. JSON output includes the detected sources, extracted dependency references, check runs, findings, and diagnostics. Findings do not change the successful exit status. See the [dependency reference specification](docs/dependency-reference.md) for the dependency object fields, values, and omission rules.
 
+In Dockerfiles, deplens extracts base images, external `COPY --from` images, and literal packages from `RUN apt install`, `apt-get install`, `apk add`, and `pip install`, including `python -m pip install`. It reads shell commands and JSON argument arrays without running them. Package pins appear in `version_constraint`. Heredoc data is ignored. An unknown option or a shell expansion with ambiguous arguments ends extraction for that command.
+
 Python requirements distinguish registry packages, local paths, direct URLs, and Git references through `origin_kind`. Local paths and bare URLs do not invent package names or version constraints. Editable installs retain `attributes.editable: "true"`. Unsupported requirement syntax remains in `raw` with a warning and partial extraction.
 
 JSON sources also include `lockfiles`, the paths of corresponding candidate lockfiles in the same scan. An empty array means no candidate was found for a supported manifest. `null` means no mapping was established. The mapping includes competing lockfiles and supported workspace relationships. It does not identify the package manager used by a build or prove that a shared lockfile resolves every member dependency.
