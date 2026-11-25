@@ -1,9 +1,40 @@
 package analyze
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func TestDockerfileBasenames(t *testing.T) {
+	rules := mustLoadDefaultRules(t)
+	for _, tc := range []struct {
+		name string
+		want bool
+	}{
+		{"dockerfile", true},
+		{"DOCKERFILE.prod", true},
+		{"api.build.dOcKeRfIlE", true},
+		{"Containerfile", true},
+		{"containerFILE.dev", true},
+		{"api.Containerfile", false},
+		{"Dockerfile-dev", false},
+		{"Dockerfile.prod.dockerignore", false},
+		{"Containerfile.DOCKERIGNORE", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), tc.name)
+			mustWriteFile(t, path, "FROM alpine:3.20\n")
+			source, found, err := rules.AnalyzeDependencySource(path, tc.name)
+			if err != nil || found != tc.want {
+				t.Fatalf("found = %v, want %v, err = %v", found, tc.want, err)
+			}
+			if found && (source.Detector != "docker-dockerfile" || len(source.Dependencies) != 1 || source.Dependencies[0].Raw != "alpine:3.20") {
+				t.Fatalf("unexpected Dockerfile source: %+v", source)
+			}
+		})
+	}
+}
 
 func TestDockerfileParserExtractsStagesArgsAndExternalCopyImages(t *testing.T) {
 	parser, _ := newDockerfileParser(dockerfileMatcherConfig{})

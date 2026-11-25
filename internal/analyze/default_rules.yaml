@@ -928,7 +928,7 @@ rules:
     package-type: docker
     form: deployment-definition
     roles: [declaration, configuration]
-    filename-regex: '^Dockerfile(\..+)?$'
+    filename-regex: '(?i)^((Dockerfile|Containerfile)(\..+)?|.+\.Dockerfile)$'
     analyzer:
       type: dockerfile
   - id: docker-compose
