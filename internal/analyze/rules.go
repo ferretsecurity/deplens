@@ -704,6 +704,9 @@ func (d detector) matches(name, relPath string) bool {
 	if d.FilenameRegexp != nil && !d.FilenameRegexp.MatchString(name) {
 		return false
 	}
+	if _, dockerfile := d.Analyzer.(dockerfileParser); dockerfile && strings.EqualFold(filepath.Ext(name), ".dockerignore") {
+		return false
+	}
 	if d.PathGlob != "" && !pathGlobMatches(d.PathGlob, relPath) {
 		return false
 	}
