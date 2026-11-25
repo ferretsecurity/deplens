@@ -5,6 +5,7 @@ go 1.27.3
 require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/bmatcuk/doublestar/v4 v4.10.7
+	github.com/distribution/reference v0.6.0
 	github.com/git-pkgs/vers v0.7.2
 	github.com/hashicorp/hcl/v2 v2.25.0
 	github.com/hmarr/codeowners v1.2.1

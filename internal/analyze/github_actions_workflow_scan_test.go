@@ -15,6 +15,9 @@ func TestGithubActionsWorkflows(t *testing.T) {
 		t.Fatalf("workflow = %+v", workflow)
 	}
 	want := map[string]string{
+		"ghcr.io/acme/build:2@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef": "jobs.build.container.image",
+		"postgres:16": "jobs.build.services.database.image",
+		"node:22":     "jobs.test.container",
 		"actions/checkout@11d5960a326750d5838078e36cf38b85af677262": "jobs.build.steps",
 		"acme/tools/setup@v2":                                      "jobs.build.steps",
 		"docker://ghcr.io/acme/tool:1.0":                           "jobs.build.steps",

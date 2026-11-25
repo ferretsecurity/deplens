@@ -2,6 +2,11 @@ on: push
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/acme/build:2@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+    services:
+      database:
+        image: postgres:16
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: acme/tools/setup@v2
@@ -12,3 +17,5 @@ jobs:
           uses: ignored/env@main
   release:
     uses: acme/shared/.github/workflows/release.yml@release/stable
+  test:
+    container: node:22
