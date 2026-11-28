@@ -4040,6 +4040,8 @@ func TestLoadDefaultRulesProvidesSupportedTypeOrder(t *testing.T) {
 	ruleset := mustLoadDefaultRules(t)
 	want := []DetectorID{
 		DetectorID("github-actions-workflow"),
+		DetectorID("gitlab-ci"),
+		DetectorID("gitlab-ci-fragment"),
 		DetectorID("python-requirements"),
 		DetectorID("python-requirements-dir"),
 		DetectorID("python-uv"),

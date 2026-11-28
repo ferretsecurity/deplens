@@ -8,6 +8,21 @@ rules:
     filename-regex: '\.ya?ml$'
     analyzer:
       type: github-actions-workflow
+  - id: gitlab-ci
+    package-type: docker
+    form: automation-definition
+    roles: [configuration, usage]
+    filename-regex: '^(.*\.)?gitlab-ci\.ya?ml$'
+    analyzer:
+      type: gitlab-ci
+  - id: gitlab-ci-fragment
+    package-type: docker
+    form: automation-definition
+    roles: [configuration, usage]
+    path-glob: '**/.gitlab/**'
+    filename-regex: '\.ya?ml$'
+    analyzer:
+      type: gitlab-ci
   - id: python-requirements
     form: requirements
     roles: [declaration, constraint]
