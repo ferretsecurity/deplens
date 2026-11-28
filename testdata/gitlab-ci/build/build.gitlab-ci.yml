@@ -1,0 +1,4 @@
+image: docker:dind
+services: [docker:dind]
+unit_tests:
+  script: task docker:test

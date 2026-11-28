@@ -331,9 +331,13 @@ The offline lists are the 2026-09-17 research snapshot, with 43 Snyk Open Source
 
 ## Supported dependency sources
 
-The 185 built-in detectors cover common package managers and languages as well as containers, CI systems, deployment tools, build systems, and infrastructure configuration. Some sources support full dependency extraction, while others can only be identified or checked for the presence of dependency references.
+The 188 built-in detectors cover common package managers and languages as well as containers, CI systems, deployment tools, build systems, and infrastructure configuration. Some sources support full dependency extraction, while others can only be identified or checked for the presence of dependency references.
 
 GitHub Actions workflows in `.github/workflows/*.yml` and `*.yaml` report external step actions, reusable workflows, and Docker images declared in steps, job containers, and services. Job and service image references identify the declaring field and preserve the image tag and digest when present. Images that depend on expressions produce a diagnostic.
+
+GitLab CI files named `.gitlab-ci.yml`, `.gitlab-ci.yaml`, `*.gitlab-ci.yml`, or `*.gitlab-ci.yaml`, and YAML files under `.gitlab/`, report job and hidden-template images, `default` images and services, and legacy top-level images and services. Images accept a string or a mapping with `name`; service lists accept both forms. Each reference identifies its declaring field and preserves tags and digests. Unresolved variables and unsupported image declarations produce diagnostics, while usable literal images remain in the result.
+
+GitLab files are scanned independently, including local configuration fragments at these paths. DepLens does not fetch includes, expand variables or matrices, evaluate `extends`, or compute the effective pipeline. Custom include locations outside these patterns require a custom rule using `analyzer.type: gitlab-ci`. Script commands and image values stored only in variables are not extracted.
 
 GitHub references preserve the repository, any subpath, and the exact ref. Local references are omitted.
 

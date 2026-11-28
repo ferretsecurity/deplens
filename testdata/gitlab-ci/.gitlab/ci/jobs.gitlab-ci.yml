@@ -1,0 +1,6 @@
+.with-postgres:
+  services:
+    - name: postgres:19.0
+      alias: postgres
+.with-playwright-deps:
+  image: registry.gitlab.com/dependabot-gitlab/ci-images/docker-playwright:${DOCKER_VERSION}-${PLAYWRIGHT_VERSION}

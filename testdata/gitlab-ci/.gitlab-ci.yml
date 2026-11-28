@@ -1,0 +1,16 @@
+include:
+  - local: .gitlab/doxygen.yml
+  - local: .gitlab/ci/jobs.gitlab-ci.yml
+  - local: build/build.gitlab-ci.yml
+default:
+  image:
+    name: ruby:3.4
+    entrypoint: [""]
+  services:
+    - redis:7
+    - name: postgres:19.0
+      alias: postgres
+build:
+  image: alpine:3.22
+  services: []
+  script: echo build

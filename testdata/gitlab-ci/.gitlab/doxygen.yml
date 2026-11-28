@@ -1,0 +1,6 @@
+build_doxygen_docker:
+  image: docker:24.0.5-cli
+  services:
+    - docker:24.0.5-dind
+  stage: build
+  script: docker info

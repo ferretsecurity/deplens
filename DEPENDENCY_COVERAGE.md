@@ -1,6 +1,6 @@
 # Dependency coverage
 
-This inventory is derived from `internal/analyze/default_rules.yaml`. It describes the 185 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 135 have content analyzers and 50 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
+This inventory is derived from `internal/analyze/default_rules.yaml`. It describes the 188 built-in dependency-source detectors using source forms, roles, analyzers, and derived capabilities. Of these, 138 have content analyzers and 50 are selector-only. The YAML file remains the source of truth for selectors and analyzer configuration.
 
 Capabilities are `select`, `recognize`, `assess-presence`, `extract`, `normalize`, and `relate`. Relationship fields are available in the shared model but are only populated when an analyzer has that information.
 
@@ -159,6 +159,8 @@ The `python-pyproject` analyzer follows explicit setuptools dynamic dependency f
 | `docker-compose` | `deployment-definition` | `declaration, configuration` | `docker-compose` | select, recognize, extract, normalize, relate |
 | `github-actions-action` | `automation-definition` | `configuration, usage` | `github-actions-action` | select, recognize, extract, normalize, relate |
 | `github-actions-workflow` | `automation-definition` | `configuration, usage` | `github-actions-workflow` | select, recognize, extract, normalize, relate |
+| `gitlab-ci` | `automation-definition` | `configuration, usage` | `gitlab-ci` | select, recognize, extract, normalize, relate |
+| `gitlab-ci-fragment` | `automation-definition` | `configuration, usage` | `gitlab-ci` | select, recognize, extract, normalize, relate |
 | `bazel-workspace` | `workspace-definition` | `workspace, configuration` | — | select |
 | `bazel-module` | `manifest` | `declaration, constraint` | — | select |
 | `bazel-module-lock` | `lockfile` | `resolution, integrity` | — | select |
